@@ -63,7 +63,7 @@ gradlew.bat idea
 
 #### Contributors
 
-See also the list of [contributors](https://github.com/dumb-code/todm/contributors) who participated in this project.
+See also the list of [contributors](https://github.com/dumb-code/DumbLibrary/contributors) who participated in this project.
 
 ## License
 

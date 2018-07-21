@@ -2,6 +2,8 @@
 
 A Minecraft modding library made for DumbCode mods. It builds off of the library: LLibrary (See Below), and includes animation among other useful tools.
 
+## Documentation
+[Animation System](https://github.com/Dumb-Code/DumbLibrary/wiki/Animation-System)
 ### Contributing
 
 First, make a fork of this repository. When you've done that, you can clone that repository. Depending on your installation settings, you either have to run the command in the git Bash, or the CMD/Terminal.

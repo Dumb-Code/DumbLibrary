@@ -100,7 +100,6 @@ curseforge {
         def remoteChangelog = changelogs.changelogs[mod_version]
         if (remoteChangelog) {
             changelog = remoteChangelog.join("\n")
-            System.out.println(remoteChangelog.join("\n"))
         } else {
             changelog = ""
         }

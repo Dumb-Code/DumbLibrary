@@ -1,18 +1,34 @@
+import java.nio.file.Files
+
 buildscript {
     repositories {
         jcenter()
         maven { url = "http://files.minecraftforge.net/maven" }
+        maven { url = "https://plugins.gradle.org/m2/" }
     }
     dependencies {
         classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
+        classpath "gradle.plugin.com.matthewprenger:CurseGradle:1.0.7"
     }
 }
 
 apply plugin: 'net.minecraftforge.gradle.forge'
+apply plugin: "maven-publish"
+apply plugin: "com.matthewprenger.cursegradle"
 //Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
 
+import groovy.json.JsonSlurper;
 
-version = "1.12.2-0.1.0"
+def credentialsFile = file "credentials.json"
+project.ext.credentials = null
+if (credentialsFile.exists()) {
+    credentialsFile.withReader {
+        project.ext.credentials = new JsonSlurper().parse it
+    }
+}
+
+def mod_version = getVersion()
+version = "1.12.2-" + mod_version
 group = "com.dumbcode.dumblibrary" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "dumblibrary"
 
@@ -69,12 +85,60 @@ artifacts {
     archives javadocJar
 }
 
+curseforge {
+
+    if (credentials) {
+        apiKey = credentials.api_key
+    } else {
+        apiKey = ""
+    }
+    project {
+        def url = "https://raw.githubusercontent.com/Dumb-Code/DumbLibrary/master/changelogs.json".toURL()
+        def changelogs = new JsonSlurper().parseText url.text
+
+        id = '298694'
+        def remoteChangelog = changelogs.changelogs[mod_version]
+        if (remoteChangelog) {
+            changelog = remoteChangelog.join("\n")
+            System.out.println(remoteChangelog.join("\n"))
+        } else {
+            changelog = ""
+        }
+        releaseType = 'beta'
+        relations {
+            requiredLibrary 'llibrary'
+        }
+        mainArtifact jar
+        addArtifact sourcesJar
+        addArtifact devJar
+        addArtifact javadocJar
+    }
+}
+
+String getVersion() {
+    def major = "0"
+    def revision = "0"
+    def patch = "0"
+    def prefix = "public static final String VERSION = \""
+    def file = file("src/main/java/net/dumbcode/dumblibrary/DumbLibrary.java")
+    file.eachLine { String s ->
+        s = s.trim()
+        if (s.startsWith(prefix)) {
+            s = s.substring(prefix.length(), s.length() - 2)
+            def pts = s.split("\\.")
+            major = pts[0]
+            revision = pts[1]
+            patch = pts[2]
+        }
+    }
+
+    return "$major.$revision.$patch";
+}
+
 processResources {
-    // this will ensure that this task is redone when the versions change.
     inputs.property "version", project.version
     inputs.property "mcversion", project.minecraft.version
 
-    // replace stuff in mcmod.info, nothing else
     from(sourceSets.main.resources.srcDirs) {
         include 'mcmod.info'
 
@@ -82,7 +146,6 @@ processResources {
         expand 'version':project.version, 'mcversion':project.minecraft.version
     }
 
-    // copy everything else except the mcmod.info
     from(sourceSets.main.resources.srcDirs) {
         exclude 'mcmod.info'
     }

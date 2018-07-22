@@ -2,15 +2,8 @@
 {
   "modid": "dumblibrary",
   "name": "Dumb Library",
-  "description": "A lightweight utility mod, specializing in animation",
-  "version": "0.1.0",
-  "mcversion": "1.12.2",
-  "url": "",
-  "updateUrl": "",
-  "authorList": ["Wyn Price"],
-  "credits": "",
-  "logoFile": "",
-  "screenshots": [],
-  "dependencies": []
+  "description": "A lightweight utility mod, specializing in animation and models",
+  "version": "${version}",
+  "authorList": ["Wyn Price"]
 }
 ]

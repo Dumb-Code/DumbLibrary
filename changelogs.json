@@ -2,6 +2,9 @@
   "changelogs": {
     "0.1.0": [
       "+ Added TransformType model handling (Where modelds can have diffrent models for diffrent transform types)"
+    ],
+    "0.1.1": [
+      "+ Fixed spelling mistake in json parser"
     ]
   }
 }

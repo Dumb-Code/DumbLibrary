@@ -1,10 +1,13 @@
 package net.dumbcode.dumblibrary;
 
+import net.dumbcode.dumblibrary.client.model.TransformTypeModelLoader;
+import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import org.apache.logging.log4j.Logger;
 
-@Mod(modid = net.dumbcode.dumblibrary.DumbLibrary.MODID, name = net.dumbcode.dumblibrary.DumbLibrary.NAME, version = net.dumbcode.dumblibrary.DumbLibrary.VERSION)
+@Mod(modid = DumbLibrary.MODID, name = DumbLibrary.NAME, version = DumbLibrary.VERSION)
+@Mod.EventBusSubscriber(modid = DumbLibrary.MODID)
 public class DumbLibrary
 {
     public static final String MODID = "dumblibrary";
@@ -16,6 +19,7 @@ public class DumbLibrary
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         logger = event.getModLog();
+        ModelLoaderRegistry.registerLoader(TransformTypeModelLoader.INSTANCE);
     }
 
     public static Logger getLogger() {

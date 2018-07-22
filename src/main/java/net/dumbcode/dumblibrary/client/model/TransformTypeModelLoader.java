@@ -41,7 +41,7 @@ public enum TransformTypeModelLoader implements ICustomModelLoader {
         //Create a new map of transform types to unbaked models
         Map<ItemCameraTransforms.TransformType, IModel> modelMap = Maps.newEnumMap(ItemCameraTransforms.TransformType.class);
         //Loads in the default model
-        IModel defaultModel = ModelLoaderRegistry.getModel(new ResourceLocation(JsonUtils.getString(json, "deafult_model")));
+        IModel defaultModel = ModelLoaderRegistry.getModel(new ResourceLocation(JsonUtils.getString(json, "default_model")));
         //Iterates through every override
         for (val transformType : ItemCameraTransforms.TransformType.values()) {
             //Gets the formatted name of the type transform

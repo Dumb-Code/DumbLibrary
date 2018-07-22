@@ -12,7 +12,7 @@ public class DumbLibrary
 {
     public static final String MODID = "dumblibrary";
     public static final String NAME = "Dumb Library";
-    public static final String VERSION = "0.1.0";
+    public static final String VERSION = "0.1.1";
 
     private static Logger logger;
 

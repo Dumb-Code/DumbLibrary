@@ -44,6 +44,7 @@ gradlew.bat idea
 * [Wyn Price](https://github.com/Wyn-Price)
 * [TheXFactor117](https://github.com/TheXFactor117)
 * [jglrxavpok](https://github.com/jglrxavpok)
+* [Gegy](https://github.com/gegy1000)
 
 #### Modelers
 * HarvNut

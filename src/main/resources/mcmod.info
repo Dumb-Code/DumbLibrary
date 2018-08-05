@@ -4,6 +4,6 @@
   "name": "Dumb Library",
   "description": "A lightweight utility mod, specializing in animation and models",
   "version": "${version}",
-  "authorList": ["Wyn Price"]
+  "authorList": ["Wyn Price", "JackGoldsworth", "jglrxavpok"]
 }
 ]

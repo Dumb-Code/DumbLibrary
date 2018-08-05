@@ -67,7 +67,7 @@ public class TabulaUtils {
     }
 
     /**
-     * Computes the matrix representing the rotation&translation of a given part. Takes into account parent parts
+     * Computes the matrix representing the rotation and translation of a given part. Takes into account parent parts
      * @param part the model part
      * @return the matrix representing the rotation and translation
      */

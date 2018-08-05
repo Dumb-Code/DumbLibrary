@@ -33,7 +33,7 @@ public class JsonUtil
      * @param gson gson to read the json
      * @param modid Your mods mod id
      * @param folderNames folder name(s) to get files from
-     * @param <T>
+     * @param <T> Type of registry
      */
     public static <T extends IForgeRegistryEntry.Impl<T>> void registerModJsons(IForgeRegistry<T> registry, Gson gson, String modid, String... folderNames)
     {
@@ -86,7 +86,7 @@ public class JsonUtil
      * @param gson gson to help read the json
      * @param modid Your mods mod id
      * @param folderNames folder name(s) you want to get files from
-     * @param <T>
+     * @param <T> Type of registry
      */
     public static <T extends IForgeRegistryEntry.Impl<T>> void registerLocalJsons(IForgeRegistry<T> registry, Gson gson, String modid, String... folderNames)
     {
@@ -137,7 +137,7 @@ public class JsonUtil
     /**
      * Creates a directory outside the mods folder with your mod id, in a folder called add-ons
      * @param modid Your mod id
-     * @return
+     * @return the folder
      */
     public static File createModFolder(String modid)
     {
@@ -152,7 +152,7 @@ public class JsonUtil
     /**
      * Creates sub directories in your mod folder.
      * @param modid Your mod id
-     * @param fileNames
+     * @param fileNames names of all the files you want to generate
      */
     public static void makeSubDirectories(String modid, String... fileNames)
     {

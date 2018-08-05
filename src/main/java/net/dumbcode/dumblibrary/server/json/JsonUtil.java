@@ -2,6 +2,7 @@ package net.dumbcode.dumblibrary.server.json;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
+import lombok.experimental.UtilityClass;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.minecraft.util.JsonUtils;
 import net.minecraft.util.ResourceLocation;
@@ -22,10 +23,11 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.stream.Stream;
 
+@UtilityClass
 public class JsonUtil
 {
 
-    private static final String FOLDER_NAME = "add-ons";
+    private final String FOLDER_NAME = "add-ons";
 
     /**
      * Gets all files with the name modid/folderName(s) from every active mod and registers them.
@@ -35,7 +37,7 @@ public class JsonUtil
      * @param folderNames folder name(s) to get files from
      * @param <T> Type of registry
      */
-    public static <T extends IForgeRegistryEntry.Impl<T>> void registerModJsons(IForgeRegistry<T> registry, Gson gson, String modid, String... folderNames)
+    public <T extends IForgeRegistryEntry.Impl<T>> void registerModJsons(IForgeRegistry<T> registry, Gson gson, String modid, String... folderNames)
     {
         Loader.instance().getIndexedModList().forEach((s, mod) ->
         {
@@ -88,7 +90,7 @@ public class JsonUtil
      * @param folderNames folder name(s) you want to get files from
      * @param <T> Type of registry
      */
-    public static <T extends IForgeRegistryEntry.Impl<T>> void registerLocalJsons(IForgeRegistry<T> registry, Gson gson, String modid, String... folderNames)
+    public <T extends IForgeRegistryEntry.Impl<T>> void registerLocalJsons(IForgeRegistry<T> registry, Gson gson, String modid, String... folderNames)
     {
         Arrays.stream(folderNames).forEach(name ->
         {
@@ -139,7 +141,7 @@ public class JsonUtil
      * @param modid Your mod id
      * @return the folder
      */
-    public static File createModFolder(String modid)
+    public File createModFolder(String modid)
     {
         File folder = new File(".", FOLDER_NAME + "/" + modid);
         if (!folder.exists())
@@ -154,7 +156,7 @@ public class JsonUtil
      * @param modid Your mod id
      * @param fileNames names of all the files you want to generate
      */
-    public static void makeSubDirectories(String modid, String... fileNames)
+    public void makeSubDirectories(String modid, String... fileNames)
     {
         File file = createModFolder(modid);
         Arrays.stream(fileNames).forEach(s ->

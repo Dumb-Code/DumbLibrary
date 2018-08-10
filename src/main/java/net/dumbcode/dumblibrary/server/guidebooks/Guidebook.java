@@ -20,8 +20,31 @@ public class Guidebook extends IForgeRegistryEntry.Impl<Guidebook> {
     @Setter
     private String titleKey;
 
+    @Getter
+    @Setter
+    private GuidebookPage cover;
+
+    @Getter
+    @Setter
+    private int pageWidth;
+
+    @Getter
+    @Setter
+    private int pageMargins;
+
     public Guidebook() {
         modContainer = Loader.instance().activeModContainer();
     }
 
+    public int getAvailableWidth() {
+        return pageWidth-pageMargins*2;
+    }
+
+    public float getAspectRatio() {
+        return 5f/8f; // corresponds to the aspect ratio of page in the book model from vanilla
+    }
+
+    public int getAvailableHeight() {
+        return (int) (getAvailableWidth() / getAspectRatio());
+    }
 }

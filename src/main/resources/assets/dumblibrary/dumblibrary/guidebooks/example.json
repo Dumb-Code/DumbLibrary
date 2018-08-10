@@ -1,3 +1,28 @@
 {
-  "titleKey": "dumbcode.examplebook.title"
+  "titleKey": "dumbcode.examplebook.title",
+  "pageWidth": 500,
+  "pageMargins": 30,
+  "cover": {
+    "isCoverPage": true,
+    "elements": [
+      {
+        "text": "The Example Guidebook",
+        "scale": 8
+      },
+      {
+        "type": "item",
+        "scale": 3,
+        "item": "minecraft:bedrock"
+      },
+      {
+        "type": "image",
+        "location": "minecraft:textures/blocks/beacon.png",
+        "scale": 4
+      },
+      {
+        "text": "By jglrxavpok",
+        "scale": 3
+      }
+    ]
+  }
 }

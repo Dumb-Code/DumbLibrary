@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import lombok.experimental.UtilityClass;
 import net.dumbcode.dumblibrary.DumbLibrary;
+import net.dumbcode.dumblibrary.server.guidebooks.elements.GuidebookElement;
 import net.dumbcode.dumblibrary.server.json.JsonUtil;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
@@ -28,7 +29,7 @@ public class GuidebooksManager {
 
     public static GsonBuilder prepareGsonBuilderForGuidebooks(GsonBuilder builder) {
         builder.setPrettyPrinting();
-      //  builder.registerTypeHierarchyAdapter(Guidebook.class, new Guidebook.JsonHandler());
+        builder.registerTypeHierarchyAdapter(GuidebookElement.class, new GuidebookElement.JsonHandler());
         return builder;
     }
 }

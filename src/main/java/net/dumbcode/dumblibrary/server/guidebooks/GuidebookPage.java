@@ -1,7 +1,11 @@
 package net.dumbcode.dumblibrary.server.guidebooks;
 
 import com.google.gson.annotations.Expose;
+import lombok.Getter;
+import lombok.Setter;
 import net.dumbcode.dumblibrary.server.guidebooks.elements.GuidebookElement;
+import net.dumbcode.dumblibrary.server.guidebooks.elements.ImageElement;
+import net.dumbcode.dumblibrary.server.guidebooks.elements.MissingPageElement;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.shader.Framebuffer;
@@ -11,12 +15,22 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 
 import java.nio.FloatBuffer;
+import java.util.LinkedList;
 import java.util.List;
 
 public class GuidebookPage {
 
-    private List<GuidebookElement> elements;
+    public static final GuidebookPage MISSING_PAGE = new GuidebookPage() {
+        {
+            this.setCoverPage(false);
+            this.getElements().add(new MissingPageElement());
+        }
+    };
+    @Getter
+    private List<GuidebookElement> elements = new LinkedList<>();
 
+    @Getter
+    @Setter
     private boolean isCoverPage;
 
     @Expose(deserialize = false, serialize = false)
@@ -63,18 +77,19 @@ public class GuidebookPage {
         GlStateManager.loadIdentity();
 
         GlStateManager.pushMatrix();
-        int y = 0;
-        for(GuidebookElement element : elements) {
-            GlStateManager.pushMatrix();
-            GlStateManager.enableBlend();
-            GlStateManager.enableAlpha();
-            GlStateManager.enableCull();
-            GlStateManager.enableDepth();
-            GlStateManager.disableLighting();
-            element.render(guidebook);
-            GlStateManager.popMatrix();
-            int height = element.getHeight(guidebook);
-            GlStateManager.translate(0f, height, 0f);
+        if(elements != null) {
+            for(GuidebookElement element : elements) {
+                GlStateManager.pushMatrix();
+                GlStateManager.enableBlend();
+                GlStateManager.enableAlpha();
+                GlStateManager.enableCull();
+                GlStateManager.enableDepth();
+                GlStateManager.disableLighting();
+                element.render(guidebook);
+                GlStateManager.popMatrix();
+                int height = element.getHeight(guidebook);
+                GlStateManager.translate(0f, height, 0f);
+            }
         }
         GlStateManager.popMatrix();
 

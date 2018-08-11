@@ -3,6 +3,7 @@ package net.dumbcode.dumblibrary.client.gui;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.client.animation.TabulaUtils;
 import net.dumbcode.dumblibrary.server.guidebooks.Guidebook;
+import net.dumbcode.dumblibrary.server.guidebooks.GuidebookPage;
 import net.ilexiconn.llibrary.client.model.tabula.ITabulaModelAnimator;
 import net.ilexiconn.llibrary.client.model.tabula.TabulaModel;
 import net.minecraft.client.gui.GuiScreen;
@@ -19,10 +20,12 @@ import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
 import java.io.IOException;
+import java.util.List;
 
 public class GuiGuidebook extends GuiScreen {
 
     private final Guidebook bookData;
+    private final List<GuidebookPage> allPages;
     private String titleText;
     private float bookOpeness = 0f;
 
@@ -31,9 +34,20 @@ public class GuiGuidebook extends GuiScreen {
     private float flippingProgress;
     private int flippingDirection;
 
+    private int pageOnLeftIndex = 1; // 0 is the cover page
+    private GuidebookPage pageOnLeft;
+    private GuidebookPage pageOnRight;
+    private GuidebookPage flippingPageFront;
+    private GuidebookPage flippingPageBack;
+
     public GuiGuidebook(Guidebook bookData) {
         this.bookData = bookData;
         flippingProgress = 2f;
+        this.allPages = bookData.getCompiledPages();
+        if(allPages.size() > 1)
+            pageOnLeft = allPages.get(1);
+        if(allPages.size() > 2)
+            pageOnRight = allPages.get(2);
     }
 
     @Override
@@ -48,7 +62,9 @@ public class GuiGuidebook extends GuiScreen {
         super.drawScreen(mouseX, mouseY, partialTicks);
         fontRenderer.drawString(titleText, 0, 0, 0xFFF0F0F0);
 
+
         GuiHelper.prepareModelRendering(width/2, height/2+20, 350f, 0f, bookOpeness*90f);
+        GlStateManager.disableLighting();
         GlStateManager.scale(-1f, 1f, 1f);
         mc.getTextureManager().bindTexture(TEXTURE_BOOK);
         float openAngle = (float) ((Math.PI/2f)*bookOpeness);
@@ -56,7 +72,7 @@ public class GuiGuidebook extends GuiScreen {
 
         float flipAngle = 0f;
         if(flippingProgress < 1f) {
-            if(flippingDirection < 0) {
+            if(flippingDirection > 0) {
                 flipAngle = flippingProgress;
             } else {
                 flipAngle = 1f-flippingProgress;
@@ -70,20 +86,20 @@ public class GuiGuidebook extends GuiScreen {
         GlStateManager.translate(0f, 0f, -0.001);
         GlStateManager.rotate(bookOpeness*90f, 0f, 1f, 0f);
 
-        // page on left
-        GlStateManager.color(1f, 0f, 0f);
-        //renderPage((1f-bookOpeness)*-90f+bookOpeness*180f, null, TEXTURE_BOOK);
-        renderPage((float) Math.toDegrees(modelBook.pagesLeft.rotateAngleY)-90f, -1, bookData.getCover().getCompiledRenderTexture(bookData));
+        if(pageOnLeft != null) {
+            // page on left
+            renderPage((float) Math.toDegrees(modelBook.pagesLeft.rotateAngleY)-90f, -1, pageOnLeft.getCompiledRenderTexture(bookData));
+        }
 
-        // page on right
-        GlStateManager.color(0f, 1f, 0f);
-        renderPage((bookOpeness*90f-90f), bookData.getCover().getCompiledRenderTexture(bookData), -1);
+        if(pageOnRight != null) {
+            // page on right
+            renderPage((bookOpeness*90f-90f), pageOnRight.getCompiledRenderTexture(bookData), -1);
+        }
 
         if(flippingProgress < 1f && bookOpeness >= 1f) {
             GlStateManager.clear(GL11.GL_DEPTH_BUFFER_BIT);
             // flip page
-            GlStateManager.color(0f, 0f, 1f);
-            renderPage(180f*flipAngle, bookData.getCover().getCompiledRenderTexture(bookData), bookData.getCover().getCompiledRenderTexture(bookData));
+            renderPage(180f*flipAngle, flippingPageFront.getCompiledRenderTexture(bookData), flippingPageBack.getCompiledRenderTexture(bookData));
         }
         GuiHelper.cleanupModelRendering();
     }
@@ -165,10 +181,26 @@ public class GuiGuidebook extends GuiScreen {
     @Override
     public void handleMouseInput() throws IOException {
         super.handleMouseInput();
-        int sign = (int)Math.signum(Mouse.getDWheel());
+        int sign = -(int)Math.signum(Mouse.getDWheel());
         if(sign != 0) {
-            flippingProgress = 0f;
-            flippingDirection = sign;
+            if(allPages.size() > pageOnLeftIndex+sign*2 && pageOnLeftIndex+sign*2 > 0) {
+                flippingProgress = 0f;
+                flippingDirection = sign;
+
+                pageOnLeftIndex += sign*2;
+                if(sign > 0) {
+                    flippingPageFront = pageOnRight;
+                    flippingPageBack = allPages.get(pageOnLeftIndex);
+                    if(pageOnLeftIndex+1 < allPages.size())
+                        pageOnRight = allPages.get(pageOnLeftIndex+1);
+                    else
+                        pageOnRight = null;
+                } else {
+                    flippingPageFront = allPages.get(pageOnLeftIndex+1);
+                    flippingPageBack = pageOnLeft;
+                    pageOnLeft = allPages.get(pageOnLeftIndex);
+                }
+            }
         }
     }
 
@@ -178,8 +210,15 @@ public class GuiGuidebook extends GuiScreen {
         bookOpeness += 1f/20f /2f;
         if(bookOpeness >= 1f)
             bookOpeness = 1f;
-        if(flippingProgress < 1f)
-        flippingProgress += 1f/20f;
+        if(flippingProgress < 1f) {
+            flippingProgress += 1f/20f;
+            if(flippingProgress >= 1f) { // flip done
+                if(flippingDirection > 0)
+                    pageOnLeft = flippingPageBack;
+                else
+                    pageOnRight = flippingPageFront;
+            }
+        }
     }
 
     @Override

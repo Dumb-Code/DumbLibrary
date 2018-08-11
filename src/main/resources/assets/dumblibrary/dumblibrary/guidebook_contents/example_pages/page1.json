@@ -1,0 +1,22 @@
+{
+  "elements": [
+    {
+      "text": "The first page!",
+      "scale": 7
+    },
+    {
+      "type": "item",
+      "scale": 5,
+      "item": "minecraft:nether_star"
+    },
+    {
+      "type": "image",
+      "location": "minecraft:textures/map/map_background.png",
+      "scale": 4
+    },
+    {
+      "text": "By jglrxavpok :)",
+      "scale": 3
+    }
+  ]
+}

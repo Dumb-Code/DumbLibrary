@@ -17,12 +17,14 @@ public class GuidebooksManager {
     public static IForgeRegistry<Guidebook> GUIDEBOOK_REGISTRY;
 
     public static void registerBooks(IForgeRegistry<Item> registry) {
-        Gson gson = prepareGsonBuilderForGuidebooks(new GsonBuilder()).create();
-        JsonUtil.registerModJsons(GUIDEBOOK_REGISTRY, gson, DumbLibrary.MODID, "guidebooks");
+        Gson gson = GuidebooksManager.prepareGsonBuilderForGuidebooks(new GsonBuilder()).create();
+        JsonUtil.registerModJsons(GuidebooksManager.GUIDEBOOK_REGISTRY, gson, DumbLibrary.MODID, "guidebooks");
         GUIDEBOOK_REGISTRY.forEach(book -> {
-            Loader.instance().setActiveModContainer(Loader.instance().getIndexedModList().get(book.getModContainer().getModId()));
+            Loader.instance().setActiveModContainer(Loader.instance().getIndexedModList().get(book.getRegistryName().getResourceDomain()));
             String id = "guidebook_"+book.getRegistryName().getResourcePath();
-            registry.register(new GuidebookItem(book).setUnlocalizedName(id).setCreativeTab(CreativeTabs.MISC).setRegistryName(new ResourceLocation(book.getModContainer().getModId(), id)));
+            registry.register(new GuidebookItem(book).setUnlocalizedName(id).setCreativeTab(CreativeTabs.MISC).setRegistryName(new ResourceLocation(book.getRegistryName().getResourceDomain(), id)));
+
+            book.compilePages();
         });
         Loader.instance().setActiveModContainer(Loader.instance().getIndexedModList().get(DumbLibrary.MODID));
     }

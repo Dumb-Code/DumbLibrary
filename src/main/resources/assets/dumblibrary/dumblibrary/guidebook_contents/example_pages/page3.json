@@ -1,0 +1,14 @@
+{
+  "elements": [
+    {
+      "text": "The third (?) page!",
+      "scale": 4,
+      "color": "pink"
+    },
+    {
+      "text": "Right aligned text! Again!",
+      "scale": 2,
+      "alignment": "right"
+    }
+  ]
+}

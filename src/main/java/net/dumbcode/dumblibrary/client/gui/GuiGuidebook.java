@@ -1,11 +1,7 @@
 package net.dumbcode.dumblibrary.client.gui;
 
-import net.dumbcode.dumblibrary.DumbLibrary;
-import net.dumbcode.dumblibrary.client.animation.TabulaUtils;
 import net.dumbcode.dumblibrary.server.guidebooks.Guidebook;
 import net.dumbcode.dumblibrary.server.guidebooks.GuidebookPage;
-import net.ilexiconn.llibrary.client.model.tabula.ITabulaModelAnimator;
-import net.ilexiconn.llibrary.client.model.tabula.TabulaModel;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.model.ModelBook;
 import net.minecraft.client.model.ModelRenderer;
@@ -13,12 +9,12 @@ import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextComponentTranslation;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
+import javax.vecmath.Vector3d;
 import java.io.IOException;
 import java.util.List;
 
@@ -39,6 +35,12 @@ public class GuiGuidebook extends GuiScreen {
     private GuidebookPage pageOnRight;
     private GuidebookPage flippingPageFront;
     private GuidebookPage flippingPageBack;
+
+    // curl parameters
+    private int columns = 5*5;
+    private int rows = 8*5;
+    private Vector3d pos = new Vector3d();
+    private Vector3d[] positions = new Vector3d[(rows+1)*(columns+1)];  // includes far edges
 
     public GuiGuidebook(Guidebook bookData) {
         this.bookData = bookData;
@@ -88,18 +90,18 @@ public class GuiGuidebook extends GuiScreen {
 
         if(pageOnLeft != null) {
             // page on left
-            renderPage((float) Math.toDegrees(modelBook.pagesLeft.rotateAngleY)-90f, -1, pageOnLeft.getCompiledRenderTexture(bookData));
+            renderPage(false, (float) Math.toDegrees(modelBook.pagesLeft.rotateAngleY)-90f, 0f, -1, pageOnLeft.getCompiledRenderTexture(bookData));
         }
 
         if(pageOnRight != null) {
             // page on right
-            renderPage((bookOpeness*90f-90f), pageOnRight.getCompiledRenderTexture(bookData), -1);
+            renderPage(false, (bookOpeness*90f-90f), 1f, pageOnRight.getCompiledRenderTexture(bookData), -1);
         }
 
         if(flippingProgress < 1f && bookOpeness >= 1f) {
             GlStateManager.clear(GL11.GL_DEPTH_BUFFER_BIT);
             // flip page
-            renderPage(180f*flipAngle, flippingPageFront.getCompiledRenderTexture(bookData), flippingPageBack.getCompiledRenderTexture(bookData));
+            renderPage(true, 180f, flipAngle, flippingPageFront.getCompiledRenderTexture(bookData), flippingPageBack.getCompiledRenderTexture(bookData));
         }
         GuiHelper.cleanupModelRendering();
     }
@@ -120,39 +122,152 @@ public class GuiGuidebook extends GuiScreen {
         }
     }
 
-    private void renderPage(float pageAngle, int frontFaceTexture, int backFaceTexture) {
+    private void renderPage(boolean curl, float pageAngle, float flipProgress, int frontFaceTexture, int backFaceTexture) {
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder buffer = tessellator.getBuffer();
         float w = 5f/16f;
         float h = 8f/16f;
         float x = 0f;
         float y = -h/2f;
-        float z = 0f;
-        GlStateManager.pushMatrix();
-
-        GlStateManager.rotate(pageAngle+90f, 0f, 1f, 0f);
 
         if(frontFaceTexture != -1) {
             GlStateManager.bindTexture(frontFaceTexture);
-            buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
-            // front face
-            buffer.pos(x, y+h, z).tex(0, 0).endVertex();
-            buffer.pos(x+w, y+h, z).tex(1, 0).endVertex();
-            buffer.pos(x+w, y, z).tex(1, 1).endVertex();
-            buffer.pos(x, y, z).tex(0, 1).endVertex();
-            tessellator.draw();
+            GlStateManager.pushMatrix();
+            GlStateManager.rotate(90f, 0f, 1f, 0f);
+            GlStateManager.translate(0f, y, 0f);
+            /*
+            Adapted from https://wdnuon.blogspot.com/2010/05/implementing-ibooks-page-curling-using.html
+            */
+            if(curl) {
+                drawCurledPage(pageAngle, flipProgress, columns, rows, w, h, false);
+            } else {
+                GlStateManager.rotate(pageAngle, 0f, 1f, 0f);
+                buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
+                buffer.pos(0, h, 0).tex(0, 0).endVertex();
+                buffer.pos(w, h, 0).tex(1, 0).endVertex();
+                buffer.pos(w, 0, 0).tex(1, 1).endVertex();
+                buffer.pos(0, 0, 0).tex(0, 1).endVertex();
+                tessellator.draw();
+            }
+            GlStateManager.popMatrix();
         }
         if(backFaceTexture != -1) {
             GlStateManager.bindTexture(backFaceTexture);
-            buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
-            // back face
-            buffer.pos(x, y, z).tex(1, 1).endVertex();
-            buffer.pos(x+w, y, z).tex(0, 1).endVertex();
-            buffer.pos(x+w, y+h, z).tex(0, 0).endVertex();
-            buffer.pos(x, y+h, z).tex(1, 0).endVertex();
-            tessellator.draw();
+            GlStateManager.pushMatrix();
+            GlStateManager.rotate(90f, 0f, 1f, 0f);
+            GlStateManager.translate(0f, y, 0f);
+            if(curl) {
+                drawCurledPage(pageAngle, flipProgress, columns, rows, w, h, true);
+            } else {
+                GlStateManager.rotate(pageAngle, 0f, 1f, 0f);
+                buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
+                buffer.pos(0, 0, 0).tex(1, 1).endVertex();
+                buffer.pos(w, 0, 0).tex(0, 1).endVertex();
+                buffer.pos(w, h, 0).tex(0, 0).endVertex();
+                buffer.pos(0, h, 0).tex(1, 0).endVertex();
+                tessellator.draw();
+            }
+            GlStateManager.popMatrix();
         }
-        GlStateManager.popMatrix();
+    }
+
+    private void drawCurledPage(double pageAngle, double flipProgress, int columns, int rows, double w, double h, boolean backFace) {
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder buffer = tessellator.getBuffer();
+        double theta;
+        double A;
+        double angle = pageAngle*flipProgress;
+        double rho = Math.toRadians(angle);
+
+        // Comments are from the source code provided on https://wdnuon.blogspot.com/2010/05/implementing-ibooks-page-curling-using.html
+        // Behaviour has been reimplemented from scratch -> curve blending
+        double A1 = -15.0;
+        double A2 = -2.0;
+        double A3 = -4.0;
+
+        double theta1 = Math.toRadians(90);
+        double theta2 = Math.toRadians(10);
+        double theta3 = Math.toRadians(5);
+        double phase1 = 0.15;
+        double phase2 = 0.4;
+        double phase3 = 1.0;
+
+        if(flipProgress <= phase1) {
+            double progress = flipProgress / phase1;
+            double f1 = Math.sin(Math.PI * Math.pow(progress, 0.05) / 2.0);
+            double f2 = Math.sin(Math.PI * Math.pow(progress, 0.5) / 2.0);
+            A = linear(f1, A1, A2);
+            theta = linear(f2, theta1, theta2);
+        } else if(flipProgress <= phase2) {
+            double progress = (flipProgress-phase1) / (phase2-phase1);
+            A = linear(progress, A2, A3);
+            theta = linear(progress, theta2, theta3);
+        } else {
+            double progress = (flipProgress-phase2) / (phase3-phase2);
+            double f1 = Math.sin(Math.PI * Math.pow(progress, 10) / 2.0);
+            double f2 = Math.sin(Math.PI * Math.pow(progress, 2) / 2.0);
+            A = linear(f1, A3, A1);
+            theta = linear(f2, theta3, theta1);
+        }
+
+        buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
+        for (int i = 0; i < positions.length; i++) {
+            positions[i] = null;
+        }
+        for (int i = 0; i < rows*columns; i++) {
+            int x = i % columns;
+            int y = i / columns;
+            double minU = (x) / (double)columns;
+            double minV = (y) / (double)rows;
+            double maxU = (x+1) / (double)columns;
+            double maxV = (y+1) / (double)rows;
+
+            double xInput = minU * w;
+            double yInput = minV * h;
+            calculateCurlPosition(xInput, yInput, theta, rho, A, pos);
+            double minX = pos.x;
+            double minY = pos.y;
+            double minZ = -pos.z;
+
+            xInput = maxU * w;
+            yInput = maxV * h;
+            calculateCurlPosition(xInput, yInput, theta, rho, A, pos);
+            double maxX = pos.x;
+            double maxY = pos.y;
+            double maxZ = -pos.z;
+            if(backFace) {
+                buffer.pos(minX, minY, minZ).tex(1f-minU, 1f-minV).endVertex();
+                buffer.pos(maxX, minY, maxZ).tex(1f-maxU, 1f-minV).endVertex();
+                buffer.pos(maxX, maxY, maxZ).tex(1f-maxU, 1f-maxV).endVertex();
+                buffer.pos(minX, maxY, minZ).tex(1f-minU, 1f-maxV).endVertex();
+            } else {
+                buffer.pos(minX, maxY, minZ).tex(minU, 1f-maxV).endVertex();
+                buffer.pos(maxX, maxY, maxZ).tex(maxU, 1f-maxV).endVertex();
+                buffer.pos(maxX, minY, maxZ).tex(maxU, 1f-minV).endVertex();
+                buffer.pos(minX, minY, minZ).tex(minU, 1f-minV).endVertex();
+            }
+        }
+        tessellator.draw();
+    }
+
+    private double linear(double progress, double min, double max) {
+        return progress * max + (1.0-progress) * min;
+    }
+
+    private void calculateCurlPosition(double xInput, double yInput, double theta, double rho, double A, Vector3d out) {
+        double R = Math.sqrt(xInput * xInput + Math.pow(yInput - A, 2));
+        double r = R * Math.sin(theta);
+        double beta = Math.asin(xInput / R) / Math.sin(theta);
+
+        double outX = r * Math.sin(beta);
+        double outY = R + A - r * (1 - Math.cos(beta)) * Math.sin(beta);
+        double outZ = r * (1 - Math.cos(beta)) * Math.cos(theta);
+
+        double finalX = outX * Math.cos(rho) - outZ * Math.sin(rho);
+        double finalY = outY;
+        double finalZ = outX * Math.sin(rho) + outZ * Math.cos(rho);
+
+        out.set(finalX, finalY, finalZ);
     }
 
     private void renderCover(int frontFaceTexture) {
@@ -182,7 +297,7 @@ public class GuiGuidebook extends GuiScreen {
     public void handleMouseInput() throws IOException {
         super.handleMouseInput();
         int sign = -(int)Math.signum(Mouse.getDWheel());
-        if(sign != 0) {
+        if(sign != 0 && flippingProgress >= 1f) {
             if(allPages.size() > pageOnLeftIndex+sign*2 && pageOnLeftIndex+sign*2 > 0) {
                 flippingProgress = 0f;
                 flippingDirection = sign;
@@ -211,7 +326,7 @@ public class GuiGuidebook extends GuiScreen {
         if(bookOpeness >= 1f)
             bookOpeness = 1f;
         if(flippingProgress < 1f) {
-            flippingProgress += 1f/20f;
+            flippingProgress += 1f/20f*3f;
             if(flippingProgress >= 1f) { // flip done
                 if(flippingDirection > 0)
                     pageOnLeft = flippingPageBack;

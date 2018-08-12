@@ -3,6 +3,11 @@
     {
       "text": "The second page!",
       "scale": 4
+    },
+    {
+      "text": "Right aligned text!",
+      "scale": 2,
+      "alignment": "right"
     }
   ]
 }

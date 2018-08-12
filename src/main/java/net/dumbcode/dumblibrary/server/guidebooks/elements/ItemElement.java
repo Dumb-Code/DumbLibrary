@@ -26,12 +26,12 @@ public class ItemElement extends GuidebookElement {
 
     @Override
     public int getWidth(Guidebook guidebook) {
-        return (int)(20*scale);
+        return (int)(32*scale);
     }
 
     @Override
     public int getHeight(Guidebook guidebook) {
-        return (int)(20*scale);
+        return (int)(32*scale);
     }
 
     @Override

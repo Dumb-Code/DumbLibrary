@@ -5,11 +5,14 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
 import net.dumbcode.dumblibrary.server.guidebooks.Guidebook;
+import net.dumbcode.dumblibrary.server.utils.DumbStringUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.item.EnumDyeColor;
 import net.minecraft.util.StringUtils;
 import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -24,6 +27,7 @@ public class TextElement extends GuidebookElement {
     private final String rawText;
     private final int color;
     private final double scale;
+    private final DumbStringUtils.TextAlignment alignment;
 
     public TextElement(JsonObject source, JsonDeserializationContext context) {
         super(source, context);
@@ -37,18 +41,35 @@ public class TextElement extends GuidebookElement {
             contents = text;
         }
         if(source.has("color"))
-            color = source.get("color").getAsInt();
+            color = resolveColor(source.get("color"));
         else
-            color = 0xFFF0F0F0;
+            color = 0xFF000000;
         if(source.has("scale"))
             scale = source.get("scale").getAsDouble();
         else
             scale = 1.0;
+        if(source.has("alignment")) {
+            alignment = DumbStringUtils.TextAlignment.valueOf(source.get("alignment").getAsString().toUpperCase());
+        } else {
+            alignment = DumbStringUtils.TextAlignment.LEFT;
+        }
+    }
+
+    private int resolveColor(JsonElement colorElement) {
+        try {
+            EnumDyeColor color = EnumDyeColor.valueOf(colorElement.getAsString().toUpperCase());
+            return color.getColorValue();
+        } catch (IllegalArgumentException e) {
+            // simply not a valid color string
+        }
+        return colorElement.getAsInt();
     }
 
     @SideOnly(Side.CLIENT)
     @Override
     public int getWidth(Guidebook guidebook) {
+        if(alignment == DumbStringUtils.TextAlignment.CENTERED)
+            return guidebook.getAvailableWidth();
         FontRenderer fontRenderer = Minecraft.getMinecraft().fontRenderer;
         List<String> lines = fontRenderer.listFormattedStringToWidth(contents, (int) (guidebook.getAvailableWidth()/scale));
         return (int) (lines.stream().mapToInt(fontRenderer::getStringWidth).max().getAsInt()*scale);
@@ -66,8 +87,31 @@ public class TextElement extends GuidebookElement {
     @Override
     public void render(Guidebook guidebook) {
         FontRenderer fontRenderer = Minecraft.getMinecraft().fontRenderer;
-        GlStateManager.scale(scale, scale, 1f);
-        fontRenderer.drawSplitString(contents, 0, 0, (int) (guidebook.getAvailableWidth()/scale), color);
+        List<String> lines = fontRenderer.listFormattedStringToWidth(contents, (int) (guidebook.getAvailableWidth()/scale));
+        float y = 0f;
+        for(String line : lines) {
+            GlStateManager.pushMatrix();
+            float x;
+            switch (alignment) {
+                case LEFT:
+                    x = 0f;
+                    break;
+                case RIGHT:
+                    x = (float) (guidebook.getAvailableWidth() - fontRenderer.getStringWidth(line) * scale);
+                    break;
+                case CENTERED:
+                    x = (float) (guidebook.getAvailableWidth()/2 - (fontRenderer.getStringWidth(line)  * scale)/2);
+                    break;
+                default:
+                    x = 0f;
+                    break;
+            }
+            GlStateManager.translate(x, y, 0f);
+            y += (fontRenderer.FONT_HEIGHT + LINE_SPACING) * scale;
+            GlStateManager.scale(scale, scale, 1f);
+            fontRenderer.drawString(line, 0, 0, color);
+            GlStateManager.popMatrix();
+        }
     }
 
     @Override

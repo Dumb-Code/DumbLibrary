@@ -2,7 +2,9 @@
   "elements": [
     {
       "text": "The first page!",
-      "scale": 7
+      "scale": 7,
+      "alignment": "centered",
+      "color": "black"
     },
     {
       "type": "item",
@@ -16,7 +18,9 @@
     },
     {
       "text": "By jglrxavpok :)",
-      "scale": 3
+      "scale": 3,
+      "alignment": "centered",
+      "color": "black"
     }
   ]
 }

@@ -180,7 +180,7 @@ public class GuiGuidebook extends GuiScreen {
         double rho = Math.toRadians(angle);
 
         // Comments are from the source code provided on https://wdnuon.blogspot.com/2010/05/implementing-ibooks-page-curling-using.html
-        // Behaviour has been reimplemented from scratch -> curve blending
+        // Behaviour has been reimplemented from scratch but use the ~same empirical values
         double A1 = -15.0;
         double A2 = -2.0;
         double A3 = -4.0;
@@ -225,26 +225,40 @@ public class GuiGuidebook extends GuiScreen {
             double xInput = minU * w;
             double yInput = minV * h;
             calculateCurlPosition(xInput, yInput, theta, rho, A, pos);
-            double minX = pos.x;
-            double minY = pos.y;
-            double minZ = -pos.z;
+            double topLeftX = pos.x;
+            double topLeftY = pos.y;
+            double topLeftZ = pos.z;
+
+            xInput = maxU * w;
+            yInput = minV * h;
+            calculateCurlPosition(xInput, yInput, theta, rho, A, pos);
+            double topRightX = pos.x;
+            double topRightY = pos.y;
+            double topRightZ = pos.z;
+
+            xInput = minU * w;
+            yInput = maxV * h;
+            calculateCurlPosition(xInput, yInput, theta, rho, A, pos);
+            double bottomLeftX = pos.x;
+            double bottomLeftY = pos.y;
+            double bottomLeftZ = pos.z;
 
             xInput = maxU * w;
             yInput = maxV * h;
             calculateCurlPosition(xInput, yInput, theta, rho, A, pos);
-            double maxX = pos.x;
-            double maxY = pos.y;
-            double maxZ = -pos.z;
+            double bottomRightX = pos.x;
+            double bottomRightY = pos.y;
+            double bottomRightZ = pos.z;
             if(backFace) {
-                buffer.pos(minX, minY, minZ).tex(1f-minU, 1f-minV).endVertex();
-                buffer.pos(maxX, minY, maxZ).tex(1f-maxU, 1f-minV).endVertex();
-                buffer.pos(maxX, maxY, maxZ).tex(1f-maxU, 1f-maxV).endVertex();
-                buffer.pos(minX, maxY, minZ).tex(1f-minU, 1f-maxV).endVertex();
+                buffer.pos(topLeftX, topLeftY, topLeftZ).tex(1.0-minU, 1f-minV).endVertex();
+                buffer.pos(topRightX, topRightY, topRightZ).tex(1.0-maxU, 1f-minV).endVertex();
+                buffer.pos(bottomRightX, bottomRightY, bottomRightZ).tex(1.0-maxU, 1f-maxV).endVertex();
+                buffer.pos(bottomLeftX, bottomLeftY, bottomLeftZ).tex(1.0-minU, 1f-maxV).endVertex();
             } else {
-                buffer.pos(minX, maxY, minZ).tex(minU, 1f-maxV).endVertex();
-                buffer.pos(maxX, maxY, maxZ).tex(maxU, 1f-maxV).endVertex();
-                buffer.pos(maxX, minY, maxZ).tex(maxU, 1f-minV).endVertex();
-                buffer.pos(minX, minY, minZ).tex(minU, 1f-minV).endVertex();
+                buffer.pos(bottomLeftX, bottomLeftY, bottomLeftZ).tex(minU, 1f-maxV).endVertex();
+                buffer.pos(bottomRightX, bottomRightY, bottomRightZ).tex(maxU, 1f-maxV).endVertex();
+                buffer.pos(topRightX, topRightY, topRightZ).tex(maxU, 1f-minV).endVertex();
+                buffer.pos(topLeftX, topLeftY, topLeftZ).tex(minU, 1f-minV).endVertex();
             }
         }
         tessellator.draw();
@@ -256,16 +270,22 @@ public class GuiGuidebook extends GuiScreen {
 
     private void calculateCurlPosition(double xInput, double yInput, double theta, double rho, double A, Vector3d out) {
         double R = Math.sqrt(xInput * xInput + Math.pow(yInput - A, 2));
-        double r = R * Math.sin(theta);
-        double beta = Math.asin(xInput / R) / Math.sin(theta);
+        double cosTheta = Math.cos(theta);
+        double sinTheta = Math.sin(theta);
+        double r = R * sinTheta;
+        double beta = Math.asin(xInput / R) / sinTheta;
+        double cosBeta = Math.cos(beta);
+        double sinBeta = Math.sin(beta);
+        double cosRho = Math.cos(rho);
+        double sinRho = Math.sin(rho);
 
-        double outX = r * Math.sin(beta);
-        double outY = R + A - r * (1 - Math.cos(beta)) * Math.sin(beta);
-        double outZ = r * (1 - Math.cos(beta)) * Math.cos(theta);
+        double outX = r * sinBeta;
+        double outY = R + A - r * (1 - cosBeta) * sinBeta;
+        double outZ = r * (1 - Math.cos(beta)) * cosTheta;
 
-        double finalX = outX * Math.cos(rho) - outZ * Math.sin(rho);
+        double finalX = outX * cosRho - outZ * sinRho;
         double finalY = outY;
-        double finalZ = outX * Math.sin(rho) + outZ * Math.cos(rho);
+        double finalZ = outX * sinRho + outZ * cosRho;
 
         out.set(finalX, finalY, finalZ);
     }
@@ -326,7 +346,7 @@ public class GuiGuidebook extends GuiScreen {
         if(bookOpeness >= 1f)
             bookOpeness = 1f;
         if(flippingProgress < 1f) {
-            flippingProgress += 1f/20f*3f;
+            flippingProgress += 1f/20f*1f;
             if(flippingProgress >= 1f) { // flip done
                 if(flippingDirection > 0)
                     pageOnLeft = flippingPageBack;

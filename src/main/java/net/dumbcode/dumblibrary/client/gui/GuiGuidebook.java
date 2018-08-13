@@ -2,7 +2,9 @@ package net.dumbcode.dumblibrary.client.gui;
 
 import net.dumbcode.dumblibrary.server.guidebooks.Guidebook;
 import net.dumbcode.dumblibrary.server.guidebooks.GuidebookPage;
+import net.dumbcode.dumblibrary.server.guidebooks.elements.GuidebookElement;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.model.ModelBook;
 import net.minecraft.client.model.ModelRenderer;
 import net.minecraft.client.renderer.BufferBuilder;
@@ -17,6 +19,7 @@ import org.lwjgl.opengl.GL11;
 import javax.vecmath.Vector3d;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 public class GuiGuidebook extends GuiScreen {
 
@@ -103,7 +106,24 @@ public class GuiGuidebook extends GuiScreen {
             // flip page
             renderPage(true, 180f, flipAngle, flippingPageFront.getCompiledRenderTexture(bookData), flippingPageBack.getCompiledRenderTexture(bookData));
         }
+
         GuiHelper.cleanupModelRendering();
+
+        int pageTop = 55;
+        int bookMiddle = width/2;
+        int bookHeight = 175;
+        int bookWidth = 101;
+        int pageMouseY = (int) ((mouseY-pageTop) / (float)bookHeight * bookData.getAvailableHeight());
+        if(pageOnRight != null) {
+            int pageMouseX = (int) ((mouseX-bookMiddle) / (float)bookWidth * bookData.getPageWidth());
+            System.out.println(pageMouseX+" / "+pageMouseY);
+            Optional<GuidebookElement> hovered = pageOnRight.getElements().stream().filter(elem -> elem.isMouseOn(bookData, pageMouseX, pageMouseY)).findFirst();
+            if(hovered.isPresent()) {
+                if(hovered.get().getTooltipText() != null) {
+                    drawHoveringText(hovered.get().getTooltipText().getUnformattedText(), mouseX, mouseY);
+                }
+            }
+        }
     }
 
     private void renderBook(float angle) {
@@ -355,7 +375,7 @@ public class GuiGuidebook extends GuiScreen {
         if(bookOpeness >= 1f)
             bookOpeness = 1f;
         if(flippingProgress < 1f) {
-            flippingProgress += 1f/20f*1f;
+            flippingProgress += 1f/20f*2f;
             if(flippingProgress >= 1f) { // flip done
                 if(flippingDirection > 0)
                     pageOnLeft = flippingPageBack;

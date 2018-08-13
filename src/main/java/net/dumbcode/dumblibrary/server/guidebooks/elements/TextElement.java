@@ -83,6 +83,24 @@ public class TextElement extends GuidebookElement {
         return (int) ((lines.size() * (fontRenderer.FONT_HEIGHT) + (lines.size()-1) * LINE_SPACING) * scale);
     }
 
+    @Override
+    public int getLeftOffset(Guidebook guidebook) {
+        int w = getWidth(guidebook);
+        switch (alignment) {
+            case CENTERED:
+                return guidebook.getAvailableWidth()/2-w/2;
+            case RIGHT:
+                return guidebook.getAvailableWidth()-w;
+            default:
+                return 0;
+        }
+    }
+
+    @Override
+    public int getTopOffset(Guidebook guidebook) {
+        return 0;
+    }
+
     @SideOnly(Side.CLIENT)
     @Override
     public void render(Guidebook guidebook) {

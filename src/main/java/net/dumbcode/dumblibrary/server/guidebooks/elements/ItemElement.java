@@ -36,7 +36,7 @@ public class ItemElement extends GuidebookElement {
 
     @Override
     public void render(Guidebook guidebook) {
-        drawItemStack(stack, guidebook.getPageWidth()/2-getWidth(guidebook)/2, 0, null);
+        drawItemStack(stack, getLeftOffset(guidebook), 0, null);
     }
 
     private void drawItemStack(ItemStack stack, int x, int y, String altText) {
@@ -62,5 +62,15 @@ public class ItemElement extends GuidebookElement {
     public void writeToJSON(JsonObject destination, JsonSerializationContext context) {
         destination.addProperty("scale", scale);
         destination.addProperty("item", itemLocation.toString());
+    }
+
+    @Override
+    public int getLeftOffset(Guidebook guidebook) {
+        return guidebook.getPageWidth()/2-getWidth(guidebook)/2;
+    }
+
+    @Override
+    public int getTopOffset(Guidebook guidebook) {
+        return 0;
     }
 }

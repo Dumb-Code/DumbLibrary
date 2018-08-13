@@ -14,7 +14,8 @@
     {
       "type": "image",
       "location": "minecraft:textures/map/map_background.png",
-      "scale": 4
+      "scale": 4,
+      "tooltip": "Guidebooks even have tooltips!"
     },
     {
       "text": "By jglrxavpok :)",

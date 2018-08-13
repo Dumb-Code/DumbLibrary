@@ -71,6 +71,17 @@ public class ImageElement extends GuidebookElement {
     }
 
     @Override
+    public int getLeftOffset(Guidebook guidebook) {
+        int w = getWidth(guidebook);
+        return guidebook.getAvailableWidth()/2-w/2;
+    }
+
+    @Override
+    public int getTopOffset(Guidebook guidebook) {
+        return 0;
+    }
+
+    @Override
     public void render(Guidebook guidebook) {
         Minecraft.getMinecraft().getTextureManager().bindTexture(texture);
         Tessellator tessellator = Tessellator.getInstance();
@@ -78,7 +89,7 @@ public class ImageElement extends GuidebookElement {
         buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR);
         int w = getWidth(guidebook);
         int h = getHeight(guidebook);
-        int x = guidebook.getAvailableWidth()/2-w/2;
+        int x = getLeftOffset(guidebook);
         buffer.pos(x, h, 0).tex(0, 1).color(1f, 1f, 1f, 1f).endVertex();
         buffer.pos(x+w, h, 0).tex(1, 1).color(1f, 1f, 1f, 1f).endVertex();
         buffer.pos(x+w, 0, 0).tex(1, 0).color(1f, 1f, 1f, 1f).endVertex();

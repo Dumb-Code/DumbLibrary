@@ -3,12 +3,20 @@ package net.dumbcode.dumblibrary.server.guidebooks.elements;
 import com.google.gson.*;
 import lombok.Getter;
 import net.dumbcode.dumblibrary.server.guidebooks.Guidebook;
+import net.minecraft.util.text.TextComponentBase;
+import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
+import javax.annotation.Nullable;
 import java.lang.reflect.Type;
 
 public abstract class GuidebookElement {
+
+    @Nullable
+    @Getter
+    private TextComponentBase tooltipText;
 
     @SideOnly(Side.CLIENT)
     public abstract int getWidth(Guidebook guidebook);
@@ -21,7 +29,41 @@ public abstract class GuidebookElement {
     public abstract EnumGuidebookElement getElementType();
     public abstract void writeToJSON(JsonObject destination, JsonSerializationContext context);
 
-    public GuidebookElement(JsonObject source, JsonDeserializationContext context) {}
+    /**
+     * Returns the offset on the left relative to the page edge (used to know if the mouse is on the element)
+     * @param guidebook the guidebook in which the element is
+     * @return the offset on the left relative to the page edge
+     */
+    public abstract int getLeftOffset(Guidebook guidebook);
+    /**
+     * Returns the offset above relative to the page edge (used to know if the mouse is on the element)
+     * @param guidebook the guidebook in which the element is
+     * @return the offset above relative to the page edge
+     */
+    public abstract int getTopOffset(Guidebook guidebook);
+
+    public boolean isMouseOn(Guidebook guidebook, int pageMouseX, int pageMouseY) {
+        return pageMouseX >= getLeftOffset(guidebook) && pageMouseX < getLeftOffset(guidebook)+getWidth(guidebook)
+        && pageMouseY >= getTopOffset(guidebook) && pageMouseY < getTopOffset(guidebook)+getHeight(guidebook);
+    }
+
+    public GuidebookElement(JsonObject source, JsonDeserializationContext context) {
+        if(source != null) {
+            if(source.has("tooltip")) {
+                if(source.get("tooltip").isJsonObject()) {
+                    JsonObject tooltipObject = source.getAsJsonObject("tooltip");
+                    String text = tooltipObject.get("text").getAsString();
+                    if(tooltipObject.has("translation_marker") && tooltipObject.get("translation_marker").getAsBoolean()) {
+                        tooltipText = new TextComponentTranslation(text);
+                    } else {
+                        tooltipText = new TextComponentString(text);
+                    }
+                } else {
+                    tooltipText = new TextComponentString(source.get("tooltip").getAsString());
+                }
+            }
+        }
+    }
 
     public static enum EnumGuidebookElement {
         IMAGE, TEXT, ITEM;

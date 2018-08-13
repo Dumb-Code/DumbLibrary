@@ -4,7 +4,6 @@ import com.google.gson.annotations.Expose;
 import lombok.Getter;
 import lombok.Setter;
 import net.dumbcode.dumblibrary.server.guidebooks.elements.GuidebookElement;
-import net.dumbcode.dumblibrary.server.guidebooks.elements.ImageElement;
 import net.dumbcode.dumblibrary.server.guidebooks.elements.MissingPageElement;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
@@ -54,7 +53,7 @@ public class GuidebookPage {
         }
         GlStateManager.clear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 
-        render(guidebook);
+        compileAndRender(guidebook);
         Minecraft.getMinecraft().getFramebuffer().bindFramebuffer(true);
         // can't (because we are using its color texture) : framebuffer.deleteFramebuffer();
 
@@ -62,7 +61,7 @@ public class GuidebookPage {
     }
 
     @SideOnly(Side.CLIENT)
-    public void render(Guidebook guidebook) {
+    public void compileAndRender(Guidebook guidebook) {
         FloatBuffer projectionMatrix = BufferUtils.createFloatBuffer(16);
         FloatBuffer modelMatrix = BufferUtils.createFloatBuffer(16);
         projectionMatrix.rewind();
@@ -78,6 +77,7 @@ public class GuidebookPage {
 
         GlStateManager.pushMatrix();
         if(elements != null) {
+            int y = 0;
             for(GuidebookElement element : elements) {
                 GlStateManager.pushMatrix();
                 GlStateManager.enableBlend();
@@ -88,6 +88,7 @@ public class GuidebookPage {
                 element.render(guidebook);
                 GlStateManager.popMatrix();
                 int height = element.getHeight(guidebook);
+                y += height;
                 GlStateManager.translate(0f, height, 0f);
             }
         }

@@ -55,4 +55,14 @@ public class MissingPageElement extends GuidebookElement {
     public void writeToJSON(JsonObject destination, JsonSerializationContext context) {
 
     }
+
+    @Override
+    public int getLeftOffset(Guidebook guidebook) {
+        return 0;
+    }
+
+    @Override
+    public int getTopOffset(Guidebook guidebook) {
+        return 0;
+    }
 }

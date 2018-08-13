@@ -42,9 +42,9 @@ public abstract class GuidebookElement {
      */
     public abstract int getTopOffset(Guidebook guidebook);
 
-    public boolean isMouseOn(Guidebook guidebook, int pageMouseX, int pageMouseY) {
-        return pageMouseX >= getLeftOffset(guidebook) && pageMouseX < getLeftOffset(guidebook)+getWidth(guidebook)
-        && pageMouseY >= getTopOffset(guidebook) && pageMouseY < getTopOffset(guidebook)+getHeight(guidebook);
+    public boolean isMouseOn(Guidebook guidebook, int elementX, int elementY, int pageMouseX, int pageMouseY) {
+        return pageMouseX-elementX >= getLeftOffset(guidebook) && pageMouseX-elementX < getLeftOffset(guidebook)+getWidth(guidebook)
+        && pageMouseY-elementY >= getTopOffset(guidebook) && pageMouseY-elementY < getTopOffset(guidebook)+getHeight(guidebook);
     }
 
     public GuidebookElement(JsonObject source, JsonDeserializationContext context) {

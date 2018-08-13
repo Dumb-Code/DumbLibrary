@@ -38,7 +38,7 @@ public class ImageElement extends GuidebookElement {
             ITextureObject textureObj = Minecraft.getMinecraft().getTextureManager().getTexture(texture);
             GlStateManager.bindTexture(textureObj.getGlTextureId());
             textureWidth = GlStateManager.glGetInteger(GL11.GL_TEXTURE_WIDTH);
-            textureHeight = GlStateManager.glGetInteger(GL11.GL_TEXTURE_WIDTH);
+            textureHeight = GlStateManager.glGetInteger(GL11.GL_TEXTURE_HEIGHT);
             GlStateManager.bindTexture(previousTexture);
         }
     }

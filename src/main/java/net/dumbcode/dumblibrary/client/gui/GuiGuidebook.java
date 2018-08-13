@@ -1,5 +1,6 @@
 package net.dumbcode.dumblibrary.client.gui;
 
+import javafx.scene.transform.Scale;
 import net.dumbcode.dumblibrary.server.guidebooks.Guidebook;
 import net.dumbcode.dumblibrary.server.guidebooks.GuidebookPage;
 import net.dumbcode.dumblibrary.server.guidebooks.elements.GuidebookElement;
@@ -13,11 +14,16 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextComponentTranslation;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.input.Mouse;
+import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.util.glu.Project;
 
 import javax.vecmath.Vector3d;
 import java.io.IOException;
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.util.List;
 import java.util.Optional;
 
@@ -107,17 +113,42 @@ public class GuiGuidebook extends GuiScreen {
             renderPage(true, 180f, flipAngle, flippingPageFront.getCompiledRenderTexture(bookData), flippingPageBack.getCompiledRenderTexture(bookData));
         }
 
-        GuiHelper.cleanupModelRendering();
 
+        GlStateManager.pushMatrix();
+        GlStateManager.rotate(90f, 0f, 1f, 0f);
+        FloatBuffer projectionMatrix = BufferUtils.createFloatBuffer(16);
+        FloatBuffer modelviewMatrix = BufferUtils.createFloatBuffer(16);
+        GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, modelviewMatrix);
+        GL11.glGetFloat(GL11.GL_PROJECTION_MATRIX, projectionMatrix);
+        projectionMatrix.rewind();
+        modelviewMatrix.rewind();
+        IntBuffer viewport = BufferUtils.createIntBuffer(4);
+        viewport.put(0).put(0).put(Display.getWidth()).put(Display.getHeight());
+        viewport.flip();
+
+        FloatBuffer objPos = BufferUtils.createFloatBuffer(3);
+        Project.gluProject(5f/16f, 4f/16f, 0, modelviewMatrix, projectionMatrix, viewport, objPos);
+        int bookRight = (int) (objPos.get(0) / Display.getWidth() * width);
+        int bookTop = (int) (objPos.get(1) / Display.getHeight() * height);
+        Project.gluProject(-5f/16f, -4f/16f, 0, modelviewMatrix, projectionMatrix, viewport, objPos);
+        int bookLeft = (int) (objPos.get(0) / Display.getWidth() * width);
+        int bookBottom = (int) (objPos.get(1) / Display.getHeight() * height);
+
+        GlStateManager.popMatrix();
+
+        GuiHelper.cleanupModelRendering();
+        ScaledResolution res = new ScaledResolution(mc);
         int pageTop = 55;
-        int bookMiddle = width/2;
-        int bookHeight = 175;
-        int bookWidth = 101;
-        int pageMouseY = (int) ((mouseY-pageTop) / (float)bookHeight * bookData.getAvailableHeight());
+        int bookHeight = bookBottom-bookTop;
+        int bookMiddle = (bookRight+bookLeft)/2;
+        int pageRenderWidth = (bookRight-bookLeft)/2;
+        int pageMouseY = (int) ((mouseY-bookTop) / (float)bookHeight * bookData.getAvailableHeight());
         if(pageOnRight != null) {
-            int pageMouseX = (int) ((mouseX-bookMiddle) / (float)bookWidth * bookData.getPageWidth());
-            System.out.println(pageMouseX+" / "+pageMouseY);
-            Optional<GuidebookElement> hovered = pageOnRight.getElements().stream().filter(elem -> elem.isMouseOn(bookData, pageMouseX, pageMouseY)).findFirst();
+            int pageMouseX = (int) ((mouseX-bookMiddle) / (float)pageRenderWidth * bookData.getPageWidth());
+            //System.out.println(pageMouseX+" / "+pageMouseY);
+            drawHoveringText(pageRenderWidth+" / "+bookHeight, 0, 0);
+            drawHoveringText("test "+pageMouseX+" / "+pageMouseY, bookRight, bookTop);
+            Optional<GuidebookElement> hovered = pageOnRight.getHoveredElement(bookData, pageMouseX, pageMouseY);
             if(hovered.isPresent()) {
                 if(hovered.get().getTooltipText() != null) {
                     drawHoveringText(hovered.get().getTooltipText().getUnformattedText(), mouseX, mouseY);

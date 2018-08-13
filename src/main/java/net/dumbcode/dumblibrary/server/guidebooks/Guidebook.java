@@ -119,7 +119,7 @@ public class Guidebook extends IForgeRegistryEntry.Impl<Guidebook> {
     }
 
     public int getAvailableHeight() {
-        return (int) (getAvailableWidth() / getAspectRatio());
+        return (int) (getPageWidth() / getAspectRatio());
     }
 
     /**

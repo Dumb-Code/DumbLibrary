@@ -13,9 +13,9 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 
+import javax.vecmath.Vector2f;
 import java.nio.FloatBuffer;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 public class GuidebookPage {
 
@@ -34,6 +34,9 @@ public class GuidebookPage {
 
     @Expose(deserialize = false, serialize = false)
     private int compiledRenderTexture = -1;
+
+    @Expose(deserialize = false, serialize = false)
+    private Map<GuidebookElement, Vector2f> elementPositions = new HashMap<>();
 
     @SideOnly(Side.CLIENT)
     public int getCompiledRenderTexture(Guidebook guidebook) {
@@ -78,6 +81,7 @@ public class GuidebookPage {
         GlStateManager.pushMatrix();
         if(elements != null) {
             int y = 0;
+            elementPositions.clear();
             for(GuidebookElement element : elements) {
                 GlStateManager.pushMatrix();
                 GlStateManager.enableBlend();
@@ -87,6 +91,7 @@ public class GuidebookPage {
                 GlStateManager.disableLighting();
                 element.render(guidebook);
                 GlStateManager.popMatrix();
+                elementPositions.put(element, new Vector2f(guidebook.getPageMargins(), y));
                 int height = element.getHeight(guidebook);
                 y += height;
                 GlStateManager.translate(0f, height, 0f);
@@ -102,5 +107,14 @@ public class GuidebookPage {
         GlStateManager.loadIdentity();
         modelMatrix.rewind();
         GlStateManager.multMatrix(modelMatrix);
+    }
+
+    public Optional<GuidebookElement> getHoveredElement(Guidebook guidebook, int pageMouseX, int pageMouseY) {
+        return elements.stream().filter(elem -> {
+            Vector2f pos = elementPositions.get(elem);
+            int x = (int) pos.x;
+            int y = (int) pos.y;
+            return elem.isMouseOn(guidebook, x, y, pageMouseX, pageMouseY);
+        }).findFirst();
     }
 }

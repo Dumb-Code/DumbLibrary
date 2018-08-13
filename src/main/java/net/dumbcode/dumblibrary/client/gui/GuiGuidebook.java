@@ -224,28 +224,28 @@ public class GuiGuidebook extends GuiScreen {
 
             double xInput = minU * w;
             double yInput = minV * h;
-            calculateCurlPosition(xInput, yInput, theta, rho, A, pos);
+            getOrComputeCurlPosition(x, y, xInput, yInput, theta, rho, A, pos);
             double topLeftX = pos.x;
             double topLeftY = pos.y;
             double topLeftZ = pos.z;
 
             xInput = maxU * w;
             yInput = minV * h;
-            calculateCurlPosition(xInput, yInput, theta, rho, A, pos);
+            getOrComputeCurlPosition(x+1, y, xInput, yInput, theta, rho, A, pos);
             double topRightX = pos.x;
             double topRightY = pos.y;
             double topRightZ = pos.z;
 
             xInput = minU * w;
             yInput = maxV * h;
-            calculateCurlPosition(xInput, yInput, theta, rho, A, pos);
+            getOrComputeCurlPosition(x, y+1, xInput, yInput, theta, rho, A, pos);
             double bottomLeftX = pos.x;
             double bottomLeftY = pos.y;
             double bottomLeftZ = pos.z;
 
             xInput = maxU * w;
             yInput = maxV * h;
-            calculateCurlPosition(xInput, yInput, theta, rho, A, pos);
+            getOrComputeCurlPosition(x+1, y+1, xInput, yInput, theta, rho, A, pos);
             double bottomRightX = pos.x;
             double bottomRightY = pos.y;
             double bottomRightZ = pos.z;
@@ -266,6 +266,15 @@ public class GuiGuidebook extends GuiScreen {
 
     private double linear(double progress, double min, double max) {
         return progress * max + (1.0-progress) * min;
+    }
+
+    private void getOrComputeCurlPosition(int x, int y, double xInput, double yInput, double theta, double rho, double A, Vector3d out) {
+        int index = x+y*(columns+1);
+        if(positions[index] == null) {
+            calculateCurlPosition(xInput, yInput, theta, rho, A, out);
+            positions[index] = new Vector3d(out);
+        }
+        out.set(positions[index]);
     }
 
     private void calculateCurlPosition(double xInput, double yInput, double theta, double rho, double A, Vector3d out) {

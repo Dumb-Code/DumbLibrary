@@ -22,7 +22,7 @@ public class MissingPageElement extends GuidebookElement {
 
     @Override
     public int getWidth(Guidebook guidebook) {
-        return guidebook.getAvailableWidth();
+        return guidebook.getPageWidth();
     }
 
     @Override
@@ -38,7 +38,7 @@ public class MissingPageElement extends GuidebookElement {
         buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_COLOR);
         int w = getWidth(guidebook);
         int h = getHeight(guidebook);
-        int x = 0;
+        int x = -guidebook.getPageMargins();
         buffer.pos(x, h, 0).tex(0, 1).color(1f, 1f, 1f, 1f).endVertex();
         buffer.pos(x+w, h, 0).tex(1, 1).color(1f, 1f, 1f, 1f).endVertex();
         buffer.pos(x+w, 0, 0).tex(1, 0).color(1f, 1f, 1f, 1f).endVertex();

@@ -46,6 +46,8 @@ public class GuiGuidebook extends GuiScreen {
     private GuidebookPage flippingPageFront;
     private GuidebookPage flippingPageBack;
 
+    private FloatBuffer projectionMatrix = BufferUtils.createFloatBuffer(16);
+    private FloatBuffer modelviewMatrix = BufferUtils.createFloatBuffer(16);
     // curl parameters
     private int columns = 5*5;
     private int rows = 8*5;
@@ -117,8 +119,8 @@ public class GuiGuidebook extends GuiScreen {
 
         GlStateManager.pushMatrix();
         GlStateManager.rotate(90f, 0f, 1f, 0f);
-        FloatBuffer projectionMatrix = BufferUtils.createFloatBuffer(16);
-        FloatBuffer modelviewMatrix = BufferUtils.createFloatBuffer(16);
+        projectionMatrix.rewind();
+        modelviewMatrix.rewind();
         GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, modelviewMatrix);
         GL11.glGetFloat(GL11.GL_PROJECTION_MATRIX, projectionMatrix);
         projectionMatrix.rewind();
@@ -138,17 +140,12 @@ public class GuiGuidebook extends GuiScreen {
         GlStateManager.popMatrix();
 
         GuiHelper.cleanupModelRendering();
-        ScaledResolution res = new ScaledResolution(mc);
-        int pageTop = 55;
         int bookHeight = bookBottom-bookTop;
         int bookMiddle = (bookRight+bookLeft)/2;
         int pageRenderWidth = (bookRight-bookLeft)/2;
         int pageMouseY = (int) ((mouseY-bookTop) / (float)bookHeight * bookData.getAvailableHeight());
         if(pageOnRight != null) {
             int pageMouseX = (int) ((mouseX-bookMiddle) / (float)pageRenderWidth * bookData.getPageWidth());
-            //System.out.println(pageMouseX+" / "+pageMouseY);
-            drawHoveringText(pageRenderWidth+" / "+bookHeight, 0, 0);
-            drawHoveringText("test "+pageMouseX+" / "+pageMouseY, bookRight, bookTop);
             Optional<GuidebookElement> hovered = pageOnRight.getHoveredElement(bookData, pageMouseX, pageMouseY);
             if(hovered.isPresent()) {
                 if(hovered.get().getTooltipText() != null) {

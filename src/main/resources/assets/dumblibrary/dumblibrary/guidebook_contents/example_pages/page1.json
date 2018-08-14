@@ -4,12 +4,14 @@
       "text": "The first page!",
       "scale": 7,
       "alignment": "centered",
-      "color": "black"
+      "color": "black",
+      "tooltip": "Test tooltip"
     },
     {
       "type": "item",
       "scale": 5,
-      "item": "minecraft:nether_star"
+      "item": "minecraft:nether_star",
+      "tooltip": "Item tooltip"
     },
     {
       "type": "image",

@@ -149,4 +149,12 @@ public class Guidebook extends IForgeRegistryEntry.Impl<Guidebook> {
     public int hashCode() {
         return modContainer.hashCode();
     }
+
+    public void recompile() {
+        compilePages();
+        cover.recompile(this);
+        for(GuidebookPage page : compiledPages) {
+            page.recompile(this);
+        }
+    }
 }

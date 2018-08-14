@@ -26,12 +26,12 @@ public class ItemElement extends GuidebookElement {
 
     @Override
     public int getWidth(Guidebook guidebook) {
-        return (int)(32*scale);
+        return (int)(20*scale);
     }
 
     @Override
     public int getHeight(Guidebook guidebook) {
-        return (int)(32*scale);
+        return (int)(20*scale);
     }
 
     @Override
@@ -66,7 +66,7 @@ public class ItemElement extends GuidebookElement {
 
     @Override
     public int getLeftOffset(Guidebook guidebook) {
-        return guidebook.getPageWidth()/2-getWidth(guidebook)/2;
+        return (int) (guidebook.getPageWidth()/2-getWidth(guidebook)/2 - 5*scale);
     }
 
     @Override

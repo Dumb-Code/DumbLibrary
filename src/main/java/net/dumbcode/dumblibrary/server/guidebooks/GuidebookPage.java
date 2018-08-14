@@ -38,6 +38,15 @@ public class GuidebookPage {
     @Expose(deserialize = false, serialize = false)
     private Map<GuidebookElement, Vector2f> elementPositions = new HashMap<>();
 
+    @Expose(deserialize = false, serialize = false)
+    private FloatBuffer projectionMatrix = BufferUtils.createFloatBuffer(16);
+
+    @Expose(deserialize = false, serialize = false)
+    private FloatBuffer modelMatrix = BufferUtils.createFloatBuffer(16);
+
+    @Expose(deserialize = false, serialize = false)
+    private Framebuffer framebuffer;
+
     @SideOnly(Side.CLIENT)
     public int getCompiledRenderTexture(Guidebook guidebook) {
         if(compiledRenderTexture == -1)
@@ -47,7 +56,8 @@ public class GuidebookPage {
 
     @SideOnly(Side.CLIENT)
     public int compilePageRender(Guidebook guidebook) {
-        Framebuffer framebuffer = new Framebuffer(guidebook.getAvailableWidth(), guidebook.getAvailableHeight(), true);
+        if(framebuffer == null)
+            framebuffer = new Framebuffer(guidebook.getPageWidth(), guidebook.getAvailableHeight(), true);
         framebuffer.bindFramebuffer(true);
         if(isCoverPage) {
             GlStateManager.clearColor(1f, 1f, 1f, 0f);
@@ -65,8 +75,6 @@ public class GuidebookPage {
 
     @SideOnly(Side.CLIENT)
     public void compileAndRender(Guidebook guidebook) {
-        FloatBuffer projectionMatrix = BufferUtils.createFloatBuffer(16);
-        FloatBuffer modelMatrix = BufferUtils.createFloatBuffer(16);
         projectionMatrix.rewind();
         GlStateManager.getFloat(GL11.GL_PROJECTION_MATRIX, projectionMatrix);
         modelMatrix.rewind();
@@ -74,11 +82,12 @@ public class GuidebookPage {
 
         GlStateManager.matrixMode(GL11.GL_PROJECTION);
         GlStateManager.loadIdentity();
-        GlStateManager.ortho(0, guidebook.getAvailableWidth(), guidebook.getAvailableHeight(), 0, -1000f, 1000f);
+        GlStateManager.ortho(0, guidebook.getPageWidth(), guidebook.getAvailableHeight(), 0, -1000f, 1000f);
         GlStateManager.matrixMode(GL11.GL_MODELVIEW);
         GlStateManager.loadIdentity();
 
         GlStateManager.pushMatrix();
+        GlStateManager.translate(guidebook.getPageMargins(), 0f, 0f);
         if(elements != null) {
             int y = 0;
             elementPositions.clear();
@@ -116,5 +125,9 @@ public class GuidebookPage {
             int y = (int) pos.y;
             return elem.isMouseOn(guidebook, x, y, pageMouseX, pageMouseY);
         }).findFirst();
+    }
+
+    public void recompile(Guidebook guidebook) {
+        compiledRenderTexture = -1;
     }
 }

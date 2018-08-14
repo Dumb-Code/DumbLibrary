@@ -36,7 +36,7 @@ public class ImageElement extends GuidebookElement {
         if(textureWidth == -1 || textureHeight == -1) {
             int previousTexture = GlStateManager.glGetInteger(GL11.GL_TEXTURE_BINDING_2D);
             ITextureObject textureObj = Minecraft.getMinecraft().getTextureManager().getTexture(texture);
-            GlStateManager.bindTexture(textureObj.getGlTextureId());
+            GL11.glBindTexture(GL11.GL_TEXTURE_2D, textureObj.getGlTextureId());
             textureWidth = GlStateManager.glGetInteger(GL11.GL_TEXTURE_WIDTH);
             textureHeight = GlStateManager.glGetInteger(GL11.GL_TEXTURE_HEIGHT);
             GlStateManager.bindTexture(previousTexture);
@@ -53,7 +53,7 @@ public class ImageElement extends GuidebookElement {
             if(potentialHeight > guidebook.getAvailableHeight()) { // use max height
                 return guidebook.getAvailableHeight()/textureHeight;
             }
-            return (int) (attemptedScaling*textureWidth);
+            return attemptedScaling;
         }
         return scale;
     }

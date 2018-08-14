@@ -15,6 +15,7 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextComponentTranslation;
 import org.lwjgl.BufferUtils;
+import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
@@ -127,10 +128,10 @@ public class GuiGuidebook extends GuiScreen {
         viewport.flip();
 
         FloatBuffer objPos = BufferUtils.createFloatBuffer(3);
-        Project.gluProject(5f/16f, 4f/16f, 0, modelviewMatrix, projectionMatrix, viewport, objPos);
+        Project.gluProject(5f/16f, 4f/16f, 500, modelviewMatrix, projectionMatrix, viewport, objPos);
         int bookRight = (int) (objPos.get(0) / Display.getWidth() * width);
         int bookTop = (int) (objPos.get(1) / Display.getHeight() * height);
-        Project.gluProject(-5f/16f, -4f/16f, 0, modelviewMatrix, projectionMatrix, viewport, objPos);
+        Project.gluProject(-5f/16f, -4f/16f, 500, modelviewMatrix, projectionMatrix, viewport, objPos);
         int bookLeft = (int) (objPos.get(0) / Display.getWidth() * width);
         int bookBottom = (int) (objPos.get(1) / Display.getHeight() * height);
 
@@ -377,31 +378,24 @@ public class GuiGuidebook extends GuiScreen {
     public void handleMouseInput() throws IOException {
         super.handleMouseInput();
         int sign = -(int)Math.signum(Mouse.getDWheel());
-        if(sign != 0 && flippingProgress >= 1f) {
-            if(allPages.size() > pageOnLeftIndex+sign*2 && pageOnLeftIndex+sign*2 > 0) {
-                flippingProgress = 0f;
-                flippingDirection = sign;
-
-                pageOnLeftIndex += sign*2;
-                if(sign > 0) {
-                    flippingPageFront = pageOnRight;
-                    flippingPageBack = allPages.get(pageOnLeftIndex);
-                    if(pageOnLeftIndex+1 < allPages.size())
-                        pageOnRight = allPages.get(pageOnLeftIndex+1);
-                    else
-                        pageOnRight = null;
-                } else {
-                    flippingPageFront = allPages.get(pageOnLeftIndex+1);
-                    flippingPageBack = pageOnLeft;
-                    pageOnLeft = allPages.get(pageOnLeftIndex);
-                }
-            }
+        if(sign != 0) {
+            turnPage(sign);
         }
     }
 
     @Override
     public void updateScreen() {
         super.updateScreen();
+        if(Keyboard.isKeyDown(Keyboard.KEY_F3) && Keyboard.isKeyDown(Keyboard.KEY_R)) {
+            // recompile
+            bookData.recompile();
+        }
+
+        if(Keyboard.isKeyDown(Keyboard.KEY_LEFT)) {
+            turnPage(-1);
+        } else if(Keyboard.isKeyDown(Keyboard.KEY_RIGHT)) {
+            turnPage(1);
+        }
         bookOpeness += 1f/20f /2f;
         if(bookOpeness >= 1f)
             bookOpeness = 1f;
@@ -416,9 +410,43 @@ public class GuiGuidebook extends GuiScreen {
         }
     }
 
+    /**
+     * returns true if the page started being turned
+     * @param pageDiff
+     * @return
+     */
+    private boolean turnPage(int pageDiff) {
+        if(flippingProgress < 1f)
+            return false;
+        if(!(allPages.size() > pageOnLeftIndex+pageDiff*2 && pageOnLeftIndex+pageDiff*2 > 0)) {
+            return false;
+        }
+        flippingProgress = 0f;
+        flippingDirection = (int) Math.signum(pageDiff);
+
+        pageOnLeftIndex += pageDiff*2;
+        if(pageDiff > 0) {
+            flippingPageFront = pageOnRight;
+            flippingPageBack = allPages.get(pageOnLeftIndex);
+            if(pageOnLeftIndex+1 < allPages.size())
+                pageOnRight = allPages.get(pageOnLeftIndex+1);
+            else
+                pageOnRight = null;
+        } else {
+            flippingPageFront = allPages.get(pageOnLeftIndex+1);
+            flippingPageBack = pageOnLeft;
+            pageOnLeft = allPages.get(pageOnLeftIndex);
+        }
+        return true;
+    }
+
     @Override
     public boolean doesGuiPauseGame() {
         return false;
     }
 
+    @Override
+    public void handleKeyboardInput() throws IOException {
+        super.handleKeyboardInput();
+    }
 }

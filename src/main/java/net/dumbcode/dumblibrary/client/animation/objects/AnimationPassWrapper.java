@@ -1,8 +1,8 @@
 package net.dumbcode.dumblibrary.client.animation.objects;
 
 import lombok.val;
-import net.dumbcode.dumblibrary.server.entity.EntityAnimatable;
 import net.ilexiconn.llibrary.client.model.tabula.TabulaModel;
+import net.ilexiconn.llibrary.server.animation.IAnimatedEntity;
 
 import java.util.List;
 
@@ -10,7 +10,7 @@ import java.util.List;
  * The wrapper for the {@link AnimationPass}. Used to controll multiple {@link AnimationPass}s
  * @param <T> the entity type this is used for
  */
-public class AnimationPassWrapper<T extends EntityAnimatable> {
+public class AnimationPassWrapper<T extends IAnimatedEntity> {
     private List<AnimationPass<T>> entityList;
 
     /**

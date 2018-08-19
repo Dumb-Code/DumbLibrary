@@ -39,12 +39,6 @@ public class GuidebookPage {
     private Map<GuidebookElement, Vector2f> elementPositions = new HashMap<>();
 
     @Expose(deserialize = false, serialize = false)
-    private FloatBuffer projectionMatrix = BufferUtils.createFloatBuffer(16);
-
-    @Expose(deserialize = false, serialize = false)
-    private FloatBuffer modelMatrix = BufferUtils.createFloatBuffer(16);
-
-    @Expose(deserialize = false, serialize = false)
     private Framebuffer framebuffer;
 
     @SideOnly(Side.CLIENT)
@@ -75,18 +69,13 @@ public class GuidebookPage {
 
     @SideOnly(Side.CLIENT)
     public void compileAndRender(Guidebook guidebook) {
-        projectionMatrix.rewind();
-        GlStateManager.getFloat(GL11.GL_PROJECTION_MATRIX, projectionMatrix);
-        modelMatrix.rewind();
-        GlStateManager.getFloat(GL11.GL_MODELVIEW_MATRIX, modelMatrix);
-
         GlStateManager.matrixMode(GL11.GL_PROJECTION);
+        GlStateManager.pushMatrix();
         GlStateManager.loadIdentity();
         GlStateManager.ortho(0, guidebook.getPageWidth(), guidebook.getAvailableHeight(), 0, -1000f, 1000f);
         GlStateManager.matrixMode(GL11.GL_MODELVIEW);
-        GlStateManager.loadIdentity();
-
         GlStateManager.pushMatrix();
+        GlStateManager.loadIdentity();
         GlStateManager.translate(guidebook.getPageMargins(), 0f, 0f);
         if(elements != null) {
             int y = 0;
@@ -107,15 +96,8 @@ public class GuidebookPage {
             }
         }
         GlStateManager.popMatrix();
-
         GlStateManager.matrixMode(GL11.GL_PROJECTION);
-        GlStateManager.loadIdentity();
-        projectionMatrix.rewind();
-        GlStateManager.multMatrix(projectionMatrix);
-        GlStateManager.matrixMode(GL11.GL_MODELVIEW);
-        GlStateManager.loadIdentity();
-        modelMatrix.rewind();
-        GlStateManager.multMatrix(modelMatrix);
+        GlStateManager.popMatrix();
     }
 
     public Optional<GuidebookElement> getHoveredElement(Guidebook guidebook, int pageMouseX, int pageMouseY) {

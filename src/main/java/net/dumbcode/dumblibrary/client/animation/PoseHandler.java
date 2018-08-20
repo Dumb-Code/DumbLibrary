@@ -9,13 +9,12 @@ import lombok.Getter;
 import lombok.val;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.client.animation.objects.*;
-import net.dumbcode.dumblibrary.server.info.AnimationSystemInfo;
+import net.dumbcode.dumblibrary.server.entity.EntityAnimatable;
+import net.dumbcode.dumblibrary.server.entity.GrowthStage;
 import net.ilexiconn.llibrary.client.model.tabula.TabulaModel;
 import net.ilexiconn.llibrary.client.model.tools.AdvancedModelRenderer;
 import net.ilexiconn.llibrary.server.animation.Animation;
-import net.ilexiconn.llibrary.server.animation.IAnimatedEntity;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.EntityLiving;
 import net.minecraft.util.JsonUtils;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.FMLCommonHandler;
@@ -26,42 +25,41 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Function;
 
 /**
  * Handles all the poses for the animals. Stores information about what the pose should look like, along with how long it is.
  */
-public class PoseHandler<T extends EntityLiving & IAnimatedEntity, N extends Enum<N>> {
+public class PoseHandler {
 
     private static final Gson GSON = new GsonBuilder()
             .registerTypeAdapter(PoseObject.class, PoseObject.Deserializer.INSTANCE)
             .create();
 
-    private final Map<N, ModelInfomation> modelInfomationMap;
+    private final Map<GrowthStage, ModelInfomation> modelInfomationMap = new EnumMap<>(GrowthStage.class);
 
-    @Getter
-    private final AnimationSystemInfo<N, T> info;
-
-    PoseHandler(ResourceLocation regname, AnimationSystemInfo<N, T> info) {
-        this.info = info;
-        this.modelInfomationMap = Maps.newEnumMap(info.enumClazz());
+    /**
+     * @param regname The registry name used to look up all the models/jsons
+     * @param growthStages The acceptable growth stages. If the growth stage isnt in this list, it will default do {@link GrowthStage#ADULT}
+     * @param mainModelMap A map of all the main models, compared to the growth stages
+     * @param allAnimationNames A collection of all the animation names. These are case sensitive.
+     * @param animationGetter A function to get an animation from a string
+     */
+    PoseHandler(ResourceLocation regname, List<GrowthStage> growthStages, Map<GrowthStage, String> mainModelMap, Collection<String> allAnimationNames, Function<String, Animation> animationGetter) {
         //The base location of all the models
         String baseLoc = "models/entities/" + regname.getResourcePath() + "/";
 
-        for (N growth : info.allValues()) {
-            N reference = growth;
+        for (GrowthStage growth : GrowthStage.values()) {
+            GrowthStage reference = growth;
             //If the growth stage isnt supported, default to GrowthStage#ADULT
-            if(!info.allAcceptedStages().contains(growth)) {
-                reference = info.defaultStage();
+            if(!growthStages.contains(growth)) {
+                reference = GrowthStage.ADULT;
             }
-            ModelInfomation modelInfo;
+            ModelInfomation info;
             //If the model infomation is already collected for this growth stage, don't bother loading it all again, and just use the already created
             if(this.modelInfomationMap.containsKey(reference)) {
-                modelInfo = this.modelInfomationMap.get(reference);
+                info = this.modelInfomationMap.get(reference);
             } else {
                 try {
                     //Get the growth name, in lowercase
@@ -80,7 +78,7 @@ public class PoseHandler<T extends EntityLiving & IAnimatedEntity, N extends Enu
                         JsonObject poses = JsonUtils.getJsonObject(json, "poses");
                         Map<String, List<PoseObject>> map = Maps.newHashMap();
                         //Iterate through all the supplied animation names
-                        for (String animation : info.allAnimationNames()) {
+                        for (String animation : allAnimationNames) {
                             //If the poses object has a object called the "animation"
                             if(JsonUtils.hasField(poses, animation)) {
                                 //Get the Json Array thats referenced by the "animation"
@@ -113,7 +111,7 @@ public class PoseHandler<T extends EntityLiving & IAnimatedEntity, N extends Enu
                     //Iterate through the list of poses defined in the json file
                     for (val entry : rawData.getPoses().entrySet()) {
                         //Use the animationGetter to get the Animation from the string
-                        Animation animation = info.getAnimation(entry.getKey());
+                        Animation animation = animationGetter.apply(entry.getKey());
                         //Iterate through all the PoseObject in this pose
                         for (PoseObject pose : entry.getValue()) {
                             //Add a new PoseData to the animationMap
@@ -123,18 +121,18 @@ public class PoseHandler<T extends EntityLiving & IAnimatedEntity, N extends Enu
                     //If the side is client side, then load the actual pose data
                     if(FMLCommonHandler.instance().getSide() == Side.CLIENT) {
                         //Get the main model for this GrowthStage
-                        String location = Objects.requireNonNull(info.stageToModelMap().get(reference), "Could not find main model location for " + regname + " as it was not defined");
+                        String location = Objects.requireNonNull(mainModelMap.get(reference), "Could not find main model location for " + regname + " as it was not defined");
                         //load the client information
-                        modelInfo = loadClientInfomation(new ResourceLocation(regname.getResourceDomain(), growthDirectory + location), modelResources, animationMap);
+                        info = loadClientInfomation(new ResourceLocation(regname.getResourceDomain(), growthDirectory + location), modelResources, animationMap);
                     } else {
-                        modelInfo = new ModelInfomation(animationMap);
+                        info = new ModelInfomation(animationMap);
                     }
                 } catch (Exception e) {
                     DumbLibrary.getLogger().error("Unable to load poses stage " + reference + " for " + regname, e);
-                    modelInfo = new ModelInfomation();
+                    info = new ModelInfomation();
                 }
             }
-            this.modelInfomationMap.put(growth, modelInfo);
+            this.modelInfomationMap.put(growth, info);
         }
     }
 
@@ -253,17 +251,18 @@ public class PoseHandler<T extends EntityLiving & IAnimatedEntity, N extends Enu
      * @param model the model the animation pass wrapper would be applied to
      * @param defaultAnimation the default animation for the entity. Should be a idle animation, or something similar
      * @param animationInfoGetter a function to get the animation information from an animation
+     * @param growthStage the current growth state
      * @param useInertialTweens should inerial tweends be used
      * @param factories a list of {@link AnimationPassesFactory} (Note these should be Object::new)
      * @param <T> the entity type being used.
      * @return A new animation wrapper.
      */
     @SuppressWarnings("unchecked")
-    public <T extends IAnimatedEntity> AnimationPassWrapper<T> createAnimationWrapper(T entity, TabulaModel model, Animation defaultAnimation,
-                                                                                      Function<Animation, AnimationInfo> animationInfoGetter,
-                                                                                      N stage, boolean useInertialTweens,
-                                                                                      AnimationPassesFactory... factories) {
-        ModelInfomation modelInfo = this.modelInfomationMap.get(stage);
+    public <T extends EntityAnimatable> AnimationPassWrapper<T> createAnimationWrapper(T entity, TabulaModel model, Animation defaultAnimation,
+                                                                                       Function<Animation, AnimationInfo> animationInfoGetter,
+                                                                                       GrowthStage growthStage, boolean useInertialTweens,
+                                                                                       AnimationPassesFactory... factories) {
+        ModelInfomation modelInfo = this.modelInfomationMap.get(growthStage);
         List<AnimationPass<T>> list = Lists.newArrayList();
         for (val factory : factories) {
             list.add(factory.createWrapper(defaultAnimation, modelInfo.getAnimations(), modelInfo.getReferences(), animationInfoGetter, useInertialTweens));
@@ -273,7 +272,7 @@ public class PoseHandler<T extends EntityLiving & IAnimatedEntity, N extends Enu
     /**
      * Get all the animations for a growth stage
      */
-    private Map<Animation, List<PoseData>> getAnimations(N growthStage) {
+    private Map<Animation, List<PoseData>> getAnimations(GrowthStage growthStage) {
         return this.modelInfomationMap.get(growthStage).getAnimations();
     }
     /**
@@ -282,7 +281,7 @@ public class PoseHandler<T extends EntityLiving & IAnimatedEntity, N extends Enu
      * @param growthStage the growth stage of the entity
      * @return the length of the animation
      */
-    public float getAnimationLength(Animation animation, N growthStage) {
+    public float getAnimationLength(Animation animation, GrowthStage growthStage) {
         //Get the animation list
         Map<Animation, List<PoseData>> animations = this.getAnimations(growthStage);
         float duration = 0;
@@ -295,6 +294,16 @@ public class PoseHandler<T extends EntityLiving & IAnimatedEntity, N extends Enu
             }
         }
         return duration;
+    }
+
+    /**
+     * Information class to hold infomation about the model name, and the time it takes to complete
+     */
+    @Getter
+    @AllArgsConstructor
+    public class PoseData {
+        String modelName;
+        float time;
     }
 
     /**
@@ -322,6 +331,15 @@ public class PoseHandler<T extends EntityLiving & IAnimatedEntity, N extends Enu
      */
     public interface AnimationPassesFactory {
 
-        <T extends IAnimatedEntity> AnimationPass<T> createWrapper(Animation defaultAnimation, Map<Animation, List<PoseData>> animations, Map<String, Map<String, CubeReference>> poses, Function<Animation, AnimationInfo> animationInfoGetter, boolean useInertia);
+        /**
+         * Creates a new {@link AnimationPass}
+         * @param defaultAnimation the default animation for the entity. Should be a idle animation, or something similar
+         * @param animations The map of animations to all the PoseData
+         * @param poses The map of model names to a map of cube names to cube references. Used to get the position/rotation a cube should be in
+         * @param animationInfoGetter a function to get the animation information from an animation
+         * @param useInertia should inertia tweens be used
+         * @return A new {@link AnimationPass}
+         */
+        AnimationPass createWrapper(Animation defaultAnimation, Map<Animation, List<PoseData>> animations, Map<String, Map<String, CubeReference>> poses, Function<Animation, AnimationInfo> animationInfoGetter, boolean useInertia);
     }
 }

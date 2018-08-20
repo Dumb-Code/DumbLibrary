@@ -3,6 +3,7 @@ package net.dumbcode.dumblibrary.client.animation;
 import com.google.gson.Gson;
 import lombok.Cleanup;
 import lombok.experimental.UtilityClass;
+import net.dumbcode.dumblibrary.client.model.InfoTabulaModel;
 import net.ilexiconn.llibrary.client.model.tabula.ITabulaModelAnimator;
 import net.ilexiconn.llibrary.client.model.tabula.TabulaModel;
 import net.ilexiconn.llibrary.client.model.tabula.container.TabulaModelContainer;
@@ -35,7 +36,7 @@ public class TabulaUtils {
         }
         try {
             @Cleanup InputStream stream = Minecraft.getMinecraft().getResourceManager().getResource(location).getInputStream();
-            return new TabulaModel(new Gson().fromJson(new InputStreamReader(getModelJsonStream(stream)), TabulaModelContainer.class), animator);
+            return new InfoTabulaModel(new Gson().fromJson(new InputStreamReader(getModelJsonStream(stream)), TabulaModelContainer.class), animator);
         } catch (IOException e) {
             throw new IllegalArgumentException("Unable to load model " + location, e);
         }

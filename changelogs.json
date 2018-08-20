@@ -11,6 +11,9 @@
     ],
     "0.1.3": [
       "+ Added methods to locate model parts in local space"
+    ],
+    "0.1.4": [
+      "+ Added wrapper for TabulaModel to allow getting of cube dimensions"
     ]
   }
 }

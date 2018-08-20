@@ -15,9 +15,12 @@ public class InfoTabulaModel extends TabulaModel {
 
     public InfoTabulaModel(TabulaModelContainer container, ITabulaModelAnimator tabulaAnimator) {
         super(container, tabulaAnimator);
-        for (TabulaCubeContainer cube : container.getCubes()) {
-            dimensionMap.put(cube.getName(), cube.getDimensions());
-        }
+        container.getCubes().forEach(this::addCube);
+    }
+
+    private void addCube(TabulaCubeContainer cube) {
+        this.dimensionMap.put(cube.getName(), cube.getDimensions());
+        cube.getChildren().forEach(this::addCube);
     }
 
     public int[] getDimension(AdvancedModelRenderer cube) {

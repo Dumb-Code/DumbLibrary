@@ -98,8 +98,8 @@ public class ImageElement extends GuidebookElement {
     }
 
     @Override
-    public EnumGuidebookElement getElementType() {
-        return EnumGuidebookElement.IMAGE;
+    public String getElementType() {
+        return "image";
     }
 
     @Override

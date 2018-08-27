@@ -32,7 +32,6 @@ public class GuiGuidebook extends GuiScreen {
 
     private final Guidebook bookData;
     private final List<GuidebookPage> allPages;
-    private String titleText;
     private float bookOpeness = 0f;
 
     private ModelBook modelBook = new ModelBook();
@@ -67,15 +66,12 @@ public class GuiGuidebook extends GuiScreen {
     @Override
     public void initGui() {
         super.initGui();
-        titleText = new TextComponentTranslation(bookData.getTitleKey()).getUnformattedText();
     }
 
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         drawDefaultBackground();
         super.drawScreen(mouseX, mouseY, partialTicks);
-        fontRenderer.drawString(titleText, 0, 0, 0xFFF0F0F0);
-
 
         GuiHelper.prepareModelRendering(width/2, height/2+20, 350f, 0f, bookOpeness*90f);
         GlStateManager.disableLighting();

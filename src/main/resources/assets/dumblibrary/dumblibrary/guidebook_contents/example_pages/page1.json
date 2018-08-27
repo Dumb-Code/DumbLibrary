@@ -11,7 +11,11 @@
       "type": "item",
       "scale": 5,
       "item": "minecraft:nether_star",
-      "tooltip": "Item tooltip"
+      "tooltip": "Item tooltip",
+      "onclick": {
+        "function": "open_page",
+        "page": "page3"
+      }
     },
     {
       "type": "image",

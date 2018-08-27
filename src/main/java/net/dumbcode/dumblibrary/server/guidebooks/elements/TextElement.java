@@ -133,8 +133,8 @@ public class TextElement extends GuidebookElement {
     }
 
     @Override
-    public EnumGuidebookElement getElementType() {
-        return EnumGuidebookElement.TEXT;
+    public String getElementType() {
+        return "text";
     }
 
     @Override

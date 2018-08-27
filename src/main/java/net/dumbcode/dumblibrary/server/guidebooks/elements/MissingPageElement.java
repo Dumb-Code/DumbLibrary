@@ -47,8 +47,8 @@ public class MissingPageElement extends GuidebookElement {
     }
 
     @Override
-    public EnumGuidebookElement getElementType() {
-        return null;
+    public String getElementType() {
+        return "missing";
     }
 
     @Override

@@ -2,6 +2,7 @@ package net.dumbcode.dumblibrary;
 
 import net.dumbcode.dumblibrary.client.model.TransformTypeModelLoader;
 import net.dumbcode.dumblibrary.server.DumbGuiHandler;
+import net.dumbcode.dumblibrary.server.guidebooks.GuidebooksManager;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
@@ -26,6 +27,8 @@ public class DumbLibrary
         logger = event.getModLog();
         ModelLoaderRegistry.registerLoader(TransformTypeModelLoader.INSTANCE);
         NetworkRegistry.INSTANCE.registerGuiHandler(this, new DumbGuiHandler());
+
+        GuidebooksManager.createGuidebookFactories();
     }
 
     public static Logger getLogger() {

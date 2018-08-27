@@ -5,6 +5,9 @@ import com.google.gson.GsonBuilder;
 import lombok.experimental.UtilityClass;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.server.guidebooks.elements.GuidebookElement;
+import net.dumbcode.dumblibrary.server.guidebooks.elements.ImageElement;
+import net.dumbcode.dumblibrary.server.guidebooks.elements.ItemElement;
+import net.dumbcode.dumblibrary.server.guidebooks.elements.TextElement;
 import net.dumbcode.dumblibrary.server.json.JsonUtil;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
@@ -33,5 +36,11 @@ public class GuidebooksManager {
         builder.setPrettyPrinting();
         builder.registerTypeHierarchyAdapter(GuidebookElement.class, new GuidebookElement.JsonHandler());
         return builder;
+    }
+
+    public static void createGuidebookFactories() {
+        GuidebookElement.ELEMENT_FACTORIES.put(new ResourceLocation(DumbLibrary.MODID, "text"), TextElement::new);
+        GuidebookElement.ELEMENT_FACTORIES.put(new ResourceLocation(DumbLibrary.MODID, "image"), ImageElement::new);
+        GuidebookElement.ELEMENT_FACTORIES.put(new ResourceLocation(DumbLibrary.MODID, "item"), ItemElement::new);
     }
 }

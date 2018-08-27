@@ -54,8 +54,8 @@ public class ItemElement extends GuidebookElement {
     }
 
     @Override
-    public EnumGuidebookElement getElementType() {
-        return EnumGuidebookElement.ITEM;
+    public String getElementType() {
+        return "item";
     }
 
     @Override

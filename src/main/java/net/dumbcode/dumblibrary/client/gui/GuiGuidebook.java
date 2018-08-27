@@ -4,6 +4,7 @@ import javafx.scene.transform.Scale;
 import net.dumbcode.dumblibrary.server.guidebooks.Guidebook;
 import net.dumbcode.dumblibrary.server.guidebooks.GuidebookPage;
 import net.dumbcode.dumblibrary.server.guidebooks.elements.GuidebookElement;
+import net.dumbcode.dumblibrary.server.guidebooks.functions.GuidebookFunction;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.model.ModelBook;
@@ -52,6 +53,8 @@ public class GuiGuidebook extends GuiScreen {
     private int rows = 8*5;
     private Vector3d pos = new Vector3d();
     private Vector3d[] positions = new Vector3d[(rows+1)*(columns+1)];  // includes far edges
+    private int pageMouseX;
+    private int pageMouseY;
 
     public GuiGuidebook(Guidebook bookData) {
         this.bookData = bookData;
@@ -139,9 +142,9 @@ public class GuiGuidebook extends GuiScreen {
         int bookHeight = bookBottom-bookTop;
         int bookMiddle = (bookRight+bookLeft)/2;
         int pageRenderWidth = (bookRight-bookLeft)/2;
-        int pageMouseY = (int) ((mouseY-bookTop) / (float)bookHeight * bookData.getAvailableHeight());
-        if(pageOnRight != null) {
-            int pageMouseX = (int) ((mouseX-bookMiddle) / (float)pageRenderWidth * bookData.getPageWidth());
+        pageMouseY = (int) ((mouseY-bookTop) / (float)bookHeight * bookData.getAvailableHeight());
+        pageMouseX = (int) ((mouseX-bookMiddle) / (float)pageRenderWidth * bookData.getPageWidth());
+        if(pageOnRight != null) { // TODO: do it for both pages: indev only
             Optional<GuidebookElement> hovered = pageOnRight.getHoveredElement(bookData, pageMouseX, pageMouseY);
             if(hovered.isPresent()) {
                 if(hovered.get().getTooltipText() != null) {
@@ -213,6 +216,20 @@ public class GuiGuidebook extends GuiScreen {
                 tessellator.draw();
             }
             GlStateManager.popMatrix();
+        }
+    }
+
+    @Override
+    protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
+        super.mouseClicked(mouseX, mouseY, mouseButton);
+        if(mouseButton == 0) {
+            Optional<GuidebookElement> hovered = pageOnRight.getHoveredElement(bookData, pageMouseX, pageMouseY);
+            if(hovered.isPresent()) {
+                GuidebookFunction function = hovered.get().getOnClickFunction();
+                if(function != null) {
+                    function.onClick(this, pageMouseX, pageMouseY, mouseX, mouseY);
+                }
+            }
         }
     }
 
@@ -441,5 +458,9 @@ public class GuiGuidebook extends GuiScreen {
     @Override
     public void handleKeyboardInput() throws IOException {
         super.handleKeyboardInput();
+    }
+
+    public Guidebook getBook() {
+        return bookData;
     }
 }

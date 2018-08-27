@@ -4,6 +4,7 @@ import com.google.gson.*;
 import lombok.Getter;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.server.guidebooks.Guidebook;
+import net.dumbcode.dumblibrary.server.guidebooks.functions.GuidebookFunction;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextComponentBase;
@@ -26,6 +27,10 @@ public abstract class GuidebookElement {
 
     @Nullable
     @Getter
+    private GuidebookFunction onClickFunction;
+
+    @Nullable
+    @Getter
     private TextComponentBase tooltipText;
 
     public GuidebookElement(JsonObject source, JsonDeserializationContext context) {
@@ -44,7 +49,17 @@ public abstract class GuidebookElement {
                 }
             }
 
-            // TODO: click
+            if(source.has("onclick")) {
+                JsonObject onClickObject = source.getAsJsonObject("onclick");
+                String functionID = onClickObject.get("function").getAsString();
+                ResourceLocation functionLocation;
+                if(functionID.contains(":")) {
+                    functionLocation = new ResourceLocation(functionID);
+                } else {
+                    functionLocation = new ResourceLocation(DumbLibrary.MODID, functionID);
+                }
+                onClickFunction = GuidebookFunction.FUNCTION_FACTORIES.getOrDefault(functionLocation, GuidebookFunction.MISSING_FACTORY).create(this, onClickObject, context);
+            }
         }
     }
 
@@ -93,6 +108,8 @@ public abstract class GuidebookElement {
                 type = object.get("type").getAsString();
             else
                 type = "text";
+            if(type.contains(":"))
+                return GuidebookElement.ELEMENT_FACTORIES.getOrDefault(new ResourceLocation(type), MISSING_FACTORY).create(object, context);
             return GuidebookElement.ELEMENT_FACTORIES.getOrDefault(new ResourceLocation(DumbLibrary.MODID, type), MISSING_FACTORY).create(object, context);
         }
 

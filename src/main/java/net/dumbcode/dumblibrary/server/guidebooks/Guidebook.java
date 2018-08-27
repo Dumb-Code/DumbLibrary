@@ -26,7 +26,6 @@ public class Guidebook extends IForgeRegistryEntry.Impl<Guidebook> {
     public static final Guidebook MISSING = new Guidebook() {
         {
             setRegistryName(DumbLibrary.MODID,"missing");
-            setTitleKey("missing");
             setCover(GuidebookPage.MISSING_PAGE);
             setPageWidth(500);
         }
@@ -35,10 +34,6 @@ public class Guidebook extends IForgeRegistryEntry.Impl<Guidebook> {
     @Getter
     @Expose(deserialize = false, serialize = false)
     private final ModContainer modContainer;
-
-    @Getter
-    @Setter
-    private String titleKey;
 
     @Getter
     @Setter

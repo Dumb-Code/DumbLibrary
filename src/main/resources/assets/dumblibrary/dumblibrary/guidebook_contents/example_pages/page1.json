@@ -5,13 +5,17 @@
       "scale": 7,
       "alignment": "centered",
       "color": "black",
-      "tooltip": "Test tooltip"
+      "tooltip": "Clicking me won't have any effect! We already are on page1!",
+      "onclick": {
+        "function": "open_page",
+        "page": "page1"
+      }
     },
     {
       "type": "item",
       "scale": 5,
       "item": "minecraft:nether_star",
-      "tooltip": "Item tooltip",
+      "tooltip": "Click me to go on page 3!",
       "onclick": {
         "function": "open_page",
         "page": "page3"
@@ -21,13 +25,22 @@
       "type": "image",
       "location": "minecraft:textures/map/map_background.png",
       "scale": 4,
-      "tooltip": "Guidebooks even have tooltips!"
+      "tooltip": "Click me to go on page 2!",
+      "onclick": {
+        "function": "open_page",
+        "page": "page2"
+      }
     },
     {
       "text": "By jglrxavpok :)",
       "scale": 3,
       "alignment": "centered",
-      "color": "black"
+      "color": "black",
+      "tooltip": "Click me to run the following command: /summon minecraft:fireball ~ ~ ~ {ExplosionPower:50,direction:[0.0,0.0,0.0]}",
+      "onclick": {
+        "function": "run_command",
+        "command": "/summon minecraft:fireball ~ ~ ~ {ExplosionPower:50,direction:[0.0,0.0,0.0]}"
+      }
     }
   ]
 }

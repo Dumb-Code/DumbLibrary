@@ -463,4 +463,14 @@ public class GuiGuidebook extends GuiScreen {
     public Guidebook getBook() {
         return bookData;
     }
+
+    public void showPage(GuidebookPage page) {
+        int index = allPages.indexOf(page);
+        if(index < 0)
+            throw new IllegalArgumentException("The specified page is not in the book!");
+        if(index == pageOnLeftIndex || index == pageOnLeftIndex+1) // we might already be on the page
+            return;
+        int leftIndex = index;
+        turnPage((leftIndex - pageOnLeftIndex)/2);
+    }
 }

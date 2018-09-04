@@ -9,6 +9,16 @@
       "text": "Right aligned text! Again!",
       "scale": 2,
       "alignment": "right"
+    },
+    {
+      "type": "recipe",
+      "name": "minecraft:furnace",
+      "scale": 6
+    },
+    {
+      "type": "recipe",
+      "name": "minecraft:cake",
+      "scale": 6
     }
   ]
 }

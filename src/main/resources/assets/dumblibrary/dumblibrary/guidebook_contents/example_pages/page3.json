@@ -12,12 +12,12 @@
     },
     {
       "type": "recipe",
-      "name": "minecraft:furnace",
+      "name": "minecraft:sign",
       "scale": 6
     },
     {
       "type": "recipe",
-      "name": "minecraft:cake",
+      "name": "minecraft:bow",
       "scale": 6
     }
   ]

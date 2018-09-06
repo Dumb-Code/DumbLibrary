@@ -14,6 +14,7 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.TextComponentBase;
 import net.minecraft.util.text.TextComponentTranslation;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.input.Keyboard;
@@ -28,6 +29,7 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class GuiGuidebook extends GuiScreen {
 
@@ -147,9 +149,13 @@ public class GuiGuidebook extends GuiScreen {
         if(pageOnRight != null) { // TODO: do it for both pages: indev only
             Optional<GuidebookElement> hovered = pageOnRight.getHoveredElement(bookData, pageMouseX, pageMouseY);
             if(hovered.isPresent()) {
-                if(hovered.get().getTooltipText() != null) {
-                    drawHoveringText(hovered.get().getTooltipText().getUnformattedText(), mouseX, mouseY);
-                }
+                int componentX = (int)(pageMouseX-pageOnRight.getElementPositions().get(hovered.get()).x);
+                int componentY = (int)(pageMouseY-pageOnRight.getElementPositions().get(hovered.get()).y);
+                List<TextComponentBase> tooltip = hovered.get().getTooltipText(bookData, componentX, componentY);
+                List<String> lines = tooltip.stream()
+                        .map(TextComponentBase::getUnformattedText)
+                        .collect(Collectors.toList());
+                drawHoveringText(lines, mouseX, mouseY);
             }
         }
     }
@@ -400,6 +406,8 @@ public class GuiGuidebook extends GuiScreen {
             // recompile
             bookData.recompile();
         }
+
+        bookData.update();
 
         if(Keyboard.isKeyDown(Keyboard.KEY_LEFT)) {
             turnPage(-1);

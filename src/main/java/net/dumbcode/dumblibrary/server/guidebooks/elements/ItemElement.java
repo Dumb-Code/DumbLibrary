@@ -3,6 +3,7 @@ package net.dumbcode.dumblibrary.server.guidebooks.elements;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
+import net.dumbcode.dumblibrary.client.gui.GuiHelper;
 import net.dumbcode.dumblibrary.server.guidebooks.Guidebook;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
@@ -10,6 +11,7 @@ import net.minecraft.client.renderer.RenderItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.TextComponentString;
 
 public class ItemElement extends GuidebookElement {
 
@@ -22,6 +24,10 @@ public class ItemElement extends GuidebookElement {
         itemLocation = new ResourceLocation(source.get("item").getAsString());
         scale = source.get("scale").getAsDouble();
         stack = new ItemStack(Item.REGISTRY.getObject(itemLocation));
+
+        if(baseTooltip.isEmpty()) {
+            GuiHelper.getItemToolTip(stack).stream().map(TextComponentString::new).forEach(baseTooltip::add);
+        }
     }
 
     @Override

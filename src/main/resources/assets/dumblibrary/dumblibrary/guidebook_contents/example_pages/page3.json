@@ -13,12 +13,12 @@
     {
       "type": "recipe",
       "name": "minecraft:sign",
-      "scale": 6
+      "scale": 5
     },
     {
       "type": "recipe",
       "name": "minecraft:bow",
-      "scale": 6
+      "scale": 5
     }
   ]
 }

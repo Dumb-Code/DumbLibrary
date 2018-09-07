@@ -7,6 +7,8 @@ import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.client.gui.GuiHelper;
 import net.dumbcode.dumblibrary.server.guidebooks.Guidebook;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderItem;
 import net.minecraft.item.ItemStack;
@@ -25,6 +27,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class RecipeElement extends GuidebookElement {
+
+    public static final ResourceLocation GENERIC_54_GUI = new ResourceLocation("minecraft:textures/gui/container/generic_54.png");
     private final IRecipe recipe;
     private final int width;
     private final int height;
@@ -82,16 +86,17 @@ public class RecipeElement extends GuidebookElement {
 
     @Override
     public int getWidth(Guidebook guidebook) {
-        return (int) (scale * (width+1) *20);
+        return (int) (scale * (width+1) *18);
     }
 
     @Override
     public int getHeight(Guidebook guidebook) {
-        return (int) (scale * height *20);
+        return (int) (scale * height *18);
     }
 
     @Override
     public void render(Guidebook guidebook) {
+        GlStateManager.color(1f, 1f, 1f);
         Minecraft mc = Minecraft.getMinecraft();
         RenderItem renderItem = mc.getRenderItem();
         renderItem.zLevel = 500f;
@@ -99,25 +104,32 @@ public class RecipeElement extends GuidebookElement {
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 ItemStack[] validIngredients = stacks.get(x+y*width);
+                float xProgress = x/(float)width;
+                float yProgress = y/(float)height;
+                int renderX = (int) (getLeftOffset(guidebook) + xProgress * (getWidth(guidebook)-scale*16));
+                int renderY = (int) (getTopOffset(guidebook) + yProgress * getHeight(guidebook));
+                GlStateManager.pushMatrix();
+                GlStateManager.translate(renderX, renderY, 32.0F);
+                GlStateManager.scale(scale, scale, 1f);
+                mc.getTextureManager().bindTexture(GENERIC_54_GUI);
+                Gui.drawModalRectWithCustomSizedTexture(0, 0, 7, 17, 18, 18, 256f, 256f);
+
                 if(validIngredients.length > 0) {
-                    float xProgress = x/(float)width;
-                    float yProgress = y/(float)height;
-                    int renderX = (int) (getLeftOffset(guidebook) + xProgress * (getWidth(guidebook)-scale*20));
-                    int renderY = (int) (getTopOffset(guidebook) + yProgress * getHeight(guidebook));
-                    GlStateManager.pushMatrix();
-                    GlStateManager.translate(renderX, renderY, 32.0F);
-                    GlStateManager.scale(scale, scale, 1f);
+                    GlStateManager.translate(1f, 1f, 0f);
                     renderItem.renderItemIntoGUI(validIngredients[ingredientIndex % validIngredients.length], 0,0);
-                    GlStateManager.popMatrix();
                 }
+                GlStateManager.popMatrix();
             }
         }
 
         GlStateManager.enableLighting();
 
         GlStateManager.pushMatrix();
-        GlStateManager.translate(getLeftOffset(guidebook)+width*scale*20, getTopOffset(guidebook)+getHeight(guidebook)/2-scale*20/2, 32.0F);
+        GlStateManager.translate(getLeftOffset(guidebook)+(width+0.5)*scale*18, getTopOffset(guidebook)+getHeight(guidebook)/2-scale*16/2, 32.0F);
         GlStateManager.scale(scale, scale, 1f);
+        mc.getTextureManager().bindTexture(GENERIC_54_GUI);
+        Gui.drawModalRectWithCustomSizedTexture(0, 0, 7, 17, 18, 18, 256f, 256f);
+        GlStateManager.translate(1f, 1f, 0f);
         renderItem.renderItemIntoGUI(recipe.getRecipeOutput(), 0,0);
         GlStateManager.popMatrix();
         renderItem.zLevel = 0.0F;
@@ -134,19 +146,19 @@ public class RecipeElement extends GuidebookElement {
                 if(validIngredients.length > 0) {
                     float xProgress = x/(float)width;
                     float yProgress = y/(float)height;
-                    int renderX = (int) (getLeftOffset(guidebook) + xProgress * (getWidth(guidebook)-scale*20));
+                    int renderX = (int) (getLeftOffset(guidebook) + xProgress * (getWidth(guidebook)-scale*16));
                     int renderY = (int) (getTopOffset(guidebook) + yProgress * getHeight(guidebook));
-                    if(localX >= renderX && localX < renderX + scale*20
-                            && localY >= renderY && localY < renderY + scale*20) {
+                    if(localX >= renderX && localX < renderX + scale*16
+                            && localY >= renderY && localY < renderY + scale*16) {
                         return GuiHelper.getItemToolTip(validIngredients[ingredientIndex % validIngredients.length]).stream().map(TextComponentString::new).collect(Collectors.toList());
                     }
                 }
             }
         }
-        int renderX = (int) (getLeftOffset(guidebook)+width*scale*20);
-        int renderY = (int) (getTopOffset(guidebook)+getHeight(guidebook)/2-scale*20/2);
-        if(localX >= renderX && localX < renderX + scale*20
-                && localY >= renderY && localY < renderY + scale*20) {
+        int renderX = (int) (getLeftOffset(guidebook)+(width+0.5)*scale*18);
+        int renderY = (int) (getTopOffset(guidebook)+getHeight(guidebook)/2-scale*16/2);
+        if(localX >= renderX && localX < renderX + scale*16
+                && localY >= renderY && localY < renderY + scale*16) {
             return GuiHelper.getItemToolTip(recipe.getRecipeOutput()).stream().map(TextComponentString::new).collect(Collectors.toList());
         }
         return super.getTooltipText(guidebook, localX, localY);

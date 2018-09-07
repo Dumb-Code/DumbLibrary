@@ -16,9 +16,24 @@
       "scale": 5
     },
     {
+      "type": "gap",
+      "size": 20
+    },
+    {
       "type": "recipe",
       "name": "minecraft:bow",
       "scale": 5
+    },
+    {
+      "type": "gap",
+      "size": 10
+    },
+    {
+      "type": "recipe",
+      "name": "minecraft:cyan_wool",
+      "width": 2,
+      "height": 1,
+      "scale": 3
     }
   ]
 }

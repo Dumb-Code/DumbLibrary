@@ -8,7 +8,6 @@ import net.dumbcode.dumblibrary.client.gui.GuiHelper;
 import net.dumbcode.dumblibrary.server.guidebooks.Guidebook;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
-import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderItem;
 import net.minecraft.item.ItemStack;
@@ -19,9 +18,7 @@ import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextComponentBase;
 import net.minecraft.util.text.TextComponentString;
-import scala.actors.threadpool.Arrays;
 
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -146,8 +143,8 @@ public class RecipeElement extends GuidebookElement {
                 if(validIngredients.length > 0) {
                     float xProgress = x/(float)width;
                     float yProgress = y/(float)height;
-                    int renderX = (int) (getLeftOffset(guidebook) + xProgress * (getWidth(guidebook)-scale*16));
-                    int renderY = (int) (getTopOffset(guidebook) + yProgress * getHeight(guidebook));
+                    int renderX = (int) (getLeftOffset(guidebook) + xProgress * (getWidth(guidebook)-scale*16))+1;
+                    int renderY = (int) (getTopOffset(guidebook) + yProgress * getHeight(guidebook))+1;
                     if(localX >= renderX && localX < renderX + scale*16
                             && localY >= renderY && localY < renderY + scale*16) {
                         return GuiHelper.getItemToolTip(validIngredients[ingredientIndex % validIngredients.length]).stream().map(TextComponentString::new).collect(Collectors.toList());
@@ -157,8 +154,8 @@ public class RecipeElement extends GuidebookElement {
         }
         int renderX = (int) (getLeftOffset(guidebook)+(width+0.5)*scale*18);
         int renderY = (int) (getTopOffset(guidebook)+getHeight(guidebook)/2-scale*16/2);
-        if(localX >= renderX && localX < renderX + scale*16
-                && localY >= renderY && localY < renderY + scale*16) {
+        if(localX >= renderX && localX < renderX + scale*18
+                && localY >= renderY && localY < renderY + scale*18) {
             return GuiHelper.getItemToolTip(recipe.getRecipeOutput()).stream().map(TextComponentString::new).collect(Collectors.toList());
         }
         return super.getTooltipText(guidebook, localX, localY);

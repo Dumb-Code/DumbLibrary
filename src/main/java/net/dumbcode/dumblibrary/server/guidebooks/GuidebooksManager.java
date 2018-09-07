@@ -43,6 +43,7 @@ public class GuidebooksManager {
         GuidebookElement.ELEMENT_FACTORIES.put(new ResourceLocation(DumbLibrary.MODID, "image"), ImageElement::new);
         GuidebookElement.ELEMENT_FACTORIES.put(new ResourceLocation(DumbLibrary.MODID, "item"), ItemElement::new);
         GuidebookElement.ELEMENT_FACTORIES.put(new ResourceLocation(DumbLibrary.MODID, "recipe"), RecipeElement::new);
+        GuidebookElement.ELEMENT_FACTORIES.put(new ResourceLocation(DumbLibrary.MODID, "gap"), GapElement::new);
 
         GuidebookFunction.FUNCTION_FACTORIES.put(new ResourceLocation(DumbLibrary.MODID, "open_page"), (element, functionObject, context) -> new OpenPageFunction(functionObject.get("page").getAsString()));
         GuidebookFunction.FUNCTION_FACTORIES.put(new ResourceLocation(DumbLibrary.MODID, "run_command"), (element, functionObject, context) -> new RunCommandFunction(functionObject.get("command").getAsString()));

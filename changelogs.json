@@ -14,6 +14,12 @@
     ],
     "0.1.4": [
       "+ Added wrapper for TabulaModel to allow getting of cube dimensions"
+    ],
+    "0.1.5": [
+      "+ Added a dropdown box gui element"
+    ],
+    "0.1.6": [
+      "+ Improved dropdown box rendering and exposed more fields"
     ]
   }
 }

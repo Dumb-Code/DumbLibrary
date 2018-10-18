@@ -152,4 +152,8 @@ public class Guidebook extends IForgeRegistryEntry.Impl<Guidebook> {
             page.recompile(this);
         }
     }
+
+    public void update() {
+        getAllPages().values().forEach(GuidebookPage::update);
+    }
 }

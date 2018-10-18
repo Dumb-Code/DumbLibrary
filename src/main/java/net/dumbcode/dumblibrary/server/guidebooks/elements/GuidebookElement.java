@@ -5,12 +5,10 @@ import lombok.Getter;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.server.guidebooks.Guidebook;
 import net.dumbcode.dumblibrary.server.guidebooks.functions.GuidebookFunction;
-import net.minecraft.client.gui.Gui;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextComponentBase;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
-import net.minecraftforge.common.crafting.JsonContext;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -18,7 +16,7 @@ import javax.annotation.Nullable;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.function.BiFunction;
+import java.util.List;
 
 public abstract class GuidebookElement {
 
@@ -29,9 +27,7 @@ public abstract class GuidebookElement {
     @Getter
     private GuidebookFunction onClickFunction;
 
-    @Nullable
-    @Getter
-    private TextComponentBase tooltipText;
+    protected List<TextComponentBase> baseTooltip = new ArrayList<>();
 
     public GuidebookElement(JsonObject source, JsonDeserializationContext context) {
         if(source != null) {
@@ -40,12 +36,16 @@ public abstract class GuidebookElement {
                     JsonObject tooltipObject = source.getAsJsonObject("tooltip");
                     String text = tooltipObject.get("text").getAsString();
                     if(tooltipObject.has("translation_marker") && tooltipObject.get("translation_marker").getAsBoolean()) {
-                        tooltipText = new TextComponentTranslation(text);
+                        for(String t : text.split("\n")) {
+                            baseTooltip.add(new TextComponentTranslation(t));
+                        }
                     } else {
-                        tooltipText = new TextComponentString(text);
+                        for(String t : text.split("\n")) {
+                            baseTooltip.add(new TextComponentString(t));
+                        }
                     }
                 } else {
-                    tooltipText = new TextComponentString(source.get("tooltip").getAsString());
+                    baseTooltip.add(new TextComponentString(source.get("tooltip").getAsString()));
                 }
             }
 
@@ -61,6 +61,14 @@ public abstract class GuidebookElement {
                 onClickFunction = GuidebookFunction.FUNCTION_FACTORIES.getOrDefault(functionLocation, GuidebookFunction.MISSING_FACTORY).create(this, onClickObject, context);
             }
         }
+    }
+
+    public List<TextComponentBase> getTooltipText() {
+        return baseTooltip;
+    }
+
+    public List<TextComponentBase> getTooltipText(Guidebook guidebook, int localX, int localY) {
+        return getTooltipText();
     }
 
     @SideOnly(Side.CLIENT)
@@ -87,6 +95,12 @@ public abstract class GuidebookElement {
      * @return the offset above relative to the page edge
      */
     public abstract int getTopOffset(Guidebook guidebook);
+
+    public void update() {}
+
+    public boolean isAnimated() {
+        return false;
+    }
 
     public boolean isMouseOn(Guidebook guidebook, int elementX, int elementY, int pageMouseX, int pageMouseY) {
         return pageMouseX-elementX >= getLeftOffset(guidebook) && pageMouseX-elementX < getLeftOffset(guidebook)+getWidth(guidebook)

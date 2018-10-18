@@ -43,6 +43,9 @@ public class GuidebookPage {
 
     @SideOnly(Side.CLIENT)
     public int getCompiledRenderTexture(Guidebook guidebook) {
+        if(elements.stream().anyMatch(GuidebookElement::isAnimated)) {
+            compiledRenderTexture = -1;
+        }
         if(compiledRenderTexture == -1)
             compiledRenderTexture = compilePageRender(guidebook);
         return compiledRenderTexture;
@@ -69,6 +72,8 @@ public class GuidebookPage {
 
     @SideOnly(Side.CLIENT)
     public void compileAndRender(Guidebook guidebook) {
+        int mode = GL11.glGetInteger(GL11.GL_MATRIX_MODE);
+        GlStateManager.pushMatrix();
         GlStateManager.matrixMode(GL11.GL_PROJECTION);
         GlStateManager.pushMatrix();
         GlStateManager.loadIdentity();
@@ -98,6 +103,9 @@ public class GuidebookPage {
         GlStateManager.popMatrix();
         GlStateManager.matrixMode(GL11.GL_PROJECTION);
         GlStateManager.popMatrix();
+
+        GlStateManager.matrixMode(mode);
+        GlStateManager.popMatrix();
     }
 
     public Optional<GuidebookElement> getHoveredElement(Guidebook guidebook, int pageMouseX, int pageMouseY) {
@@ -111,5 +119,13 @@ public class GuidebookPage {
 
     public void recompile(Guidebook guidebook) {
         compiledRenderTexture = -1;
+    }
+
+    public Map<GuidebookElement, Vector2f> getElementPositions() {
+        return elementPositions;
+    }
+
+    public void update() {
+        elements.forEach(GuidebookElement::update);
     }
 }

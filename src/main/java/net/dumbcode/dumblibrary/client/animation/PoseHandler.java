@@ -160,8 +160,8 @@ public class PoseHandler {
                     innerMap.put(cube.getKey(), CubeReference.fromCube(cube.getValue()));
                 }
             } else {
-                //If the file ends with .tbl (The old way). Currently only the working way which is why its enforced. I need to check the integrity of the python script
-                if(modelResource.getFileName().endsWith(".tbl") || true) {
+                //If the file ends with .tbl (The old way)
+                if(modelResource.getFileName().endsWith(".tbl")) {
                     TabulaModel model;
                     try {
                         //Try and get the model at the specified location

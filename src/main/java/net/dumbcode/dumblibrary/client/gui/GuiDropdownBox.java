@@ -20,26 +20,26 @@ public class GuiDropdownBox {
 
     private static Minecraft mc = Minecraft.getMinecraft();
 
-    private static final float SCROLL_AMOUNT = 0.4F;
+    public static final float SCROLL_AMOUNT = 0.4F;
 
-    private final int width;
-    private final int cellHeight;
+    public final int width;
+    public final int cellHeight;
 
-    private final int cellMax;
+    public final int cellMax;
 
-    private final int xPos;
-    private final int yPos;
+    public final int xPos;
+    public final int yPos;
 
-    private boolean open;
-    private float scroll;
+    public boolean open;
+    public float scroll;
 
-    private String search = "";
+    public String search = "";
 
-    private SelectListEntry active;
+    public SelectListEntry active;
 
-    private final Supplier<List<? extends SelectListEntry>> listSupplier;
+    public final Supplier<List<? extends SelectListEntry>> listSupplier;
 
-    private int lastYClicked = -1;
+    public int lastYClicked = -1;
 
     public GuiDropdownBox(int xPos, int yPos, int width, int cellHeight, int cellMax, Supplier<List<? extends SelectListEntry>> listSupplier) {
         this.xPos = xPos;
@@ -304,7 +304,7 @@ public class GuiDropdownBox {
         this.active = active;
     }
 
-    interface SelectListEntry {
+    public interface SelectListEntry {
         void draw(int x, int y);
 
         String getSearch();

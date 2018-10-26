@@ -20,6 +20,9 @@
     ],
     "0.1.6": [
       "+ Improved dropdown box rendering and exposed more fields"
+    ],
+    "0.1.7": [
+      "+ More improvements to dropdown box rendering and handling"
     ]
   }
 }

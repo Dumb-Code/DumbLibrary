@@ -39,6 +39,7 @@ public class GuidebookPage {
     private Map<GuidebookElement, Vector2f> elementPositions = new HashMap<>();
 
     @Expose(deserialize = false, serialize = false)
+    @SideOnly(Side.CLIENT)
     private Framebuffer framebuffer;
 
     @SideOnly(Side.CLIENT)

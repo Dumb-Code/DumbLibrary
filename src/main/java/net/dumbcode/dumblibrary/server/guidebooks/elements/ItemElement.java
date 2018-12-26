@@ -12,6 +12,8 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.relauncher.Side;
 
 public class ItemElement extends GuidebookElement {
 
@@ -25,7 +27,7 @@ public class ItemElement extends GuidebookElement {
         scale = source.get("scale").getAsDouble();
         stack = new ItemStack(Item.REGISTRY.getObject(itemLocation));
 
-        if(baseTooltip.isEmpty()) {
+        if(baseTooltip.isEmpty() && FMLCommonHandler.instance().getSide() == Side.CLIENT) {
             GuiHelper.getItemToolTip(stack).stream().map(TextComponentString::new).forEach(baseTooltip::add);
         }
     }

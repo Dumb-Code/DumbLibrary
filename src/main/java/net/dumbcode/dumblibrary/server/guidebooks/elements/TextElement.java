@@ -13,6 +13,7 @@ import net.minecraft.item.EnumDyeColor;
 import net.minecraft.util.StringUtils;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -40,7 +41,7 @@ public class TextElement extends GuidebookElement {
             translatable = false;
             contents = text;
         }
-        if(source.has("color"))
+        if(source.has("color") && FMLCommonHandler.instance().getSide() == Side.CLIENT)
             color = resolveColor(source.get("color"));
         else
             color = 0xFF000000;

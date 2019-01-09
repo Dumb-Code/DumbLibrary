@@ -5,13 +5,11 @@ import lombok.Getter;
 import lombok.val;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.client.animation.objects.EntityAnimator;
-import net.dumbcode.dumblibrary.server.entity.GrowthStage;
+import net.dumbcode.dumblibrary.server.info.AnimationSystemInfo;
 import net.ilexiconn.llibrary.client.model.tabula.TabulaModel;
 import net.ilexiconn.llibrary.server.animation.Animation;
 import net.minecraft.util.ResourceLocation;
 
-import java.util.Collection;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
@@ -20,38 +18,23 @@ import java.util.function.Function;
  * The model container. Contains the models and the pose handler
  */
 @Getter
-public class ModelContainer {
-    private final Map<GrowthStage, TabulaModel> modelMap = Maps.newEnumMap(GrowthStage.class);
+public class ModelContainer<E extends Enum<E>> {
+    private final Map<E, TabulaModel> modelMap;
     private final PoseHandler poseHandler;
 
-    /**
-     * @param regname The registry name used to look up all the models/jsons
-     * @param growthStages The acceptable growth stages. If the growth stage isnt in this list, it will default do {@link GrowthStage#ADULT}
-     * @param mainModelMap A map of all the main models, compared to the growth stages
-     * @param allAnimationNames A collection of all the animation names. These are case sensitive.
-     * @param factory The Animation Factory, used to create the EntityAnimator
-     * @param animationGetter A function to get an animation from a string
-     * @param defaultAnimation the default animation for the entity. Should be a idle animation, or something similar
-     * @param animationInfoGetter a function to get the animation information from an animation
-     * @param factories a list of {@link PoseHandler.AnimationPassesFactory} (Note these should be Object::new)
-     */
-    public ModelContainer(ResourceLocation regname, List<GrowthStage> growthStages, Map<GrowthStage, String> mainModelMap,
-                          Collection<String> allAnimationNames, AnimatorFactory factory,
-                          Function<String, Animation> animationGetter,
-                          Animation defaultAnimation, Function<Animation, AnimationInfo> animationInfoGetter,
-                          PoseHandler.AnimationPassesFactory... factories) {
-
+    public ModelContainer(ResourceLocation regname, AnimationSystemInfo<E, ?> info) {
+        this.modelMap = Maps.newEnumMap(info.enumClazz());
         //Create the pose handler
-        this.poseHandler = new PoseHandler(regname, growthStages, mainModelMap, allAnimationNames, animationGetter);
+        this.poseHandler = new PoseHandler(regname, info);
         //Iterate through all the entries from the mainModel map
-        for (val entry : mainModelMap.entrySet()) {
+        for (val entry : info.stageToModelMap().entrySet()) {
             //Get the GrowthStage from the entry
-            GrowthStage growth = entry.getKey();
+            E growth = entry.getKey();
             //Create a referenced GrowthStage, as the actual growth stage may differ
-            GrowthStage referneced = growth;
+            E referneced = growth;
             //If the growth stage is not supported, default the the ADULT growth stage
-            if(!growthStages.contains(growth)) {
-                referneced = GrowthStage.ADULT;
+            if(!info.allAcceptedStages().contains(growth)) {
+                referneced = info.defaultStage();
             }
             TabulaModel model;
             //If the model is already created, instead of loading it all again, simply use the previously loaded model
@@ -59,7 +42,7 @@ public class ModelContainer {
                 model = this.modelMap.get(referneced);
             } else {
                 //Get the name of the model
-                String mainModelName = mainModelMap.get(referneced);
+                String mainModelName = info.stageToModelMap().get(referneced);
                 //Make sure the model name isnt null
                 if(mainModelName == null) {
                     DumbLibrary.getLogger().error("Unable to load model for growth stage {} as main model was not defined", referneced.name());
@@ -70,7 +53,7 @@ public class ModelContainer {
                     ResourceLocation modelName = new ResourceLocation(regname.getResourceDomain(), "models/entities/" + regname.getResourcePath() + "/" + referneced.name().toLowerCase(Locale.ROOT) + "/" + mainModelName);
                     try {
                         //Try and load the model, and also try to load the EntityAnimator (factory.createAnimator)
-                        model = TabulaUtils.getModel(modelName, factory.createAnimator(this.poseHandler, defaultAnimation, animationInfoGetter, factories));
+                        model = TabulaUtils.getModel(modelName, info.createAnimator(this.poseHandler, info.defaultAnimation(), info::getAnimationInfo, info.createFactories()));
                     } catch (Exception e) {
                         //If for whatever reason theres an error while loading the tabula model, log the error and set the model to null
                         DumbLibrary.getLogger().error("Unable to load model: " + modelName.toString(), e);

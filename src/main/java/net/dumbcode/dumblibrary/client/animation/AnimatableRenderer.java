@@ -1,6 +1,8 @@
 package net.dumbcode.dumblibrary.client.animation;
 
-import net.dumbcode.dumblibrary.server.entity.EntityAnimatable;
+import lombok.val;
+import net.dumbcode.dumblibrary.server.info.AnimationSystemInfo;
+import net.ilexiconn.llibrary.server.animation.IAnimatedEntity;
 import net.minecraft.client.renderer.entity.RenderLiving;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.EntityLiving;
@@ -13,25 +15,22 @@ import java.util.function.Function;
  * The Renderer class to use for the animations to work.
  * @param <T> The entity class
  */
-public class AnimatableRenderer<T extends EntityLiving & EntityAnimatable> extends RenderLiving<T> {
+public class AnimatableRenderer<T extends EntityLiving & IAnimatedEntity, N extends Enum<N>> extends RenderLiving<T> {
 
-    private final Function<T, ModelContainer> modelContainerGetter;
-    private final Function<T, ResourceLocation> textureGetter;
+    private final Function<T, AnimationSystemInfo<N, T>> animationSystemInfoGetter;
 
     /**
      * @param renderManagerIn The RenderManager
-     * @param modelContainerGetter A function to get the tabula model from the entity + growth stage.
-     * @param textureGetter A function to get the texture that should be used to render the dinosaur with
      */
-    public AnimatableRenderer(RenderManager renderManagerIn, Function<T, ModelContainer> modelContainerGetter, Function<T, ResourceLocation> textureGetter) {
+    public AnimatableRenderer(RenderManager renderManagerIn, Function<T, AnimationSystemInfo<N, T>> animationSystemInfoGetter) {
         super(renderManagerIn, null, 1f);
-        this.modelContainerGetter = modelContainerGetter;
-        this.textureGetter = textureGetter;
+        this.animationSystemInfoGetter = animationSystemInfoGetter;
     }
 
     @Override
     public void doRender(T entity, double x, double y, double z, float entityYaw, float partialTicks) {
-        this.mainModel = this.modelContainerGetter.apply(entity).getModelMap().get(entity.getGrowthStage());
+        val info = this.animationSystemInfoGetter.apply(entity);
+        this.mainModel = info.getModelContainer(entity).getModelMap().get(info.getStageFromEntity(entity));
         if(this.mainModel == null) {
             this.mainModel = ModelMissing.INSTANCE;
         }
@@ -41,7 +40,6 @@ public class AnimatableRenderer<T extends EntityLiving & EntityAnimatable> exten
     @Nullable
     @Override
     protected ResourceLocation getEntityTexture(T entity) {
-        return textureGetter.apply(entity);
+        return this.animationSystemInfoGetter.apply(entity).getTexture(entity);
     }
 }
-

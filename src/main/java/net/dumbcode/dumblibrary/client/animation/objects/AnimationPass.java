@@ -3,10 +3,10 @@ package net.dumbcode.dumblibrary.client.animation.objects;
 import com.google.common.collect.Maps;
 import net.dumbcode.dumblibrary.client.animation.AnimationInfo;
 import net.dumbcode.dumblibrary.client.animation.PoseHandler;
-import net.dumbcode.dumblibrary.server.entity.EntityAnimatable;
 import net.ilexiconn.llibrary.client.model.tabula.TabulaModel;
 import net.ilexiconn.llibrary.client.model.tools.AdvancedModelRenderer;
 import net.ilexiconn.llibrary.server.animation.Animation;
+import net.ilexiconn.llibrary.server.animation.IAnimatedEntity;
 
 import javax.vecmath.Vector3f;
 import java.util.List;
@@ -17,9 +17,9 @@ import java.util.function.Function;
  * The Animation Pass. Directly animates the entity.
  * @param <T> the entity type
  */
-public class AnimationPass<T extends EntityAnimatable> {
+public class AnimationPass<T extends IAnimatedEntity> {
 
-    protected final Map<Animation,List<PoseHandler.PoseData>> animations;
+    protected final Map<Animation,List<PoseData>> animations;
     protected final Map<String, Map<String, CubeReference>> poses;
     protected final boolean useInertia;
 
@@ -58,7 +58,7 @@ public class AnimationPass<T extends EntityAnimatable> {
      * @param animationInfoGetter a function to get the animation information from an animation
      * @param useInertia should inertia tweens be used
      */
-    public AnimationPass(Animation defaultAnimation, Map<Animation, List<PoseHandler.PoseData>> animations, Map<String, Map<String, CubeReference>> poses, Function<Animation, AnimationInfo> animationInfoGetter, boolean useInertia) {
+    public AnimationPass(Animation defaultAnimation, Map<Animation, List<PoseData>> animations, Map<String, Map<String, CubeReference>> poses, Function<Animation, AnimationInfo> animationInfoGetter, boolean useInertia) {
         this.defaultAnimation = defaultAnimation;
         this.animations = animations;
         this.poses = poses;
@@ -79,7 +79,7 @@ public class AnimationPass<T extends EntityAnimatable> {
     }
 
     private void initPoseModel() {
-        List<PoseHandler.PoseData> pose = this.animations.get(this.animation);
+        List<PoseData> pose = this.animations.get(this.animation);
         if (pose != null) {
             this.poseCount = pose.size();
             this.poseIndex = 0;
@@ -221,7 +221,7 @@ public class AnimationPass<T extends EntityAnimatable> {
     }
 
     private void startAnimation(T entity) {
-        List<PoseHandler.PoseData> pose = this.animations.get(this.animation);
+        List<PoseData> pose = this.animations.get(this.animation);
         if (pose != null) {
             String model = this.getModelData().getModelName();
             this.setCurrentPose(this.poses.get(model));
@@ -293,7 +293,7 @@ public class AnimationPass<T extends EntityAnimatable> {
         return true;
     }
 
-    private PoseHandler.PoseData getModelData() {
+    private PoseData getModelData() {
         return this.animations.get(this.animation).get(this.poseIndex);
     }
 

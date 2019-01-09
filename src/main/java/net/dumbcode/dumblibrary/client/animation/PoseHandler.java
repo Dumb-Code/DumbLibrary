@@ -16,6 +16,7 @@ import net.ilexiconn.llibrary.server.animation.Animation;
 import net.ilexiconn.llibrary.server.animation.IAnimatedEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.EntityLiving;
+import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.JsonUtils;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.FMLCommonHandler;
@@ -35,7 +36,7 @@ import java.util.function.Function;
 /**
  * Handles all the poses for the animals. Stores information about what the pose should look like, along with how long it is.
  */
-public class PoseHandler<T extends EntityLiving & IAnimatedEntity, N extends Enum<N>> {
+public class PoseHandler<T extends EntityLiving & IAnimatedEntity, N extends IStringSerializable> {
 
     private static final Gson GSON = new GsonBuilder()
             .registerTypeAdapter(PoseObject.class, PoseObject.Deserializer.INSTANCE)
@@ -48,7 +49,7 @@ public class PoseHandler<T extends EntityLiving & IAnimatedEntity, N extends Enu
 
     PoseHandler(ResourceLocation regname, AnimationSystemInfo<N, T> info) {
         this.info = info;
-        this.modelInfomationMap = Maps.newEnumMap(info.enumClazz());
+        this.modelInfomationMap = Maps.newHashMap();
         //The base location of all the models
         String baseLoc = "models/entities/" + regname.getResourcePath() + "/";
 
@@ -65,7 +66,7 @@ public class PoseHandler<T extends EntityLiving & IAnimatedEntity, N extends Enu
             } else {
                 try {
                     //Get the growth name, in lowercase
-                    String growthName = reference.name().toLowerCase(Locale.ROOT);
+                    String growthName = reference.getName().toLowerCase(Locale.ROOT);
                     //get the directory the of all the files
                     String growthDirectory = baseLoc + growthName + "/";
                     DinosaurAnimationInfomation rawData;

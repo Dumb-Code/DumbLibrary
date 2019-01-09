@@ -6,6 +6,7 @@ import net.ilexiconn.llibrary.server.animation.IAnimatedEntity;
 import net.minecraft.client.renderer.entity.RenderLiving;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.EntityLiving;
+import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.ResourceLocation;
 
 import javax.annotation.Nullable;
@@ -15,7 +16,7 @@ import java.util.function.Function;
  * The Renderer class to use for the animations to work.
  * @param <T> The entity class
  */
-public class AnimatableRenderer<T extends EntityLiving & IAnimatedEntity, N extends Enum<N>> extends RenderLiving<T> {
+public class AnimatableRenderer<T extends EntityLiving & IAnimatedEntity, N extends IStringSerializable> extends RenderLiving<T> {
 
     private final Function<T, AnimationSystemInfo<N, T>> animationSystemInfoGetter;
 

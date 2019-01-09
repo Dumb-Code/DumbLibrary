@@ -8,6 +8,7 @@ import net.dumbcode.dumblibrary.client.animation.objects.EntityAnimator;
 import net.dumbcode.dumblibrary.server.info.AnimationSystemInfo;
 import net.ilexiconn.llibrary.client.model.tabula.TabulaModel;
 import net.ilexiconn.llibrary.server.animation.Animation;
+import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.ResourceLocation;
 
 import java.util.Locale;
@@ -18,12 +19,12 @@ import java.util.function.Function;
  * The model container. Contains the models and the pose handler
  */
 @Getter
-public class ModelContainer<E extends Enum<E>> {
+public class ModelContainer<E extends IStringSerializable> {
     private final Map<E, TabulaModel> modelMap;
     private final PoseHandler poseHandler;
 
     public ModelContainer(ResourceLocation regname, AnimationSystemInfo<E, ?> info) {
-        this.modelMap = Maps.newEnumMap(info.enumClazz());
+        this.modelMap = Maps.newHashMap();
         //Create the pose handler
         this.poseHandler = new PoseHandler(regname, info);
         //Iterate through all the entries from the mainModel map
@@ -45,12 +46,12 @@ public class ModelContainer<E extends Enum<E>> {
                 String mainModelName = info.stageToModelMap().get(referneced);
                 //Make sure the model name isnt null
                 if(mainModelName == null) {
-                    DumbLibrary.getLogger().error("Unable to load model for growth stage {} as main model was not defined", referneced.name());
+                    DumbLibrary.getLogger().error("Unable to load model for growth stage {} as main model was not defined", referneced.getName());
                     //If the name is null, set the model to null and continue
                     model = null;
                 } else {
                     //Get the resource location of where the model is,
-                    ResourceLocation modelName = new ResourceLocation(regname.getResourceDomain(), "models/entities/" + regname.getResourcePath() + "/" + referneced.name().toLowerCase(Locale.ROOT) + "/" + mainModelName);
+                    ResourceLocation modelName = new ResourceLocation(regname.getResourceDomain(), "models/entities/" + regname.getResourcePath() + "/" + referneced.getName().toLowerCase(Locale.ROOT) + "/" + mainModelName);
                     try {
                         //Try and load the model, and also try to load the EntityAnimator (factory.createAnimator)
                         model = TabulaUtils.getModel(modelName, info.createAnimator(this.poseHandler, info.defaultAnimation(), info::getAnimationInfo, info.createFactories()));

@@ -7,6 +7,7 @@ import net.dumbcode.dumblibrary.client.animation.objects.EntityAnimator;
 import net.ilexiconn.llibrary.server.animation.Animation;
 import net.ilexiconn.llibrary.server.animation.IAnimatedEntity;
 import net.minecraft.entity.EntityLiving;
+import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.ResourceLocation;
 
 import java.util.Collection;
@@ -14,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-public interface AnimationSystemInfo<N extends Enum<N>, E extends EntityLiving & IAnimatedEntity> {
+public interface AnimationSystemInfo<N extends IStringSerializable, E extends EntityLiving & IAnimatedEntity> {
 
     Class<N> enumClazz();
     N defaultStage();

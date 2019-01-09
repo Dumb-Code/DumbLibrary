@@ -22,14 +22,14 @@ public class ModelInfomation {
     /**
      * A map of the list of model datas to use in per animation
      */
-    private Map<Animation, List<PoseData>> animations;
+    private Map<Animation, List<PoseHandler.PoseData>> animations;
 
     public ModelInfomation() {
         this(null);
     }
 
     @SideOnly(Side.CLIENT)
-    public ModelInfomation(Map<String, Map<String, CubeReference>> cuboids, Map<Animation,List<PoseData>> animations) {
+    public ModelInfomation(Map<String, Map<String, CubeReference>> cuboids, Map<Animation,List<PoseHandler.PoseData>> animations) {
         this(animations);
 
         if (cuboids == null) {
@@ -39,7 +39,7 @@ public class ModelInfomation {
         this.references = cuboids;
     }
 
-    public ModelInfomation(Map<Animation, List<PoseData>> animations) {
+    public ModelInfomation(Map<Animation, List<PoseHandler.PoseData>> animations) {
         if (animations == null) {
             animations = new LinkedHashMap<>();
         }
@@ -59,7 +59,7 @@ public class ModelInfomation {
      * @see ModelInfomation#animations
      * @return the map of animations to list of pose data
      */
-    public Map<Animation, List<PoseData>> getAnimations() {
+    public Map<Animation, List<PoseHandler.PoseData>> getAnimations() {
         return animations;
     }
 }

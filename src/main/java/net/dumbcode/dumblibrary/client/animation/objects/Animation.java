@@ -2,7 +2,6 @@ package net.dumbcode.dumblibrary.client.animation.objects;
 
 import com.google.common.collect.Lists;
 import lombok.Data;
-import lombok.Getter;
 import lombok.experimental.Accessors;
 
 import java.util.List;
@@ -11,12 +10,14 @@ import java.util.List;
 public class Animation {
     @Accessors(fluent = true) private final boolean hold;
     @Accessors(fluent = true) private final boolean inertia;
+    private final String identifier;
 
     private final List<PoseData> poseData = Lists.newArrayList();
 
-    public Animation(boolean hold, boolean inertia) {
+    public Animation(boolean hold, boolean inertia, String identifier) {
         this.hold = hold;
         this.inertia = inertia;
+        this.identifier = identifier;
     }
 
     public void populateList(List<PoseData> dataList) {

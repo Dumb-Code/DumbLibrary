@@ -20,7 +20,7 @@ public interface AnimationSystemInfo<N extends IStringSerializable, E extends En
     N[] allValues();
     Map<N, String> stageToModelMap();
     Collection<String> allAnimationNames();
-    EntityAnimator createAnimator(PoseHandler poseHandler, Animation defaultAnimation, PoseHandler.AnimationLayerFactory... factories);
+    EntityAnimator<E, N> createAnimator(PoseHandler<E, N> poseHandler);
     Animation getAnimation(String animation);
     Animation defaultAnimation();
     PoseHandler.AnimationLayerFactory[] createFactories();

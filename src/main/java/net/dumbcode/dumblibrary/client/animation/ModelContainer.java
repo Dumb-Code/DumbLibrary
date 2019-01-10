@@ -26,9 +26,9 @@ public class ModelContainer<E extends IStringSerializable> {
         this.poseHandler = new PoseHandler<>(regname, info);
         //Iterate through all the entries from the mainModel map
         for (val entry : info.stageToModelMap().entrySet()) {
-            //Get the GrowthStage from the entry
+            //Get the ModelStage from the entry
             E growth = entry.getKey();
-            //Create a referenced GrowthStage, as the actual growth stage may differ
+            //Create a referenced ModelStage, as the actual growth stage may differ
             E referneced = growth;
             //If the growth stage is not supported, default the the ADULT growth stage
             if(!info.allAcceptedStages().contains(growth)) {
@@ -51,7 +51,7 @@ public class ModelContainer<E extends IStringSerializable> {
                     ResourceLocation modelName = new ResourceLocation(regname.getResourceDomain(), "models/entities/" + regname.getResourcePath() + "/" + referneced.getName().toLowerCase(Locale.ROOT) + "/" + mainModelName);
                     try {
                         //Try and load the model, and also try to load the EntityAnimator (factory.createAnimator)
-                        model = TabulaUtils.getModel(modelName, info.createAnimator(this.poseHandler, info.defaultAnimation(), info.createFactories()));
+                        model = TabulaUtils.getModel(modelName, info.createAnimator(this.poseHandler));
                     } catch (Exception e) {
                         //If for whatever reason theres an error while loading the tabula model, log the error and set the model to null
                         DumbLibrary.getLogger().error("Unable to load model: " + modelName.toString(), e);
@@ -59,7 +59,7 @@ public class ModelContainer<E extends IStringSerializable> {
                     }
                 }
             }
-            //Put the model in the map, with the unchanged GrowthStage as the key
+            //Put the model in the map, with the unchanged ModelStage as the key
             this.modelMap.put(growth, model);
         }
     }

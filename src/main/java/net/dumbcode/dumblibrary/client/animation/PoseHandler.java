@@ -54,7 +54,7 @@ public class PoseHandler<T extends EntityLiving & AnimatedEntity, N extends IStr
 
         for (N growth : info.allValues()) {
             N reference = growth;
-            //If the growth stage isnt supported, default to GrowthStage#ADULT
+            //If the growth stage isnt supported, default to ModelStage#ADULT
             if (!info.allAcceptedStages().contains(growth)) {
                 reference = info.defaultStage();
             }
@@ -117,7 +117,7 @@ public class PoseHandler<T extends EntityLiving & AnimatedEntity, N extends IStr
                     }
                     //If the side is client side, then load the actual pose data
                     if (FMLCommonHandler.instance().getSide() == Side.CLIENT) {
-                        //Get the main model for this GrowthStage
+                        //Get the main model for this ModelStage
                         String location = Objects.requireNonNull(info.stageToModelMap().get(reference), "Could not find main model location for " + regname + " as it was not defined");
                         //load the client information
                         modelInfo = loadClientInfomation(new ResourceLocation(regname.getResourceDomain(), growthDirectory + location), modelResources, animationMap);

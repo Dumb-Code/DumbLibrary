@@ -7,6 +7,7 @@ import lombok.*;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.client.animation.objects.*;
 import net.dumbcode.dumblibrary.server.info.AnimationSystemInfo;
+import net.dumbcode.dumblibrary.server.info.AnimationSystemInfoRegistry;
 import net.dumbcode.dumblibrary.server.utils.DefaultHashMap;
 import net.ilexiconn.llibrary.client.model.tabula.TabulaModel;
 import net.ilexiconn.llibrary.client.model.tools.AdvancedModelRenderer;
@@ -47,6 +48,9 @@ public class PoseHandler<T extends EntityLiving & AnimatedEntity, N extends IStr
     private final AnimationSystemInfo<N, T> info;
 
     PoseHandler(ResourceLocation regname, AnimationSystemInfo<N, T> info) {
+
+        AnimationSystemInfoRegistry.NAMESPACE.put(info.identifier(), info);
+
         this.info = info;
         this.modelInfomationMap = Maps.newHashMap();
         //The base location of all the models
@@ -81,12 +85,15 @@ public class PoseHandler<T extends EntityLiving & AnimatedEntity, N extends IStr
                         Map<String, List<PoseData>> map = Maps.newHashMap();
                         //Iterate through all the supplied animation names
                         for (String animation : info.allAnimationNames()) {
-                            //If the poses object has a object called the "animation"
-                            if (JsonUtils.hasField(poses, animation)) {
-                                //Get the Json Array thats referenced by the "animation"
-                                for (JsonElement pose : JsonUtils.getJsonArray(poses, animation)) {
-                                    //For the every object within the Json Array, deserialize it to a PoseData, and add it to the list
-                                    map.computeIfAbsent(animation, a -> Lists.newArrayList()).add(GSON.fromJson(pose, PoseData.class));
+                            //If the poses object has a object called the "animation". Can be fully upper case or fully lowercase
+                            for (String ani : Lists.newArrayList(animation.toLowerCase(), animation.toUpperCase())) {
+                                if (JsonUtils.hasField(poses, ani)) {
+                                    //Get the Json Array thats referenced by the "animation"
+                                    for (JsonElement pose : JsonUtils.getJsonArray(poses, ani)) {
+                                        //For the every object within the Json Array, deserialize it to a PoseData, and add it to the list
+                                        map.computeIfAbsent(animation, a -> Lists.newArrayList()).add(GSON.fromJson(pose, PoseData.class));
+                                    }
+                                    break;
                                 }
                             }
                         }
@@ -155,7 +162,6 @@ public class PoseHandler<T extends EntityLiving & AnimatedEntity, N extends IStr
                 continue;
             }
             Map<String, CubeReference> innerMap = Maps.newHashMap();
-            data.getCubes().putAll(innerMap);
             map.put(modelResource.getFileName(), innerMap);
             //Get the location of the model that represents the pose, and that we're going to generate the data for
             ResourceLocation location = new ResourceLocation(mainModelLocation.getResourceDomain(), modelResource.getFullLocation());
@@ -166,7 +172,7 @@ public class PoseHandler<T extends EntityLiving & AnimatedEntity, N extends IStr
                 }
             } else {
                 //If the file ends with .tbl (The old way). Currently only the working way which is why its enforced. I need to check the integrity of the python script
-                if (modelResource.getFileName().endsWith(".tbl")) {
+                if (modelResource.getFileName().endsWith(".tbl") || true) {
                     TabulaModel model;
                     try {
                         //Try and get the model at the specified location
@@ -246,6 +252,7 @@ public class PoseHandler<T extends EntityLiving & AnimatedEntity, N extends IStr
                     }
                 }
             }
+            data.getCubes().putAll(innerMap);
         }
         return new ModelInfomation(map, animations);
     }
@@ -268,7 +275,7 @@ public class PoseHandler<T extends EntityLiving & AnimatedEntity, N extends IStr
         ModelInfomation modelInfo = this.modelInfomationMap.get(stage);
         List<AnimationLayer<T>> list = Lists.newArrayList();
         for (val factory : factories) {
-            list.add(factory.createWrapper(entity, model, new DefaultHashMap<String, AnimationRunWrapper.CubeWrapper>(AnimationRunWrapper.CubeWrapper::new)::get, defaultAnimation, inertia));
+            list.add(factory.createWrapper(entity, model, new DefaultHashMap<String, AnimationRunWrapper.CubeWrapper>(AnimationRunWrapper.CubeWrapper::new)::getOrPut, defaultAnimation, inertia));
         }
         return new AnimationRunWrapper(entity, list);
     }

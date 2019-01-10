@@ -12,6 +12,15 @@ public class DefaultHashMap<K,V> extends HashMap<K,V> {
     }
     @Override
     public V get(Object k) {
-        return containsKey(k) ? super.get(k) : this.defaultValue.get();
+        return this.containsKey(k) ? super.get(k) : this.defaultValue.get();
+    }
+
+    public V getOrPut(K k) {
+        if(this.containsKey(k)) {
+            return this.get(k);
+        }
+        V v = this.defaultValue.get();
+        this.put(k, v);
+        return v;
     }
 }

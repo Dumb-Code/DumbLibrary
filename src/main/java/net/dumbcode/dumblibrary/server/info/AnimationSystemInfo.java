@@ -25,7 +25,9 @@ public interface AnimationSystemInfo<N extends IStringSerializable, E extends En
     Animation defaultAnimation();
     PoseHandler.AnimationLayerFactory[] createFactories();
 
-    ModelContainer<N> getModelContainer(E entity);
+    ModelContainer<E, N> getModelContainer(E entity);
     N getStageFromEntity(E entity);
     ResourceLocation getTexture(E entity);
+
+    ResourceLocation identifier();
 }

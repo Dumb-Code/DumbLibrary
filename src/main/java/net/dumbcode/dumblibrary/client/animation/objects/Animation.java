@@ -3,6 +3,7 @@ package net.dumbcode.dumblibrary.client.animation.objects;
 import com.google.common.collect.Lists;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import net.minecraft.util.ResourceLocation;
 
 import java.util.List;
 

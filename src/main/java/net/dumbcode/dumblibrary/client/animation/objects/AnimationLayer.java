@@ -9,6 +9,7 @@ import net.ilexiconn.llibrary.client.model.tools.AdvancedModelRenderer;
 import net.minecraft.util.math.MathHelper;
 
 import javax.vecmath.Vector3f;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Stack;
@@ -20,10 +21,10 @@ public class AnimationLayer<T extends AnimatedEntity> {
 
     private final T entity;
     private final TabulaModel model;
-    private final AnimationWrap defaultWrap;
     @Setter(AccessLevel.NONE)
     private AnimationWrap currentWrap;
     private final Function<String, AnimationRunWrapper.CubeWrapper> cuberef;
+    private final List<String> cubeNames = Lists.newArrayList();
 
     private final boolean inertia;
 
@@ -31,17 +32,19 @@ public class AnimationLayer<T extends AnimatedEntity> {
         this.entity = entity;
         this.model = model;
         this.cuberef = cuberef;
-        this.currentWrap = this.defaultWrap = new AnimationWrap(defaultAnimation, 0);
+        this.currentWrap = new AnimationWrap(defaultAnimation, 0);
         this.inertia = inertia;
+
+        this.cubeNames.addAll(model.getCubes().keySet());
     }
 
     public void animate(float age) {
         if (this.canAnimate()) {
             Animation animation = this.getAnimation();
-            if (this.currentWrap.invalidated) {
-                this.currentWrap = this.defaultWrap;
-            } else if (animation != this.currentWrap.animation) {
+            if (animation != this.currentWrap.animation) {
                 this.setAnimation(animation, age);
+            } else if (this.currentWrap.invalidated) {
+                this.setAnimation(this.entity.getInfo().defaultAnimation(), age);
             }
             this.currentWrap.tick(age);
         }
@@ -53,6 +56,29 @@ public class AnimationLayer<T extends AnimatedEntity> {
 
 
     public void setAnimation(Animation animation, float age) {
+        if (animation.getPoseData().isEmpty()) {
+            animation = this.entity.getInfo().defaultAnimation();
+        }
+        for (String name : this.cubeNames) {
+            AnimationRunWrapper.CubeWrapper cube = this.cuberef.apply(name);
+
+            float ci = this.currentWrap.ci;
+
+            Vector3f cr = cube.getRotation();
+            Vector3f pr = cube.getPrevRotation();
+
+            Vector3f cp = cube.getPosition();
+            Vector3f pp = cube.getPosition();
+
+            pr.x += (cr.x - pr.x) * ci;
+            pr.y += (cr.y - pr.y) * ci;
+            pr.z += (cr.z - pr.z) * ci;
+
+            pp.x += (cp.x - pp.x) * ci;
+            pp.y += (cp.y - pp.y) * ci;
+            pp.z += (cp.z - pp.z) * ci;
+
+        }
         this.currentWrap = new AnimationWrap(animation, age);
     }
 
@@ -76,8 +102,8 @@ public class AnimationLayer<T extends AnimatedEntity> {
             this.entityAge = age;
             this.animation = animation;
             this.poseStack.addAll(Lists.reverse(animation.getPoseData()));
-            this.maxTicks = this.poseStack.pop().getTime();
-            this.setCubeWrapper();
+            this.maxTicks = this.poseStack.peek().getTime();
+            this.incrementVecs();
         }
 
         public void tick(float age) {
@@ -88,31 +114,30 @@ public class AnimationLayer<T extends AnimatedEntity> {
             float perc = this.tick / this.maxTicks;
             this.ci = MathHelper.clamp(AnimationLayer.this.inertia && this.animation.inertia() ? (float) (Math.sin(Math.PI * (perc - 0.5D)) * 0.5D + 0.5D) : perc, 0, 1);
 
-            for (String partName : this.poseStack.peek().getCubes().keySet()) {
+            for (String partName : AnimationLayer.this.cubeNames) {
                 AnimationRunWrapper.CubeWrapper cube = Objects.requireNonNull(AnimationLayer.this.cuberef.apply(partName));
                 AdvancedModelRenderer part = AnimationLayer.this.model.getCube(partName);
 
                 Vector3f cr = cube.getRotation();
                 Vector3f pr = cube.getPrevRotation();
-                part.rotateAngleX += cr.x * this.ci + pr.x;
-                part.rotateAngleY += cr.y * this.ci + pr.y;
-                part.rotateAngleZ += cr.z * this.ci + pr.z;
+                part.rotateAngleX = pr.x + (cr.x - pr.x) * this.ci;
+                part.rotateAngleY = pr.y + (cr.y - pr.y) * this.ci;
+                part.rotateAngleZ = pr.z + (cr.z - pr.z) * this.ci;
 
 
                 Vector3f cp = cube.getPosition();
-                Vector3f pp = cube.getPosition();
+                Vector3f pp = cube.getPrevPosition();
 
-                part.rotationPointX += (cp.x * this.ci + pp.x);
-                part.rotationPointY += (cp.y * this.ci + pp.y);
-                part.rotationPointZ += (cp.z * this.ci + pp.z);
+                part.rotationPointX = pp.x + (cp.x - pp.x) * this.ci;
+                part.rotationPointY = pp.y + (cp.y - pp.y) * this.ci;
+                part.rotationPointZ = pp.z + (cp.z - pp.z) * this.ci;
 
             }
-            this.tick += age - this.entityAge;
+            this.tick += (age - this.entityAge);
 
             if (this.tick >= this.maxTicks) {
                 if (!this.animation.hold() || this.poseStack.size() > 1) {
                     this.poseStack.pop();
-                    this.setPrevious();
                     if (this.poseStack.isEmpty()) {
                         if (this.animation.hold()) {
                             this.poseStack.addAll(Lists.reverse(this.animation.getPoseData()));
@@ -123,10 +148,41 @@ public class AnimationLayer<T extends AnimatedEntity> {
                     if (!this.invalidated) {
                         this.tick = 0;
                         this.maxTicks = this.poseStack.peek().getTime();
+//                        this.setPrevious();
+
+                        this.incrementVecs();
                     }
                 }
             }
             this.entityAge = age;
+        }
+
+        private void incrementVecs() {
+            for (Map.Entry<String, CubeReference> entry : this.poseStack.peek().getCubes().entrySet()) {
+                AnimationRunWrapper.CubeWrapper cube = Objects.requireNonNull(AnimationLayer.this.cuberef.apply(entry.getKey()));
+                Vector3f cr = cube.getRotation();
+                Vector3f pr = cube.getPrevRotation();
+
+                Vector3f cp = cube.getPosition();
+                Vector3f pp = cube.getPrevPosition();
+
+                pr.x = cr.x;
+                pr.y = cr.y;
+                pr.z = cr.z;
+
+                pp.x = cp.x;
+                pp.y = cp.y;
+                pp.z = cp.z;
+
+                CubeReference next = entry.getValue();
+                cr.x = next.getRotationX();
+                cr.y = next.getRotationY();
+                cr.z = next.getRotationZ();
+                cp.x = next.getPositionX();
+                cp.y = next.getPositionY();
+                cp.z = next.getPositionZ();
+            }
+
         }
 
         private void setCubeWrapper() {
@@ -153,7 +209,7 @@ public class AnimationLayer<T extends AnimatedEntity> {
         }
 
         private void setPrevious() {
-            for (String partName : this.poseStack.peek().getCubes().keySet()) {
+            for (String partName : AnimationLayer.this.cubeNames) {
                 AnimationRunWrapper.CubeWrapper cube = Objects.requireNonNull(AnimationLayer.this.cuberef.apply(partName));
                 Vector3f cr = cube.getRotation();
                 Vector3f pr = cube.getPrevRotation();

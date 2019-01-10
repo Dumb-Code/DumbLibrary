@@ -4,8 +4,10 @@ import com.google.common.collect.Maps;
 import lombok.Getter;
 import lombok.val;
 import net.dumbcode.dumblibrary.DumbLibrary;
+import net.dumbcode.dumblibrary.client.animation.objects.AnimatedEntity;
 import net.dumbcode.dumblibrary.server.info.AnimationSystemInfo;
 import net.ilexiconn.llibrary.client.model.tabula.TabulaModel;
+import net.minecraft.entity.EntityLiving;
 import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.ResourceLocation;
 
@@ -16,11 +18,11 @@ import java.util.Map;
  * The model container. Contains the models and the pose handler
  */
 @Getter
-public class ModelContainer<E extends IStringSerializable> {
+public class ModelContainer<T extends EntityLiving & AnimatedEntity, E extends IStringSerializable> {
     private final Map<E, TabulaModel> modelMap;
-    private final PoseHandler poseHandler;
+    private final PoseHandler<T, E> poseHandler;
 
-    public ModelContainer(ResourceLocation regname, AnimationSystemInfo<E, ?> info) {
+    public ModelContainer(ResourceLocation regname, AnimationSystemInfo<E, T> info) {
         this.modelMap = Maps.newHashMap();
         //Create the pose handler
         this.poseHandler = new PoseHandler<>(regname, info);

@@ -5,14 +5,11 @@ import com.google.common.collect.Maps;
 import net.dumbcode.dumblibrary.client.animation.PoseHandler;
 import net.ilexiconn.llibrary.client.model.tabula.ITabulaModelAnimator;
 import net.ilexiconn.llibrary.client.model.tabula.TabulaModel;
-import net.ilexiconn.llibrary.server.animation.Animation;
-import net.ilexiconn.llibrary.server.animation.IAnimatedEntity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.util.IStringSerializable;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -22,13 +19,13 @@ import java.util.WeakHashMap;
  * @param <T> the entity type
  */
 @SideOnly(Side.CLIENT)
-public class EntityAnimator<T extends EntityLiving & IAnimatedEntity, N extends IStringSerializable> implements ITabulaModelAnimator<T> {
+public class EntityAnimator<T extends EntityLiving & AnimatedEntity, N extends IStringSerializable> implements ITabulaModelAnimator<T> {
 
     private final PoseHandler<T, N> poseHandler;
     private final Animation defaultAnimation;
-    private final PoseHandler.AnimationPassesFactory[] factories;
+    private final PoseHandler.AnimationLayerFactory[] factories;
 
-    protected HashMap<N, Map<T, AnimationPassWrapper<T>>> animationHandlers ;
+    protected HashMap<N, Map<T, AnimationRunWrapper<T>>> animationHandlers;
 
 
     public EntityAnimator(PoseHandler<T, N> poseHandler) {
@@ -39,16 +36,16 @@ public class EntityAnimator<T extends EntityLiving & IAnimatedEntity, N extends 
     }
 
     /**
-     * Get the {@link AnimationPassWrapper} linked with this entity. If there is none, add it
+     * Get the {@link AnimationRunWrapper} linked with this entity. If there is none, add it
      * @param entity the entity
      * @param model the model
-     * @param useInertialTweens whether inertial tweens should be used
+     * @param inertia whether inertia should be used
      * @return the pass wrapper
      */
     @SuppressWarnings("rawtypes")
-    private AnimationPassWrapper<T> getAnimationPassWrapper(T entity, TabulaModel model, boolean useInertialTweens) {
+    private AnimationRunWrapper<T> getAnimationPassWrapper(T entity, TabulaModel model, boolean inertia) {
         N growth = this.poseHandler.getInfo().getStageFromEntity(entity);
-        return this.animationHandlers.computeIfAbsent(growth, g -> new WeakHashMap<>()).computeIfAbsent(entity, e -> this.poseHandler.createAnimationWrapper(e, model, defaultAnimation, this.poseHandler.getInfo()::getAnimationInfo, growth, useInertialTweens, factories));
+        return this.animationHandlers.computeIfAbsent(growth, g -> new WeakHashMap<>()).computeIfAbsent(entity, e -> this.poseHandler.createAnimationWrapper(e, model, defaultAnimation, growth, inertia, factories));
     }
 
     @Override

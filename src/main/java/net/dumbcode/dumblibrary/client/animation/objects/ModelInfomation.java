@@ -2,7 +2,7 @@ package net.dumbcode.dumblibrary.client.animation.objects;
 
 import com.google.common.collect.Maps;
 import net.dumbcode.dumblibrary.client.animation.PoseHandler;
-import net.ilexiconn.llibrary.server.animation.Animation;
+import net.dumbcode.dumblibrary.client.animation.objects.Animation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -29,7 +29,7 @@ public class ModelInfomation {
     }
 
     @SideOnly(Side.CLIENT)
-    public ModelInfomation(Map<String, Map<String, CubeReference>> cuboids, Map<Animation,List<PoseData>> animations) {
+    public ModelInfomation(Map<String, Map<String, CubeReference>> cuboids, Map<Animation, List<PoseData>> animations) {
         this(animations);
 
         if (cuboids == null) {
@@ -48,16 +48,16 @@ public class ModelInfomation {
     }
 
     /**
-     * @see ModelInfomation#references
      * @return the map of references
+     * @see ModelInfomation#references
      */
     public Map<String, Map<String, CubeReference>> getReferences() {
         return references;
     }
 
     /**
-     * @see ModelInfomation#animations
      * @return the map of animations to list of pose data
+     * @see ModelInfomation#animations
      */
     public Map<Animation, List<PoseData>> getAnimations() {
         return animations;

@@ -4,16 +4,13 @@ import com.google.common.collect.Maps;
 import lombok.Getter;
 import lombok.val;
 import net.dumbcode.dumblibrary.DumbLibrary;
-import net.dumbcode.dumblibrary.client.animation.objects.EntityAnimator;
 import net.dumbcode.dumblibrary.server.info.AnimationSystemInfo;
 import net.ilexiconn.llibrary.client.model.tabula.TabulaModel;
-import net.ilexiconn.llibrary.server.animation.Animation;
 import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.ResourceLocation;
 
 import java.util.Locale;
 import java.util.Map;
-import java.util.function.Function;
 
 /**
  * The model container. Contains the models and the pose handler
@@ -26,7 +23,7 @@ public class ModelContainer<E extends IStringSerializable> {
     public ModelContainer(ResourceLocation regname, AnimationSystemInfo<E, ?> info) {
         this.modelMap = Maps.newHashMap();
         //Create the pose handler
-        this.poseHandler = new PoseHandler(regname, info);
+        this.poseHandler = new PoseHandler<>(regname, info);
         //Iterate through all the entries from the mainModel map
         for (val entry : info.stageToModelMap().entrySet()) {
             //Get the GrowthStage from the entry
@@ -54,7 +51,7 @@ public class ModelContainer<E extends IStringSerializable> {
                     ResourceLocation modelName = new ResourceLocation(regname.getResourceDomain(), "models/entities/" + regname.getResourcePath() + "/" + referneced.getName().toLowerCase(Locale.ROOT) + "/" + mainModelName);
                     try {
                         //Try and load the model, and also try to load the EntityAnimator (factory.createAnimator)
-                        model = TabulaUtils.getModel(modelName, info.createAnimator(this.poseHandler, info.defaultAnimation(), info::getAnimationInfo, info.createFactories()));
+                        model = TabulaUtils.getModel(modelName, info.createAnimator(this.poseHandler, info.defaultAnimation(), info.createFactories()));
                     } catch (Exception e) {
                         //If for whatever reason theres an error while loading the tabula model, log the error and set the model to null
                         DumbLibrary.getLogger().error("Unable to load model: " + modelName.toString(), e);
@@ -65,24 +62,5 @@ public class ModelContainer<E extends IStringSerializable> {
             //Put the model in the map, with the unchanged GrowthStage as the key
             this.modelMap.put(growth, model);
         }
-    }
-
-    /**
-     * The animation factory used for creating EntityAnimator
-     */
-    @SuppressWarnings("unchecked")
-    public interface AnimatorFactory {
-
-        /**
-         * Creates the EntityAnimator
-         * @param poseHandler The {@link PoseHandler}, needed for information about poses
-         * @param defaultAnimation the default animation for the entity. Should be a idle animation, or something similar
-         * @param animationInfoGetter a function to get the animation information from an animation
-         * @param factories a list of {@link PoseHandler.AnimationPassesFactory} (Note these should be Object::new)
-         * @return the entity animator
-         */
-        EntityAnimator createAnimator(PoseHandler poseHandler, Animation defaultAnimation,
-                                      Function<Animation, AnimationInfo> animationInfoGetter,
-                                      PoseHandler.AnimationPassesFactory... factories);
     }
 }

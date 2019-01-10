@@ -4,7 +4,6 @@ import net.dumbcode.dumblibrary.client.model.TransformTypeModelLoader;
 import net.dumbcode.dumblibrary.server.DumbGuiHandler;
 import net.dumbcode.dumblibrary.server.guidebooks.GuidebooksManager;
 import net.dumbcode.dumblibrary.server.network.S0SyncAnimation;
-import net.dumbcode.projectnublar.server.network.C0MoveSelectedSkeletalPart;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;

@@ -1,6 +1,6 @@
 package net.dumbcode.dumblibrary.client.animation.objects;
 
-import net.dumbcode.projectnublar.server.animation.DinosaurEntitySystemInfo;
+import net.dumbcode.dumblibrary.server.info.AnimationSystemInfo;
 
 //TODO: move to ecs
 public interface AnimatedEntity {
@@ -8,5 +8,5 @@ public interface AnimatedEntity {
 
     void setAnimation(Animation animation);
 
-    DinosaurEntitySystemInfo getInfo();
+    AnimationSystemInfo getInfo();
 }

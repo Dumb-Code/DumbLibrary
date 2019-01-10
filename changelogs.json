@@ -29,6 +29,9 @@
     ],
     "0.1.9": [
       "+ Fixed server comparability"
+    ],
+    "0.2.0": [
+      "Redid animation system. Documentation coming soon!"
     ]
   }
 }

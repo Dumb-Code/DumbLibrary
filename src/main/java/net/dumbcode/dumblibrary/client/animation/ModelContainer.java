@@ -27,13 +27,11 @@ public class ModelContainer<T extends EntityLiving & AnimatedEntity, E extends I
         //Create the pose handler
         this.poseHandler = new PoseHandler<>(regname, info);
         //Iterate through all the entries from the mainModel map
-        for (val entry : info.stageToModelMap().entrySet()) {
-            //Get the ModelStage from the entry
-            E growth = entry.getKey();
+        for (val entry : info.allValues()) {
             //Create a referenced ModelStage, as the actual growth stage may differ
-            E referneced = growth;
+            E referneced = entry;
             //If the growth stage is not supported, default the the ADULT growth stage
-            if(!info.allAcceptedStages().contains(growth)) {
+            if(!info.allAcceptedStages().contains(entry)) {
                 referneced = info.defaultStage();
             }
             TabulaModel model;
@@ -62,7 +60,7 @@ public class ModelContainer<T extends EntityLiving & AnimatedEntity, E extends I
                 }
             }
             //Put the model in the map, with the unchanged ModelStage as the key
-            this.modelMap.put(growth, model);
+            this.modelMap.put(entry, model);
         }
     }
 }

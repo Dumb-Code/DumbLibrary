@@ -13,7 +13,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-public interface AnimationSystemInfo<N extends IStringSerializable, E extends EntityLiving & AnimatedEntity> {
+public interface AnimationSystemInfo<N extends IStringSerializable, E extends EntityLiving & AnimatedEntity<N>> {
 
     N defaultStage();
     List<N> allAcceptedStages();
@@ -21,9 +21,9 @@ public interface AnimationSystemInfo<N extends IStringSerializable, E extends En
     Map<N, String> stageToModelMap();
     Collection<String> allAnimationNames();
     EntityAnimator<E, N> createAnimator(PoseHandler<E, N> poseHandler);
-    Animation getAnimation(String animation);
-    Animation defaultAnimation();
-    PoseHandler.AnimationLayerFactory[] createFactories();
+    Animation<N> getAnimation(String animation);
+    Animation<N> defaultAnimation();
+    List<PoseHandler.AnimationLayerFactory<E, N>> createFactories();
 
     ModelContainer<E, N> getModelContainer(E entity);
     N getStageFromEntity(E entity);

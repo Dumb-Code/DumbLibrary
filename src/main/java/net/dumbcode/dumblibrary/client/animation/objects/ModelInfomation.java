@@ -3,6 +3,7 @@ package net.dumbcode.dumblibrary.client.animation.objects;
 import com.google.common.collect.Maps;
 import net.dumbcode.dumblibrary.client.animation.PoseHandler;
 import net.dumbcode.dumblibrary.client.animation.objects.Animation;
+import net.minecraft.util.IStringSerializable;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -13,7 +14,7 @@ import java.util.Map;
 /**
  * A class to store infomation about a model, and its subsequent poses
  */
-public class ModelInfomation {
+public class ModelInfomation<N extends IStringSerializable> {
     /**
      * Map of {@code <Model Name, <Cube Name, Cube Reference>>}
      */
@@ -22,14 +23,14 @@ public class ModelInfomation {
     /**
      * A map of the list of model datas to use in per animation
      */
-    private Map<Animation, List<PoseData>> animations;
+    private Map<Animation<N>, List<PoseData>> animations;
 
     public ModelInfomation() {
         this(null);
     }
 
     @SideOnly(Side.CLIENT)
-    public ModelInfomation(Map<String, Map<String, CubeReference>> cuboids, Map<Animation, List<PoseData>> animations) {
+    public ModelInfomation(Map<String, Map<String, CubeReference>> cuboids, Map<Animation<N>, List<PoseData>> animations) {
         this(animations);
 
         if (cuboids == null) {
@@ -39,7 +40,7 @@ public class ModelInfomation {
         this.references = cuboids;
     }
 
-    public ModelInfomation(Map<Animation, List<PoseData>> animations) {
+    public ModelInfomation(Map<Animation<N>, List<PoseData>> animations) {
         if (animations == null) {
             animations = new LinkedHashMap<>();
         }
@@ -59,7 +60,7 @@ public class ModelInfomation {
      * @return the map of animations to list of pose data
      * @see ModelInfomation#animations
      */
-    public Map<Animation, List<PoseData>> getAnimations() {
+    public Map<Animation<N>, List<PoseData>> getAnimations() {
         return animations;
     }
 }

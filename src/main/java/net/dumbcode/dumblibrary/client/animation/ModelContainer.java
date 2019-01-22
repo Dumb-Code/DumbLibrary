@@ -18,7 +18,7 @@ import java.util.Map;
  * The model container. Contains the models and the pose handler
  */
 @Getter
-public class ModelContainer<T extends EntityLiving & AnimatedEntity, E extends IStringSerializable> {
+public class ModelContainer<T extends EntityLiving & AnimatedEntity<E>, E extends IStringSerializable> {
     private final Map<E, TabulaModel> modelMap;
     private final PoseHandler<T, E> poseHandler;
 

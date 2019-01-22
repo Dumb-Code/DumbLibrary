@@ -8,7 +8,6 @@ import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.client.animation.objects.*;
 import net.dumbcode.dumblibrary.server.info.AnimationSystemInfo;
 import net.dumbcode.dumblibrary.server.info.AnimationSystemInfoRegistry;
-import net.dumbcode.dumblibrary.server.utils.DefaultHashMap;
 import net.ilexiconn.llibrary.client.model.tabula.TabulaModel;
 import net.ilexiconn.llibrary.client.model.tools.AdvancedModelRenderer;
 import net.dumbcode.dumblibrary.client.animation.objects.Animation;
@@ -22,21 +21,17 @@ import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-import javax.vecmath.Vector3f;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Function;
 
 /**
  * Handles all the poses for the animals. Stores information about what the pose should look like, along with how long it is.
  */
-public class PoseHandler<T extends EntityLiving & AnimatedEntity, N extends IStringSerializable> {
+public class PoseHandler<T extends EntityLiving & AnimatedEntity<N>, N extends IStringSerializable> {
 
     private static final Gson GSON = new GsonBuilder()
             .registerTypeAdapter(PoseData.class, PoseData.Deserializer.INSTANCE)
@@ -112,14 +107,14 @@ public class PoseHandler<T extends EntityLiving & AnimatedEntity, N extends IStr
                         }
                     }
 
-                    Map<Animation, List<PoseData>> animationMap = Maps.newHashMap();
+                    Map<Animation<N>, List<PoseData>> animationMap = Maps.newHashMap();
                     //Iterate through the list of poses defined in the json file
                     for (val entry : rawData.getPoses().entrySet()) {
                         //Use the animationGetter to get the Animation from the string
-                        Animation animation = info.getAnimation(entry.getKey());
+                        Animation<N> animation = info.getAnimation(entry.getKey());
                         List<PoseData> poseData = Lists.newArrayList(entry.getValue());
                         //Populate the list to the animation, and add it to the list
-                        animation.populateList(poseData);
+                        animation.populateList(growth, poseData);
                         animationMap.put(animation, poseData);
                     }
                     //If the side is client side, then load the actual pose data
@@ -129,7 +124,7 @@ public class PoseHandler<T extends EntityLiving & AnimatedEntity, N extends IStr
                         //load the client information
                         modelInfo = loadClientInfomation(new ResourceLocation(regname.getResourceDomain(), growthDirectory + location), modelResources, animationMap);
                     } else {
-                        modelInfo = new ModelInfomation(animationMap);
+                        modelInfo = new ModelInfomation<>(animationMap);
                     }
                 } catch (Exception e) {
                     DumbLibrary.getLogger().error("Unable to load poses stage " + reference + " for " + regname, e);
@@ -148,7 +143,7 @@ public class PoseHandler<T extends EntityLiving & AnimatedEntity, N extends IStr
      * @return The ModelInfomation class, used store data about each pose
      */
     @SideOnly(Side.CLIENT)
-    private ModelInfomation loadClientInfomation(ResourceLocation mainModelLocation, Iterable<PoseData> modelResources, Map<Animation, List<PoseData>> animations) {
+    private ModelInfomation loadClientInfomation(ResourceLocation mainModelLocation, Iterable<PoseData> modelResources, Map<Animation<N>, List<PoseData>> animations) {
         //Load the main model, used for comparing the diffrence in cube location/rotation
         TabulaModel mainModel = TabulaUtils.getModel(mainModelLocation);
         Map<String, Map<String, CubeReference>> map = Maps.newHashMap(); //Map of <Model location, <Cube Name, Cube Reference>>
@@ -265,19 +260,17 @@ public class PoseHandler<T extends EntityLiving & AnimatedEntity, N extends IStr
      * @param defaultAnimation    the default animation for the entity. Should be a idle animation, or something similar
      * @param inertia             should inertia be used
      * @param factories           a list of {@link AnimationLayerFactory} (Note these should be Object::new)
-     * @param <T>                 the entity type being used.
      * @return A new animation wrapper.
      */
-    @SuppressWarnings("unchecked")
-    public <T extends AnimatedEntity> AnimationRunWrapper<T> createAnimationWrapper(T entity, TabulaModel model, Animation defaultAnimation,
+    public AnimationRunWrapper<T, N> createAnimationWrapper(T entity, TabulaModel model, Animation defaultAnimation,
                                                                                     N stage, boolean inertia,
-                                                                                    AnimationLayerFactory... factories) {
-        ModelInfomation modelInfo = this.modelInfomationMap.get(stage);
-        List<AnimationLayer<T>> list = Lists.newArrayList();
+                                                                                    List<AnimationLayerFactory<T, N>> factories) {
+        List<AnimationLayer<T, N>> list = Lists.newArrayList();
         for (val factory : factories) {
-            list.add(factory.createWrapper(entity, model, new DefaultHashMap<String, AnimationRunWrapper.CubeWrapper>(AnimationRunWrapper.CubeWrapper::new)::getOrPut, defaultAnimation, inertia));
+            HashMap<String, AnimationRunWrapper.CubeWrapper> map = new HashMap<>();
+            list.add(factory.createWrapper(entity, stage, model, s -> map.computeIfAbsent(s, o -> new AnimationRunWrapper.CubeWrapper(model.getCube(o))), defaultAnimation, inertia));
         }
-        return new AnimationRunWrapper(entity, list);
+        return new AnimationRunWrapper<>(entity, list);
     }
 
 
@@ -285,14 +278,14 @@ public class PoseHandler<T extends EntityLiving & AnimatedEntity, N extends IStr
      * Get the full length of an animation
      *
      * @param animation   the animation
-     * @param growthStage the growth stage of the entity
+     * @param stage the growth stage of the entity
      * @return the length of the animation
      */
-    public float getAnimationLength(Animation animation, N growthStage) {
+    public float getAnimationLength(Animation<N> animation, N stage) {
         float duration = 0;
         if (animation != null) {
             //Get the list of poses for the certian animation, or a new list if there is none
-            List<PoseData> poses = animation.getPoseData();
+            List<PoseData> poses = animation.getPoseData().get(stage);
             for (PoseData pose : poses) {
                 //Add up the time
                 duration += pose.getTime();
@@ -325,7 +318,7 @@ public class PoseHandler<T extends EntityLiving & AnimatedEntity, N extends IStr
     /**
      * The factory for creating {@link AnimationLayer}
      */
-    public interface AnimationLayerFactory {
-        <T extends AnimatedEntity> AnimationLayer<T> createWrapper(T entity, TabulaModel model, Function<String, AnimationRunWrapper.CubeWrapper> cuberef, Animation defaultAnimation, boolean inertia);
+    public interface AnimationLayerFactory<T extends AnimatedEntity<N>, N extends IStringSerializable> {
+        AnimationLayer<T, N> createWrapper(T entity, N stage, TabulaModel model, Function<String, AnimationRunWrapper.CubeWrapper> cuberef, Animation defaultAnimation, boolean inertia);
     }
 }

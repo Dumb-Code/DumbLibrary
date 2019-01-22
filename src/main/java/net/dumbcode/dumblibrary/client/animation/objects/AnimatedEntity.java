@@ -1,12 +1,13 @@
 package net.dumbcode.dumblibrary.client.animation.objects;
 
 import net.dumbcode.dumblibrary.server.info.AnimationSystemInfo;
+import net.minecraft.util.IStringSerializable;
 
 //TODO: move to ecs
-public interface AnimatedEntity {
-    Animation getAnimation();
+public interface AnimatedEntity<N extends IStringSerializable> {
+    Animation<N> getAnimation();
 
-    void setAnimation(Animation animation);
+    void setAnimation(Animation<N> animation);
 
-    AnimationSystemInfo getInfo();
+    AnimationSystemInfo<N, ? extends AnimatedEntity> getInfo();
 }

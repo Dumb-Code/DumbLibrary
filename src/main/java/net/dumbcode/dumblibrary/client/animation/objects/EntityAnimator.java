@@ -11,6 +11,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 
@@ -19,13 +20,13 @@ import java.util.WeakHashMap;
  * @param <T> the entity type
  */
 @SideOnly(Side.CLIENT)
-public class EntityAnimator<T extends EntityLiving & AnimatedEntity, N extends IStringSerializable> implements ITabulaModelAnimator<T> {
+public class EntityAnimator<T extends EntityLiving & AnimatedEntity<N>, N extends IStringSerializable> implements ITabulaModelAnimator<T> {
 
     private final PoseHandler<T, N> poseHandler;
     private final Animation defaultAnimation;
-    private final PoseHandler.AnimationLayerFactory[] factories;
+    private final List<PoseHandler.AnimationLayerFactory<T, N>> factories;
 
-    protected HashMap<N, Map<T, AnimationRunWrapper<T>>> animationHandlers;
+    protected HashMap<N, Map<T, AnimationRunWrapper<T, N>>> animationHandlers;
 
 
     public EntityAnimator(PoseHandler<T, N> poseHandler) {
@@ -43,7 +44,7 @@ public class EntityAnimator<T extends EntityLiving & AnimatedEntity, N extends I
      * @return the pass wrapper
      */
     @SuppressWarnings("rawtypes")
-    private AnimationRunWrapper<T> getAnimationPassWrapper(T entity, TabulaModel model, boolean inertia) {
+    private AnimationRunWrapper<T, N> getAnimationPassWrapper(T entity, TabulaModel model, boolean inertia) {
         N growth = this.poseHandler.getInfo().getStageFromEntity(entity);
         return this.animationHandlers.computeIfAbsent(growth, g -> new WeakHashMap<>()).computeIfAbsent(entity, e -> this.poseHandler.createAnimationWrapper(e, model, defaultAnimation, growth, inertia, factories));
     }

@@ -38,6 +38,10 @@
     ],
     "0.2.2": [
       "Fixed issues with model loading"
-    ]
+    ],
+	"0.2.3": [
+	  "Redid more parts of the animation system"
+	  "No more dependency on interfaced entities"
+	]
   }
 }

@@ -5,7 +5,7 @@ import com.google.common.collect.Maps;
 import net.dumbcode.dumblibrary.client.animation.PoseHandler;
 import net.ilexiconn.llibrary.client.model.tabula.ITabulaModelAnimator;
 import net.ilexiconn.llibrary.client.model.tabula.TabulaModel;
-import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.Entity;
 import net.minecraft.util.IStringSerializable;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -17,22 +17,20 @@ import java.util.WeakHashMap;
 
 /**
  * The {@link ITabulaModelAnimator} used for this entity
- * @param <T> the entity type
+ * @param <E> the entity type
  */
 @SideOnly(Side.CLIENT)
-public class EntityAnimator<T extends EntityLiving & AnimatedEntity<N>, N extends IStringSerializable> implements ITabulaModelAnimator<T> {
+public class EntityAnimator<E extends Entity, N extends IStringSerializable> implements ITabulaModelAnimator<E> {
 
-    private final PoseHandler<T, N> poseHandler;
-    private final Animation defaultAnimation;
-    private final List<PoseHandler.AnimationLayerFactory<T, N>> factories;
+    private final PoseHandler<E, N> poseHandler;
+    private final List<PoseHandler.AnimationLayerFactory<E, N>> factories;
 
-    protected HashMap<N, Map<T, AnimationRunWrapper<T, N>>> animationHandlers;
+    protected HashMap<N, Map<E, AnimationRunWrapper<E, N>>> animationHandlers;
 
 
-    public EntityAnimator(PoseHandler<T, N> poseHandler) {
+    public EntityAnimator(PoseHandler<E, N> poseHandler) {
         this.poseHandler = poseHandler;
         this.animationHandlers = Maps.newHashMap();
-        this.defaultAnimation = this.poseHandler.getInfo().defaultAnimation();
         this.factories = this.poseHandler.getInfo().createFactories();
     }
 
@@ -44,13 +42,13 @@ public class EntityAnimator<T extends EntityLiving & AnimatedEntity<N>, N extend
      * @return the pass wrapper
      */
     @SuppressWarnings("rawtypes")
-    private AnimationRunWrapper<T, N> getAnimationPassWrapper(T entity, TabulaModel model, boolean inertia) {
+    private AnimationRunWrapper<E, N> getAnimationPassWrapper(E entity, TabulaModel model, boolean inertia) {
         N growth = this.poseHandler.getInfo().getStageFromEntity(entity);
-        return this.animationHandlers.computeIfAbsent(growth, g -> new WeakHashMap<>()).computeIfAbsent(entity, e -> this.poseHandler.createAnimationWrapper(e, model, defaultAnimation, growth, inertia, factories));
+        return this.animationHandlers.computeIfAbsent(growth, g -> new WeakHashMap<>()).computeIfAbsent(entity, e -> this.poseHandler.createAnimationWrapper(e, model, growth, inertia, factories));
     }
 
     @Override
-    public final void setRotationAngles(TabulaModel model, T entity, float limbSwing, float limbSwingAmount, float ticks, float rotationYaw, float rotationPitch, float scale) {
+    public final void setRotationAngles(TabulaModel model, E entity, float limbSwing, float limbSwingAmount, float ticks, float rotationYaw, float rotationPitch, float scale) {
         this.getAnimationPassWrapper(entity, model, true).performAnimations(entity, limbSwing, limbSwingAmount, ticks);
         this.performAnimations(model, entity, limbSwing, limbSwingAmount, ticks, rotationYaw, rotationPitch, scale);
     }
@@ -66,7 +64,7 @@ public class EntityAnimator<T extends EntityLiving & AnimatedEntity<N>, N extend
      * @param rotationPitch the rotation pitch
      * @param scale the scale
      */
-    protected void performAnimations(TabulaModel parModel, T entity, float limbSwing, float limbSwingAmount, float ticks, float rotationYaw, float rotationPitch, float scale) {
+    protected void performAnimations(TabulaModel parModel, E entity, float limbSwing, float limbSwingAmount, float ticks, float rotationYaw, float rotationPitch, float scale) {
     }
 
 }

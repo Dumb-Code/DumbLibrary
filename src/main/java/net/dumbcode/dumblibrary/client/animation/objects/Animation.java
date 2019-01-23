@@ -9,7 +9,7 @@ import net.minecraft.util.ResourceLocation;
 import java.util.List;
 import java.util.Map;
 
-@Data //TODO: make this an AnimationSet, move all data to a <T, Map>
+@Data
 public class Animation<T> {
     @Accessors(fluent = true) private final boolean hold;
     @Accessors(fluent = true) private final boolean inertia;

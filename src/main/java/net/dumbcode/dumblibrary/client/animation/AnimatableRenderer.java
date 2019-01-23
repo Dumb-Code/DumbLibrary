@@ -2,8 +2,6 @@ package net.dumbcode.dumblibrary.client.animation;
 
 import lombok.val;
 import net.dumbcode.dumblibrary.server.info.AnimationSystemInfo;
-import net.dumbcode.dumblibrary.client.animation.objects.AnimatedEntity;
-import net.ilexiconn.llibrary.client.model.tabula.TabulaModel;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.entity.RenderLiving;
 import net.minecraft.client.renderer.entity.RenderManager;
@@ -12,27 +10,26 @@ import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.ResourceLocation;
 
 import javax.annotation.Nullable;
-import java.util.Map;
 import java.util.function.Function;
 
 /**
  * The Renderer class to use for the animations to work.
- * @param <T> The entity class
+ * @param <E> The entity class
  */
-public class AnimatableRenderer<T extends EntityLiving & AnimatedEntity<N>, N extends IStringSerializable> extends RenderLiving<T> {
+public class AnimatableRenderer<E extends EntityLiving, N extends IStringSerializable> extends RenderLiving<E> {
 
-    private final Function<T, AnimationSystemInfo<N, T>> animationSystemInfoGetter;
+    private final Function<E, AnimationSystemInfo<N, E>> animationSystemInfoGetter;
 
     /**
      * @param renderManagerIn The RenderManager
      */
-    public AnimatableRenderer(RenderManager renderManagerIn, Function<T, AnimationSystemInfo<N, T>> animationSystemInfoGetter) {
+    public AnimatableRenderer(RenderManager renderManagerIn, Function<E, AnimationSystemInfo<N, E>> animationSystemInfoGetter) {
         super(renderManagerIn, null, 1f);
         this.animationSystemInfoGetter = animationSystemInfoGetter;
     }
 
     @Override
-    public void doRender(T entity, double x, double y, double z, float entityYaw, float partialTicks) {
+    public void doRender(E entity, double x, double y, double z, float entityYaw, float partialTicks) {
         GlStateManager.disableAlpha();
         val info = this.animationSystemInfoGetter.apply(entity);
         val map = info.getModelContainer(entity).getModelMap();
@@ -45,7 +42,7 @@ public class AnimatableRenderer<T extends EntityLiving & AnimatedEntity<N>, N ex
 
     @Nullable
     @Override
-    protected ResourceLocation getEntityTexture(T entity) {
+    protected ResourceLocation getEntityTexture(E entity) {
         return this.animationSystemInfoGetter.apply(entity).getTexture(entity);
     }
 }

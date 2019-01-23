@@ -1,8 +1,8 @@
 package net.dumbcode.dumblibrary.server.network;
 
 import io.netty.buffer.ByteBuf;
-import net.dumbcode.dumblibrary.client.animation.objects.AnimatedEntity;
 import net.dumbcode.dumblibrary.client.animation.objects.Animation;
+import net.dumbcode.dumblibrary.server.info.AnimationSystemInfo;
 import net.dumbcode.dumblibrary.server.info.AnimationSystemInfoRegistry;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
@@ -23,9 +23,9 @@ public class S0SyncAnimation implements IMessage {
 
     }
 
-    public <E extends Entity & AnimatedEntity> S0SyncAnimation(E entity, Animation animation) {
+    public <E extends Entity> S0SyncAnimation(E entity, AnimationSystemInfo<?, ?> info, Animation animation) {
         this.entityid = entity.getEntityId();
-        this.ais = entity.getInfo().identifier();
+        this.ais = info.identifier();
         this.animation = animation.getIdentifier();
     }
 
@@ -49,8 +49,8 @@ public class S0SyncAnimation implements IMessage {
         @Override
         protected void handleMessage(S0SyncAnimation message, MessageContext ctx, World world, EntityPlayer player) {
             Entity entity = world.getEntityByID(message.entityid);
-            if(entity instanceof AnimatedEntity) {
-                AnimationSystemInfoRegistry.setAnimationToEntity((AnimatedEntity) entity, message.ais, message.animation);
+            if(entity != null) {
+                AnimationSystemInfoRegistry.setAnimationToEntity(entity, message.ais, message.animation);
             }
         }
     }

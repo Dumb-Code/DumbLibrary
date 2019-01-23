@@ -3,6 +3,7 @@ package net.dumbcode.dumblibrary.client.animation.objects;
 import com.google.common.collect.Maps;
 import lombok.Getter;
 import net.ilexiconn.llibrary.client.model.tools.AdvancedModelRenderer;
+import net.minecraft.entity.Entity;
 import net.minecraft.util.IStringSerializable;
 
 import javax.vecmath.Vector3f;
@@ -12,19 +13,19 @@ import java.util.Map;
 /**
  * The wrapper for the {@link AnimationLayer}. Used to control multiple {@link AnimationLayer}s
  *
- * @param <T> the entity type this is used for
+ * @param <E> the entity type this is used for
  */
-public class AnimationRunWrapper<T extends AnimatedEntity<N>, N extends IStringSerializable> {
+public class AnimationRunWrapper<E extends Entity, N extends IStringSerializable> {
     @Getter
-    private final T entity;
+    private final E entity;
     private final Map<Animation, List<PoseData>> animations = Maps.newHashMap();
-    private final List<AnimationLayer<T, N>> layers;
+    private final List<AnimationLayer<E, N>> layers;
 
     /**
      * @param entity the entity
      * @param layers a list of all animation layers to use
      */
-    public AnimationRunWrapper(T entity, List<AnimationLayer<T, N>> layers) {
+    public AnimationRunWrapper(E entity, List<AnimationLayer<E, N>> layers) {
         this.entity = entity;
         this.layers = layers;
     }
@@ -37,7 +38,7 @@ public class AnimationRunWrapper<T extends AnimatedEntity<N>, N extends IStringS
      * @param limbSwingAmount the limb swing amount
      * @param ticks           the age of the entity in ticks
      */
-    public void performAnimations(T entity, float limbSwing, float limbSwingAmount, float ticks) {
+    public void performAnimations(E entity, float limbSwing, float limbSwingAmount, float ticks) {
         this.layers.forEach(l -> l.animate(ticks));
     }
 

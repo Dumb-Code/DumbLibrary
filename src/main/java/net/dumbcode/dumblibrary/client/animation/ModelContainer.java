@@ -4,10 +4,9 @@ import com.google.common.collect.Maps;
 import lombok.Getter;
 import lombok.val;
 import net.dumbcode.dumblibrary.DumbLibrary;
-import net.dumbcode.dumblibrary.client.animation.objects.AnimatedEntity;
 import net.dumbcode.dumblibrary.server.info.AnimationSystemInfo;
 import net.ilexiconn.llibrary.client.model.tabula.TabulaModel;
-import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.Entity;
 import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.ResourceLocation;
 
@@ -18,18 +17,18 @@ import java.util.Map;
  * The model container. Contains the models and the pose handler
  */
 @Getter
-public class ModelContainer<T extends EntityLiving & AnimatedEntity<E>, E extends IStringSerializable> {
-    private final Map<E, TabulaModel> modelMap;
-    private final PoseHandler<T, E> poseHandler;
+public class ModelContainer<E extends Entity, N extends IStringSerializable> {
+    private final Map<N, TabulaModel> modelMap;
+    private final PoseHandler<E, N> poseHandler;
 
-    public ModelContainer(ResourceLocation regname, AnimationSystemInfo<E, T> info) {
+    public ModelContainer(ResourceLocation regname, AnimationSystemInfo<N, E> info) {
         this.modelMap = Maps.newHashMap();
         //Create the pose handler
         this.poseHandler = new PoseHandler<>(regname, info);
         //Iterate through all the entries from the mainModel map
         for (val entry : info.allValues()) {
             //Create a referenced ModelStage, as the actual growth stage may differ
-            E referneced = entry;
+            N referneced = entry;
             //If the growth stage is not supported, default the the ADULT growth stage
             if(!info.allAcceptedStages().contains(entry)) {
                 referneced = info.defaultStage();

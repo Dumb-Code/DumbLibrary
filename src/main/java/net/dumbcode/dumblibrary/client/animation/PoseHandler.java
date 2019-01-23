@@ -10,10 +10,8 @@ import net.dumbcode.dumblibrary.server.info.AnimationSystemInfo;
 import net.dumbcode.dumblibrary.server.info.AnimationSystemInfoRegistry;
 import net.ilexiconn.llibrary.client.model.tabula.TabulaModel;
 import net.ilexiconn.llibrary.client.model.tools.AdvancedModelRenderer;
-import net.dumbcode.dumblibrary.client.animation.objects.Animation;
-import net.dumbcode.dumblibrary.client.animation.objects.AnimatedEntity;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.Entity;
 import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.JsonUtils;
 import net.minecraft.util.ResourceLocation;
@@ -31,7 +29,7 @@ import java.util.function.Function;
 /**
  * Handles all the poses for the animals. Stores information about what the pose should look like, along with how long it is.
  */
-public class PoseHandler<T extends EntityLiving & AnimatedEntity<N>, N extends IStringSerializable> {
+public class PoseHandler<E extends Entity, N extends IStringSerializable> {
 
     private static final Gson GSON = new GsonBuilder()
             .registerTypeAdapter(PoseData.class, PoseData.Deserializer.INSTANCE)
@@ -40,9 +38,9 @@ public class PoseHandler<T extends EntityLiving & AnimatedEntity<N>, N extends I
     private final Map<N, ModelInfomation> modelInfomationMap;
 
     @Getter
-    private final AnimationSystemInfo<N, T> info;
+    private final AnimationSystemInfo<N, E> info;
 
-    PoseHandler(ResourceLocation regname, AnimationSystemInfo<N, T> info) {
+    PoseHandler(ResourceLocation regname, AnimationSystemInfo<N, E> info) {
 
         AnimationSystemInfoRegistry.NAMESPACE.put(info.identifier(), info);
 
@@ -249,7 +247,7 @@ public class PoseHandler<T extends EntityLiving & AnimatedEntity<N>, N extends I
             }
             data.getCubes().putAll(innerMap);
         }
-        return new ModelInfomation(map, animations);
+        return new ModelInfomation<>(map, animations);
     }
 
     /**
@@ -257,18 +255,17 @@ public class PoseHandler<T extends EntityLiving & AnimatedEntity<N>, N extends I
      *
      * @param entity              the entity you're creating the pass for
      * @param model               the model the animation pass wrapper would be applied to
-     * @param defaultAnimation    the default animation for the entity. Should be a idle animation, or something similar
      * @param inertia             should inertia be used
      * @param factories           a list of {@link AnimationLayerFactory} (Note these should be Object::new)
      * @return A new animation wrapper.
      */
-    public AnimationRunWrapper<T, N> createAnimationWrapper(T entity, TabulaModel model, Animation defaultAnimation,
-                                                                                    N stage, boolean inertia,
-                                                                                    List<AnimationLayerFactory<T, N>> factories) {
-        List<AnimationLayer<T, N>> list = Lists.newArrayList();
+    public AnimationRunWrapper<E, N> createAnimationWrapper(E entity, TabulaModel model,
+                                                            N stage, boolean inertia,
+                                                            List<AnimationLayerFactory<E, N>> factories) {
+        List<AnimationLayer<E, N>> list = Lists.newArrayList();
         for (val factory : factories) {
             HashMap<String, AnimationRunWrapper.CubeWrapper> map = new HashMap<>();
-            list.add(factory.createWrapper(entity, stage, model, s -> map.computeIfAbsent(s, o -> new AnimationRunWrapper.CubeWrapper(model.getCube(o))), defaultAnimation, inertia));
+            list.add(factory.createWrapper(entity, stage, model, s -> map.computeIfAbsent(s, o -> new AnimationRunWrapper.CubeWrapper(model.getCube(o))), this.info, inertia));
         }
         return new AnimationRunWrapper<>(entity, list);
     }
@@ -318,7 +315,7 @@ public class PoseHandler<T extends EntityLiving & AnimatedEntity<N>, N extends I
     /**
      * The factory for creating {@link AnimationLayer}
      */
-    public interface AnimationLayerFactory<T extends AnimatedEntity<N>, N extends IStringSerializable> {
-        AnimationLayer<T, N> createWrapper(T entity, N stage, TabulaModel model, Function<String, AnimationRunWrapper.CubeWrapper> cuberef, Animation defaultAnimation, boolean inertia);
+    public interface AnimationLayerFactory<E extends Entity, N extends IStringSerializable> {
+        AnimationLayer<E, N> createWrapper(E entity, N stage, TabulaModel model, Function<String, AnimationRunWrapper.CubeWrapper> cuberef, AnimationSystemInfo<N, E> info, boolean inertia);
     }
 }

@@ -1,7 +1,8 @@
 package net.dumbcode.dumblibrary.server.info;
 
 import com.google.common.collect.Maps;
-import net.dumbcode.dumblibrary.client.animation.objects.AnimatedEntity;
+import net.dumbcode.dumblibrary.client.animation.objects.Animation;
+import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
 
 import java.util.Map;
@@ -13,10 +14,14 @@ import java.util.Map;
 public class AnimationSystemInfoRegistry {
     public static Map<ResourceLocation, AnimationSystemInfo> NAMESPACE = Maps.newHashMap();
 
-    public static void setAnimationToEntity(AnimatedEntity entity, ResourceLocation info, String animation) {
+    @SuppressWarnings("unchecked")
+    public static void setAnimationToEntity(Entity entity, ResourceLocation info, String animationName) {
         AnimationSystemInfo asi = NAMESPACE.get(info);
         if(asi != null) {
-            entity.setAnimation(asi.getAnimation(animation));
+            Animation<?> animation = asi.getAnimation(animationName);
+            if(animation != null) {
+                asi.setAnimation(entity, animation);
+            }
         }
     }
 }

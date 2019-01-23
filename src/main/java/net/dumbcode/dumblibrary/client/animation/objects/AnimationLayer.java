@@ -4,8 +4,10 @@ import com.google.common.collect.Lists;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import net.dumbcode.dumblibrary.server.info.AnimationSystemInfo;
 import net.ilexiconn.llibrary.client.model.tabula.TabulaModel;
 import net.ilexiconn.llibrary.client.model.tools.AdvancedModelRenderer;
+import net.minecraft.entity.Entity;
 import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.math.MathHelper;
 
@@ -18,24 +20,26 @@ import java.util.function.Function;
 
 @Getter
 @Setter
-public class AnimationLayer<T extends AnimatedEntity<N>, N extends IStringSerializable> {
+public class AnimationLayer<E extends Entity, N extends IStringSerializable> {
 
-    private final T entity;
+    private final E entity;
     private final N stage;
     private final TabulaModel model;
-    @Setter(AccessLevel.NONE)
-    private AnimationWrap currentWrap;
+    private final AnimationSystemInfo<N, E> info;
     private final Function<String, AnimationRunWrapper.CubeWrapper> cuberef;
     private final List<String> cubeNames = Lists.newArrayList();
-
     private final boolean inertia;
 
-    public AnimationLayer(T entity, N stage, TabulaModel model, Function<String, AnimationRunWrapper.CubeWrapper> cuberef, Animation<N> defaultAnimation, boolean inertia) {
+    @Setter(AccessLevel.NONE)
+    private AnimationWrap currentWrap;
+
+    public AnimationLayer(E entity, N stage, TabulaModel model, Function<String, AnimationRunWrapper.CubeWrapper> cuberef, AnimationSystemInfo<N, E> info, boolean inertia) {
         this.entity = entity;
         this.stage = stage;
         this.model = model;
+        this.info = info;
         this.cuberef = cuberef;
-        this.currentWrap = new AnimationWrap(defaultAnimation, 0);
+        this.currentWrap = new AnimationWrap(info.defaultAnimation(), 0);
         this.inertia = inertia;
 
         this.cubeNames.addAll(model.getCubes().keySet());
@@ -47,20 +51,20 @@ public class AnimationLayer<T extends AnimatedEntity<N>, N extends IStringSerial
             if (animation != this.currentWrap.animation) {
                 this.setAnimation(animation, age);
             } else if (this.currentWrap.invalidated) {
-                this.setAnimation(this.entity.getInfo().defaultAnimation(), age);
+                this.setAnimation(this.info.defaultAnimation(), age);
             }
             this.currentWrap.tick(age);
         }
     }
 
     public Animation<N> getAnimation() {
-        return this.entity.getAnimation();
+        return this.info.getAnimation(this.entity);
     }
 
 
     public void setAnimation(Animation<N> animation, float age) {
         if (animation.getPoseData().isEmpty()) {
-            animation = this.entity.getInfo().defaultAnimation();
+            animation = this.info.defaultAnimation();
         }
         for (String name : this.cubeNames) {
             AnimationRunWrapper.CubeWrapper cube = this.cuberef.apply(name);

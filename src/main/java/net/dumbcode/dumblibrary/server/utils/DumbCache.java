@@ -33,6 +33,7 @@ public class DumbCache<K, V> {
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
+                    cleanCache();
                 }
             });
             thread.setDaemon(true); // Allows the program to exit even when the cache is running.

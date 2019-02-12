@@ -5,17 +5,18 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import net.dumbcode.dumblibrary.server.info.AnimationSystemInfo;
-import net.ilexiconn.llibrary.client.model.tabula.TabulaModel;
 import net.ilexiconn.llibrary.client.model.tools.AdvancedModelRenderer;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 
+import javax.annotation.Nullable;
+import javax.vecmath.Matrix4d;
+import javax.vecmath.Point3d;
+import javax.vecmath.Vector3d;
 import javax.vecmath.Vector3f;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Stack;
+import java.util.*;
 import java.util.function.Function;
 
 @Getter
@@ -24,25 +25,24 @@ public class AnimationLayer<E extends Entity, N extends IStringSerializable> {
 
     private final E entity;
     private final N stage;
-    private final TabulaModel model;
     private final AnimationSystemInfo<N, E> info;
     private final Function<String, AnimationRunWrapper.CubeWrapper> cuberef;
-    private final List<String> cubeNames = Lists.newArrayList();
+    private final Function<String, AnimatableCube> anicubeRef;
+    private final Collection<String> cubeNames;
     private final boolean inertia;
 
     @Setter(AccessLevel.NONE)
     private AnimationWrap currentWrap;
 
-    public AnimationLayer(E entity, N stage, TabulaModel model, Function<String, AnimationRunWrapper.CubeWrapper> cuberef, AnimationSystemInfo<N, E> info, boolean inertia) {
+    public AnimationLayer(E entity, N stage, Collection<String> cubeNames, Function<String, AnimatableCube> anicubeRef, Function<String, AnimationRunWrapper.CubeWrapper> cuberef, AnimationSystemInfo<N, E> info, boolean inertia) {
         this.entity = entity;
         this.stage = stage;
-        this.model = model;
         this.info = info;
         this.cuberef = cuberef;
+        this.anicubeRef = anicubeRef;
         this.currentWrap = new AnimationWrap(info.defaultAnimation(), 0);
+        this.cubeNames = cubeNames;
         this.inertia = inertia;
-
-        this.cubeNames.addAll(model.getCubes().keySet());
     }
 
     public void animate(float age) {
@@ -127,22 +127,21 @@ public class AnimationLayer<E extends Entity, N extends IStringSerializable> {
             this.ci = MathHelper.clamp(AnimationLayer.this.inertia && this.animation.inertia() ? (float) (Math.sin(Math.PI * (perc - 0.5D)) * 0.5D + 0.5D) : perc, 0, 1);
 
             for (String partName : AnimationLayer.this.cubeNames) {
-                AnimationRunWrapper.CubeWrapper cube = Objects.requireNonNull(AnimationLayer.this.cuberef.apply(partName));
-                AdvancedModelRenderer part = AnimationLayer.this.model.getCube(partName);
+                AnimationRunWrapper.CubeWrapper cubeWrapper = Objects.requireNonNull(AnimationLayer.this.cuberef.apply(partName));
+                AnimatableCube cube = AnimationLayer.this.anicubeRef.apply(partName);
 
-                Vector3f cr = cube.getRotation();
-                Vector3f pr = cube.getPrevRotation();
-                part.rotateAngleX += (pr.x + (cr.x - pr.x) * this.ci) - part.defaultRotationX;
-                part.rotateAngleY += (pr.y + (cr.y - pr.y) * this.ci) - part.defaultRotationY;
-                part.rotateAngleZ += (pr.z + (cr.z - pr.z) * this.ci) - part.defaultRotationZ;
+                Vector3f cr = cubeWrapper.getRotation();
+                Vector3f pr = cubeWrapper.getPrevRotation();
+                cube.setRotationX((pr.x + (cr.x - pr.x) * this.ci) - cube.getDefaultRotationX());
+                cube.setRotationY((pr.y + (cr.y - pr.y) * this.ci) - cube.getDefaultRotationY());
+                cube.setRotationZ((pr.z + (cr.z - pr.z) * this.ci) - cube.getDefaultRotationZ());
 
+                Vector3f np = cubeWrapper.getPosition();
+                Vector3f pp = cubeWrapper.getPrevPosition();
 
-                Vector3f np = cube.getPosition();
-                Vector3f pp = cube.getPrevPosition();
-
-                part.rotationPointX += (pp.x + (np.x - pp.x) * this.ci) - part.defaultPositionX;
-                part.rotationPointY += (pp.y + (np.y - pp.y) * this.ci) - part.defaultPositionY;
-                part.rotationPointZ += (pp.z + (np.z - pp.z) * this.ci) - part.defaultPositionZ;
+                cube.setPositionX((pp.x + (np.x - pp.x) * this.ci) - cube.getDefaultPositionX());
+                cube.setPositionY((pp.y + (np.y - pp.y) * this.ci) - cube.getDefaultPositionY());
+                cube.setPositionZ((pp.z + (np.z - pp.z) * this.ci) - cube.getDefaultPositionZ());
 
             }
             this.tick += (age - this.entityAge);
@@ -194,6 +193,56 @@ public class AnimationLayer<E extends Entity, N extends IStringSerializable> {
                 np.y = next.getPositionY();
                 np.z = next.getPositionZ();
             }
+        }
+    }
+
+    public interface AnimatableCube {
+        float getDefaultPositionX();
+        float getDefaultPositionY();
+        float getDefaultPositionZ();
+        float getRotationPointX();
+        float getRotationPointY();
+        float getRotationPointZ();
+        float getDefaultRotationX();
+        float getDefaultRotationY();
+        float getDefaultRotationZ();
+        float getActualRotationX();
+        float getActualRotationY();
+        float getActualRotationZ();
+        void setPositionX(float positionX);
+        void setPositionY(float positionY);
+        void setPositionZ(float positionZ);
+        void setRotationX(float rotationX);
+        void setRotationY(float rotationY);
+        void setRotationZ(float rotationZ);
+
+        @Nullable AnimatableCube getParent();
+
+        default Vec3d getModelPos(Vec3d recurseValue) {
+            double x = recurseValue.x;
+            double y = recurseValue.y;
+            double z = recurseValue.z;
+            Point3d rendererPos = new Point3d(x, y, z);
+
+            AnimatableCube parent = this.getParent();
+            if (parent != null) {
+                Matrix4d boxTranslate = new Matrix4d();
+                Matrix4d boxRotateX = new Matrix4d();
+                Matrix4d boxRotateY = new Matrix4d();
+                Matrix4d boxRotateZ = new Matrix4d();
+                boxTranslate.set(new Vector3d(parent.getRotationPointX()/16, -parent.getRotationPointY()/16, -parent.getRotationPointZ()/16));
+                boxRotateX.rotX(parent.getActualRotationX());
+                boxRotateY.rotY(-parent.getActualRotationY());
+                boxRotateZ.rotZ(-parent.getActualRotationZ());
+
+                boxRotateX.transform(rendererPos);
+                boxRotateY.transform(rendererPos);
+                boxRotateZ.transform(rendererPos);
+                boxTranslate.transform(rendererPos);
+
+                return parent.getModelPos(new Vec3d(rendererPos.getX(), rendererPos.getY(), rendererPos.getZ()));
+            }
+            return new Vec3d(rendererPos.getX(), rendererPos.getY(), rendererPos.getZ());
         }
     }
 

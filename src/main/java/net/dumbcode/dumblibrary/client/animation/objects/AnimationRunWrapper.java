@@ -5,6 +5,8 @@ import lombok.Getter;
 import net.ilexiconn.llibrary.client.model.tools.AdvancedModelRenderer;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.IStringSerializable;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.vecmath.Vector3f;
 import java.util.List;
@@ -16,10 +18,8 @@ import java.util.Map;
  * @param <E> the entity type this is used for
  */
 public class AnimationRunWrapper<E extends Entity, N extends IStringSerializable> {
-    @Getter
-    private final E entity;
-    private final Map<Animation, List<PoseData>> animations = Maps.newHashMap();
-    private final List<AnimationLayer<E, N>> layers;
+    @Getter private final E entity;
+    @Getter private final List<AnimationLayer<E, N>> layers;
 
     /**
      * @param entity the entity
@@ -48,7 +48,8 @@ public class AnimationRunWrapper<E extends Entity, N extends IStringSerializable
         private final Vector3f prevPosition = new Vector3f();
         private final Vector3f rotation = new Vector3f();
         private final Vector3f prevRotation = new Vector3f();
-        
+
+        @SideOnly(Side.CLIENT)
         public CubeWrapper(AdvancedModelRenderer box) {
             this.position.x = this.prevPosition.x = box.defaultPositionX;
             this.position.y = this.prevPosition.y = box.defaultPositionY;
@@ -57,7 +58,15 @@ public class AnimationRunWrapper<E extends Entity, N extends IStringSerializable
             this.rotation.x = this.prevRotation.x = box.defaultRotationX;
             this.rotation.y = this.prevRotation.y = box.defaultRotationY;
             this.rotation.z = this.prevRotation.z = box.defaultRotationZ;
+        }
 
+        public CubeWrapper(AnimationLayer.AnimatableCube box) {
+            this.position.x = this.prevPosition.x = box.getDefaultPositionX();
+            this.position.y = this.prevPosition.y = box.getDefaultPositionY();
+            this.position.z = this.prevPosition.z = box.getDefaultPositionZ();
+            this.rotation.x = this.prevRotation.x = box.getDefaultRotationX();
+            this.rotation.y = this.prevRotation.y = box.getDefaultRotationY();
+            this.rotation.z = this.prevRotation.z = box.getDefaultRotationZ();
         }
     }
 

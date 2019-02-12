@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.function.Supplier;
 
 /**
  * The {@link ITabulaModelAnimator} used for this entity
@@ -44,7 +45,7 @@ public class EntityAnimator<E extends Entity, N extends IStringSerializable> imp
     @SuppressWarnings("rawtypes")
     private AnimationRunWrapper<E, N> getAnimationPassWrapper(E entity, TabulaModel model, boolean inertia) {
         N growth = this.poseHandler.getInfo().getStageFromEntity(entity);
-        return this.animationHandlers.computeIfAbsent(growth, g -> new WeakHashMap<>()).computeIfAbsent(entity, e -> this.poseHandler.createAnimationWrapper(e, model, growth, inertia, factories));
+        return this.animationHandlers.computeIfAbsent(growth, g -> new WeakHashMap<>()).computeIfAbsent(entity, e -> this.poseHandler.getInfo().onWrapperCreated(this.poseHandler.createAnimationWrapper(e, model, growth, inertia, factories)));
     }
 
     @Override

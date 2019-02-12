@@ -264,8 +264,12 @@ public class PoseHandler<E extends Entity, N extends IStringSerializable> {
                                                             List<AnimationLayerFactory<E, N>> factories) {
         List<AnimationLayer<E, N>> list = Lists.newArrayList();
         for (val factory : factories) {
-            HashMap<String, AnimationRunWrapper.CubeWrapper> map = new HashMap<>();
-            list.add(factory.createWrapper(entity, stage, model, s -> map.computeIfAbsent(s, o -> new AnimationRunWrapper.CubeWrapper(model.getCube(o))), this.info, inertia));
+            Map<String, AnimationRunWrapper.CubeWrapper> map = new HashMap<>();
+            Map<String, RenderAnimatableCube> cubeMap = new HashMap<>();
+            for (Map.Entry<String, AdvancedModelRenderer> entry : model.getCubes().entrySet()) {
+                cubeMap.put(entry.getKey(), new RenderAnimatableCube(entry.getValue()));
+            }
+            list.add(factory.createWrapper(entity, stage, model.getCubes().keySet(), cubeMap::get, s -> map.computeIfAbsent(s, o -> new AnimationRunWrapper.CubeWrapper(model.getCube(o))), this.info, inertia));
         }
         return new AnimationRunWrapper<>(entity, list);
     }
@@ -316,6 +320,6 @@ public class PoseHandler<E extends Entity, N extends IStringSerializable> {
      * The factory for creating {@link AnimationLayer}
      */
     public interface AnimationLayerFactory<E extends Entity, N extends IStringSerializable> {
-        AnimationLayer<E, N> createWrapper(E entity, N stage, TabulaModel model, Function<String, AnimationRunWrapper.CubeWrapper> cuberef, AnimationSystemInfo<N, E> info, boolean inertia);
+        AnimationLayer<E, N> createWrapper(E entity, N stage, Collection<String> cubeNames, Function<String, AnimationLayer.AnimatableCube> anicubeRef, Function<String, AnimationRunWrapper.CubeWrapper> cuberef, AnimationSystemInfo<N, E> info, boolean inertia);
     }
 }

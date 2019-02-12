@@ -1,22 +1,34 @@
 package net.dumbcode.dumblibrary.client.animation;
 
+import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import lombok.Cleanup;
 import lombok.experimental.UtilityClass;
+import net.dumbcode.dumblibrary.client.animation.objects.AnimationLayer;
 import net.dumbcode.dumblibrary.client.model.InfoTabulaModel;
+import net.dumbcode.dumblibrary.server.info.ServerAnimatableCube;
 import net.ilexiconn.llibrary.client.model.tabula.ITabulaModelAnimator;
 import net.ilexiconn.llibrary.client.model.tabula.TabulaModel;
+import net.ilexiconn.llibrary.client.model.tabula.container.TabulaCubeContainer;
 import net.ilexiconn.llibrary.client.model.tabula.container.TabulaModelContainer;
 import net.ilexiconn.llibrary.client.model.tools.AdvancedModelRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.common.FMLLog;
+import net.minecraftforge.fml.common.Loader;
+import net.minecraftforge.fml.common.ModContainer;
+import org.apache.commons.io.FileUtils;
 
+import javax.annotation.Nullable;
 import javax.vecmath.Matrix3f;
 import javax.vecmath.Matrix4f;
 import javax.vecmath.Vector3f;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -25,6 +37,47 @@ import java.util.zip.ZipInputStream;
  */
 @UtilityClass
 public class TabulaUtils {
+
+    public static Map<String, AnimationLayer.AnimatableCube> getServersideCubes(ResourceLocation location) {
+        if(!location.getResourcePath().endsWith(".tbl")) {
+            location = new ResourceLocation(location.getResourceDomain(), location.getResourcePath() + ".tbl");
+        }
+        Map<String, AnimationLayer.AnimatableCube> map = Maps.newHashMap();
+        ModContainer container = Loader.instance().getIndexedModList().get(location.getResourceDomain());
+        if(container != null) {
+            try {
+                String base = "assets/" + container.getModId() + "/" + location.getResourcePath();
+                File source = container.getSource();
+                Path root = null;
+                if (source.isFile()) {
+                    @Cleanup FileSystem fs = FileSystems.newFileSystem(source.toPath(), null);
+                    root = fs.getPath("/" + base);
+                } else if (source.isDirectory()) {
+                    root = source.toPath().resolve(base);
+                }
+
+                if (root != null && Files.exists(root)) {
+                    @Cleanup InputStream stream = Files.newInputStream(root);
+                    TabulaModelContainer modelContainer = new Gson().fromJson(new InputStreamReader(getModelJsonStream(stream)), TabulaModelContainer.class);
+                    for (TabulaCubeContainer containerCube : modelContainer.getCubes()) {
+                        parseCube(containerCube, null, map);
+                    }
+
+                }}
+            catch (IOException e) {
+                FMLLog.log.error("Error loading FileSystem: ", e);
+            }
+        }
+        return map;
+    }
+
+    private static void parseCube(TabulaCubeContainer cube, @Nullable ServerAnimatableCube parent, Map<String, AnimationLayer.AnimatableCube> map) {
+        ServerAnimatableCube animatableCube = new ServerAnimatableCube(parent, cube.getPosition(), cube.getRotation(), cube.getPosition());
+        map.put(cube.getName(), animatableCube);
+        for (TabulaCubeContainer child : cube.getChildren()) {
+            parseCube(child, animatableCube, map);
+        }
+    }
 
     public static TabulaModel getModel(ResourceLocation location){
         return getModel(location, null);

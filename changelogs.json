@@ -45,6 +45,9 @@
     ],
     "0.2.4": [
       "Added new AI system"
-    ]
+    ],
+	"0.2.5": [
+	  "Abstracted animation layering to allow for it to be server"
+	]
   }
 }

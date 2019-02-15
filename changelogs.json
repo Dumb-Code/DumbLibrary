@@ -48,6 +48,9 @@
     ],
 	"0.2.5": [
 	  "Abstracted animation layering to allow for it to be server"
+	],
+	"0.2.6": [
+	  "Added better central handling of animation layer"
 	]
   }
 }

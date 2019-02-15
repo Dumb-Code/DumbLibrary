@@ -1,16 +1,36 @@
 package net.dumbcode.dumblibrary.client.animation.objects;
 
 import net.ilexiconn.llibrary.client.model.tools.AdvancedModelRenderer;
+import net.minecraft.client.model.ModelBox;
+import net.minecraft.client.model.ModelRenderer;
 import net.minecraft.util.math.Vec3d;
+import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 public class RenderAnimatableCube implements AnimationLayer.AnimatableCube {
 
     private final AdvancedModelRenderer cube;
+    private final float offsetX;
+    private final float offsetY;
+    private final float offsetZ;
+
+    private final float dimensionX;
+    private final float dimensionY;
+    private final float dimensionZ;
 
     public RenderAnimatableCube(AdvancedModelRenderer cube) {
         this.cube = cube;
+        ModelBox box = ObfuscationReflectionHelper.<List<ModelBox>, ModelRenderer>getPrivateValue(ModelRenderer.class, cube, "cubeList", "field_78804" + "_l").get(0); //TODO: remove this god awful method of getting the offsets
+
+        this.offsetX = box.posX1;
+        this.offsetY = box.posY1;
+        this.offsetZ = box.posZ1;
+
+        this.dimensionX = box.posX2 - box.posX1;
+        this.dimensionY = box.posY2 - box.posY1;
+        this.dimensionZ = box.posZ2 - box.posZ1;
     }
 
     @Override
@@ -74,6 +94,36 @@ public class RenderAnimatableCube implements AnimationLayer.AnimatableCube {
     }
 
     @Override
+    public float getOffsetX() {
+        return this.offsetX;
+    }
+
+    @Override
+    public float getOffsetY() {
+        return this.offsetY;
+    }
+
+    @Override
+    public float getOffsetZ() {
+        return this.offsetZ;
+    }
+
+    @Override
+    public float getDimensionX() {
+        return this.dimensionX;
+    }
+
+    @Override
+    public float getDimensionY() {
+        return this.dimensionY;
+    }
+
+    @Override
+    public float getDimensionZ() {
+        return this.dimensionZ;
+    }
+
+    @Override
     public void setPositionX(float positionX) {
         this.cube.rotationPointX += positionX;
     }
@@ -102,6 +152,11 @@ public class RenderAnimatableCube implements AnimationLayer.AnimatableCube {
     @Override
     public void setRotationZ(float rotationZ) {
         this.cube.rotateAngleY += rotationZ;
+    }
+
+    @Override
+    public void reset() {
+        this.cube.resetToDefaultPose();
     }
 
     @Nullable

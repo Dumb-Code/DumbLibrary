@@ -17,7 +17,6 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.FMLLog;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.ModContainer;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
 import javax.annotation.Nullable;
@@ -76,7 +75,7 @@ public class TabulaUtils {
     }
 
     private static void parseCube(TabulaCubeContainer cube, @Nullable ServerAnimatableCube parent, Map<String, AnimationLayer.AnimatableCube> map) {
-        ServerAnimatableCube animatableCube = new ServerAnimatableCube(parent, cube.getPosition(), cube.getRotation(), cube.getPosition());
+        ServerAnimatableCube animatableCube = new ServerAnimatableCube(parent, cube);
         map.put(cube.getName(), animatableCube);
         for (TabulaCubeContainer child : cube.getChildren()) {
             parseCube(child, animatableCube, map);

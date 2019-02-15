@@ -5,7 +5,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import net.dumbcode.dumblibrary.server.info.AnimationSystemInfo;
-import net.ilexiconn.llibrary.client.model.tools.AdvancedModelRenderer;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.math.MathHelper;
@@ -209,14 +208,40 @@ public class AnimationLayer<E extends Entity, N extends IStringSerializable> {
         float getActualRotationX();
         float getActualRotationY();
         float getActualRotationZ();
+        float getOffsetX();
+        float getOffsetY();
+        float getOffsetZ();
+        float getDimensionX();
+        float getDimensionY();
+        float getDimensionZ();
         void setPositionX(float positionX);
         void setPositionY(float positionY);
         void setPositionZ(float positionZ);
         void setRotationX(float rotationX);
         void setRotationY(float rotationY);
         void setRotationZ(float rotationZ);
+        void reset();
 
         @Nullable AnimatableCube getParent();
+
+        default Vec3d getModelPos(float xalpha, float yalpha, float zalpha) {
+            Point3d endPoint = new Point3d((this.getOffsetX() + this.getDimensionX() * xalpha) / 16F, (this.getOffsetY() + this.getDimensionY() * yalpha) / -16F, (this.getOffsetZ() + this.getDimensionZ() * zalpha) / -16F);
+
+            Matrix4d boxTranslate = new Matrix4d();
+            Matrix4d boxRotateX = new Matrix4d();
+            Matrix4d boxRotateY = new Matrix4d();
+            Matrix4d boxRotateZ = new Matrix4d();
+            boxTranslate.set(new Vector3d(this.getRotationPointX() / 16, -this.getRotationPointY() / 16, -this.getRotationPointZ() / 16));
+            boxRotateX.rotX(this.getActualRotationX());
+            boxRotateY.rotY(-this.getActualRotationY());
+            boxRotateZ.rotZ(-this.getActualRotationZ());
+            boxRotateX.transform(endPoint);
+            boxRotateY.transform(endPoint);
+            boxRotateZ.transform(endPoint);
+            boxTranslate.transform(endPoint);
+
+            return getModelPos(new Vec3d(endPoint.x, endPoint.y, endPoint.z));
+        }
 
         default Vec3d getModelPos(Vec3d recurseValue) {
             double x = recurseValue.x;

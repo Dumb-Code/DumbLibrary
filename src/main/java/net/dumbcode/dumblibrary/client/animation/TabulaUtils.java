@@ -18,6 +18,7 @@ import net.minecraftforge.fml.common.FMLLog;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.ModContainer;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 
 import javax.annotation.Nullable;
 import javax.vecmath.Matrix3f;
@@ -45,12 +46,13 @@ public class TabulaUtils {
         Map<String, AnimationLayer.AnimatableCube> map = Maps.newHashMap();
         ModContainer container = Loader.instance().getIndexedModList().get(location.getResourceDomain());
         if(container != null) {
+            FileSystem fs = null;
             try {
                 String base = "assets/" + container.getModId() + "/" + location.getResourcePath();
                 File source = container.getSource();
                 Path root = null;
                 if (source.isFile()) {
-                    @Cleanup FileSystem fs = FileSystems.newFileSystem(source.toPath(), null);
+                    fs = FileSystems.newFileSystem(source.toPath(), null);
                     root = fs.getPath("/" + base);
                 } else if (source.isDirectory()) {
                     root = source.toPath().resolve(base);
@@ -63,9 +65,11 @@ public class TabulaUtils {
                         parseCube(containerCube, null, map);
                     }
 
-                }}
-            catch (IOException e) {
+                }
+            } catch (IOException e) {
                 FMLLog.log.error("Error loading FileSystem: ", e);
+            } finally {
+                IOUtils.closeQuietly(fs);
             }
         }
         return map;

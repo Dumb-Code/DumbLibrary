@@ -39,15 +39,15 @@ import java.util.zip.ZipInputStream;
 public class TabulaUtils {
 
     public static Map<String, AnimationLayer.AnimatableCube> getServersideCubes(ResourceLocation location) {
-        if(!location.getResourcePath().endsWith(".tbl")) {
-            location = new ResourceLocation(location.getResourceDomain(), location.getResourcePath() + ".tbl");
+        if(!location.getPath().endsWith(".tbl")) {
+            location = new ResourceLocation(location.getNamespace(), location.getPath() + ".tbl");
         }
         Map<String, AnimationLayer.AnimatableCube> map = Maps.newHashMap();
-        ModContainer container = Loader.instance().getIndexedModList().get(location.getResourceDomain());
+        ModContainer container = Loader.instance().getIndexedModList().get(location.getNamespace());
         if(container != null) {
             FileSystem fs = null;
             try {
-                String base = "assets/" + container.getModId() + "/" + location.getResourcePath();
+                String base = "assets/" + container.getModId() + "/" + location.getPath();
                 File source = container.getSource();
                 Path root = null;
                 if (source.isFile()) {
@@ -87,8 +87,8 @@ public class TabulaUtils {
     }
 
     public static TabulaModel getModel(ResourceLocation location, ITabulaModelAnimator animator){
-        if(!location.getResourcePath().endsWith(".tbl")) {
-            location = new ResourceLocation(location.getResourceDomain(), location.getResourcePath() + ".tbl");
+        if(!location.getPath().endsWith(".tbl")) {
+            location = new ResourceLocation(location.getNamespace(), location.getPath() + ".tbl");
         }
         try {
             @Cleanup InputStream stream = Minecraft.getMinecraft().getResourceManager().getResource(location).getInputStream();

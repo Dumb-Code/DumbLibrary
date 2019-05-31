@@ -37,5 +37,5 @@ public interface AnimationSystemInfo<N extends IStringSerializable, E extends En
 
     ResourceLocation identifier();
 
-    AnimationRunWrapper<E, N> getOrCreateWrapper(E entity, TabulaModel model, boolean inertia);
+    AnimationRunWrapper<E, N> getOrCreateWrapper(E entity, PoseHandler<E, N> poseHandler, TabulaModel model, boolean inertia);
 }

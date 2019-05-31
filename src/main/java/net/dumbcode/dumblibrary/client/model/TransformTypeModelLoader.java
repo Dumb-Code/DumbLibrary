@@ -25,13 +25,13 @@ public enum TransformTypeModelLoader implements ICustomModelLoader {
     @Override
     public boolean accepts(ResourceLocation modelLocation) {
         //If the resource location ends with `.ttm`, allow it to be used here
-        return modelLocation.getResourcePath().endsWith(".ttm");
+        return modelLocation.getPath().endsWith(".ttm");
     }
 
     @Override
     public IModel loadModel(ResourceLocation modelLocation) throws Exception {
         //Reformat the model location to remove the `.ttm` suffix and add the `.json`. Also, if the model path does not start with `models/`, add it.
-        modelLocation = new ResourceLocation(modelLocation.getResourceDomain(), (modelLocation.getResourcePath().startsWith("models/") ? "" : "models/") + modelLocation.getResourcePath().substring(0, modelLocation.getResourcePath().length() - 4) + ".json");
+        modelLocation = new ResourceLocation(modelLocation.getNamespace(), (modelLocation.getPath().startsWith("models/") ? "" : "models/") + modelLocation.getPath().substring(0, modelLocation.getPath().length() - 4) + ".json");
         //Create the input stream used to read the json file
         @Cleanup InputStream inputStream = Minecraft.getMinecraft().getResourceManager().getResource(modelLocation).getInputStream();
         //Create the input stream reader for that input stream

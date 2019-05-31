@@ -36,7 +36,7 @@ public class EntityAnimator<E extends Entity, N extends IStringSerializable> imp
      */
     @SuppressWarnings("rawtypes")
     private AnimationRunWrapper<E, N> getAnimationPassWrapper(E entity, TabulaModel model, boolean inertia) {
-        return poseHandler.getInfo().getOrCreateWrapper(entity, model, inertia);
+        return poseHandler.getInfo().getOrCreateWrapper(entity, this.poseHandler, model, inertia);
     }
 
     @Override

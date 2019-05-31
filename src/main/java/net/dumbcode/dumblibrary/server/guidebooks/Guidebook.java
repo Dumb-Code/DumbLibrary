@@ -64,7 +64,7 @@ public class Guidebook extends IForgeRegistryEntry.Impl<Guidebook> {
     }
 
     public String getInternalID() {
-        return getRegistryName().getResourcePath();
+        return getRegistryName().getPath();
     }
 
     private Map<String, GuidebookPage> createPageList() {

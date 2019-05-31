@@ -47,7 +47,7 @@ public class ModelContainer<E extends Entity, N extends IStringSerializable> {
                     model = null;
                 } else {
                     //Get the resource location of where the model is,
-                    ResourceLocation modelName = new ResourceLocation(regname.getResourceDomain(), "models/entities/" + regname.getResourcePath() + "/" + referneced.getName().toLowerCase(Locale.ROOT) + "/" + mainModelName);
+                    ResourceLocation modelName = new ResourceLocation(regname.getNamespace(), "models/entities/" + regname.getPath() + "/" + referneced.getName().toLowerCase(Locale.ROOT) + "/" + mainModelName);
                     try {
                         //Try and load the model, and also try to load the EntityAnimator (factory.createAnimator)
                         model = TabulaUtils.getModel(modelName, info.createAnimator(this.poseHandler));

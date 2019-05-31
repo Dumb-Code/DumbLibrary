@@ -47,7 +47,7 @@ public class PoseHandler<E extends Entity, N extends IStringSerializable> {
         this.info = info;
         this.modelInfomationMap = Maps.newHashMap();
         //The base location of all the models
-        String baseLoc = "models/entities/" + regname.getResourcePath() + "/";
+        String baseLoc = "models/entities/" + regname.getPath() + "/";
 
         for (N growth : info.allValues()) {
             N reference = growth;
@@ -68,7 +68,7 @@ public class PoseHandler<E extends Entity, N extends IStringSerializable> {
                     DinosaurAnimationInfomation rawData;
                     try {
                         //Get the input stream of the json file
-                        @Cleanup InputStream jsonStream = Minecraft.getMinecraft().getResourceManager().getResource(new ResourceLocation(regname.getResourceDomain(), growthDirectory + regname.getResourcePath() + "_" + growthName + ".json")).getInputStream();
+                        @Cleanup InputStream jsonStream = Minecraft.getMinecraft().getResourceManager().getResource(new ResourceLocation(regname.getNamespace(), growthDirectory + regname.getPath() + "_" + growthName + ".json")).getInputStream();
                         //Create a reader of the input stream
                         @Cleanup Reader reader = new InputStreamReader(jsonStream);
                         //Parse the reader into a JsonObject, so i can deserialize it
@@ -120,7 +120,7 @@ public class PoseHandler<E extends Entity, N extends IStringSerializable> {
                         //Get the main model for this ModelStage
                         String location = Objects.requireNonNull(info.stageToModelMap().get(reference), "Could not find main model location for " + regname + " as it was not defined");
                         //load the client information
-                        modelInfo = loadClientInfomation(new ResourceLocation(regname.getResourceDomain(), growthDirectory + location), modelResources, animationMap);
+                        modelInfo = loadClientInfomation(new ResourceLocation(regname.getNamespace(), growthDirectory + location), modelResources, animationMap);
                     } else {
                         modelInfo = new ModelInfomation<>(animationMap);
                     }
@@ -157,7 +157,7 @@ public class PoseHandler<E extends Entity, N extends IStringSerializable> {
             Map<String, CubeReference> innerMap = Maps.newHashMap();
             map.put(modelResource.getFileName(), innerMap);
             //Get the location of the model that represents the pose, and that we're going to generate the data for
-            ResourceLocation location = new ResourceLocation(mainModelLocation.getResourceDomain(), modelResource.getFullLocation());
+            ResourceLocation location = new ResourceLocation(mainModelLocation.getNamespace(), modelResource.getFullLocation());
             //If the pose location is the same as the mainModel, skip it and add all the mainModel data instead. Prevents loading the same model twice
             if (location.equals(mainModelLocation)) {
                 for (val cube : mainModel.getCubes().entrySet()) {
@@ -190,8 +190,8 @@ public class PoseHandler<E extends Entity, N extends IStringSerializable> {
                         //Create a new JsonParser
                         JsonParser parser = new JsonParser();
                         //If the location dosen't end with .json, then add it
-                        if (!location.getResourcePath().endsWith(".json")) {
-                            location = new ResourceLocation(location.getResourceDomain(), location.getResourcePath() + ".json");
+                        if (!location.getPath().endsWith(".json")) {
+                            location = new ResourceLocation(location.getNamespace(), location.getPath() + ".json");
                         }
                         //Get the json inputstream
                         @Cleanup InputStream stream = Minecraft.getMinecraft().getResourceManager().getResource(location).getInputStream();

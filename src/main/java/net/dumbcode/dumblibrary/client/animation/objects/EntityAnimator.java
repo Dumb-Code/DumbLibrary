@@ -1,7 +1,6 @@
 package net.dumbcode.dumblibrary.client.animation.objects;
 
 
-import com.google.common.collect.Maps;
 import net.dumbcode.dumblibrary.client.animation.PoseHandler;
 import net.ilexiconn.llibrary.client.model.tabula.ITabulaModelAnimator;
 import net.ilexiconn.llibrary.client.model.tabula.TabulaModel;
@@ -10,11 +9,7 @@ import net.minecraft.util.IStringSerializable;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.WeakHashMap;
-import java.util.function.Supplier;
 
 /**
  * The {@link ITabulaModelAnimator} used for this entity
@@ -26,17 +21,14 @@ public class EntityAnimator<E extends Entity, N extends IStringSerializable> imp
     private final PoseHandler<E, N> poseHandler;
     private final List<PoseHandler.AnimationLayerFactory<E, N>> factories;
 
-    protected HashMap<N, Map<E, AnimationRunWrapper<E, N>>> animationHandlers;
-
 
     public EntityAnimator(PoseHandler<E, N> poseHandler) {
         this.poseHandler = poseHandler;
-        this.animationHandlers = Maps.newHashMap();
         this.factories = this.poseHandler.getInfo().createFactories();
     }
 
     /**
-     * Get the {@link AnimationRunWrapper} linked with this entity. If there is none, add it
+     * Get the {@link AnimationRunWrapper} linked with this entity. If there is none, create it
      * @param entity the entity
      * @param model the model
      * @param inertia whether inertia should be used
@@ -44,8 +36,7 @@ public class EntityAnimator<E extends Entity, N extends IStringSerializable> imp
      */
     @SuppressWarnings("rawtypes")
     private AnimationRunWrapper<E, N> getAnimationPassWrapper(E entity, TabulaModel model, boolean inertia) {
-        N growth = this.poseHandler.getInfo().getStageFromEntity(entity);
-        return this.animationHandlers.computeIfAbsent(growth, g -> new WeakHashMap<>()).computeIfAbsent(entity, e -> this.poseHandler.getInfo().onWrapperCreated(this.poseHandler.createAnimationWrapper(e, model, growth, inertia, factories)));
+        return poseHandler.getInfo().getOrCreateWrapper(entity, model, inertia);
     }
 
     @Override

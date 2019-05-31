@@ -24,7 +24,7 @@ public class AnimatableRenderer<E extends EntityLiving, N extends IStringSeriali
      * @param renderManagerIn The RenderManager
      */
     public AnimatableRenderer(RenderManager renderManagerIn, Function<E, AnimationSystemInfo<N, E>> animationSystemInfoGetter) {
-        super(renderManagerIn, null, 1f);
+        super(renderManagerIn, ModelMissing.INSTANCE, 1f);
         this.animationSystemInfoGetter = animationSystemInfoGetter;
     }
 

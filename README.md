@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/Dumb-Code/DumbLibrary.svg?branch=master)](https://travis-ci.com/Dumb-Code/DumbLibrary)
+
 # DumbLibrary
 
 A Minecraft modding library made for DumbCode mods. It builds off of the library: LLibrary (See Below), and includes animation among other useful tools.

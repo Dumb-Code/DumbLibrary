@@ -5,12 +5,11 @@ buildscript {
         jcenter()
         maven { url = "http://files.minecraftforge.net/maven" }
         maven { url = "https://plugins.gradle.org/m2/" }
-		maven { url "https://plugins.gradle.org/m2/" }
     }
     dependencies {
         classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
         classpath "gradle.plugin.com.matthewprenger:CurseGradle:1.1.0"
-		classpath "gradle.plugin.net.dumbcode.gradlehook:GradleHook:1.2.0"
+		classpath "gradle.plugin.net.dumbcode.gradlehook:GradleHook:1.0.0"
     }
 }
 

@@ -5,16 +5,20 @@ buildscript {
         jcenter()
         maven { url = "http://files.minecraftforge.net/maven" }
         maven { url = "https://plugins.gradle.org/m2/" }
+		maven { url "https://plugins.gradle.org/m2/" }
     }
     dependencies {
         classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
         classpath "gradle.plugin.com.matthewprenger:CurseGradle:1.1.0"
+		classpath "gradle.plugin.net.dumbcode.gradlehook:GradleHook:1.2.0"
     }
 }
 
 apply plugin: 'net.minecraftforge.gradle.forge'
 apply plugin: "maven-publish"
 apply plugin: "com.matthewprenger.cursegradle"
+apply plugin: "net.dumbcode.gradlehook"
+
 //Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
 
 import groovy.json.JsonSlurper;
@@ -149,4 +153,9 @@ processResources {
     from(sourceSets.main.resources.srcDirs) {
         exclude 'mcmod.info'
     }
+}
+
+gradlehook {
+    urlToken System.getenv('discordwebhook')
+    addArtifact jar
 }

@@ -9,14 +9,14 @@ buildscript {
     dependencies {
         classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
         classpath "gradle.plugin.com.matthewprenger:CurseGradle:1.1.0"
-		//classpath "gradle.plugin.net.dumbcode.gradlehook:GradleHook:1.0.0"
+	classpath "gradle.plugin.net.dumbcode.gradlehook:GradleHook:1.2.0"
     }
 }
 
 apply plugin: 'net.minecraftforge.gradle.forge'
 apply plugin: "maven-publish"
 apply plugin: "com.matthewprenger.cursegradle"
-//apply plugin: "net.dumbcode.gradlehook"
+apply plugin: "net.dumbcode.gradlehook"
 
 //Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
 
@@ -154,7 +154,7 @@ processResources {
     }
 }
 
-//gradlehook {
-//    urlToken System.getenv('discordwebhook')
-//    addArtifact jar
-//}
+gradlehook {
+    urlToken System.getenv('discordwebhook')
+    addArtifact jar
+}

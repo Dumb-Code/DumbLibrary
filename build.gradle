@@ -170,7 +170,7 @@ processResources {
 }
 
 gradlehook {
-    urlToken System.getenv('discordwebhook')
+    urlToken System.getenv('WEBHOOK_URL')
     
     addField 'payload_json', '{ "embeds": [{ "timestamp": "{{datetime}}" }] }'
     

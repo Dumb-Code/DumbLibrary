@@ -20,17 +20,15 @@ apply plugin: "net.dumbcode.gradlehook"
 
 //Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
 
-import groovy.json.JsonSlurper;
-
-def credentialsFile = file "credentials.json"
-project.ext.credentials = null
-if (credentialsFile.exists()) {
-    credentialsFile.withReader {
-        project.ext.credentials = new JsonSlurper().parse it
-    }
-}
+import groovy.json.JsonSlurper
+import com.matthewprenger.cursegradle.CurseArtifact
+import net.dumbcode.gradlehook.tasks.form.FieldObject
+import net.dumbcode.gradlehook.tasks.form.PostForm
+import java.time.Instant
+import java.time.ZoneOffset;
 
 def mod_version = getVersion()
+def curseforgeID = "298694"
 version = "1.12.2-" + mod_version
 group = "com.dumbcode.dumblibrary" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "dumblibrary"
@@ -68,6 +66,30 @@ dependencies {
     compile group: 'org.apache.commons', name: 'commons-collections4', version: '4.0'
 }
 
+task("publishMod", group: "upload", description: "Publish the mod to curseforge and the webhook", dependsOn: tasks.getByName("curseforge")) {
+    description = "Publish the mod"
+    doLast {
+        //This is kind of a hack, I am aware. However, cursegradle doesnt store their IDs anywhere, apart from parent IDs on additional artifacts.
+        //Maybe we could ask CurseGradle to store their Ids in the artifact class.
+        List<CurseArtifact> artifacts = tasks.getByName("curseforge$curseforgeID").property("additionalArtifacts") as List<CurseArtifact>
+        if (artifacts.isEmpty()) {
+            println "Error, unable to access artifact parent ID. Need to have additional artifacts for this to work"
+        }
+        def id = artifacts.get(0).parentFileID
+
+
+        def url = "https://minecraft.curseforge.com/projects/dumb-library/files/$id"
+        def color = 0x686868
+        def datetime = Instant.now().atZone(ZoneOffset.UTC).toString()
+        def form = new PostForm(dumblibrary_publish_url) //In the ~/.gradle/gradle.properties file
+        form.addObject new FieldObject('payload_json', "{ \"embeds\": [{ \"title\": \"New Version $project.version !\", \"color\": $color, \"url\": \"$url\" , \"timestamp\": \"$datetime\"}]}")
+        def result = form.send()
+        if (result.responseCode != 200) {
+            println "ERROR, webhook returned with a response code of $result.responseCode."
+        }
+    }
+}
+
 task sourcesJar(type: Jar, dependsOn: classes) {
     classifier = "sources"
     from sourceSets.main.allSource
@@ -91,16 +113,12 @@ artifacts {
 
 curseforge {
 
-    if (credentials) {
-        apiKey = credentials.api_key
-    } else {
-        apiKey = ""
-    }
+    apiKey = curseforge_api_key //In the ~/.gradle/gradle.properties file
     project {
         def url = "https://raw.githubusercontent.com/Dumb-Code/DumbLibrary/master/changelogs.json".toURL()
         def changelogs = new JsonSlurper().parseText url.text
 
-        id = '298694'
+        id = curseforgeID
         def remoteChangelog = changelogs.changelogs[mod_version]
         if (remoteChangelog) {
             changelog = remoteChangelog.join("\n")

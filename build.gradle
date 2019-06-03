@@ -67,7 +67,6 @@ dependencies {
 }
 
 task("publishMod", group: "upload", description: "Publish the mod to curseforge and the webhook", dependsOn: tasks.getByName("curseforge")) {
-    description = "Publish the mod"
     doLast {
         //This is kind of a hack, I am aware. However, cursegradle doesnt store their IDs anywhere, apart from parent IDs on additional artifacts.
         //Maybe we could ask CurseGradle to store their Ids in the artifact class.
@@ -77,14 +76,13 @@ task("publishMod", group: "upload", description: "Publish the mod to curseforge 
         }
         def id = artifacts.get(0).parentFileID
 
-
         def url = "https://minecraft.curseforge.com/projects/dumb-library/files/$id"
         def color = 0x686868
         def datetime = Instant.now().atZone(ZoneOffset.UTC).toString()
         def form = new PostForm(dumblibrary_publish_url) //In the ~/.gradle/gradle.properties file
         form.addObject new FieldObject('payload_json', "{ \"embeds\": [{ \"title\": \"New Version $project.version !\", \"color\": $color, \"url\": \"$url\" , \"timestamp\": \"$datetime\"}]}")
         def result = form.send()
-        if (result.responseCode != 200) {
+        if (result.responseCode != 200 && result.responseCode != 204) {
             println "ERROR, webhook returned with a response code of $result.responseCode."
         }
     }
@@ -112,8 +110,7 @@ artifacts {
 }
 
 curseforge {
-
-    apiKey = curseforge_api_key //In the ~/.gradle/gradle.properties file
+    apiKey = project.hasProperty("curseforge_api_key") ? curseforge_api_key : "###"//In the ~/.gradle/gradle.properties file
     project {
         def url = "https://raw.githubusercontent.com/Dumb-Code/DumbLibrary/master/changelogs.json".toURL()
         def changelogs = new JsonSlurper().parseText url.text

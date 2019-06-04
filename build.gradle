@@ -104,7 +104,7 @@ task("publishMod", group: "upload", description: "Publish the mod to curseforge 
         println "Webhook uploaded with response code $result.responseCode"
 
         //Setup
-        run "git clone https://github.com/Dumb-Code/Changelogs.git", true, file(".")
+        run "git clone https://github.com/Dumb-Code/Changelogs.git", false, file(".")
         run "git remote rm origin"
         run "git remote add origin https://Travis-CI:${github_token}@github.com/Dumb-Code/Changelogs.git"
 

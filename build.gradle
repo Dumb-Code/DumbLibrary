@@ -80,16 +80,8 @@ def run(String command, File f = file("Changelogs")) {
 }
 
 task("setChangelog") {
-    tasks.getByName("curseforge").mustRunAfter setChangelog
-
     doFirst {
         def changelog = "https://raw.githubusercontent.com/Dumb-Code/Changelogs/master/dumb_library.txt".toURL().text.trim()
-        println "-----------------------------"
-        println "----------Changelog----------"
-        println "-----------------------------"
-        println changelog
-        println "-----------------------------"
-
         def cftask = tasks.getByName("curseforge$curseforgeID")
         //Manually set the changelog, as the changelog in the extension may be cached wrong.
         (cftask.property("mainArtifact") as CurseArtifact).changelog = changelog
@@ -152,6 +144,7 @@ task("publishMod", group: "upload", description: "Publish the mod to curseforge 
         println "Cache folder deleted"
     }
 }
+setChangelog.finalizedBy tasks.getByName("curseforge")
 
 task sourcesJar(type: Jar, dependsOn: classes) {
     classifier = "sources"

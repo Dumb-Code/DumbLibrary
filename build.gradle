@@ -19,6 +19,7 @@ buildscript {
     }
 }
 
+
 apply plugin: 'net.minecraftforge.gradle.forge'
 apply plugin: "maven-publish"
 apply plugin: "com.matthewprenger.cursegradle"
@@ -27,16 +28,16 @@ apply plugin: "net.dumbcode.gradlehook"
 //Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
 
 
-if(System.getenv("TRAVIS")) {
-    setDebugCommitVersion()
-}
-
 def curseforgeID = "298694"
-version = "1.12.2-" + getDirectVersion()
+
 group = "com.dumbcode.dumblibrary" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "dumblibrary"
 
-
+if(System.getenv("TRAVIS")) {
+    version = setDebugCommitVersion()
+} else {
+    version = "1.12.2-" + getDirectVersion()
+}
 
 sourceCompatibility = targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
 compileJava {
@@ -72,13 +73,14 @@ dependencies {
 }
 
 def setDebugCommitVersion() {
-    def version = System.getenv("TRAVIS_COMMIT").substring(0, 7)
+    def hash = System.getenv("TRAVIS_COMMIT").substring(0, 7)
 
     def prefix = 'public static final String VERSION = "'
     def file = file("src/main/java/net/dumbcode/dumblibrary/DumbLibrary.java")
     def text = file.text
 
-    file.withWriter { w-> w << text.replaceAll("\\Q$prefix\\E.+\"", prefix + version + '"') }
+    file.withWriter { w-> w << text.replaceAll("\\Q$prefix\\E.+\"", prefix + hash + '"') }
+    return hash
 }
 
 def run(String command, File f = file("Changelogs")) {
@@ -206,8 +208,6 @@ String getDirectVersion() {
         if (s.startsWith(prefix)) {
             s = s.substring(prefix.length(), s.length() - 2)
             def pts = s.split("\\.")
-            println pts
-            println s
             if(pts.length != 3) {
                 return s
             }

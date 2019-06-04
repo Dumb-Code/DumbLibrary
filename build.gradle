@@ -1,6 +1,10 @@
+import com.matthewprenger.cursegradle.CurseArtifact
+import net.dumbcode.gradlehook.tasks.form.FieldObject
+import net.dumbcode.gradlehook.tasks.form.PostForm
 import org.apache.commons.io.FileUtils
 
-import java.nio.file.Files
+import java.time.Instant
+import java.time.ZoneOffset
 
 buildscript {
     repositories {
@@ -22,24 +26,17 @@ apply plugin: "net.dumbcode.gradlehook"
 
 //Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
 
-import groovy.json.JsonSlurper
-import com.matthewprenger.cursegradle.CurseArtifact
-import net.dumbcode.gradlehook.tasks.form.FieldObject
-import net.dumbcode.gradlehook.tasks.form.PostForm
-import java.time.Instant
-import java.time.ZoneOffset;
 
+if(System.getenv("TRAVIS")) {
+    setDebugCommitVersion()
+}
 
 def curseforgeID = "298694"
-
+version = "1.12.2-" + getDirectVersion()
 group = "com.dumbcode.dumblibrary" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "dumblibrary"
 
-if(System.getenv("TRAVIS")) {
-    version = setDebugCommitVersion()
-} else {
-    version = "1.12.2-" + getDirectVersion()
-}
+
 
 sourceCompatibility = targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
 compileJava {
@@ -75,14 +72,13 @@ dependencies {
 }
 
 def setDebugCommitVersion() {
-    def hash = System.getenv("TRAVIS_COMMIT").substring(0, 7)
+    def version = System.getenv("TRAVIS_COMMIT").substring(0, 7)
 
     def prefix = 'public static final String VERSION = "'
     def file = file("src/main/java/net/dumbcode/dumblibrary/DumbLibrary.java")
     def text = file.text
 
-    file.withWriter { w-> w << text.replaceAll("\\Q$prefix\\E.+\"", prefix + hash + '"') }
-    return hash
+    file.withWriter { w-> w << text.replaceAll("\\Q$prefix\\E.+\"", prefix + version + '"') }
 }
 
 def run(String command, File f = file("Changelogs")) {

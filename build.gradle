@@ -67,7 +67,7 @@ dependencies {
 }
 
 def setDebugCommitVersion() {
-    def hash = System.getenv("TRAVIS_COMMIT").substring(0, 7)
+    def hash = System.getenv("TRAVIS_BUILD_NUMBER") + "-" + System.getenv("TRAVIS_COMMIT").substring(0, 7)
 
     def prefix = 'public static final String VERSION = "'
     def file = file("src/main/java/net/dumbcode/dumblibrary/DumbLibrary.java")

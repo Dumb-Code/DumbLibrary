@@ -1,3 +1,5 @@
+import org.apache.commons.io.FileUtils
+
 import java.nio.file.Files
 
 buildscript {
@@ -66,6 +68,20 @@ dependencies {
     compile group: 'org.apache.commons', name: 'commons-collections4', version: '4.0'
 }
 
+def run(String command, boolean print = false, File f = file("Changelogs")) {
+    def commands = command.split(" ")
+    def outCommands = new String[commands.length]
+
+    for (int i = 0; i < commands.length; i++) {
+        outCommands[i] = commands[i].replace("~", " ")
+    }
+
+    def out = Runtime.getRuntime().exec(outCommands, null, f).text.trim()
+    if(print) {
+        println out
+    }
+}
+
 task("publishMod", group: "upload", description: "Publish the mod to curseforge and the webhook", dependsOn: tasks.getByName("curseforge")) {
     doLast {
         //This is kind of a hack, I am aware. However, cursegradle doesnt store their IDs anywhere, apart from parent IDs on additional artifacts.
@@ -76,15 +92,43 @@ task("publishMod", group: "upload", description: "Publish the mod to curseforge 
         }
         def id = artifacts.get(0).parentFileID
 
+        println "Artifact uploaded with id $id"
+
         def url = "https://minecraft.curseforge.com/projects/dumb-library/files/$id"
         def color = 0x686868
         def datetime = Instant.now().atZone(ZoneOffset.UTC).toString()
         def form = new PostForm(dumblibrary_publish_url) //In the ~/.gradle/gradle.properties file
         form.addObject new FieldObject('payload_json', "{ \"embeds\": [{ \"title\": \"New Version $project.version !\", \"color\": $color, \"url\": \"$url\" , \"timestamp\": \"$datetime\"}]}")
         def result = form.send()
-        if (result.responseCode != 200 && result.responseCode != 204) {
-            println "ERROR, webhook returned with a response code of $result.responseCode."
-        }
+
+        println "Webhook uploaded with response code $result.responseCode"
+
+        //Setup
+        run "git clone https://github.com/Dumb-Code/Changelogs.git", true, file(".")
+        run "git remote rm origin"
+        run "git remote add origin https://Travis-CI:${github_token}@github.com/Dumb-Code/Changelogs.git"
+
+        //Config
+        run "git config --global commit.gpgsign false"
+
+        println "Successfully cloned and setup git"
+
+        //Delete
+        file("Changelogs/dumb_library.txt").delete()
+
+        println "Reset changelog file"
+
+        //Push
+        run "git add dumb_library.txt"
+        run "git commit --message \"Deleted~dumb_library.txt~for~new~build\"", true //Maybe add version number?
+        run "git push origin master"
+
+        println "Pushed changes to master"
+
+        //Delete the folder
+        FileUtils.deleteDirectory(file("Changelogs"))
+
+        println "Cache folder deleted"
     }
 }
 
@@ -112,14 +156,10 @@ artifacts {
 curseforge {
     apiKey = project.hasProperty("curseforge_api_key") ? curseforge_api_key : "###"//In the ~/.gradle/gradle.properties file
     project {
-        def url = "https://raw.githubusercontent.com/Dumb-Code/DumbLibrary/master/changelogs.json".toURL()
-        def changelogs = new JsonSlurper().parseText url.text
-
         id = curseforgeID
-        def remoteChangelog = changelogs.changelogs[mod_version]
-        if (remoteChangelog) {
-            changelog = remoteChangelog.join("\n")
-        } else {
+        try {
+            changelog = "https://raw.githubusercontent.com/Dumb-Code/Changelogs/master/dumb_library.txt".toURL().text
+        } catch(FileNotFoundException e) {
             changelog = ""
         }
         releaseType = 'beta'

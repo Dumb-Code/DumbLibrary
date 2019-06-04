@@ -75,7 +75,7 @@ dependencies {
 }
 
 def setDebugCommitVersion() {
-    def hash = System.getenv("COMMIT_HASH")
+    def a = System.getenv("TRAVIS_COMMIT").substring(0, 8)
 
     println hash
 
@@ -84,7 +84,7 @@ def setDebugCommitVersion() {
     def text = file.text
 
     file.withWriter { w-> w << text.replaceAll("\\Q$prefix\\E.+\"", prefix + hash + '"') }
-
+    return hash
 }
 
 def run(String command, File f = file("Changelogs")) {

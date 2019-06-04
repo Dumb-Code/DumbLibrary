@@ -206,8 +206,10 @@ String getDirectVersion() {
         if (s.startsWith(prefix)) {
             s = s.substring(prefix.length(), s.length() - 2)
             def pts = s.split("\\.")
+            println pts
+            println s
             if(pts.length != 3) {
-                return pts
+                return s
             }
             major = pts[0]
             revision = pts[1]

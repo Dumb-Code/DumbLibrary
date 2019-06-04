@@ -68,7 +68,7 @@ dependencies {
     compile group: 'org.apache.commons', name: 'commons-collections4', version: '4.0'
 }
 
-def run(String command, boolean print = false, File f = file("Changelogs")) {
+def run(String command, File f = file("Changelogs")) {
     def commands = command.split(" ")
     def outCommands = new String[commands.length]
 
@@ -76,17 +76,14 @@ def run(String command, boolean print = false, File f = file("Changelogs")) {
         outCommands[i] = commands[i].replace("~", " ")
     }
 
-    def out = Runtime.getRuntime().exec(outCommands, null, f).text.trim()
-    if(print) {
-        println out
-    }
+    return Runtime.getRuntime().exec(outCommands, null, f).text.trim()
 }
 
-task("publishMod", group: "upload", description: "Publish the mod to curseforge and the webhook", dependsOn: tasks.getByName("curseforge")) {
-
+task("setChangelog") {
+    tasks.getByName("curseforge").mustRunAfter setChangelog
 
     doFirst {
-        def changelog = "https://raw.githubusercontent.com/Dumb-Code/Changelogs/master/dumb_library.txt".toURL().text
+        def changelog = "https://raw.githubusercontent.com/Dumb-Code/Changelogs/master/dumb_library.txt".toURL().text.trim()
         println "-----------------------------"
         println "----------Changelog----------"
         println "-----------------------------"
@@ -98,7 +95,9 @@ task("publishMod", group: "upload", description: "Publish the mod to curseforge 
         (cftask.property("mainArtifact") as CurseArtifact).changelog = changelog
         (cftask.property("additionalArtifacts") as List<CurseArtifact>).forEach {artifact -> artifact.changelog = changelog}
     }
+}
 
+task("publishMod", group: "upload", description: "Publish the mod to curseforge and the webhook", dependsOn: setChangelog) {
     doLast {
         //This is kind of a hack, I am aware. However, cursegradle doesnt store their IDs anywhere, apart from parent IDs on additional artifacts.
         //Maybe we could ask CurseGradle to store their Ids in the artifact class.
@@ -119,8 +118,11 @@ task("publishMod", group: "upload", description: "Publish the mod to curseforge 
 
         println "Webhook uploaded with response code $result.responseCode"
 
+
+        def currentSign =  run("git config --global commit.gpgsign", file("."))
+
         //Setup
-        run "git clone https://github.com/Dumb-Code/Changelogs.git", false, file(".")
+        println run("git clone https://github.com/Dumb-Code/Changelogs.git", file("."))
         run "git remote rm origin"
         run "git remote add origin https://Travis-CI:${github_token}@github.com/Dumb-Code/Changelogs.git"
 
@@ -136,10 +138,13 @@ task("publishMod", group: "upload", description: "Publish the mod to curseforge 
 
         //Push
         run "git add dumb_library.txt"
-        run "git commit --message \"Deleted~dumb_library.txt~for~new~build\"", true //Maybe add version number?
+        println run("git commit --message \"Deleted~dumb_library.txt~for~new~build\"") //Maybe add version number?
         run "git push origin master"
 
         println "Pushed changes to master"
+
+        //Re-config
+        run "git config --global commit.gpgsign $currentSign"
 
         //Delete the folder
         FileUtils.deleteDirectory(file("Changelogs"))

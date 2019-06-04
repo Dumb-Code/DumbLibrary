@@ -82,13 +82,18 @@ def run(String command, boolean print = false, File f = file("Changelogs")) {
     }
 }
 
-task("publishMod", group: "upload", description: "Publish the mod to curseforge and the webhook") {//dependsOn: tasks.getByName("curseforge")
+task("publishMod", group: "upload", description: "Publish the mod to curseforge and the webhook", dependsOn: tasks.getByName("curseforge")) {
 
-    def changelog = "https://raw.githubusercontent.com/Dumb-Code/Changelogs/master/dumb_library.txt".toURL().text
 
     doFirst {
-        def cftask = tasks.getByName("curseforge$curseforgeID")
+        def changelog = "https://raw.githubusercontent.com/Dumb-Code/Changelogs/master/dumb_library.txt".toURL().text
+        println "-----------------------------"
+        println "----------Changelog----------"
+        println "-----------------------------"
         println changelog
+        println "-----------------------------"
+
+        def cftask = tasks.getByName("curseforge$curseforgeID")
         //Manually set the changelog, as the changelog in the extension may be cached wrong.
         (cftask.property("mainArtifact") as CurseArtifact).changelog = changelog
         (cftask.property("additionalArtifacts") as List<CurseArtifact>).forEach {artifact -> artifact.changelog = changelog}

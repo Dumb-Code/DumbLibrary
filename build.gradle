@@ -214,7 +214,7 @@ String getDirectVersion() {
         }
     }
 
-    return "$major.$revision.$patch";
+    return "$major.$revision.$patch"
 }
 
 processResources {
@@ -236,7 +236,7 @@ processResources {
 gradlehook {
     urlToken System.getenv('WEBHOOK_URL')
     
-    addField 'payload_json', '{ "embeds": [{ "timestamp": "{{datetime}}" }] }'
+    addField 'payload_json', '{ "embeds": [{ "title":"' + System.getenv('TRAVIS_COMMIT_MESSAGE') + "-" + System.getenv("COMMITTER_NAME") + '", "timestamp": "{{datetime}}" }] }'
     
     addArtifact jar
     addArtifact sourcesJar

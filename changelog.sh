@@ -16,9 +16,7 @@ setup_git() {
 }
 
 edit_file() {
-  echo "$COMMITTER_NAME ($COMMITTER_EMAIL) @ $COMMIT_HASH" >> dumb_library.txt
-  echo "    $TRAVIS_COMMIT_MESSAGE" >> dumb_library.txt
-  echo "" >> dumb_library.txt
+  echo -e "COMMITTER_NAME2 (COMMITTER_EMAIL) @ COMMIT_HASH\n    TRAVIS_COMMIT_MESSAGE\n\n$(cat dumb_library.txt)" > dumb_library.txt
 }
 
 push_files() {

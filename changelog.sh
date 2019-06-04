@@ -16,14 +16,14 @@ setup_git() {
 }
 
 edit_file() {
-  echo "$COMMITTER_NAME ($COMMITTER_EMAIL) @ $TRAVIS_COMMIT" >> dumb_library.txt
+  echo "$COMMITTER_NAME ($COMMITTER_EMAIL) @ $COMMIT_HASH" >> dumb_library.txt
   echo "    $TRAVIS_COMMIT_MESSAGE" >> dumb_library.txt
   echo "" >> dumb_library.txt
 }
 
 push_files() {
   git add dumb_library.txt
-  git commit --message "Dumb Library Update: $TRAVIS_BUILD_NUMBER:$TRAVIS_COMMIT"
+  git commit --message "Dumb Library Update: $TRAVIS_BUILD_NUMBER:$COMMIT_HASH"
   git push origin master
 }
 

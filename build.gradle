@@ -67,14 +67,14 @@ dependencies {
 }
 
 def setDebugCommitVersion() {
-    def hash = System.getenv("TRAVIS_BUILD_NUMBER") + "-" + System.getenv("TRAVIS_COMMIT").substring(0, 7)
+    def version = "debug-" + System.getenv("TRAVIS_BUILD_NUMBER") + "-" + System.getenv("TRAVIS_COMMIT").substring(0, 7)
 
     def prefix = 'public static final String VERSION = "'
     def file = file("src/main/java/net/dumbcode/dumblibrary/DumbLibrary.java")
     def text = file.text
 
-    file.withWriter { w-> w << text.replaceAll("\\Q$prefix\\E.+\"", prefix + hash + '"') }
-    return hash
+    file.withWriter { w-> w << text.replaceAll("\\Q$prefix\\E.+\"", prefix + version + '"') }
+    return version
 }
 
 def run(String command, File f = file("Changelogs")) {
@@ -88,7 +88,7 @@ def run(String command, File f = file("Changelogs")) {
     return Runtime.getRuntime().exec(outCommands, null, f).text.trim()
 }
 
-task("setChangelog") {
+task("setChangelog", description: "Sets the changelog to the artifacts") {
     doFirst {
         def changelog = "https://raw.githubusercontent.com/Dumb-Code/Changelogs/master/dumb_library.txt".toURL().text.trim()
         def cftask = tasks.getByName("curseforge$curseforgeID")
@@ -97,6 +97,7 @@ task("setChangelog") {
         (cftask.property("additionalArtifacts") as List<CurseArtifact>).forEach {artifact -> artifact.changelog = changelog}
     }
 }
+setChangelog.finalizedBy tasks.getByName("curseforge")
 
 task("publishMod", group: "upload", description: "Publish the mod to curseforge and the webhook", dependsOn: setChangelog) {
     doLast {
@@ -153,7 +154,6 @@ task("publishMod", group: "upload", description: "Publish the mod to curseforge 
         println "Cache folder deleted"
     }
 }
-setChangelog.finalizedBy tasks.getByName("curseforge")
 
 task sourcesJar(type: Jar, dependsOn: classes) {
     classifier = "sources"

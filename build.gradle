@@ -29,11 +29,17 @@ import net.dumbcode.gradlehook.tasks.form.PostForm
 import java.time.Instant
 import java.time.ZoneOffset;
 
-def mod_version = getVersion()
+
 def curseforgeID = "298694"
-version = "1.12.2-" + mod_version
+
 group = "com.dumbcode.dumblibrary" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "dumblibrary"
+
+if(System.getenv("TRAVIS")) {
+    version = setDebugCommitVersion()
+} else {
+    version = "1.12.2-" + getDirectVersion()
+}
 
 sourceCompatibility = targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
 compileJava {
@@ -66,6 +72,19 @@ dependencies {
     compile "net.ilexiconn:llibrary:1.7.14-1.12.2"
     compile 'org.projectlombok:lombok:1.18.0'
     compile group: 'org.apache.commons', name: 'commons-collections4', version: '4.0'
+}
+
+def setDebugCommitVersion() {
+    def hash = System.getenv("COMMIT_HASH")
+
+    println hash
+
+    def prefix = 'public static final String VERSION = "'
+    def file = file("src/main/java/net/dumbcode/dumblibrary/DumbLibrary.java")
+    def text = file.text
+
+    file.withWriter { w-> w << text.replaceAll("\\Q$prefix\\E.+\"", prefix + hash + '"') }
+
 }
 
 def run(String command, File f = file("Changelogs")) {
@@ -182,7 +201,7 @@ curseforge {
     }
 }
 
-String getVersion() {
+String getDirectVersion() {
     def major = "0"
     def revision = "0"
     def patch = "0"
@@ -193,6 +212,9 @@ String getVersion() {
         if (s.startsWith(prefix)) {
             s = s.substring(prefix.length(), s.length() - 2)
             def pts = s.split("\\.")
+            if(pts.length != 3) {
+                return pts
+            }
             major = pts[0]
             revision = pts[1]
             patch = pts[2]

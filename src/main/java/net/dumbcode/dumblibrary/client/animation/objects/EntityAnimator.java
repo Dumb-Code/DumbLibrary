@@ -2,8 +2,8 @@ package net.dumbcode.dumblibrary.client.animation.objects;
 
 
 import net.dumbcode.dumblibrary.client.animation.PoseHandler;
-import net.ilexiconn.llibrary.client.model.tabula.ITabulaModelAnimator;
-import net.ilexiconn.llibrary.client.model.tabula.TabulaModel;
+import net.dumbcode.dumblibrary.client.model.tabula.TabulaModel;
+import net.dumbcode.dumblibrary.client.model.tabula.TabulaModelAnimator;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.IStringSerializable;
 import net.minecraftforge.fml.relauncher.Side;
@@ -12,11 +12,11 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import java.util.List;
 
 /**
- * The {@link ITabulaModelAnimator} used for this entity
+ * The {@link TabulaModelAnimator} used for this entity
  * @param <E> the entity type
  */
 @SideOnly(Side.CLIENT)
-public class EntityAnimator<E extends Entity, N extends IStringSerializable> implements ITabulaModelAnimator<E> {
+public class EntityAnimator<E extends Entity, N extends IStringSerializable> implements TabulaModelAnimator<E> {
 
     private final PoseHandler<E, N> poseHandler;
     private final List<PoseHandler.AnimationLayerFactory<E, N>> factories;
@@ -39,10 +39,12 @@ public class EntityAnimator<E extends Entity, N extends IStringSerializable> imp
         return poseHandler.getInfo().getOrCreateWrapper(entity, this.poseHandler, model, inertia);
     }
 
+
+
     @Override
-    public final void setRotationAngles(TabulaModel model, E entity, float limbSwing, float limbSwingAmount, float ticks, float rotationYaw, float rotationPitch, float scale) {
-        this.getAnimationPassWrapper(entity, model, true).performAnimations(entity, limbSwing, limbSwingAmount, ticks);
-        this.performAnimations(model, entity, limbSwing, limbSwingAmount, ticks, rotationYaw, rotationPitch, scale);
+    public void setRotationAngles(TabulaModel model, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scaleFactor, E entityIn) {
+        this.getAnimationPassWrapper(entityIn, model, true).performAnimations(entityIn, limbSwing, limbSwingAmount, ageInTicks);
+        this.performAnimations(model, entityIn, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scaleFactor);
     }
 
     /**
@@ -58,5 +60,6 @@ public class EntityAnimator<E extends Entity, N extends IStringSerializable> imp
      */
     protected void performAnimations(TabulaModel parModel, E entity, float limbSwing, float limbSwingAmount, float ticks, float rotationYaw, float rotationPitch, float scale) {
     }
+
 
 }

@@ -3,11 +3,11 @@ package net.dumbcode.dumblibrary.server.json;
 import com.google.common.collect.Lists;
 import com.google.gson.*;
 import lombok.Data;
+import net.dumbcode.dumblibrary.client.model.tabula.TabulaModel;
+import net.dumbcode.dumblibrary.client.model.tabula.TabulaModelAnimator;
 import net.dumbcode.dumblibrary.server.json.objects.Constants;
 import net.dumbcode.dumblibrary.server.json.objects.JsonAnimationModule;
 import net.dumbcode.dumblibrary.server.json.objects.JsonAnimationRegistry;
-import net.ilexiconn.llibrary.client.model.tabula.ITabulaModelAnimator;
-import net.ilexiconn.llibrary.client.model.tabula.TabulaModel;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.JsonUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -21,17 +21,18 @@ import java.util.function.BiFunction;
  * @author Wyn Price
  */
 @Data
-public class JsonAnimator implements ITabulaModelAnimator<Entity> {
+public class JsonAnimator implements TabulaModelAnimator<Entity> {
 
     private final float globalSpeed;
     private final float globalDegree;
     private final Constants constants;
     private final List<JsonAnimationModule> animationModules;
 
+
     @Override
-    public void setRotationAngles(TabulaModel model, Entity entity, float limbSwing, float limbSwingAmount, float ticks, float rotationYaw, float rotationPitch, float scale) {
+    public void setRotationAngles(TabulaModel model, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scaleFactor, Entity entityIn) {
         for (JsonAnimationModule animationModule : this.animationModules) {
-            animationModule.performAnimations(model, entity, limbSwing, limbSwingAmount, ticks, rotationYaw, rotationPitch, scale);
+            animationModule.performAnimations(model, entityIn, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scaleFactor);
         }
     }
 

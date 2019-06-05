@@ -30,7 +30,7 @@ apply plugin: "net.dumbcode.gradlehook"
 
 def curseforgeID = "298694"
 version = "1.12.2-" + getDirectVersion()
-group = "com.dumbcode.dumblibrary" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+group = "net.dumbcode.dumblibrary" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "dumblibrary"
 
 sourceCompatibility = targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
@@ -61,7 +61,7 @@ repositories {
 dependencies {
     deobfCompile "mezz.jei:jei_1.12.2:4.9.1.187:api"
     runtime "mezz.jei:jei_1.12.2:4.9.1.187"
-    compile "net.ilexiconn:llibrary:1.7.14-1.12.2"
+//    compile "net.ilexiconn:llibrary:1.7.14-1.12.2"
     compile 'org.projectlombok:lombok:1.18.0'
     compile group: 'org.apache.commons', name: 'commons-collections4', version: '4.0'
 }

@@ -1,29 +1,25 @@
 package net.dumbcode.dumblibrary.client.animation;
 
 import com.google.common.collect.Maps;
-import com.google.gson.Gson;
 import lombok.Cleanup;
 import lombok.experimental.UtilityClass;
 import net.dumbcode.dumblibrary.client.animation.objects.AnimationLayer;
-import net.dumbcode.dumblibrary.client.model.InfoTabulaModel;
+import net.dumbcode.dumblibrary.client.model.tabula.*;
 import net.dumbcode.dumblibrary.server.info.ServerAnimatableCube;
-import net.ilexiconn.llibrary.client.model.tabula.ITabulaModelAnimator;
-import net.ilexiconn.llibrary.client.model.tabula.TabulaModel;
-import net.ilexiconn.llibrary.client.model.tabula.container.TabulaCubeContainer;
-import net.ilexiconn.llibrary.client.model.tabula.container.TabulaModelContainer;
-import net.ilexiconn.llibrary.client.model.tools.AdvancedModelRenderer;
-import net.minecraft.client.Minecraft;
+import net.dumbcode.dumblibrary.server.utils.StreamUtils;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.fml.common.FMLLog;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.ModContainer;
 import org.apache.commons.io.IOUtils;
 
 import javax.annotation.Nullable;
-import javax.vecmath.Matrix3f;
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector3f;
-import java.io.*;
+import javax.vecmath.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -59,11 +55,12 @@ public class TabulaUtils {
 
                 if (root != null && Files.exists(root)) {
                     @Cleanup InputStream stream = Files.newInputStream(root);
-                    TabulaModelContainer modelContainer = new Gson().fromJson(new InputStreamReader(getModelJsonStream(stream)), TabulaModelContainer.class);
-                    for (TabulaCubeContainer containerCube : modelContainer.getCubes()) {
-                        parseCube(containerCube, null, map);
-                    }
+                    TabulaModelInformation modelInfo = TabulaJsonHandler.GSON.fromJson(new InputStreamReader(getModelJsonStream(stream)), TabulaModelInformation.class);
 
+                    for (TabulaModelInformation.Cube cube : modelInfo.getAllCubes()) {
+                        parseCube(cube, null, map);
+
+                    }
                 }
             } catch (IOException e) {
                 FMLLog.log.error("Error loading FileSystem: ", e);
@@ -74,10 +71,10 @@ public class TabulaUtils {
         return map;
     }
 
-    private static void parseCube(TabulaCubeContainer cube, @Nullable ServerAnimatableCube parent, Map<String, AnimationLayer.AnimatableCube> map) {
+    private static void parseCube(TabulaModelInformation.Cube cube, @Nullable ServerAnimatableCube parent, Map<String, AnimationLayer.AnimatableCube> map) {
         ServerAnimatableCube animatableCube = new ServerAnimatableCube(parent, cube);
         map.put(cube.getName(), animatableCube);
-        for (TabulaCubeContainer child : cube.getChildren()) {
+        for (TabulaModelInformation.Cube child : cube.getChildren()) {
             parseCube(child, animatableCube, map);
         }
     }
@@ -86,13 +83,13 @@ public class TabulaUtils {
         return getModel(location, null);
     }
 
-    public static TabulaModel getModel(ResourceLocation location, ITabulaModelAnimator animator){
+    public static TabulaModel getModel(ResourceLocation location, TabulaModelAnimator animator){
         if(!location.getPath().endsWith(".tbl")) {
             location = new ResourceLocation(location.getNamespace(), location.getPath() + ".tbl");
         }
         try {
-            @Cleanup InputStream stream = Minecraft.getMinecraft().getResourceManager().getResource(location).getInputStream();
-            return new InfoTabulaModel(new Gson().fromJson(new InputStreamReader(getModelJsonStream(stream)), TabulaModelContainer.class), animator);
+            @Cleanup InputStream stream = StreamUtils.openStream(location);
+            return TabulaJsonHandler.GSON.fromJson(new InputStreamReader(getModelJsonStream(stream)), TabulaModelInformation.class).createModel().setModelAnimator(animator);
         } catch (IOException e) {
             throw new IllegalArgumentException("Unable to load model " + location, e);
         }
@@ -111,12 +108,51 @@ public class TabulaUtils {
         throw new IOException("No model.json present");
     }
 
+    public static Vec3d getModelPosAlpha(AnimationLayer.AnimatableCube cube, float xalpha, float yalpha, float zalpha) {
+        float[] offset = cube.getOffset();
+        float[] dimensions = cube.getDimension();
+        return getModelPos(cube,
+                (offset[0] + dimensions[0] * xalpha) / 16D,
+                (offset[1] + dimensions[1] * yalpha) / -16D,
+                (offset[2] + dimensions[2] * zalpha) / -16D
+        );
+    }
+
+    public static Vec3d getModelPos(AnimationLayer.AnimatableCube cube, double x, double y, double z) {
+        Point3d rendererPos = new Point3d(x, y, z);
+
+        Matrix4d boxTranslate = new Matrix4d();
+        Matrix4d boxRotateX = new Matrix4d();
+        Matrix4d boxRotateY = new Matrix4d();
+        Matrix4d boxRotateZ = new Matrix4d();
+
+        float[] point = cube.getRotationPoint();
+        boxTranslate.set(new Vector3d(point[0]/16D, -point[1]/16D, -point[2]/16D));
+
+        float[] rotation = cube.getActualRotation();
+
+        boxRotateX.rotX(rotation[0]);
+        boxRotateY.rotY(rotation[1]);
+        boxRotateZ.rotZ(rotation[2]);
+
+        boxRotateX.transform(rendererPos);
+        boxRotateY.transform(rendererPos);
+        boxRotateZ.transform(rendererPos);
+        boxTranslate.transform(rendererPos);
+
+        AnimationLayer.AnimatableCube parent = cube.getParent();
+        if (parent != null) {
+            return getModelPos(parent, rendererPos.getX(), rendererPos.getY(), rendererPos.getZ());
+        }
+        return new Vec3d(rendererPos.getX(), rendererPos.getY(), rendererPos.getZ());
+    }
+
     /**
      * Computes the origin of a given part relative to the model origin. Takes into account parent parts.
      * @param part the model part
      * @return the translation vector relative to the model origin
      */
-    public Vector3f computeTranslationVector(AdvancedModelRenderer part) {
+    public Vector3f computeTranslationVector(TabulaModelRenderer part) {
         Matrix4f transform = computeTransformMatrix(part);
         Vector3f result = new Vector3f(0f, 0f, 0f);
         transform.transform(result);
@@ -128,7 +164,7 @@ public class TabulaUtils {
      * @param part the model part
      * @return the matrix representing the rotation and translation
      */
-    public static Matrix4f computeTransformMatrix(AdvancedModelRenderer part) {
+    public static Matrix4f computeTransformMatrix(TabulaModelRenderer part) {
         Matrix4f result = new Matrix4f();
         result.setIdentity();
         applyTransformations(part, result);
@@ -140,8 +176,8 @@ public class TabulaUtils {
      * @param part the model part
      * @param out the matrix to apply the transformations to
      */
-    public static void applyTransformations(AdvancedModelRenderer part, Matrix4f out) {
-        AdvancedModelRenderer parent = part.getParent();
+    public static void applyTransformations(TabulaModelRenderer part, Matrix4f out) {
+        TabulaModelRenderer parent = part.getParent();
         if(parent != null) {
             applyTransformations(parent, out);
         }
@@ -174,7 +210,7 @@ public class TabulaUtils {
      * @param part the model part
      * @return the matrix representing the rotation
      */
-    public static Matrix3f computeRotationMatrix(AdvancedModelRenderer part) {
+    public static Matrix3f computeRotationMatrix(TabulaModelRenderer part) {
         Matrix3f result = new Matrix3f();
         result.setIdentity();
         applyRotations(part, result);
@@ -186,8 +222,8 @@ public class TabulaUtils {
      * @param part the model part
      * @param result the matrix to apply the rotations to
      */
-    public static void applyRotations(AdvancedModelRenderer part, Matrix3f result) {
-        AdvancedModelRenderer parent = part.getParent();
+    public static void applyRotations(TabulaModelRenderer part, Matrix3f result) {
+        TabulaModelRenderer parent = part.getParent();
         if(parent != null) {
             applyRotations(part, result);
         }

@@ -5,7 +5,7 @@ import net.dumbcode.dumblibrary.client.animation.PoseHandler;
 import net.dumbcode.dumblibrary.client.animation.objects.Animation;
 import net.dumbcode.dumblibrary.client.animation.objects.AnimationRunWrapper;
 import net.dumbcode.dumblibrary.client.animation.objects.EntityAnimator;
-import net.ilexiconn.llibrary.client.model.tabula.TabulaModel;
+import net.dumbcode.dumblibrary.client.model.tabula.TabulaModel;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.ResourceLocation;

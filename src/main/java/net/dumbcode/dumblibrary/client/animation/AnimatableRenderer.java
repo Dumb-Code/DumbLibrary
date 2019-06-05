@@ -1,6 +1,8 @@
 package net.dumbcode.dumblibrary.client.animation;
 
 import lombok.val;
+import net.dumbcode.dumblibrary.client.model.tabula.TabulaModel;
+import net.dumbcode.dumblibrary.client.model.tabula.TabulaModelRenderer;
 import net.dumbcode.dumblibrary.server.info.AnimationSystemInfo;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.entity.RenderLiving;
@@ -33,7 +35,8 @@ public class AnimatableRenderer<E extends EntityLiving, N extends IStringSeriali
         GlStateManager.disableAlpha();
         val info = this.animationSystemInfoGetter.apply(entity);
         val map = info.getModelContainer(entity).getModelMap();
-        this.mainModel = map.getOrDefault(info.getStageFromEntity(entity), map.get(info.defaultStage()));
+        TabulaModel model = map.getOrDefault(info.getStageFromEntity(entity), map.get(info.defaultStage()));
+        this.mainModel = model;
         if(this.mainModel == null) {
             this.mainModel = ModelMissing.INSTANCE;
         }

@@ -6,18 +6,16 @@ import com.google.gson.*;
 import lombok.*;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.client.animation.objects.*;
+import net.dumbcode.dumblibrary.client.model.tabula.TabulaModel;
+import net.dumbcode.dumblibrary.client.model.tabula.TabulaModelRenderer;
 import net.dumbcode.dumblibrary.server.info.AnimationSystemInfo;
 import net.dumbcode.dumblibrary.server.info.AnimationSystemInfoRegistry;
-import net.ilexiconn.llibrary.client.model.tabula.TabulaModel;
-import net.ilexiconn.llibrary.client.model.tools.AdvancedModelRenderer;
+import net.dumbcode.dumblibrary.server.utils.StreamUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.JsonUtils;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -115,15 +113,11 @@ public class PoseHandler<E extends Entity, N extends IStringSerializable> {
                         animation.populateList(growth, poseData);
                         animationMap.put(animation, poseData);
                     }
-                    //If the side is client side, then load the actual pose data
-                    if (FMLCommonHandler.instance().getSide() == Side.CLIENT) {
-                        //Get the main model for this ModelStage
-                        String location = Objects.requireNonNull(info.stageToModelMap().get(reference), "Could not find main model location for " + regname + " as it was not defined");
-                        //load the client information
-                        modelInfo = loadClientInfomation(new ResourceLocation(regname.getNamespace(), growthDirectory + location), modelResources, animationMap);
-                    } else {
-                        modelInfo = new ModelInfomation<>(animationMap);
-                    }
+                    //Get the main model for this ModelStage
+                    String location = Objects.requireNonNull(info.stageToModelMap().get(reference), "Could not find main model location for " + regname + " as it was not defined");
+                    //load the client information
+                    modelInfo = loadAnimationInformation(new ResourceLocation(regname.getNamespace(), growthDirectory + location), modelResources, animationMap);
+
                 } catch (Exception e) {
                     DumbLibrary.getLogger().error("Unable to load poses stage " + reference + " for " + regname, e);
                     modelInfo = new ModelInfomation();
@@ -134,14 +128,13 @@ public class PoseHandler<E extends Entity, N extends IStringSerializable> {
     }
 
     /**
-     * Load the clinet infomation for the poses. Loads each pose file, and figures out the diff with the main mdoe
+     * Load the animation information for the poses. Loads each pose file, and figures out the diff with the main mdoe
      *
      * @param mainModelLocation   The location of the main model.
      * @param animations          A map of all the model data pertaining to the animation
      * @return The ModelInfomation class, used store data about each pose
      */
-    @SideOnly(Side.CLIENT)
-    private ModelInfomation loadClientInfomation(ResourceLocation mainModelLocation, Iterable<PoseData> modelResources, Map<Animation<N>, List<PoseData>> animations) {
+    private ModelInfomation loadAnimationInformation(ResourceLocation mainModelLocation, Iterable<PoseData> modelResources, Map<Animation<N>, List<PoseData>> animations) {
         //Load the main model, used for comparing the diffrence in cube location/rotation
         TabulaModel mainModel = TabulaUtils.getModel(mainModelLocation);
         Map<String, Map<String, CubeReference>> map = Maps.newHashMap(); //Map of <Model location, <Cube Name, Cube Reference>>
@@ -160,8 +153,8 @@ public class PoseHandler<E extends Entity, N extends IStringSerializable> {
             ResourceLocation location = new ResourceLocation(mainModelLocation.getNamespace(), modelResource.getFullLocation());
             //If the pose location is the same as the mainModel, skip it and add all the mainModel data instead. Prevents loading the same model twice
             if (location.equals(mainModelLocation)) {
-                for (val cube : mainModel.getCubes().entrySet()) {
-                    innerMap.put(cube.getKey(), CubeReference.fromCube(cube.getValue()));
+                for (TabulaModelRenderer cube : mainModel.getAllCubes()) {
+                    innerMap.put(cube.getCube().getName(), CubeReference.fromCube(cube.getCube()));
                 }
             } else {
                 //If the file ends with .tbl (The old way). Currently only the working way which is why its enforced. I need to check the integrity of the python script
@@ -175,15 +168,15 @@ public class PoseHandler<E extends Entity, N extends IStringSerializable> {
                         continue;
                     }
                     //Iterate through all the cube names in the main model
-                    for (String cubeName : mainModel.getCubes().keySet()) {
+                    for (String cubeName : mainModel.getInformation().getAllCubeNames()) {
                         //Get the cube of which the name links to
-                        AdvancedModelRenderer cube = model.getCube(cubeName);
+                        TabulaModelRenderer cube = model.getCube(cubeName);
                         //If the cube does not exist in pose model (which shouldn't happen), then just default to the main models cube
                         if (cube == null) {
                             cube = mainModel.getCube(cubeName);
                         }
                         //Create a CubeReference (data about the cubes position/rotation) and put it in the innerMap, with the key being the cube name
-                        innerMap.put(cubeName, CubeReference.fromCube(cube));
+                        innerMap.put(cubeName, CubeReference.fromCube(cube.getCube()));
                     }
                 } else {
                     try {
@@ -194,7 +187,7 @@ public class PoseHandler<E extends Entity, N extends IStringSerializable> {
                             location = new ResourceLocation(location.getNamespace(), location.getPath() + ".json");
                         }
                         //Get the json inputstream
-                        @Cleanup InputStream stream = Minecraft.getMinecraft().getResourceManager().getResource(location).getInputStream();
+                        @Cleanup InputStream stream = StreamUtils.openStream(location);
                         //Create a Reader for the inputstream
                         @Cleanup InputStreamReader reader = new InputStreamReader(stream);
                         //Read the inputstream as a json object
@@ -202,7 +195,7 @@ public class PoseHandler<E extends Entity, N extends IStringSerializable> {
                         //Get the version of the json file
                         int version = JsonUtils.getInt(json, "version");
                         //Get a list of all the main model cubes. Used for determining which cubes are not overriden
-                        List<String> cubeNames = Lists.newArrayList(mainModel.getCubes().keySet());
+                        List<String> cubeNames = Lists.newArrayList(mainModel.getAllCubesNames());
                         //Go through the list of overrides in the json.
                         for (JsonElement jsonElement : JsonUtils.getJsonArray(json, "overrides")) {
                             //Get the element as a json object
@@ -210,7 +203,7 @@ public class PoseHandler<E extends Entity, N extends IStringSerializable> {
                             //Get the field inside the json object called "cube_name"
                             String cubeName = JsonUtils.getString(obj, "cube_name");
                             //get the cube with the same name that's in the mainModel
-                            AdvancedModelRenderer mainCube = mainModel.getCube(cubeName);
+                            TabulaModelRenderer mainCube = mainModel.getCube(cubeName);
                             //If the cube is already processed, or it dosen't continue on the main model, continue
                             if (!cubeNames.contains(cubeName) || mainCube == null) {
                                 continue;
@@ -221,13 +214,17 @@ public class PoseHandler<E extends Entity, N extends IStringSerializable> {
                             switch (version) {
                                 case 0:
                                     //place the new CubeReference in the innerMap. Values are dematerialized from the json object
+
+                                    float[] rotation = mainCube.getDefaultRotation();
+                                    float[] rotationPoint = mainCube.getDefaultRotationPoint();
+
                                     innerMap.put(cubeName, new CubeReference(
-                                            JsonUtils.hasField(obj, "rotation_x") ? JsonUtils.getFloat(obj, "rotation_x") : mainCube.defaultRotationX,
-                                            JsonUtils.hasField(obj, "rotation_y") ? JsonUtils.getFloat(obj, "rotation_y") : mainCube.defaultRotationY,
-                                            JsonUtils.hasField(obj, "rotation_z") ? JsonUtils.getFloat(obj, "rotation_z") : mainCube.defaultRotationZ,
-                                            JsonUtils.hasField(obj, "position_x") ? JsonUtils.getFloat(obj, "position_x") : mainCube.defaultPositionX,
-                                            JsonUtils.hasField(obj, "position_y") ? JsonUtils.getFloat(obj, "position_y") : mainCube.defaultPositionY,
-                                            JsonUtils.hasField(obj, "position_z") ? JsonUtils.getFloat(obj, "position_z") : mainCube.defaultPositionZ
+                                            JsonUtils.hasField(obj, "rotation_x") ? JsonUtils.getFloat(obj, "rotation_x") : rotation[0],
+                                            JsonUtils.hasField(obj, "rotation_y") ? JsonUtils.getFloat(obj, "rotation_y") : rotation[1],
+                                            JsonUtils.hasField(obj, "rotation_z") ? JsonUtils.getFloat(obj, "rotation_z") : rotation[2],
+                                            JsonUtils.hasField(obj, "position_x") ? JsonUtils.getFloat(obj, "position_x") : rotationPoint[0],
+                                            JsonUtils.hasField(obj, "position_y") ? JsonUtils.getFloat(obj, "position_y") : rotationPoint[1],
+                                            JsonUtils.hasField(obj, "position_z") ? JsonUtils.getFloat(obj, "position_z") : rotationPoint[2]
                                     ));
                                     break;
 
@@ -237,7 +234,7 @@ public class PoseHandler<E extends Entity, N extends IStringSerializable> {
                         }
                         //Go through all the unedited cubes, and add a cube reference from the main model
                         for (String cubeName : cubeNames) {
-                            innerMap.put(cubeName, CubeReference.fromCube(mainModel.getCube(cubeName)));
+                            innerMap.put(cubeName, CubeReference.fromCube(mainModel.getCube(cubeName).getCube()));
 
                         }
                     } catch (IOException e) {
@@ -264,12 +261,8 @@ public class PoseHandler<E extends Entity, N extends IStringSerializable> {
                                                             List<AnimationLayerFactory<E, N>> factories) {
         List<AnimationLayer<E, N>> list = Lists.newArrayList();
         for (val factory : factories) {
-            Map<String, AnimationRunWrapper.CubeWrapper> map = new HashMap<>();
-            Map<String, RenderAnimatableCube> cubeMap = new HashMap<>();
-            for (Map.Entry<String, AdvancedModelRenderer> entry : model.getCubes().entrySet()) {
-                cubeMap.put(entry.getKey(), new RenderAnimatableCube(entry.getValue()));
-            }
-            list.add(factory.createWrapper(entity, stage, model.getCubes().keySet(), cubeMap::get, s -> map.computeIfAbsent(s, o -> new AnimationRunWrapper.CubeWrapper(model.getCube(o))), this.info, inertia));
+            Map<String, AnimationRunWrapper.CubeWrapper> cacheMap = new HashMap<>();
+            list.add(factory.createWrapper(entity, stage, model.getAllCubesNames(), model::getCube, s -> cacheMap.computeIfAbsent(s, o -> new AnimationRunWrapper.CubeWrapper(model.getCube(o))), this.info, inertia));
         }
         return new AnimationRunWrapper<>(entity, list);
     }

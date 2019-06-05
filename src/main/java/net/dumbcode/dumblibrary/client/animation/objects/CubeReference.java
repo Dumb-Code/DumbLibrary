@@ -1,7 +1,7 @@
 package net.dumbcode.dumblibrary.client.animation.objects;
 
 import lombok.Value;
-import net.ilexiconn.llibrary.client.model.tools.AdvancedModelRenderer;
+import net.dumbcode.dumblibrary.client.model.tabula.TabulaModelInformation;
 
 /**
  * A reference to the cube. Used to store positional/rotation data
@@ -13,18 +13,20 @@ public class CubeReference {
     float rotationY;
     float rotationZ;
 
-    float positionX;
-    float positionY;
-    float positionZ;
+    float rotationPointX;
+    float rotationPointY;
+    float rotationPointZ;
 
-    public static CubeReference fromCube(AdvancedModelRenderer cuboid) {
+    public static CubeReference fromCube(TabulaModelInformation.Cube cube) {
+        float[] rotation = cube.getRotation();
+        float[] rotationPoint = cube.getRotationPoint();
         return new CubeReference(
-                cuboid.defaultRotationX,
-                cuboid.defaultRotationY,
-                cuboid.defaultRotationZ,
-                cuboid.defaultPositionX,
-                cuboid.defaultPositionY,
-                cuboid.defaultPositionZ
+                rotation[0],
+                rotation[1],
+                rotation[2],
+                rotationPoint[0],
+                rotationPoint[1],
+                rotationPoint[2]
         );
     }
 }

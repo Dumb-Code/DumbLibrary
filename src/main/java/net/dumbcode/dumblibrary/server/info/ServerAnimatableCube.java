@@ -1,7 +1,7 @@
 package net.dumbcode.dumblibrary.server.info;
 
 import net.dumbcode.dumblibrary.client.animation.objects.AnimationLayer;
-import net.ilexiconn.llibrary.client.model.tabula.container.TabulaCubeContainer;
+import net.dumbcode.dumblibrary.client.model.tabula.TabulaModelInformation;
 
 import javax.annotation.Nullable;
 import javax.vecmath.Vector3f;
@@ -10,141 +10,65 @@ public class ServerAnimatableCube implements AnimationLayer.AnimatableCube {
 
     private final ServerAnimatableCube parent;
 
-    private final TabulaCubeContainer cube;
+    private final TabulaModelInformation.Cube cube;
 
-    private Vector3f position;
+    private Vector3f rotationPoint;
     private Vector3f rotation;
 
-    public ServerAnimatableCube(ServerAnimatableCube parent, TabulaCubeContainer cube) {
+    public ServerAnimatableCube(ServerAnimatableCube parent, TabulaModelInformation.Cube cube) {
         this.parent = parent;
         this.cube = cube;
         this.reset();
     }
 
     @Override
-    public float getDefaultPositionX() {
-        return (float) this.cube.getPosition()[0];
+    public float[] getDefaultRotationPoint() {
+        return this.cube.getRotationPoint();
     }
 
     @Override
-    public float getDefaultPositionY() {
-        return (float) this.cube.getPosition()[1];
+    public float[] getRotationPoint() {
+        return new float[]{ this.rotationPoint.x, this.rotationPoint.y, this.rotationPoint.z };
     }
 
     @Override
-    public float getDefaultPositionZ() {
-        return (float) this.cube.getPosition()[2];
+    public float[] getDefaultRotation() {
+        return this.cube.getRotation();
     }
 
     @Override
-    public float getRotationPointX() {
-        return (float) this.cube.getPosition()[0];
+    public float[] getActualRotation() {
+        return new float[]{ this.rotation.x, this.rotation.y, this.rotation.z };
     }
 
     @Override
-    public float getRotationPointY() {
-        return (float) this.cube.getPosition()[1];
+    public float[] getOffset() {
+        return this.cube.getOffset();
     }
 
     @Override
-    public float getRotationPointZ() {
-        return (float) this.cube.getPosition()[2];
+    public float[] getDimension() {
+        return this.cube.getDimension();
     }
 
     @Override
-    public float getDefaultRotationX() {
-        return (float) Math.toRadians(this.cube.getRotation()[0]);
+    public void addRotationPoint(float pointX, float pointY, float pointZ) {
+        this.rotationPoint.x += pointX;
+        this.rotationPoint.y += pointY;
+        this.rotationPoint.z += pointZ;
     }
 
     @Override
-    public float getDefaultRotationY() {
-        return (float) Math.toRadians(this.cube.getRotation()[1]);
-    }
-
-    @Override
-    public float getDefaultRotationZ() {
-        return (float) Math.toRadians(this.cube.getRotation()[2]);
-    }
-
-    @Override
-    public float getActualRotationX() {
-        return this.rotation.x;
-    }
-
-    @Override
-    public float getActualRotationY() {
-        return this.rotation.y;
-    }
-
-    @Override
-    public float getActualRotationZ() {
-        return this.rotation.z;
-    }
-
-    @Override
-    public float getOffsetX() {
-        return (float) this.cube.getOffset()[0];
-    }
-
-    @Override
-    public float getOffsetY() {
-        return (float) this.cube.getOffset()[1];
-    }
-
-    @Override
-    public float getOffsetZ() {
-        return (float) this.cube.getOffset()[2];
-    }
-
-    @Override
-    public float getDimensionX() {
-        return this.cube.getDimensions()[0];
-    }
-
-    @Override
-    public float getDimensionY() {
-        return this.cube.getDimensions()[1];
-    }
-
-    @Override
-    public float getDimensionZ() {
-        return this.cube.getDimensions()[2];
-    }
-
-    @Override
-    public void setPositionX(float positionX) {
-        this.position.x += positionX;
-    }
-
-    @Override
-    public void setPositionY(float positionY) {
-        this.position.y += positionY;
-    }
-
-    @Override
-    public void setPositionZ(float positionZ) {
-        this.position.z += positionZ;
-    }
-
-    @Override
-    public void setRotationX(float rotationX) {
+    public void addRotation(float rotationX, float rotationY, float rotationZ) {
         this.rotation.x += rotationX;
-    }
-
-    @Override
-    public void setRotationY(float rotationY) {
         this.rotation.y += rotationY;
-    }
-
-    @Override
-    public void setRotationZ(float rotationZ) {
         this.rotation.z += rotationZ;
     }
 
     @Override
     public void reset() {
-        this.position = new Vector3f(this.getDefaultPositionX(), this.getDefaultPositionY(), this.getDefaultPositionZ());
-        this.rotation = new Vector3f(this.getDefaultRotationX(), this.getDefaultRotationY(), this.getDefaultRotationZ());
+        this.rotationPoint = new Vector3f(this.getDefaultRotationPoint());
+        this.rotation = new Vector3f(this.getDefaultRotation());
     }
 
     @Nullable

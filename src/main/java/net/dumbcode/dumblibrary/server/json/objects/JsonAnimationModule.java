@@ -4,8 +4,8 @@ import com.google.common.collect.Lists;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import net.dumbcode.dumblibrary.client.model.tabula.TabulaModel;
 import net.dumbcode.dumblibrary.server.json.JsonAnimator;
-import net.ilexiconn.llibrary.client.model.tabula.TabulaModel;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.JsonUtils;
 

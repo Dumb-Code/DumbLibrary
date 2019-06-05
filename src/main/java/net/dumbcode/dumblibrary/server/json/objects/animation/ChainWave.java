@@ -2,11 +2,10 @@ package net.dumbcode.dumblibrary.server.json.objects.animation;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import net.dumbcode.dumblibrary.client.model.tabula.TabulaModel;
 import net.dumbcode.dumblibrary.server.json.JsonAnimator;
 import net.dumbcode.dumblibrary.server.json.objects.AnimationInfoBase;
-import net.dumbcode.dumblibrary.server.json.objects.Constants;
 import net.dumbcode.dumblibrary.server.json.objects.JsonAnimationModule;
-import net.ilexiconn.llibrary.client.model.tabula.TabulaModel;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.JsonUtils;
 
@@ -42,7 +41,7 @@ public abstract class ChainWave extends JsonAnimationModule<ChainWave.Info> {
 
         @Override
         public void performAnimation(TabulaModel model, Entity entity, Info info, float limbSwing, float limbSwingAmount, float ticks, float rotationYaw, float rotationPitch, float scale) {
-            model.chainSwing(info.getRenderers(model), info.speed * this.animator.getGlobalSpeed(), info.degree * this.animator.getGlobalDegree(), info.rootOffset, ticks, 0.25F);
+//            model.chainSwing(info.getRenderers(model), info.speed * this.animator.getGlobalSpeed(), info.degree * this.animator.getGlobalDegree(), info.rootOffset, ticks, 0.25F);
         }
     }
 
@@ -54,7 +53,7 @@ public abstract class ChainWave extends JsonAnimationModule<ChainWave.Info> {
 
         @Override
         public void performAnimation(TabulaModel model, Entity entity, Info info, float limbSwing, float limbSwingAmount, float ticks, float rotationYaw, float rotationPitch, float scale) {
-            model.chainSwing(info.getRenderers(model), info.speed * this.animator.getGlobalSpeed(), info.degree * this.animator.getGlobalDegree(), info.rootOffset, limbSwing, limbSwingAmount);
+//            model.chainSwing(info.getRenderers(model), info.speed * this.animator.getGlobalSpeed(), info.degree * this.animator.getGlobalDegree(), info.rootOffset, limbSwing, limbSwingAmount);
         }
     }
 }

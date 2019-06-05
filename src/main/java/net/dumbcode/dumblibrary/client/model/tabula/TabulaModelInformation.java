@@ -19,7 +19,7 @@ public class TabulaModelInformation {
     int projectVersion;
     String[] metadata;
     int texWidth;
-    int texHegith;
+    int texHeight;
     float[] scale;
     List<CubeGroup> groups = Lists.newArrayList();
     int cubeCount;

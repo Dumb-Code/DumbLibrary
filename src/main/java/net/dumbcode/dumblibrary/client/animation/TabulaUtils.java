@@ -84,12 +84,16 @@ public class TabulaUtils {
     }
 
     public static TabulaModel getModel(ResourceLocation location, TabulaModelAnimator animator){
+        return getModelInformation(location).createModel().setModelAnimator(animator);
+    }
+
+    public static TabulaModelInformation getModelInformation(ResourceLocation location){
         if(!location.getPath().endsWith(".tbl")) {
             location = new ResourceLocation(location.getNamespace(), location.getPath() + ".tbl");
         }
         try {
             @Cleanup InputStream stream = StreamUtils.openStream(location);
-            return TabulaJsonHandler.GSON.fromJson(new InputStreamReader(getModelJsonStream(stream)), TabulaModelInformation.class).createModel().setModelAnimator(animator);
+            return TabulaJsonHandler.GSON.fromJson(new InputStreamReader(getModelJsonStream(stream)), TabulaModelInformation.class);
         } catch (IOException e) {
             throw new IllegalArgumentException("Unable to load model " + location, e);
         }

@@ -26,7 +26,7 @@ public class TabulaModel extends ModelBase {
     public TabulaModel(TabulaModelInformation information) {
         this.information = information;
         this.textureWidth = information.getTexWidth();
-        this.textureHeight = information.getTexHegith();
+        this.textureHeight = information.getTexHeight();
     }
 
     @Override

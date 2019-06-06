@@ -128,12 +128,6 @@ public class TabulaIModel implements IModel {
         Vec3d min = new Vec3d(positions[0], positions[1], positions[2]).subtract(scale, scale, scale);
         Vec3d max = new Vec3d(positions[0], positions[1], positions[2]).add(scale, scale, scale).add(dims[0], dims[1], dims[2]);
 
-//        if (cube.isTextureMirror()) {
-//            double x = max.x;
-//            max = new Vec3d(min.x, max.y, max.z);
-//            min = new Vec3d(x, min.y, min.z);
-//        }
-
         //A list of all the vertices. Uses bit-math to be organised.
         //The bit third from the right is used for the x coord, where 1 is the max x position and 0 is the minimum.
         //The bit second from the right is used for the y coord, and the bit rightmost is used for the z coord.
@@ -147,7 +141,7 @@ public class TabulaIModel implements IModel {
                 }
             }
         }
-        //Go through all the verticies and transform them with the current matrix
+        //Go through all the vertices and transform them with the current matrix
         for (Point3f vertex : vertices) {
             stack.peek().transform(vertex);
         }
@@ -233,7 +227,7 @@ public class TabulaIModel implements IModel {
                 continue;
             }
 
-            //ts is the custom blocklight/skylight data
+            //ts is the custom block-light/skylight data
             float[] ts = new float[2];
 
             //On UP&DOWN side, directional up on the texture sheet is south for texture
@@ -334,7 +328,7 @@ public class TabulaIModel implements IModel {
         for (TabulaModelInformation.Cube child : cube.getChildren()) {
             this.build(format, outList, stack, child, layer);
         }
-        
+
         stack.pop();
     }
 
@@ -383,13 +377,13 @@ public class TabulaIModel implements IModel {
     /**
      * Translate a matrix stack
      * @param stack the matrix stack of which the top element will be translated
-     * @param afloats an array of length 3 defined as [x, y, z]
+     * @param floats an array of length 3 defined as [x, y, z]
      */
-    private void translate(Stack<Matrix4f> stack, float... afloats) {
+    private void translate(Stack<Matrix4f> stack, float... floats) {
         Matrix4f matrix = stack.peek();
         Matrix4f translation = new Matrix4f();
         translation.setIdentity();
-        translation.setTranslation(new Vector3f(afloats[0], afloats[1], afloats[2]));
+        translation.setTranslation(new Vector3f(floats[0], floats[1], floats[2]));
         matrix.mul(translation);
     }
 
@@ -412,14 +406,14 @@ public class TabulaIModel implements IModel {
     /**
      * Scales a matrix stack by an angle
      * @param stack The stack of which the topmost element will be scale
-     * @param afloats an array of length 3, defined as [x, y, z]
+     * @param floats an array of length 3, defined as [x, y, z]
      */
-    private void scale(Stack<Matrix4f> stack, float... afloats) {
+    private void scale(Stack<Matrix4f> stack, float... floats) {
         Matrix4f matrix = stack.peek();
         Matrix4f scale = new Matrix4f();
-        scale.m00 = afloats[0];
-        scale.m11 = afloats[1];
-        scale.m22 = afloats[2];
+        scale.m00 = floats[0];
+        scale.m11 = floats[1];
+        scale.m22 = floats[2];
         scale.m33 = 1;
         matrix.mul(scale);
     }

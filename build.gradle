@@ -164,7 +164,7 @@ task notifyIfError (group: "upload", description: "Checks to see if travis has e
             def form = new PostForm(dumblibrary_publish_url)
             form.addObject(new FieldObject("payload_json", "{ \"embeds\": [{ \"title\":\"Build $buildVersion has errored\", \"color\": 9306112,  \"url\": \"$url\", \"timestamp\":\"$datetime\"}] }"))
             def result = form.send()
-            
+
             println "Webhook uploaded with response code $result.responseCode"
         }
     }
@@ -198,9 +198,6 @@ curseforge {
     project {
         id = curseforgeID
         releaseType = 'beta'
-        relations {
-            requiredLibrary 'llibrary'
-        }
         mainArtifact jar
         addArtifact sourcesJar
         addArtifact devJar

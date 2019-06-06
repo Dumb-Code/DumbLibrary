@@ -8,8 +8,9 @@ before_script:
 script:
 - "./gradlew postRequest"
 after_script:
-- bash changelog.sh
-- "./gradlew notifyIfError"
+  - bash changelog.sh
+after_failure:
+  "./gradlew notifyIfError"
 env:
   global:
   - secure: JhFETxhYsUtmKBZhGah8V3CZ2mtOCvPsXNjzTB6zF+3c5f2cwUmncHoRWY3mXvpnhEJTpUmVA6el4cwLRQPNaihUmg8jQRsuTG/Y9R0VF+lyX/H8YSHKy3pJbpz16RufKy5mQRlAeCjvdQ1CbuB2knK+N2YxpUrGOuciLlxjkjIrlNtQlCqhPxibWMXIbUS3NbDa7G1Q0zML7YCYgGMM0nDq/tHQBIN0VM4eD8ns191kXFOgj/mqpZS2Q5pELUK7jsbll0LDtV3qX12RmLjH4zAUaUNRQVrr0XLX3XzIc19MgI6ILQ5pObH0IN+8tsPYTBJEnNkCjVz9Jq1tcPEB2M5IkdmiLmRMDrTQXbi4bPx+UDgjlA75XZPbKBTbki2EuHDKpzhgIsDWUrp5s5K18/pfeAMtzp972J9vmnxfbHW/eqD1rV0fLnVDb5/Vu7XrBZHVFBMeBcZoGL/8YtmIcX/fZxZ9C5+UKWhlyhf4VnXtyCfQ4tJDtr1Ng8hee5dtgVK8//EPpW5B5RUzxSvaAoEIPzpJ06rdODo+aqA/iuNF6iDuY4n1R0z1aAj/DLOHHXpbHCaRe+7CV2+pQi0eE5SbyjdgrFM38L2plod5eRDcIi516NI0+/apYEVej1zrKpQIUSDG7hYOV5lemrIXqjyAp+N7yxpRkzTHxADadec=

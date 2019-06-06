@@ -15,5 +15,4 @@ public class ModelHandler {
     public static void onModelReady(ModelRegistryEvent event) {
         ModelLoaderRegistry.registerLoader(TabulaModelHandler.INSTANCE);
     }
-this is here to stop travis
 }

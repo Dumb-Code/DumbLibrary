@@ -83,7 +83,7 @@ public enum TabulaModelHandler implements ICustomModelLoader {
     }
 
     @Data public static class TextureLayer{ private final String name; private final ResourceLocation loc; private final int layer; private TextureAtlasSprite sprite; }
-compiler error
+
     /**
      * Lightup data is used to apply fake light to the quads. Each entry goes in an array called "lightup_data". The following is an example
      *

@@ -87,7 +87,7 @@ def run(String command, File f = file("Changelogs")) {
     return Runtime.getRuntime().exec(outCommands, null, f).text.trim()
 }
 
-task("setChangelog", description: "Sets the changelog to the artifacts") {
+task setChangelog (description: "Sets the changelog to the artifacts") {
     doFirst {
         def changelog = "https://raw.githubusercontent.com/Dumb-Code/Changelogs/master/dumb_library.txt".toURL().text.trim()
         def cftask = tasks.getByName("curseforge$curseforgeID")
@@ -98,7 +98,7 @@ task("setChangelog", description: "Sets the changelog to the artifacts") {
 }
 setChangelog.finalizedBy tasks.getByName("curseforge")
 
-task("publishMod", group: "upload", description: "Publish the mod to curseforge and the webhook", dependsOn: setChangelog) {
+task publishMod (group: "upload", description: "Publish the mod to curseforge and the webhook", dependsOn: setChangelog) {
     doLast {
         //This is kind of a hack, I am aware. However, cursegradle doesnt store their IDs anywhere, apart from parent IDs on additional artifacts.
         //Maybe we could ask CurseGradle to store their Ids in the artifact class.
@@ -111,14 +111,12 @@ task("publishMod", group: "upload", description: "Publish the mod to curseforge 
         println "Artifact uploaded with id $id"
 
         def url = "https://minecraft.curseforge.com/projects/dumb-library/files/$id"
-        def color = 0x686868
         def datetime = Instant.now().atZone(ZoneOffset.UTC).toString()
         def form = new PostForm(dumblibrary_publish_url) //In the ~/.gradle/gradle.properties file
-        form.addObject new FieldObject('payload_json', "{ \"embeds\": [{ \"title\": \"New Version $project.version !\", \"color\": $color, \"url\": \"$url\" , \"timestamp\": \"$datetime\"}]}")
+        form.addObject new FieldObject('payload_json', "{ \"embeds\": [{ \"title\": \"New Version $project.version !\", \"color\": 6842472, \"url\": \"$url\" , \"timestamp\": \"$datetime\"}]}")
         def result = form.send()
 
         println "Webhook uploaded with response code $result.responseCode"
-
 
         def currentSign =  run("git config --global commit.gpgsign", file("."))
 
@@ -153,6 +151,26 @@ task("publishMod", group: "upload", description: "Publish the mod to curseforge 
         println "Cache folder deleted"
     }
 }
+
+task notifyIfError (group: "upload", description: "Checks to see if travis has errored, and if so sends a webhook") {
+    doLast {
+        if(System.getenv("TRAVIS_TEST_RESULT").equals("1")) {
+            println "Build has errored. Deploying webhook"
+
+            def buildVersion = System.getenv("TRAVIS_BUILD_NUMBER")?: "???"
+            def url = System.getenv("TRAVIS_BUILD_WEB_URL")?: "???"
+            def datetime = Instant.now().atZone(ZoneOffset.UTC).toString()
+
+            def form = new PostForm(dumblibrary_publish_url)
+            form.addObject(new FieldObject("payload_json", "{ \"embeds\": [{ \"title\":\"Build $buildVersion has errored\", \"color\": 9306112,  \"url\": \"$url\", \"timestamp\":\"$datetime\"}] }"))
+            def result = form.send()
+            
+            println "Webhook uploaded with response code $result.responseCode"
+        }
+    }
+}
+
+
 
 task sourcesJar(type: Jar, dependsOn: classes) {
     classifier = "sources"

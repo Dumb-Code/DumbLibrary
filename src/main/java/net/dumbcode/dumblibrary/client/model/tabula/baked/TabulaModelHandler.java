@@ -87,7 +87,7 @@ public enum TabulaModelHandler implements ICustomModelLoader {
     /**
      * Lightup data is used to apply fake light to the quads. Each entry goes in an array called "lightup_data". The following is an example
      *
-     * <pre>
+     * <pre>{@code
      *     {
      *         "layers_applied": [          <--- These are the layers that this full-bright should apply to. These are defined before in your "textures" section of the json file
      *             "layer0",
@@ -108,6 +108,7 @@ public enum TabulaModelHandler implements ICustomModelLoader {
      *         "sky_light": 12,              <--- The minimum block-light level that this quad will be set to. If left blank will be defaulted to 15
      *         "block_light": 3             <--- The minimum skylight level that the quad will be set to. If left blank will be defaulted to 15
      *     }
+     * }
      * </pre>
      * Note that this is just one entry into a json array. You can have multiple entries for different light levels or different cubes on different layers.
      */

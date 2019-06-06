@@ -21,6 +21,7 @@ import java.util.function.Function;
 public class TabulaIModel implements IModel {
 
     private final Collection<TabulaModelHandler.TextureLayer> allTextures;
+    private final List<TabulaModelHandler.LightupData> lightupData;
     private final TabulaModelInformation model;
     private final ResourceLocation particle;
     private final ImmutableMap<ItemCameraTransforms.TransformType, TRSRTransformation> transforms;
@@ -28,8 +29,9 @@ public class TabulaIModel implements IModel {
     private final boolean gui3d;
     private final List<ItemOverride> itemOverrides;
 
-    public TabulaIModel(Collection<TabulaModelHandler.TextureLayer> allTextures, ResourceLocation particle, ImmutableMap<ItemCameraTransforms.TransformType, TRSRTransformation> transforms, TabulaModelInformation model, boolean ambientOcclusion, boolean gui3d, List<ItemOverride> itemOverrides) {
+    public TabulaIModel(Collection<TabulaModelHandler.TextureLayer> allTextures, List<TabulaModelHandler.LightupData> lightupData, ResourceLocation particle, ImmutableMap<ItemCameraTransforms.TransformType, TRSRTransformation> transforms, TabulaModelInformation model, boolean ambientOcclusion, boolean gui3d, List<ItemOverride> itemOverrides) {
         this.allTextures = allTextures;
+        this.lightupData = lightupData;
         this.particle = particle;
         this.transforms = transforms;
         this.model = model;
@@ -44,7 +46,7 @@ public class TabulaIModel implements IModel {
         for (TabulaModelHandler.TextureLayer texture : this.allTextures) {
             texture.setSprite(texFunc.apply(texture.getLoc()));
         }
-        List<BakedQuad> quads = new TabulaModelBaker(this.allTextures, this.model, format, state).bake();
+        List<BakedQuad> quads = new TabulaModelBaker(this.allTextures, this.lightupData, this.model, format, state).bake();
 
         return new TabulaBakedModel(quads, this.ambientOcclusion, this.gui3d, particle, this.itemOverrides, this.transforms);
     }

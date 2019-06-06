@@ -13,6 +13,7 @@ import net.minecraftforge.client.model.pipeline.UnpackedBakedQuad;
 import net.minecraftforge.common.model.IModelState;
 import net.minecraftforge.common.model.TRSRTransformation;
 
+import javax.annotation.Nullable;
 import javax.vecmath.*;
 import java.util.*;
 
@@ -21,16 +22,18 @@ public class TabulaModelBaker {
     private final List<BakedQuad> quadList = Lists.newArrayList();
 
     private final Collection<TabulaModelHandler.TextureLayer> allTextures;
+    private final  List<TabulaModelHandler.LightupData> lightupData;
     private final TabulaModelInformation model;
     private final VertexFormat format;
     private final IModelState state;
 
-    public TabulaModelBaker(Collection<TabulaModelHandler.TextureLayer> allTextures, TabulaModelInformation model, VertexFormat format, IModelState state) {
+    public TabulaModelBaker(Collection<TabulaModelHandler.TextureLayer> allTextures, List<TabulaModelHandler.LightupData> lightupData, TabulaModelInformation model, VertexFormat format, IModelState state) {
         this.allTextures = allTextures;
+        this.lightupData = lightupData;
         this.model = model;
         this.state = state;
-        if(true) {//has light data
-            if (format == DefaultVertexFormats.ITEM) { // ITEM is convertable to BLOCK (replace normal+padding with lmap)
+        if(!lightupData.isEmpty()) {//has light data
+            if (format == DefaultVertexFormats.ITEM) { // ITEM is convertible to BLOCK (replace normal+padding with lmap)
                 format = DefaultVertexFormats.BLOCK;
             } else if (!format.getElements().contains(DefaultVertexFormats.TEX_2S)) { // Otherwise, this format is unknown, add TEX_2S if it does not exist
                 format = new VertexFormat(format).addElement(DefaultVertexFormats.TEX_2S);
@@ -132,12 +135,13 @@ public class TabulaModelBaker {
         uvMap.put(EnumFacing.DOWN, new int[]{minX, minY, minX + w, minY + d});
         uvMap.put(EnumFacing.UP, new int[]{minX + w, minY + d, minX + w * 2, minY});
 
+        faceLoop:
         for (EnumFacing value : new EnumFacing[]{EnumFacing.EAST, EnumFacing.WEST, EnumFacing.DOWN, EnumFacing.UP, EnumFacing.NORTH, EnumFacing.SOUTH}) {
             boolean positive = value.getAxisDirection() == EnumFacing.AxisDirection.POSITIVE;
             boolean dominant = value == EnumFacing.EAST || value == EnumFacing.NORTH || value == EnumFacing.DOWN;
             int[] numbers = new int[4];
 
-            //The following is convoluted maths in order to get the correct vertices given the enum facing.
+            //The following is convoluted maths in order to get the correct pointVerticies given the enum facing.
             //Could i do a lookup? yes
             if(value.getHorizontalIndex() != -1) {
                 numbers[2] |= 0b010;
@@ -157,7 +161,79 @@ public class TabulaModelBaker {
                     numbers[i] |= value.getXOffset()<<2|value.getYOffset()<<1|value.getZOffset();
                 }
             }
-            this.buildQuad(cube.isTextureMirror(), Arrays.stream(numbers).mapToObj(i -> vertices[i]).toArray(Point3f[]::new), uvMap.get(value), layer);
+
+            Point2i ts = new Point2i();
+
+            for (TabulaModelHandler.LightupData datum : this.lightupData) {
+                if(datum.getLayersApplied().contains(layer.getName())) {
+                    for (TabulaModelHandler.LightupEntry entry : datum.getEntry()) {
+                        if(entry.getCubeName().equals(cube.getName())) {
+                            ts = new Point2i(datum.getBlockLight(), datum.getSkyLight());
+                        }
+                    }
+                }
+            }
+
+            Point3f[] pointVerticies = Arrays.stream(numbers).mapToObj(i -> vertices[i]).toArray(Point3f[]::new);
+            int[] aint = uvMap.get(value);
+
+            for (int i = 0; i < pointVerticies.length; i++) {
+                Point3f vertex = pointVerticies[i];
+                for (int n = i + 1; n < pointVerticies.length; n++) {
+                    if (vertex.epsilonEquals(pointVerticies[n], 1e-3F)) {
+                        continue faceLoop;
+                    }
+                }
+            }
+            Point2i[] uvs = { new Point2i(aint[2], aint[1]), new Point2i(aint[0], aint[1]), new Point2i(aint[0], aint[3]), new Point2i(aint[2], aint[3]) };
+            if (cube.isTextureMirror()) {
+                Point3f[] verticesMirrored = new Point3f[pointVerticies.length];
+                Point2i[] uvsMirrored = new Point2i[pointVerticies.length];
+                for (int i = 0, j = pointVerticies.length - 1; i < pointVerticies.length; i++, j--) {
+                    verticesMirrored[i] = pointVerticies[j];
+                    uvsMirrored[i] = uvs[j];
+                }
+                pointVerticies = verticesMirrored;
+                uvs = uvsMirrored;
+            }
+            Vector3f normal = MathUtils.calcualeNormalF(pointVerticies[1].x, pointVerticies[1].y, pointVerticies[1].z, pointVerticies[2].x, pointVerticies[2].y, pointVerticies[2].z, pointVerticies[0].x, pointVerticies[0].y, pointVerticies[0].z);
+            EnumFacing quadFacing = EnumFacing.getFacingFromVector(normal.x, normal.y, normal.z);
+            UnpackedBakedQuad.Builder builder = new UnpackedBakedQuad.Builder(this.format);
+            builder.setQuadOrientation(quadFacing);
+            builder.setTexture(layer.getSprite());
+            builder.setQuadTint(layer.getLayer());
+            float width = this.model.getTexWidth();
+            float height = this.model.getTexHeight();
+            for (int i = 0; i < pointVerticies.length; i++) {
+                Point2i uvi = uvs[i];
+                Point2f uv = new Point2f(layer.getSprite().getInterpolatedU(uvi.x / width * 16), layer.getSprite().getInterpolatedV(uvi.y / height * 16));
+                Point3f vert = pointVerticies[i];
+
+                for (int e = 0; e < format.getElementCount(); e++) {
+                    switch (format.getElement(e).getUsage()) {
+                        case POSITION:
+                            builder.put(e, vert.x, vert.y, vert.z);
+                            break;
+                        case COLOR:
+                            builder.put(e, 1, 1, 1, 1);
+                            break;
+                        case UV:
+                            if(format.getElement(e).getIndex() == 0) {
+                                builder.put(e, uv.x, uv.y);
+                            } else {
+                                builder.put(e, ((float)(ts.x << 4)) / 0x7FFF, ((float)(ts.y << 4)) / 0x7FFF);
+                            }
+                            break;
+                        case NORMAL:
+                            builder.put(e, normal.x, normal.y, normal.z);
+                            break;
+                        default:
+                            builder.put(e);
+                    }
+                }
+            }
+            this.quadList.add(builder.build());
+
 
         }
 
@@ -167,67 +243,6 @@ public class TabulaModelBaker {
         this.pop();
     }
 
-    private void buildQuad(boolean isTxMirror, Point3f[] vertices, int[] aint, TabulaModelHandler.TextureLayer layer) {
-        for (int i = 0; i < vertices.length; i++) {
-            Point3f vertex = vertices[i];
-            for (int n = i + 1; n < vertices.length; n++) {
-                if (vertex.epsilonEquals(vertices[n], 1e-3F)) {
-                    return;
-                }
-            }
-        }
-        Point2i[] uvs = { new Point2i(aint[2], aint[1]), new Point2i(aint[0], aint[1]), new Point2i(aint[0], aint[3]), new Point2i(aint[2], aint[3]) };
-        if (isTxMirror) {
-            Point3f[] verticesMirrored = new Point3f[vertices.length];
-            Point2i[] uvsMirrored = new Point2i[vertices.length];
-            for (int i = 0, j = vertices.length - 1; i < vertices.length; i++, j--) {
-                verticesMirrored[i] = vertices[j];
-                uvsMirrored[i] = uvs[j];
-            }
-            vertices = verticesMirrored;
-            uvs = uvsMirrored;
-        }
-        Vector3f normal = MathUtils.calcualeNormalF(vertices[1].x, vertices[1].y, vertices[1].z, vertices[2].x, vertices[2].y, vertices[2].z, vertices[0].x, vertices[0].y, vertices[0].z);
-        EnumFacing quadFacing = EnumFacing.getFacingFromVector(normal.x, normal.y, normal.z);
-        UnpackedBakedQuad.Builder quadBuilder = new UnpackedBakedQuad.Builder(this.format);
-        quadBuilder.setQuadOrientation(quadFacing);
-        quadBuilder.setTexture(layer.getSprite());
-        quadBuilder.setQuadTint(layer.getLayer());
-        float width = this.model.getTexWidth();
-        float height = this.model.getTexHeight();
-        for (int i = 0; i < vertices.length; i++) {
-            Point2i uvi = uvs[i];
-            Point2f uv = new Point2f(layer.getSprite().getInterpolatedU(uvi.x / width * 16), layer.getSprite().getInterpolatedV(uvi.y / height * 16));
-            this.putVertexData(quadBuilder, this.format, vertices[i], normal, uv);
-        }
-        this.quadList.add(quadBuilder.build());
-    }
-
-    private void putVertexData(UnpackedBakedQuad.Builder builder, VertexFormat format, Point3f vert, Vector3f normal, Point2f uv) {
-        for (int e = 0; e < format.getElementCount(); e++) {
-            switch (format.getElement(e).getUsage()) {
-                case POSITION:
-                    builder.put(e, vert.x, vert.y, vert.z);
-                    break;
-                case COLOR:
-                    builder.put(e, 1, 1, 1, 1);
-                    break;
-                case UV:
-                    if(format.getElement(e).getIndex() == 0) {
-                        builder.put(e, uv.x, uv.y);
-                    } else { //todo: custom vertex lighting
-
-                        builder.put(e, ((float)(15 << 4)) / 0x7FFF, ((float)(15<< 4)) / 0x7FFF);
-                    }
-                    break;
-                case NORMAL:
-                    builder.put(e, normal.x, normal.y, normal.z);
-                    break;
-                default:
-                    builder.put(e);
-            }
-        }
-    }
     private void push() {
         this.matrixStack.push(new Matrix4f(this.matrixStack.peek()));
     }

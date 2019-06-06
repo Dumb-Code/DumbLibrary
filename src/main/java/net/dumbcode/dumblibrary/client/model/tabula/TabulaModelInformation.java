@@ -57,7 +57,17 @@ public class TabulaModelInformation {
         rotation[1] = (float) Math.toRadians(rotation[1]);
         rotation[2] = (float) Math.toRadians(rotation[2]);
 
-        return new Cube(name, dimensions, postion, offset, rotation, scale, texOffset, textureMirror, mcScale, opacity, hidden, metadata, parentIdentifier, identifier);
+        return new Cube(name, dimensions, postion, offset, rotation, scale, texOffset, true, mcScale, opacity, hidden, metadata, parentIdentifier, identifier);
+    }
+
+    @Nullable
+    public Cube getCube(String cubeName) {
+        for (Cube cube : this.getAllCubes()) {
+            if(cube.getName().equals(cubeName)) {
+                return cube;
+            }
+        }
+        return null;
     }
 
     @Value
@@ -143,6 +153,10 @@ public class TabulaModelInformation {
             for (Cube child : this.children) {
                 child.addCubes(cubes);
             }
+        }
+
+        public TabulaModelInformation getInfo() {
+            return TabulaModelInformation.this;
         }
     }
 }

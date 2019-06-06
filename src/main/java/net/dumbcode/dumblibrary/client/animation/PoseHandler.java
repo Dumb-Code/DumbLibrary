@@ -7,6 +7,7 @@ import lombok.*;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.client.animation.objects.*;
 import net.dumbcode.dumblibrary.client.model.tabula.TabulaModel;
+import net.dumbcode.dumblibrary.client.model.tabula.TabulaModelInformation;
 import net.dumbcode.dumblibrary.client.model.tabula.TabulaModelRenderer;
 import net.dumbcode.dumblibrary.server.info.AnimationSystemInfo;
 import net.dumbcode.dumblibrary.server.info.AnimationSystemInfoRegistry;
@@ -136,7 +137,7 @@ public class PoseHandler<E extends Entity, N extends IStringSerializable> {
      */
     private ModelInfomation loadAnimationInformation(ResourceLocation mainModelLocation, Iterable<PoseData> modelResources, Map<Animation<N>, List<PoseData>> animations) {
         //Load the main model, used for comparing the diffrence in cube location/rotation
-        TabulaModel mainModel = TabulaUtils.getModel(mainModelLocation);
+        TabulaModelInformation mainModel = TabulaUtils.getModelInformation(mainModelLocation);
         Map<String, Map<String, CubeReference>> map = Maps.newHashMap(); //Map of <Model location, <Cube Name, Cube Reference>>
         //Iterate through all the ModelLocations
         for (PoseData data : modelResources) {
@@ -153,30 +154,30 @@ public class PoseHandler<E extends Entity, N extends IStringSerializable> {
             ResourceLocation location = new ResourceLocation(mainModelLocation.getNamespace(), modelResource.getFullLocation());
             //If the pose location is the same as the mainModel, skip it and add all the mainModel data instead. Prevents loading the same model twice
             if (location.equals(mainModelLocation)) {
-                for (TabulaModelRenderer cube : mainModel.getAllCubes()) {
-                    innerMap.put(cube.getCube().getName(), CubeReference.fromCube(cube.getCube()));
+                for (TabulaModelInformation.Cube cube : mainModel.getAllCubes()) {
+                    innerMap.put(cube.getName(), CubeReference.fromCube(cube));
                 }
             } else {
                 //If the file ends with .tbl (The old way). Currently only the working way which is why its enforced. I need to check the integrity of the python script
                 if (modelResource.getFileName().endsWith(".tbl") || true) {
-                    TabulaModel model;
+                    TabulaModelInformation model;
                     try {
                         //Try and get the model at the specified location
-                        model = TabulaUtils.getModel(location);
+                        model = TabulaUtils.getModelInformation(location);
                     } catch (Exception e) {
                         DumbLibrary.getLogger().error("Unable to load tabula model " + location, e);
                         continue;
                     }
                     //Iterate through all the cube names in the main model
-                    for (String cubeName : mainModel.getInformation().getAllCubeNames()) {
+                    for (String cubeName : mainModel.getAllCubeNames()) {
                         //Get the cube of which the name links to
-                        TabulaModelRenderer cube = model.getCube(cubeName);
+                        TabulaModelInformation.Cube cube = model.getCube(cubeName);
                         //If the cube does not exist in pose model (which shouldn't happen), then just default to the main models cube
                         if (cube == null) {
-                            cube = mainModel.getCube(cubeName);
+                            cube = Objects.requireNonNull(mainModel.getCube(cubeName));
                         }
                         //Create a CubeReference (data about the cubes position/rotation) and put it in the innerMap, with the key being the cube name
-                        innerMap.put(cubeName, CubeReference.fromCube(cube.getCube()));
+                        innerMap.put(cubeName, CubeReference.fromCube(cube));
                     }
                 } else {
                     try {
@@ -195,7 +196,7 @@ public class PoseHandler<E extends Entity, N extends IStringSerializable> {
                         //Get the version of the json file
                         int version = JsonUtils.getInt(json, "version");
                         //Get a list of all the main model cubes. Used for determining which cubes are not overriden
-                        List<String> cubeNames = Lists.newArrayList(mainModel.getAllCubesNames());
+                        List<String> cubeNames = Lists.newArrayList(mainModel.getAllCubeNames());
                         //Go through the list of overrides in the json.
                         for (JsonElement jsonElement : JsonUtils.getJsonArray(json, "overrides")) {
                             //Get the element as a json object
@@ -203,7 +204,7 @@ public class PoseHandler<E extends Entity, N extends IStringSerializable> {
                             //Get the field inside the json object called "cube_name"
                             String cubeName = JsonUtils.getString(obj, "cube_name");
                             //get the cube with the same name that's in the mainModel
-                            TabulaModelRenderer mainCube = mainModel.getCube(cubeName);
+                            TabulaModelInformation.Cube mainCube = mainModel.getCube(cubeName);
                             //If the cube is already processed, or it dosen't continue on the main model, continue
                             if (!cubeNames.contains(cubeName) || mainCube == null) {
                                 continue;
@@ -215,8 +216,8 @@ public class PoseHandler<E extends Entity, N extends IStringSerializable> {
                                 case 0:
                                     //place the new CubeReference in the innerMap. Values are dematerialized from the json object
 
-                                    float[] rotation = mainCube.getDefaultRotation();
-                                    float[] rotationPoint = mainCube.getDefaultRotationPoint();
+                                    float[] rotation = mainCube.getRotation();
+                                    float[] rotationPoint = mainCube.getRotationPoint();
 
                                     innerMap.put(cubeName, new CubeReference(
                                             JsonUtils.hasField(obj, "rotation_x") ? JsonUtils.getFloat(obj, "rotation_x") : rotation[0],
@@ -234,7 +235,7 @@ public class PoseHandler<E extends Entity, N extends IStringSerializable> {
                         }
                         //Go through all the unedited cubes, and add a cube reference from the main model
                         for (String cubeName : cubeNames) {
-                            innerMap.put(cubeName, CubeReference.fromCube(mainModel.getCube(cubeName).getCube()));
+                            innerMap.put(cubeName, CubeReference.fromCube(mainModel.getCube(cubeName)));
 
                         }
                     } catch (IOException e) {

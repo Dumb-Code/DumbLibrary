@@ -15,6 +15,10 @@ import javax.vecmath.Matrix4f;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * The baked model representing the .tbl model. Simply just holds the list of quads along with the other necessary data
+ * @author Wyn Price
+ */
 public class TabulaBakedModel implements IBakedModel {
 
     private static final List<BakedQuad> EMPTY = Lists.newArrayList();

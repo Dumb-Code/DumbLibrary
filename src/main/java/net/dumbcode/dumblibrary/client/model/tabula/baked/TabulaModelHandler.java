@@ -6,6 +6,7 @@ import com.google.gson.*;
 import lombok.Cleanup;
 import lombok.Data;
 import lombok.Value;
+import lombok.experimental.Wither;
 import net.dumbcode.dumblibrary.client.animation.TabulaUtils;
 import net.dumbcode.dumblibrary.client.model.tabula.TabulaModelInformation;
 import net.minecraft.client.renderer.block.model.ModelBlock;
@@ -27,10 +28,21 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * The model handler for loading .tbl models
+ */
 public enum TabulaModelHandler implements ICustomModelLoader {
     INSTANCE;
 
+    /**
+     * A dummy texture layer representing the missing texture/layer
+     */
+    public static final TextureLayer MISSING = new TextureLayer("missing", new ResourceLocation("missingno"), -1);
+
     private static final JsonParser PARSER = new JsonParser();
+    /**
+     * regex pattern to get the layer id from the list of layer textures.
+     */
     private static final Pattern PATTERN = Pattern.compile("layer(\\d+)$");
     private final Set<String> namespaces = Sets.newHashSet();
     private IResourceManager manager;
@@ -57,11 +69,13 @@ public enum TabulaModelHandler implements ICustomModelLoader {
         List<TextureLayer> allTextures = Lists.newArrayList();
         Set<String> layers = Sets.newHashSet();
         for (String key : modelBlock.textures.keySet()) {
+            int layer = -1;
             Matcher matcher = PATTERN.matcher(key);
-            if (matcher.matches()) {
-                allTextures.add(new TextureLayer(key, new ResourceLocation(modelBlock.textures.get(key)), Integer.parseInt(matcher.group(1))));
-                layers.add(key);
+            if(matcher.matches()) {
+                layer = Integer.parseInt(matcher.group(1));
             }
+            allTextures.add(new TextureLayer(key, new ResourceLocation(modelBlock.textures.get(key)), layer));
+            layers.add(key);
         }
         String particle = modelBlock.textures.get("particle");
         ResourceLocation part = particle == null ? new ResourceLocation("missingno") : new ResourceLocation(particle);
@@ -82,7 +96,8 @@ public enum TabulaModelHandler implements ICustomModelLoader {
         this.manager = resourceManager;
     }
 
-    @Data public static class TextureLayer{ private final String name; private final ResourceLocation loc; private final int layer; private TextureAtlasSprite sprite; }
+    @Data
+    public static class TextureLayer { private final String layerName; private final ResourceLocation loc; private final int layer; private TextureAtlasSprite sprite; }
 
     /**
      * Lightup data is used to apply fake light to the quads. Each entry goes in an array called "lightup_data". The following is an example
@@ -116,8 +131,8 @@ public enum TabulaModelHandler implements ICustomModelLoader {
     public static class LightupData {
         private Set<String> layersApplied;
         private List<LightupEntry> entry;
-        private int blockLight;
-        private int skyLight;
+        private float blockLight;
+        private float skyLight;
 
         public static LightupData parse(JsonObject json, Set<String> layers) {
             Set<String> layersApplied = Sets.newHashSet();
@@ -158,8 +173,8 @@ public enum TabulaModelHandler implements ICustomModelLoader {
                 }
             }
 
-            int blockLight = JsonUtils.getInt(json, "block_light", 15);
-            int skyLight = JsonUtils.getInt(json, "sky_light", 15);
+            float blockLight = JsonUtils.getFloat(json, "block_light", 15F);
+            float skyLight = JsonUtils.getFloat(json, "sky_light", 15F);
 
 
             return new LightupData(layersApplied, list, blockLight, skyLight);

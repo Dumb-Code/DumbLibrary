@@ -11,6 +11,7 @@ import net.minecraftforge.fml.relauncher.ReflectionHelper;
 
 import javax.vecmath.Matrix4d;
 import javax.vecmath.Point3d;
+import javax.vecmath.Point3f;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -82,23 +83,24 @@ public class ModelCommandRegistry {
 
             //TODO: i am assuming that POSITION comes first in the vertex format. maybe fix this?
             for (BakedQuad quad : modelToQuads.apply(model)) {
-                int[] data = quad.getVertexData();
-                float[][][] datum = null;
-                if(quad instanceof UnpackedBakedQuad) {
-                    datum = ReflectionHelper.getPrivateValue(UnpackedBakedQuad.class, (UnpackedBakedQuad) quad, "unpackedData");
-                }
                 for (int v = 0; v < 4; v++) {
-                    int o = data.length / 4 * v;
-                    Point3d pos = new Point3d(Float.intBitsToFloat(data[o])-ds[3], Float.intBitsToFloat(data[o+1])-ds[4], Float.intBitsToFloat(data[o+2])-ds[5]);
-                    mat.transform(pos);
-                    data[o] =   Float.floatToRawIntBits((float) (pos.x+ds[3]));
-                    data[o+1] = Float.floatToRawIntBits((float) (pos.y+ds[4]));
-                    data[o+2] = Float.floatToRawIntBits((float) (pos.z+ds[5]));
+                    if(quad instanceof UnpackedBakedQuad) {
+                        float[][][] datum = ReflectionHelper.getPrivateValue(UnpackedBakedQuad.class, (UnpackedBakedQuad) quad, "unpackedData");//todo: at
 
-                    if(datum != null) {
-//                        datum[v][0][0] = (float) (pos.x+ds[3]);
-//                        datum[v][0][1] = (float) (pos.y+ds[4]);
-//                        datum[v][0][2] = (float) (pos.z+ds[5]);
+                        Point3d pos = new Point3d(new Point3f(datum[v][0]));
+                        pos.sub(new Point3d(ds[3], ds[4], ds[5]));
+                        mat.transform(pos);
+                        datum[v][0][0] = (float) (pos.x+ds[3]);
+                        datum[v][0][1] = (float) (pos.y+ds[4]);
+                        datum[v][0][2] = (float) (pos.z+ds[5]);
+                    } else {
+                        int[] data = quad.getVertexData();
+
+                        int o = quad.getFormat().getIntegerSize() * v;
+                        Point3d pos = new Point3d(Float.intBitsToFloat(data[o])-ds[3], Float.intBitsToFloat(data[o+1])-ds[4], Float.intBitsToFloat(data[o+2])-ds[5]);
+                        data[o] =   Float.floatToRawIntBits((float) (pos.x+ds[3]));
+                        data[o+1] = Float.floatToRawIntBits((float) (pos.y+ds[4]));
+                        data[o+2] = Float.floatToRawIntBits((float) (pos.z+ds[5]));
                     }
                 }
             }
@@ -116,11 +118,35 @@ public class ModelCommandRegistry {
                 ds[i] = Double.valueOf(matcher.group(i+1));
             }
             for (BakedQuad quad : modelToQuads.apply(model)) {
+                for (int v = 0; v < 4; v++) {
+                    if(quad instanceof UnpackedBakedQuad) {
+                        float[][][] datum = ReflectionHelper.getPrivateValue(UnpackedBakedQuad.class, (UnpackedBakedQuad) quad, "unpackedData");//todo: at
+
+                        datum[v][0][0] = (float) ((datum[v][0][0]-ds[3])*ds[0]+ds[3]);
+                        datum[v][0][1] = (float) ((datum[v][0][1]-ds[4])*ds[1]+ds[4]);
+                        datum[v][0][2] = (float) ((datum[v][0][2]-ds[5])*ds[2]+ds[5]);
+                    } else {
+                        int[] data = quad.getVertexData();
+                        int o = quad.getFormat().getIntegerSize() * v;
+
+                        float x = (float) ((Float.intBitsToFloat(data[o  ])-ds[3])*ds[0]+ds[3]);
+                        float y = (float) ((Float.intBitsToFloat(data[o+1])-ds[4])*ds[1]+ds[4]);
+                        float z = (float) ((Float.intBitsToFloat(data[o+2])-ds[5])*ds[2]+ds[5]);
+
+                        data[o  ] = Float.floatToRawIntBits(x);
+                        data[o+1] = Float.floatToRawIntBits(y);
+                        data[o+2] = Float.floatToRawIntBits(z);
+                    }
+                }
+            }
+            for (BakedQuad quad : modelToQuads.apply(model)) {
+
                 int[] data = quad.getVertexData();
                 float[][][] datum = null;
                 if(quad instanceof UnpackedBakedQuad) {
                     datum = ReflectionHelper.getPrivateValue(UnpackedBakedQuad.class, (UnpackedBakedQuad) quad, "unpackedData");
                 }
+
                 for (int v = 0; v < 4; v++) {
                     int o = data.length / 4 * v;
                     float x = (float) ((Float.intBitsToFloat(data[o  ])-ds[3])*ds[0]+ds[3]);

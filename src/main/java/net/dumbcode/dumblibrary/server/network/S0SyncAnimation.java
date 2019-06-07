@@ -23,7 +23,7 @@ public class S0SyncAnimation implements IMessage {
 
     }
 
-    public <E extends Entity> S0SyncAnimation(E entity, AnimationSystemInfo<?, ?> info, Animation animation) {
+    public <E extends Entity> S0SyncAnimation(E entity, AnimationSystemInfo<?> info, Animation animation) {
         this.entityid = entity.getEntityId();
         this.ais = info.identifier();
         this.animation = animation.getIdentifier();

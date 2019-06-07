@@ -26,6 +26,7 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -59,6 +60,10 @@ public class TabulaUtils {
                     @Cleanup InputStream stream = Files.newInputStream(root);
                     TabulaModelInformation modelInfo = TabulaJsonHandler.GSON.fromJson(new InputStreamReader(getModelJsonStream(stream)), TabulaModelInformation.class);
 
+                    List<TabulaModelInformation.Cube> allCubes = modelInfo.getAllCubes();
+                    System.out.println(modelInfo.getCubes().size());
+                    System.out.println(allCubes.size());
+                    System.out.println(modelInfo.getCube("ribcage"));
                     for (TabulaModelInformation.Cube cube : modelInfo.getAllCubes()) {
                         parseCube(cube, null, map);
 

@@ -18,7 +18,7 @@ public class AnimationSystemInfoRegistry {
     public static void setAnimationToEntity(Entity entity, ResourceLocation info, String animationName) {
         AnimationSystemInfo asi = NAMESPACE.get(info);
         if(asi != null) {
-            Animation<?> animation = asi.getAnimation(animationName);
+            Animation animation = asi.getAnimation(animationName);
             if(animation != null) {
                 asi.setAnimation(entity, animation);
             }

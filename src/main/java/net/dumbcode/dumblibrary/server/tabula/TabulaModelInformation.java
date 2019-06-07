@@ -26,6 +26,8 @@ public class TabulaModelInformation {
     List<CubeGroup> groups = Lists.newArrayList();
     int cubeCount;
 
+    List<Cube> cubes = Lists.newArrayList();
+
     public TabulaModel createModel() {
         TabulaModel model = new TabulaModel(this);
         for (CubeGroup group : this.groups) {

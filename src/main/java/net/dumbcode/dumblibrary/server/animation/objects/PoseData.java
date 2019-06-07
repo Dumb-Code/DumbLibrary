@@ -2,9 +2,10 @@ package net.dumbcode.dumblibrary.server.animation.objects;
 
 import com.google.common.collect.Maps;
 import com.google.gson.*;
-import lombok.*;
+import lombok.Data;
+import lombok.Getter;
 import lombok.experimental.Accessors;
-import net.dumbcode.dumblibrary.server.animation.PoseHandler;
+import net.dumbcode.dumblibrary.client.animation.ModelContainer;
 import net.minecraft.util.JsonUtils;
 
 import java.lang.reflect.Type;
@@ -18,7 +19,7 @@ import java.util.Map;
 public class PoseData {
     private final String modelName;
     private final float time;
-    @Accessors(chain = true) private PoseHandler.ModelLocation location;
+    @Accessors(chain = true) private ModelContainer.ModelLocation location;
     private final Map<String, CubeReference> cubes = Maps.newHashMap();
 
 

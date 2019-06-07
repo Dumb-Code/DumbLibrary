@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.Setter;
 import net.dumbcode.dumblibrary.server.info.AnimationSystemInfo;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.math.MathHelper;
 
 import javax.annotation.Nullable;
@@ -19,11 +18,10 @@ import java.util.function.Function;
 
 @Getter
 @Setter
-public class AnimationLayer<E extends Entity, N extends IStringSerializable> {
+public class AnimationLayer<E extends Entity> {
 
     private final E entity;
-    private final N stage;
-    private final AnimationSystemInfo<N, E> info;
+    private final AnimationSystemInfo<E> info;
     private final Function<String, AnimationRunWrapper.CubeWrapper> cuberef;
     private final Function<String, AnimatableCube> anicubeRef;
     private final Collection<String> cubeNames;
@@ -32,9 +30,8 @@ public class AnimationLayer<E extends Entity, N extends IStringSerializable> {
     @Setter(AccessLevel.NONE)
     private AnimationWrap currentWrap;
 
-    public AnimationLayer(E entity, N stage, Collection<String> cubeNames, Function<String, AnimatableCube> anicubeRef, Function<String, AnimationRunWrapper.CubeWrapper> cuberef, AnimationSystemInfo<N, E> info, boolean inertia) {
+    public AnimationLayer(E entity, Collection<String> cubeNames, Function<String, AnimatableCube> anicubeRef, Function<String, AnimationRunWrapper.CubeWrapper> cuberef, AnimationSystemInfo<E> info, boolean inertia) {
         this.entity = entity;
-        this.stage = stage;
         this.info = info;
         this.cuberef = cuberef;
         this.anicubeRef = anicubeRef;
@@ -45,7 +42,7 @@ public class AnimationLayer<E extends Entity, N extends IStringSerializable> {
 
     public void animate(float age) {
         if (this.canAnimate()) {
-            Animation<N> animation = this.getAnimation();
+            Animation animation = this.getAnimation();
             if (animation != this.currentWrap.animation) {
                 this.setAnimation(animation, age);
             } else if (this.currentWrap.invalidated) {
@@ -55,13 +52,13 @@ public class AnimationLayer<E extends Entity, N extends IStringSerializable> {
         }
     }
 
-    public Animation<N> getAnimation() {
+    public Animation getAnimation() {
         return this.info.getAnimation(this.entity);
     }
 
 
-    public void setAnimation(Animation<N> animation, float age) {
-        if (animation.getPoseData().isEmpty()) {
+    public void setAnimation(Animation animation, float age) {
+        if (this.info.getPoseData(animation).isEmpty()) {
             animation = this.info.defaultAnimation();
         }
         for (String name : this.cubeNames) {
@@ -96,7 +93,7 @@ public class AnimationLayer<E extends Entity, N extends IStringSerializable> {
     }
 
     public class AnimationWrap {
-        private final Animation<N> animation;
+        private final Animation animation;
         private final Stack<PoseData> poseStack = new Stack<>();
 
         private float entityAge;
@@ -107,10 +104,10 @@ public class AnimationLayer<E extends Entity, N extends IStringSerializable> {
 
         private boolean invalidated;
 
-        public AnimationWrap(Animation<N> animation, float age) {
+        public AnimationWrap(Animation animation, float age) {
             this.entityAge = age;
             this.animation = animation;
-            this.poseStack.addAll(Lists.reverse(animation.getPoseData().get(AnimationLayer.this.stage)));
+            this.poseStack.addAll(Lists.reverse(AnimationLayer.this.info.getPoseData(animation)));
             this.maxTicks = this.poseStack.peek().getTime();
             this.incrementVecs(false);
         }
@@ -158,7 +155,7 @@ public class AnimationLayer<E extends Entity, N extends IStringSerializable> {
                     this.poseStack.pop();
                     if (this.poseStack.isEmpty()) {
                         if (AnimationLayer.this.loop()) {
-                            this.poseStack.addAll(Lists.reverse(this.animation.getPoseData().get(AnimationLayer.this.stage)));
+                            this.poseStack.addAll(Lists.reverse(AnimationLayer.this.info.getPoseData(this.animation)));
                         } else {
                             this.invalidated = true;
                         }

@@ -8,7 +8,6 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.entity.RenderLiving;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.EntityLiving;
-import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.ResourceLocation;
 
 import javax.annotation.Nullable;
@@ -18,14 +17,14 @@ import java.util.function.Function;
  * The Renderer class to use for the animations to work.
  * @param <E> The entity class
  */
-public class AnimatableRenderer<E extends EntityLiving, N extends IStringSerializable> extends RenderLiving<E> {
+public class AnimatableRenderer<E extends EntityLiving> extends RenderLiving<E> {
 
-    private final Function<E, AnimationSystemInfo<N, E>> animationSystemInfoGetter;
+    private final Function<E, AnimationSystemInfo<E>> animationSystemInfoGetter;
 
     /**
      * @param renderManagerIn The RenderManager
      */
-    public AnimatableRenderer(RenderManager renderManagerIn, Function<E, AnimationSystemInfo<N, E>> animationSystemInfoGetter) {
+    public AnimatableRenderer(RenderManager renderManagerIn, Function<E, AnimationSystemInfo<E>> animationSystemInfoGetter) {
         super(renderManagerIn, ModelMissing.INSTANCE, 1f);
         this.animationSystemInfoGetter = animationSystemInfoGetter;
     }
@@ -34,8 +33,7 @@ public class AnimatableRenderer<E extends EntityLiving, N extends IStringSeriali
     public void doRender(E entity, double x, double y, double z, float entityYaw, float partialTicks) {
         GlStateManager.disableAlpha();
         val info = this.animationSystemInfoGetter.apply(entity);
-        val map = info.getModelContainer(entity).getModelMap();
-        TabulaModel model = map.getOrDefault(info.getStageFromEntity(entity), map.get(info.defaultStage()));
+        TabulaModel model = info.getModelContainer(entity).getMainModel();
         this.mainModel = model;
         if(this.mainModel == null) {
             this.mainModel = ModelMissing.INSTANCE;

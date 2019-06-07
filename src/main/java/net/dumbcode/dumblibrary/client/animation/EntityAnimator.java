@@ -1,12 +1,10 @@
 package net.dumbcode.dumblibrary.client.animation;
 
 
-import net.dumbcode.dumblibrary.server.animation.PoseHandler;
 import net.dumbcode.dumblibrary.client.model.tabula.TabulaModel;
 import net.dumbcode.dumblibrary.client.model.tabula.TabulaModelAnimator;
 import net.dumbcode.dumblibrary.server.animation.objects.AnimationRunWrapper;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.IStringSerializable;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -17,15 +15,15 @@ import java.util.List;
  * @param <E> the entity type
  */
 @SideOnly(Side.CLIENT)
-public class EntityAnimator<E extends Entity, N extends IStringSerializable> implements TabulaModelAnimator<E> {
+public class EntityAnimator<E extends Entity> implements TabulaModelAnimator<E> {
 
-    private final PoseHandler<E, N> poseHandler;
-    private final List<PoseHandler.AnimationLayerFactory<E, N>> factories;
+    private final ModelContainer<E> modelContainer;
+    private final List<ModelContainer.AnimationLayerFactory<E>> factories;
 
 
-    public EntityAnimator(PoseHandler<E, N> poseHandler) {
-        this.poseHandler = poseHandler;
-        this.factories = this.poseHandler.getInfo().createFactories();
+    public EntityAnimator(ModelContainer<E> poseHandler) {
+        this.modelContainer = poseHandler;
+        this.factories = this.modelContainer.getInfo().createFactories();
     }
 
     /**
@@ -36,8 +34,8 @@ public class EntityAnimator<E extends Entity, N extends IStringSerializable> imp
      * @return the pass wrapper
      */
     @SuppressWarnings("rawtypes")
-    private AnimationRunWrapper<E, N> getAnimationPassWrapper(E entity, TabulaModel model, boolean inertia) {
-        return poseHandler.getInfo().getOrCreateWrapper(entity, this.poseHandler, model, inertia);
+    private AnimationRunWrapper<E> getAnimationPassWrapper(E entity, TabulaModel model, boolean inertia) {
+        return modelContainer.getInfo().getOrCreateWrapper(entity, this.modelContainer, model, inertia);
     }
 
 

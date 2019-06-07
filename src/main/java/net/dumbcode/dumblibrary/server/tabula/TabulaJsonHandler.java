@@ -70,7 +70,7 @@ public enum TabulaJsonHandler implements JsonDeserializer<TabulaModelInformation
                 getString(json, "parentIdentifier", "null"),
                 getString(json, "identifier")
         );
-
+        info.getCubes().add(cube);
         getJsonArray(json, "children").forEach(child -> {
             TabulaModelInformation.Cube childcube = parseCube(child, info);
             cube.getChildren().add(childcube);

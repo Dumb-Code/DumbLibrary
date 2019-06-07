@@ -12,15 +12,15 @@ import java.util.List;
  *
  * @param <E> the entity type this is used for
  */
-public class AnimationRunWrapper<E extends Entity, N extends IStringSerializable> {
+public class AnimationRunWrapper<E extends Entity> {
     @Getter private final E entity;
-    @Getter private final List<AnimationLayer<E, N>> layers;
+    @Getter private final List<AnimationLayer<E>> layers;
 
     /**
      * @param entity the entity
      * @param layers a list of all animation layers to use
      */
-    public AnimationRunWrapper(E entity, List<AnimationLayer<E, N>> layers) {
+    public AnimationRunWrapper(E entity, List<AnimationLayer<E>> layers) {
         this.entity = entity;
         this.layers = layers;
     }

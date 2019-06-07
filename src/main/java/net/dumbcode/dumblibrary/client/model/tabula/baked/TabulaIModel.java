@@ -76,8 +76,10 @@ public class TabulaIModel implements IModel {
 
         //Set the custom matrix values from the model state, and apply the translation and scale to get the model in the correct place. (due to tabula)
         stack.peek().mul(state.apply(Optional.empty()).orElse(TRSRTransformation.identity()).getMatrix());
-        this.translate(stack, 0.5F, -0.5F, 0.5F);
-        this.scale(stack, 0.0625F, 0.0625F, 0.0625F);
+        //Due to minecraft, the ModelRenderer has it's, x and y coords flipped. Tabula then (rightly) saves it like this.
+        this.scale(stack, -0.0625F, -0.0625F, 0.0625F);
+        //to get from tabula's origin to the world origin you have to go move [-8, -24, 8], thus we need to translate by that amount
+        this.translate(stack, -8, -24, 8);
 
         //Iterate through all the layers, then through every group, and on each group go through all the root cubes.
         for (TabulaModelHandler.TextureLayer layer : textures) {
@@ -191,7 +193,7 @@ public class TabulaIModel implements IModel {
             uvMap.put(horizontals[i], new int[]{minX, minY, minX + xdist, minY + h});
         }
 
-        //The line along the top of the texture-map (in order)
+        //The line along the top of the texture-map (in reverse order)
         EnumFacing[] verticals = new EnumFacing[] { EnumFacing.UP, EnumFacing.DOWN };
         for (int i = 0; i < verticals.length; i++) {
             int minX = (int) cube.getTexOffset()[0] + d + w * i;
@@ -246,11 +248,16 @@ public class TabulaIModel implements IModel {
             Point3f[] pointVertices = new Point3f[4];
 
             for (int i = 0; i < 4; i++) {
-                EnumFacing.Axis rotateAxis = value.getAxis().isHorizontal() ? EnumFacing.Axis.Y : EnumFacing.Axis.Z;
-                int vertex = this.encode(value);
+                boolean horizontal = value.getAxis().isHorizontal();
+                EnumFacing.Axis rotateAxis = horizontal ? EnumFacing.Axis.Y : EnumFacing.Axis.Z;
+                int vertex = this.encode(horizontal ? value : value.getOpposite());
                 //Starting plane is the screens <-- direction you get when looking directly at the plane being drawn. For the UP and DOWN planes, you should face south and north respectively.
                 EnumFacing startingPlane = value.rotateAround(rotateAxis);
 
+                //Due to the fact that the model is scaled -1 on the y axis, we need to account for the fact that our direction is going to be the opposite of tabuls direction.
+                if(!horizontal) {
+                    startingPlane = startingPlane.getOpposite();
+                }
                 //If it is the last 2 vertices being drawn, then it is at the other-side of the screen, in the other x direction.
                 if(i > 1) {
                     startingPlane = startingPlane.getOpposite();
@@ -266,7 +273,9 @@ public class TabulaIModel implements IModel {
                 }
                 vertex |= this.encode(midPlane);
 
-                pointVertices[i] = vertices[vertex];
+                //If the plane is on the horizontals, then we need to account for the fact that the vertices should be in the form 2,3,0,1.
+                //This only needs to happen if the quad is a horizontal. The top and bottom plane are fine
+                pointVertices[horizontal?(i+2)%4:i] = vertices[vertex];
             }
 
             //Make sure that this plane is not 1D, as it would be pointless to create it.
@@ -278,8 +287,9 @@ public class TabulaIModel implements IModel {
                     }
                 }
             }
-            //Flip the uv data if the texture is mirrored
-            if (cube.isTextureMirror()) {
+            //Flip the uv data if the texture is mirrored. As the model is scaled [-1, -1, 1], the UV data is already flipped.
+            //So just un-flip it if the texture isn't mirrored
+            if (!cube.isTextureMirror()) {
                 int minU = uvData[0];
                 uvData[0] = uvData[2];
                 uvData[2] = minU;

@@ -20,6 +20,20 @@ import java.io.InputStreamReader;
 import java.util.Locale;
 import java.util.Map;
 
+/**
+ * Transform type models are a way of applying override models for certain {@link ItemCameraTransforms.TransformType} in a model. <br>
+ * To have the transform type model applied, simply just add ".ttm" to the end of you model name. (Don't replace a file name if there is one)
+ * An example of a model json is as follows:
+ * <pre>{@code
+ *  {
+ *   "default_model": "minecraft:item/apple",
+ *   "gui": "minecraft:item/stick",
+ *   "ground": "minecraft:item/stone"
+ * }
+ * }</pre>
+ * In this example, the default model will be an apple, however when the model is displayed in the gui, it will look like a stick, and when dropped on the floor will look like a stone block.
+ * @author Wyn Price
+ */
 public enum TransformTypeModelLoader implements ICustomModelLoader {
     INSTANCE;
     @Override
@@ -32,19 +46,14 @@ public enum TransformTypeModelLoader implements ICustomModelLoader {
     public IModel loadModel(ResourceLocation modelLocation) throws Exception {
         //Reformat the model location to remove the `.ttm` suffix and add the `.json`. Also, if the model path does not start with `models/`, add it.
         modelLocation = new ResourceLocation(modelLocation.getNamespace(), (modelLocation.getPath().startsWith("models/") ? "" : "models/") + modelLocation.getPath().substring(0, modelLocation.getPath().length() - 4) + ".json");
-        //Create the input stream used to read the json file
+
         @Cleanup InputStream inputStream = Minecraft.getMinecraft().getResourceManager().getResource(modelLocation).getInputStream();
-        //Create the input stream reader for that input stream
         @Cleanup InputStreamReader reader = new InputStreamReader(inputStream);
-        //Load the Json object from the reader
         JsonObject json = JsonUtils.getJsonObject(new JsonParser().parse(reader), "root");
-        //Create a new map of transform types to unbaked models
         Map<ItemCameraTransforms.TransformType, IModel> modelMap = Maps.newEnumMap(ItemCameraTransforms.TransformType.class);
-        //Loads in the default model
+        //get the default model
         IModel defaultModel = ModelLoaderRegistry.getModel(new ResourceLocation(JsonUtils.getString(json, "default_model")));
-        //Iterates through every override
-        for (val transformType : ItemCameraTransforms.TransformType.values()) {
-            //Gets the formatted name of the type transform
+        for (ItemCameraTransforms.TransformType transformType : ItemCameraTransforms.TransformType.values()) {
             String typeName = transformType.name().toLowerCase(Locale.ROOT);
             //If the json object has the type as a string
             if(JsonUtils.isString(json, typeName)) {
@@ -55,7 +64,7 @@ public enum TransformTypeModelLoader implements ICustomModelLoader {
                     //Loads the model
                     model = ModelLoaderRegistry.getModel(location);
                 } catch (Exception e) {
-                    //Catches the error, instead of letting the whole model fail
+                    //Catches the error for this model, instead of letting the whole model fail
                     DumbLibrary.getLogger().error("[TTM] Unable to get sub-model " + location.toString() + " for model " + modelLocation.toString(), e );
                     //Puts the model as the missing model, as to make it easier to see when somthing goes wrong
                     model = ModelLoaderRegistry.getMissingModel();

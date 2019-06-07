@@ -19,8 +19,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-@MethodsReturnNonnullByDefault
-@ParametersAreNonnullByDefault
+/**
+ * The IModel for the transform type models. Used to store the default IModel and the overrides
+ * @see TransformTypeModelLoader
+ * @author Wyn Price
+ */
 public class TransformTypeIModel implements IModel {
 
     private IModel defaultModel;

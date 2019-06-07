@@ -48,7 +48,7 @@ public class TabulaBakedModel implements IBakedModel {
 
     @Override
     public boolean isAmbientOcclusion() {
-        return this.ambientOcclusion;
+        return true;
     }
 
     @Override

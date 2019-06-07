@@ -8,6 +8,11 @@ import org.apache.commons.lang3.tuple.Pair;
 import javax.vecmath.Matrix4f;
 import java.util.Map;
 
+/**
+ * The transform type baked model class.
+ * @see TransformTypeModelLoader
+ * @author Wyn Price
+ */
 public class TransformTypeBakedModel implements IBakedModel {
 
     @Delegate(excludes = DelegateExclusions.class)

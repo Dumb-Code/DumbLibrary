@@ -16,7 +16,7 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * The model container. Contains the models and the pose handler
+ * The model container. Used to hold information about the tabula model and the poses. 
  */
 @Getter
 public class ModelContainer<E extends Entity, N extends IStringSerializable> {

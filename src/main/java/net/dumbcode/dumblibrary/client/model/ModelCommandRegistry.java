@@ -18,6 +18,11 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * The registry for the model commands
+ * @see ModelCommandLoader
+ * @author Wyn Price
+ */
 public class ModelCommandRegistry {
     private static final Map<String, Command> commandMap = Maps.newHashMap();
 
@@ -50,8 +55,10 @@ public class ModelCommandRegistry {
             return quadSet;
         };
 
+        //The pattern used for all of the current commands. Not required.
         Pattern norPat = Pattern.compile("(\\d*\\.?\\d*),(\\d*\\.?\\d*),(\\d*\\.?\\d*)@(\\d*\\.?\\d*),(\\d*\\.?\\d*),(\\d*\\.?\\d*)");
 
+        //Rotate around by an amount around an axis
         register("rotate", (model, args) -> {
             Matcher matcher = norPat.matcher(args);
             if(!matcher.find()) {
@@ -108,7 +115,8 @@ public class ModelCommandRegistry {
 
         });
 
-        register("interpolate-scale", (model, args) -> {
+        //Scale around a point
+        register("scale", (model, args) -> {
             Matcher matcher = norPat.matcher(args);
             if(!matcher.find()) {
                 throw new IllegalArgumentException("Could not find match");

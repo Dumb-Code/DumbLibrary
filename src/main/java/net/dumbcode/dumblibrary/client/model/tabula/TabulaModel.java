@@ -14,7 +14,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-
+/**
+ * The ModelBase handler for a tabula model
+ * @author Wyn Price
+ */
 @Getter
 @Setter
 @Accessors(chain = true)

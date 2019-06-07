@@ -19,6 +19,32 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Model commands are a way to define commands within a blockstate definition or model name.
+ * A model command has to be in the format name:args and must end with a ; EVEN if it is the last in the command array.
+ * The args for a model command can be anything, as long as they don't contain a ; <br>
+ * Commands can be chained, for example if I wanted to scale a model then rotate it, I can have the model as being:
+ * <pre>{@code mymodid:mymodel##scale:0.5,2,1@0.5,0.5,0.5;rotate:0,20,0@0.5,0,0.5;.command }</pre>
+ * This would first scale the model by [0.5, 2, 1] around the point [0.5, 0.5, 0.5], then rotate the model around [0.5, 0, 0.5] with angles [0, 20, 0] <br>
+ * So far, these are the following commands:
+ * <ul>
+ *     <li>Rotation - rotates the model around a point by given angles (in degrees). Format: <br>
+ *         {@code rotate:angle.x,angle.y,angle.z@point.x,point.y,point.z } <br>
+ *         <pre>Examples:
+ *     rotate:25, 45, 90@0.22, 0.5, 0.75;   -- Rotates the model by [25, 45, 90] degrees around the point [0.22, 0.5, 0.75]
+ *     rotate:0, -45, 0@0.5, 0.5, 0.5;      -- Rotates the model by [0, -45, 0] degrees around the point [0.5, 0.5, 0.5]
+ *         </pre>
+ *     </li>
+ *     <li>Scale - scales the model from a certain point by a given amount in each axis: <br>
+ *         {@code scale:scale.x,scale.y,scale.z@point.x,point.y,point.z }
+ *         <pre>Examples:
+ *     scale:2, 2, 2@0.5, 0.5, 0.5;         -- Scales the model by [2, 2, 2] around the point [0.5, 0.5, 0.5]. This is essentially doubling the size of the model.
+ *     scale:0.5, 1, 0@1, 0.5, 0.25;        -- Scales the model by [0.5, 1, 0] around the point [1, 0.5, 0.25]. This removes the z depth the model had and would put all cubes on the z = 0.25 plane
+ *         </pre>
+ *     </li>
+ * </ul>
+ * @author Wyn Price
+ */
 public enum ModelCommandLoader implements ICustomModelLoader {
     INSTANCE;
 

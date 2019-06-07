@@ -13,6 +13,9 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
+/**
+ * The model renderer for each cube taken from a tabula model.
+ */
 public class TabulaModelRenderer extends ModelRenderer implements AnimationLayer.AnimatableCube {
     @Getter private final TabulaModelInformation.Cube cube;
 

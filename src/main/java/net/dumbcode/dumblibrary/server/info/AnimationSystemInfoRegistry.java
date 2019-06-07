@@ -1,7 +1,7 @@
 package net.dumbcode.dumblibrary.server.info;
 
 import com.google.common.collect.Maps;
-import net.dumbcode.dumblibrary.client.animation.objects.Animation;
+import net.dumbcode.dumblibrary.server.animation.objects.Animation;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
 

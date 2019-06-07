@@ -1,7 +1,7 @@
 package net.dumbcode.dumblibrary.server.info;
 
-import net.dumbcode.dumblibrary.client.animation.objects.AnimationLayer;
-import net.dumbcode.dumblibrary.client.model.tabula.TabulaModelInformation;
+import net.dumbcode.dumblibrary.server.animation.objects.AnimationLayer;
+import net.dumbcode.dumblibrary.server.tabula.TabulaModelInformation;
 
 import javax.annotation.Nullable;
 import javax.vecmath.Vector3f;

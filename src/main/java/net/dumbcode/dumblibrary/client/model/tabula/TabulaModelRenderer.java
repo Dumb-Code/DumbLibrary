@@ -1,8 +1,8 @@
 package net.dumbcode.dumblibrary.client.model.tabula;
 
 import lombok.Getter;
-import net.dumbcode.dumblibrary.client.animation.objects.AnimationLayer;
-import net.minecraft.client.Minecraft;
+import net.dumbcode.dumblibrary.server.animation.objects.AnimationLayer;
+import net.dumbcode.dumblibrary.server.tabula.TabulaModelInformation;
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.model.ModelBox;
 import net.minecraft.client.model.ModelRenderer;

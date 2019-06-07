@@ -14,5 +14,6 @@ public class ModelHandler {
     @SubscribeEvent
     public static void onModelReady(ModelRegistryEvent event) {
         ModelLoaderRegistry.registerLoader(TabulaModelHandler.INSTANCE);
+        ModelLoaderRegistry.registerLoader(ModelCommandLoader.INSTANCE);
     }
 }

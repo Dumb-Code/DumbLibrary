@@ -1,14 +1,16 @@
 package net.dumbcode.dumblibrary.server.info;
 
 import net.dumbcode.dumblibrary.client.animation.ModelContainer;
-import net.dumbcode.dumblibrary.client.animation.PoseHandler;
-import net.dumbcode.dumblibrary.client.animation.objects.Animation;
-import net.dumbcode.dumblibrary.client.animation.objects.AnimationRunWrapper;
-import net.dumbcode.dumblibrary.client.animation.objects.EntityAnimator;
+import net.dumbcode.dumblibrary.server.animation.PoseHandler;
+import net.dumbcode.dumblibrary.server.animation.objects.Animation;
+import net.dumbcode.dumblibrary.server.animation.objects.AnimationRunWrapper;
+import net.dumbcode.dumblibrary.client.animation.EntityAnimator;
 import net.dumbcode.dumblibrary.client.model.tabula.TabulaModel;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
@@ -31,6 +33,7 @@ public interface AnimationSystemInfo<N extends IStringSerializable, E extends En
     @Nonnull Animation<N> getAnimation(E entity);
     void setAnimation(E entity, @Nonnull Animation<N> animation);
 
+    @SideOnly(Side.CLIENT)
     ModelContainer<E, N> getModelContainer(E entity);
     N getStageFromEntity(E entity);
     ResourceLocation getTexture(E entity);

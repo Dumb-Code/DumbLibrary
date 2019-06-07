@@ -1,10 +1,9 @@
-package net.dumbcode.dumblibrary.client.animation.objects;
+package net.dumbcode.dumblibrary.server.animation.objects;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import lombok.Data;
 import lombok.experimental.Accessors;
-import net.minecraft.util.ResourceLocation;
 
 import java.util.List;
 import java.util.Map;

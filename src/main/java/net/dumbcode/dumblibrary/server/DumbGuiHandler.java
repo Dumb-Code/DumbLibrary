@@ -1,6 +1,7 @@
 package net.dumbcode.dumblibrary.server;
 
 import net.dumbcode.dumblibrary.client.gui.GuiGuidebook;
+import net.dumbcode.dumblibrary.client.model.ModelHandler;
 import net.dumbcode.dumblibrary.server.guidebooks.GuidebookItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -20,6 +21,7 @@ public class DumbGuiHandler implements IGuiHandler {
     @Nullable
     @Override
     public Object getClientGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z) {
+        System.out.println(ModelHandler.class);
         switch (ID) {
             case 0:
                 int handOrdinal = x;

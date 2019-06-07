@@ -1,12 +1,9 @@
 package net.dumbcode.dumblibrary.server;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import lombok.experimental.UtilityClass;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.server.guidebooks.Guidebook;
 import net.dumbcode.dumblibrary.server.guidebooks.GuidebooksManager;
-import net.dumbcode.dumblibrary.server.json.JsonUtil;
 import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.event.RegistryEvent;

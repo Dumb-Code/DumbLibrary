@@ -1,4 +1,4 @@
-package net.dumbcode.dumblibrary.client.animation;
+package net.dumbcode.dumblibrary.client.model;
 
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.model.ModelRenderer;

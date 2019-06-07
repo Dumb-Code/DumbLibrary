@@ -1,8 +1,6 @@
-package net.dumbcode.dumblibrary.client.animation.objects;
+package net.dumbcode.dumblibrary.server.animation.objects;
 
 import com.google.common.collect.Maps;
-import net.dumbcode.dumblibrary.client.animation.PoseHandler;
-import net.dumbcode.dumblibrary.client.animation.objects.Animation;
 import net.minecraft.util.IStringSerializable;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;

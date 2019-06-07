@@ -1,14 +1,13 @@
-package net.dumbcode.dumblibrary.client.animation;
+package net.dumbcode.dumblibrary.server.animation;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gson.*;
 import lombok.*;
 import net.dumbcode.dumblibrary.DumbLibrary;
-import net.dumbcode.dumblibrary.client.animation.objects.*;
+import net.dumbcode.dumblibrary.server.animation.objects.*;
 import net.dumbcode.dumblibrary.client.model.tabula.TabulaModel;
-import net.dumbcode.dumblibrary.client.model.tabula.TabulaModelInformation;
-import net.dumbcode.dumblibrary.client.model.tabula.TabulaModelRenderer;
+import net.dumbcode.dumblibrary.server.tabula.TabulaModelInformation;
 import net.dumbcode.dumblibrary.server.info.AnimationSystemInfo;
 import net.dumbcode.dumblibrary.server.info.AnimationSystemInfoRegistry;
 import net.dumbcode.dumblibrary.server.utils.StreamUtils;
@@ -17,6 +16,8 @@ import net.minecraft.entity.Entity;
 import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.JsonUtils;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,7 +40,7 @@ public class PoseHandler<E extends Entity, N extends IStringSerializable> {
     @Getter
     private final AnimationSystemInfo<N, E> info;
 
-    PoseHandler(ResourceLocation regname, AnimationSystemInfo<N, E> info) {
+    public PoseHandler(ResourceLocation regname, AnimationSystemInfo<N, E> info) {
 
         AnimationSystemInfoRegistry.NAMESPACE.put(info.identifier(), info);
 
@@ -257,6 +258,7 @@ public class PoseHandler<E extends Entity, N extends IStringSerializable> {
      * @param factories           a list of {@link AnimationLayerFactory} (Note these should be Object::new)
      * @return A new animation wrapper.
      */
+    @SideOnly(Side.CLIENT)
     public AnimationRunWrapper<E, N> createAnimationWrapper(E entity, TabulaModel model,
                                                             N stage, boolean inertia,
                                                             List<AnimationLayerFactory<E, N>> factories) {

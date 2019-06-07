@@ -1,11 +1,10 @@
-package net.dumbcode.dumblibrary.client.animation.objects;
+package net.dumbcode.dumblibrary.server.animation.objects;
 
 import com.google.common.collect.Lists;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import net.dumbcode.dumblibrary.server.info.AnimationSystemInfo;
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.math.MathHelper;

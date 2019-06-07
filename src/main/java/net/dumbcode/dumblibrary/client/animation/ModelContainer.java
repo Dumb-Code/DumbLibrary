@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.val;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.client.model.tabula.TabulaModel;
+import net.dumbcode.dumblibrary.server.animation.PoseHandler;
+import net.dumbcode.dumblibrary.server.animation.TabulaUtils;
 import net.dumbcode.dumblibrary.server.info.AnimationSystemInfo;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.IStringSerializable;

@@ -1,4 +1,4 @@
-package net.dumbcode.dumblibrary.client.animation.objects;
+package net.dumbcode.dumblibrary.server.animation.objects;
 
 import lombok.Getter;
 import net.minecraft.entity.Entity;

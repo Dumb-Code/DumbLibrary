@@ -1,9 +1,10 @@
-package net.dumbcode.dumblibrary.client.animation.objects;
+package net.dumbcode.dumblibrary.client.animation;
 
 
-import net.dumbcode.dumblibrary.client.animation.PoseHandler;
+import net.dumbcode.dumblibrary.server.animation.PoseHandler;
 import net.dumbcode.dumblibrary.client.model.tabula.TabulaModel;
 import net.dumbcode.dumblibrary.client.model.tabula.TabulaModelAnimator;
+import net.dumbcode.dumblibrary.server.animation.objects.AnimationRunWrapper;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.IStringSerializable;
 import net.minecraftforge.fml.relauncher.Side;

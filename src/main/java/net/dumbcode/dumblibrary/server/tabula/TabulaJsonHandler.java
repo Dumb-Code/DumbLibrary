@@ -1,4 +1,4 @@
-package net.dumbcode.dumblibrary.client.model.tabula;
+package net.dumbcode.dumblibrary.server.tabula;
 
 import com.google.gson.*;
 import net.minecraft.util.JsonUtils;

@@ -1,4 +1,4 @@
-package net.dumbcode.dumblibrary.client.model.tabula;
+package net.dumbcode.dumblibrary.server.tabula;
 
 import com.google.common.collect.Lists;
 import lombok.RequiredArgsConstructor;
@@ -6,6 +6,8 @@ import lombok.Setter;
 import lombok.Value;
 import lombok.experimental.Accessors;
 import lombok.experimental.NonFinal;
+import net.dumbcode.dumblibrary.client.model.tabula.TabulaModel;
+import net.dumbcode.dumblibrary.client.model.tabula.TabulaModelRenderer;
 
 import javax.annotation.Nullable;
 import java.util.List;

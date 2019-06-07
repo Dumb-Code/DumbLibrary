@@ -1,10 +1,10 @@
-package net.dumbcode.dumblibrary.client.animation.objects;
+package net.dumbcode.dumblibrary.server.animation.objects;
 
 import com.google.common.collect.Maps;
 import com.google.gson.*;
 import lombok.*;
 import lombok.experimental.Accessors;
-import net.dumbcode.dumblibrary.client.animation.PoseHandler;
+import net.dumbcode.dumblibrary.server.animation.PoseHandler;
 import net.minecraft.util.JsonUtils;
 
 import java.lang.reflect.Type;

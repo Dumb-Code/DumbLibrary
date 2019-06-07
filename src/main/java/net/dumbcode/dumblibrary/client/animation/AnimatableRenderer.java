@@ -2,7 +2,7 @@ package net.dumbcode.dumblibrary.client.animation;
 
 import lombok.val;
 import net.dumbcode.dumblibrary.client.model.tabula.TabulaModel;
-import net.dumbcode.dumblibrary.client.model.tabula.TabulaModelRenderer;
+import net.dumbcode.dumblibrary.client.model.ModelMissing;
 import net.dumbcode.dumblibrary.server.info.AnimationSystemInfo;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.entity.RenderLiving;

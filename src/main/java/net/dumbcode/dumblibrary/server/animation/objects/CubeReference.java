@@ -1,7 +1,7 @@
-package net.dumbcode.dumblibrary.client.animation.objects;
+package net.dumbcode.dumblibrary.server.animation.objects;
 
 import lombok.Value;
-import net.dumbcode.dumblibrary.client.model.tabula.TabulaModelInformation;
+import net.dumbcode.dumblibrary.server.tabula.TabulaModelInformation;
 
 /**
  * A reference to the cube. Used to store positional/rotation data

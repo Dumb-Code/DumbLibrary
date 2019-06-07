@@ -154,7 +154,7 @@ task publishMod (group: "upload", description: "Publish the mod to curseforge an
 
 task notifyIfError (group: "upload", description: "Checks to see if travis has errored, and if so sends a webhook") {
     doLast {
-        if(System.getenv("TRAVIS_TEST_RESULT").equals("1")) {
+        if(System.getenv("TRAVIS_TEST_RESULT") == "1") {
             println "Build has errored. Deploying webhook"
 
             def buildVersion = System.getenv("TRAVIS_BUILD_NUMBER")?: "???"
@@ -169,8 +169,6 @@ task notifyIfError (group: "upload", description: "Checks to see if travis has e
         }
     }
 }
-
-
 
 task sourcesJar(type: Jar, dependsOn: classes) {
     classifier = "sources"

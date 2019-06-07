@@ -1,11 +1,13 @@
-package net.dumbcode.dumblibrary.client.animation;
+package net.dumbcode.dumblibrary.server.animation;
 
 import com.google.common.collect.Maps;
 import lombok.Cleanup;
 import lombok.experimental.UtilityClass;
-import net.dumbcode.dumblibrary.client.animation.objects.AnimationLayer;
+import net.dumbcode.dumblibrary.server.animation.objects.AnimationLayer;
 import net.dumbcode.dumblibrary.client.model.tabula.*;
 import net.dumbcode.dumblibrary.server.info.ServerAnimatableCube;
+import net.dumbcode.dumblibrary.server.tabula.TabulaJsonHandler;
+import net.dumbcode.dumblibrary.server.tabula.TabulaModelInformation;
 import net.dumbcode.dumblibrary.server.utils.StreamUtils;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.Vec3d;

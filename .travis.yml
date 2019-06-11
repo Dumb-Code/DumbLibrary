@@ -1,12 +1,12 @@
 language: java
-jdk:
-- oraclejdk8
+
 addons:
   sonarcloud:
     organization: dumb-code
     token:
       secure: UljWGkT/UwNs3FsJ69T/j8tp2y/o1VcoZXuKsfPugUNu3+JN8P+bHHt/pOJCo5LRLU9itP3OwDFxCe2iNQx/LUP6OcbjRld/MhGkMd6SrdGdqbnpt5kwqO1AQBU9PSq1d1yn15jgSaoLldvW0ogXukjZ0qtVSJnLCmuOSDPOsWWhE8zRL8asa4zdVd7h6T87r2ctYBSFtbM2odJhqacMHQf295d+HiPZksFzzlLv0HrGV3qfe+kgtJbcaUeGtCQ3Vki2sZXnKTK9SsGbNbEUQMY5ZztpYrfniTUUQvLK62emexc7IWV2y1wtVE7eIyKe7mHjA7uM96reyRjiyawF9rslhHyuXuEkwRUOBcC376T0ZByvEAO6YhWXuL74tujIbB5eR6c1nQ1egSMD1DRI5NJj4A3cBvbPb9ZP3n9UO7hrXJf809mEZJVsUo8Me4xw5okghODCBC7YlYbjCfx+ZRvFEc/r0zRqQxNBlSXGZxrvRbbni63uL/MskT3359EzTcx/qzLpKVVShONhdFTsIOk8IYJz7sfm2+zGdoapIqrarSFYfugrH3p4Hy+dTUYaV+PhUEk4PSsZNZCkH3wO2XHixLqOVckg89s3nJ2NaiD7NkmOc2MrW7r+qA7heYXOpKvE0nBfG4zt6hfvlDoVeJJTvDe4/UmosFrdD6vvErw=
-
+jdk:
+- oraclejdk8
 before_script:
 - export COMMITTER_EMAIL="$(git log -1 $TRAVIS_COMMIT --pretty="%cE")"
 - export COMMITTER_NAME="$(git log -1 $TRAVIS_COMMIT --pretty="%aN")"
@@ -20,6 +20,9 @@ after_script:
 - bash changelog.sh
 after_failure:
   "./gradlew notifyIfError"
+cache:
+  directories:
+    - '$HOME/.sonar/cache'
 env:
   global:
   - secure: JhFETxhYsUtmKBZhGah8V3CZ2mtOCvPsXNjzTB6zF+3c5f2cwUmncHoRWY3mXvpnhEJTpUmVA6el4cwLRQPNaihUmg8jQRsuTG/Y9R0VF+lyX/H8YSHKy3pJbpz16RufKy5mQRlAeCjvdQ1CbuB2knK+N2YxpUrGOuciLlxjkjIrlNtQlCqhPxibWMXIbUS3NbDa7G1Q0zML7YCYgGMM0nDq/tHQBIN0VM4eD8ns191kXFOgj/mqpZS2Q5pELUK7jsbll0LDtV3qX12RmLjH4zAUaUNRQVrr0XLX3XzIc19MgI6ILQ5pObH0IN+8tsPYTBJEnNkCjVz9Jq1tcPEB2M5IkdmiLmRMDrTQXbi4bPx+UDgjlA75XZPbKBTbki2EuHDKpzhgIsDWUrp5s5K18/pfeAMtzp972J9vmnxfbHW/eqD1rV0fLnVDb5/Vu7XrBZHVFBMeBcZoGL/8YtmIcX/fZxZ9C5+UKWhlyhf4VnXtyCfQ4tJDtr1Ng8hee5dtgVK8//EPpW5B5RUzxSvaAoEIPzpJ06rdODo+aqA/iuNF6iDuY4n1R0z1aAj/DLOHHXpbHCaRe+7CV2+pQi0eE5SbyjdgrFM38L2plod5eRDcIi516NI0+/apYEVej1zrKpQIUSDG7hYOV5lemrIXqjyAp+N7yxpRkzTHxADadec=

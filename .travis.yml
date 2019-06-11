@@ -1,6 +1,13 @@
 language: java
 jdk:
 - oraclejdk8
+
+addons:
+  sonarcloud:
+    organization: "dumb-code"
+    token:
+      secure: "TODO"
+
 before_script:
 - export COMMITTER_EMAIL="$(git log -1 $TRAVIS_COMMIT --pretty="%cE")"
 - export COMMITTER_NAME="$(git log -1 $TRAVIS_COMMIT --pretty="%aN")"
@@ -8,6 +15,7 @@ before_script:
 install:
   - true
 script:
+#- sonar-scanner
 - "./gradlew postRequest"
 after_script:
   - bash changelog.sh

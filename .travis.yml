@@ -6,7 +6,7 @@ addons:
   sonarcloud:
     organization: "dumb-code"
     token:
-      secure: "TODO"
+      secure: S7c36a6JOsaktShBFS+P3VeR0JETMZdK1KOI6zsp8tOY/eOjV9EdmNc1RxOyOn9GjAb1Jf2/QuoacaMz4wQinYqntyUD31oUctR1wXyVFYtDxA3yF1WDhazIGo/HG6NlklwJcomS93E9s5pezNzEdwxCgNW8cex49rA0NBc1kym1w0y+Fh5y6OzEHQ4c+ctwj2mhR0hKO73eItBSMZfoBmHMzNsd93//JxIIDcI3h0/axLecoLN8Mug8efke3SBsRhTCPJhWHbprqglVqVI5NGKO/IJ9xnEN5+sWWbbQzqZZ+fnN1EU+BelRjYTo8GbPm8lVnF3/ArkJBab1p0aLUa7dJsOGqsNQsI1fW1zGysTMuNbqXPpauRMtQwbbHm7iuYtx4q5cS+DRoHZe44ebp4kIDbuCIhCOvtVLB+whQ8aL3pz7iozqKvtbkUP8ZhfHVTTnqQlk5Dydvd6ie7SyWLj2zucKHcIGFR+x80MGndOiUs0OdfEatjoe7iWMp2I2M5IOncYMbviATrbv29344XksASgG2MMo4q83nLJI2KX6sy0UJBLcrAw5J1VJYi2wncJ1B5qCYEYe9qrtoptQTYpPZuoKpWK/8J4eGC7+oE4F0/LrSVo8+L6zpgqIesH2J8FWMHKgyVCaz34c1TToWq6C7UwhOiciay2mHJDI0N4=
 
 before_script:
 - export COMMITTER_EMAIL="$(git log -1 $TRAVIS_COMMIT --pretty="%cE")"
@@ -15,7 +15,7 @@ before_script:
 install:
   - true
 script:
-#- sonar-scanner
+- sonar-scanner
 - "./gradlew postRequest"
 after_script:
   - bash changelog.sh

@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.com/Dumb-Code/DumbLibrary.svg?branch=master)](https://travis-ci.com/Dumb-Code/DumbLibrary)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Dumb-Code_DumbLibrary&metric=alert_status)](https://sonarcloud.io/dashboard?id=Dumb-Code_DumbLibrary)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=net.dumbcode.dumblibrary&metric=alert_status)](https://sonarcloud.io/dashboard?id=Dumb-Code_DumbLibrary)
 
 # DumbLibrary
 

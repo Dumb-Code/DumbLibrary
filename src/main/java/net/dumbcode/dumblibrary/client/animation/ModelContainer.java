@@ -200,10 +200,10 @@ public class ModelContainer<E extends Entity> {
                 }
             } else {
                 //If the file ends with .tbl (The old way). Currently only the working way which is why its enforced. I need to check the integrity of the python script
-                if (modelResource.getFileName().endsWith(".tbl")) {
-                    this.loadTabulaPose(location, mainInfo, innerMap);
-                } else {
+                if (modelResource.getFileName().endsWith(JSON_EXTENSION)) {
                     this.loadJsonPose(location, mainInfo, innerMap);
+                } else {
+                    this.loadTabulaPose(location, mainInfo, innerMap);
                 }
             }
             data.getCubes().putAll(innerMap);

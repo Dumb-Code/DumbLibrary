@@ -1,8 +1,12 @@
 package net.dumbcode.dumblibrary.client.gui;
 
 import com.google.common.collect.Lists;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.texture.TextureMap;
@@ -11,37 +15,45 @@ import net.minecraft.util.math.MathHelper;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.util.Rectangle;
 
-import java.io.IOException;
+import java.awt.geom.Rectangle2D;
 import java.util.List;
 import java.util.function.Supplier;
 
-public class GuiDropdownBox {
+@Getter
+@Setter
+public class GuiDropdownBox<T extends GuiDropdownBox.SelectListEntry> {
 
-    private static Minecraft mc = Minecraft.getMinecraft();
+    private static final Minecraft MC = Minecraft.getMinecraft();
 
     public static final float SCROLL_AMOUNT = 0.4F;
 
-    public final int width;
-    public final int cellHeight;
+    private final int width;
+    private final int cellHeight;
 
-    public final int cellMax;
+    private final int cellMax;
 
-    public final int xPos;
-    public final int yPos;
+    private final int xPos;
+    private final int yPos;
 
-    public boolean open;
-    public float scroll;
+    private int insideColor = 0xFF000000;
+    private int highlightColor = 0x2299bbff;
+    private int cellHighlightColor = 0xFF303030;
+    private int borderColor = 0xFFFFFFFF;
 
-    public String search = "";
+    private boolean open;
+    private float scroll;
 
-    public SelectListEntry active;
+    private String search = "";
 
-    public final Supplier<List<? extends SelectListEntry>> listSupplier;
+    private T active;
 
-    public int lastYClicked = -1;
+    @Getter(AccessLevel.NONE) @Setter(AccessLevel.NONE) private final Supplier<List<T>> listSupplier;
 
-    public GuiDropdownBox(int xPos, int yPos, int width, int cellHeight, int cellMax, Supplier<List<? extends SelectListEntry>> listSupplier) {
+    @Getter(AccessLevel.NONE) @Setter(AccessLevel.NONE) private int lastYClicked = -1;
+
+    public GuiDropdownBox(int xPos, int yPos, int width, int cellHeight, int cellMax, Supplier<List<T>> listSupplier) {
         this.xPos = xPos;
         this.yPos = yPos;
         this.width = width;
@@ -50,45 +62,83 @@ public class GuiDropdownBox {
         this.listSupplier = listSupplier;
     }
 
+    /**
+     * Renders the box
+     * @param mouseX the mouse's x position
+     * @param mouseY the mouse's y position
+     */
     public void render(int mouseX, int mouseY) {
-        List<? extends SelectListEntry> entries = this.getSearchedList();
+        List<T> entries = this.getSearchedList();
 
-        int height = this.cellHeight + (this.open ?  Math.min(entries.size(), this.cellMax) * this.cellHeight : 0);
+        boolean additionalRows = entries.size() > this.cellMax;
+
+        int height = this.getTotalSize(entries.size());
         int totalHeight = height - this.cellHeight;
 
-        float scrollLength = -1;
-        float scrollYStart = -1;
-        int scrollBarWidth = 8;
-        int scrollBarLeft = this.xPos + this.width - scrollBarWidth;
+        Rectangle2D.Float scrollBar = this.getScrollBar(entries.size());
 
-        if(entries.size() > this.cellMax) {
-            int ySize = (entries.size() - this.cellMax) * this.cellHeight;
-            scrollLength = MathHelper.clamp(totalHeight / ySize, 32, totalHeight - 8);
-            scrollYStart = this.scroll * this.cellHeight * (totalHeight - scrollLength) / (Math.max((entries.size() -  this.cellMax) * this.cellHeight, 0)) + this.yPos + this.cellHeight - 1;
-            if (scrollYStart < this.yPos - 1) {
-                scrollYStart = this.yPos - 1;
+        if(additionalRows) {
+            this.updateScroll(entries, totalHeight, scrollBar.height, mouseY);
+        }
+        if (!Minecraft.getMinecraft().getFramebuffer().isStencilEnabled()) {
+            Minecraft.getMinecraft().getFramebuffer().enableStencil();
+        }
+
+        GL11.glEnable(GL11.GL_STENCIL_TEST);
+        this.renderStencil(height);
+
+        int borderSize = 1;
+        MC.renderEngine.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
+        RenderHelper.enableGUIStandardItemLighting();
+
+        if(this.open) {
+            this.renderOpenSection(entries, height, borderSize, mouseX, mouseY);
+
+            if(additionalRows) {
+                this.renderScrollBar(scrollBar, borderSize, this.mouseOverScrollBar(mouseX, mouseY, entries.size()));
             }
         }
 
-        if(this.lastYClicked != -1 && entries.size() > this.cellMax) {
-            if(!Mouse.isButtonDown(0)) {
+        RenderHelper.disableStandardItemLighting();
+
+        GL11.glDisable(GL11.GL_STENCIL_TEST);
+
+        GlStateManager.disableDepth();
+
+        this.renderMainCell(mouseX, mouseY);
+
+        this.drawBorder(height, borderSize);
+
+        GlStateManager.enableDepth();
+    }
+
+    /**
+     * Checks to see if the scroll wheel has been used, and if so then scrolls the screen.
+     * @param entries the list of entries
+     * @param totalHeight the total height of the additional section of the box.
+     * @param scrollLength The y size of the scroll bar
+     * @param mouseY the mouse's y position
+     */
+    private void updateScroll(List<T> entries, int totalHeight, float scrollLength, int mouseY) {
+        if (this.lastYClicked != -1) {
+            if (!Mouse.isButtonDown(0)) {
                 this.lastYClicked = -1;
             } else {
                 float oldScroll = this.scroll;
                 float pixelsPerEntry = (totalHeight - scrollLength) / (entries.size() - this.cellMax);
                 this.scroll((this.lastYClicked - mouseY) / pixelsPerEntry);
-                if(oldScroll != this.scroll) {
+                if (oldScroll != this.scroll) {
                     this.lastYClicked = mouseY;
                 }
             }
         }
-//        int listedCells = Math.min(entries.size(), this.cellMax);
+    }
 
-        if(!Minecraft.getMinecraft().getFramebuffer().isStencilEnabled()) {
-            Minecraft.getMinecraft().getFramebuffer().enableStencil();
-        }
-
-        GL11.glEnable(GL11.GL_STENCIL_TEST);
+    /**
+     * Renders the stencil of the dropdown box.
+     * @param height The height of which to render the box. Should be the total height of the box
+     */
+    private void renderStencil(int height) {
         GL11.glColorMask(false, false, false, false);
         GL11.glDepthMask(false);
         GL11.glStencilFunc(GL11.GL_NEVER, 1, 0xFF);
@@ -104,134 +154,181 @@ public class GuiDropdownBox {
         GL11.glStencilMask(0x00);
 
         GL11.glStencilFunc(GL11.GL_EQUAL, 1, 0xFF);
+    }
 
-        int relX = mouseX - this.xPos;
-        int relY = mouseY - this.yPos;
+    /**
+     * Renders the open/additional section. This is the part that opens when you click on the box
+     * @param entries The list of entries
+     * @param height the total size of this box
+     * @param borderSize the size of the border
+     * @param mouseX the mouse's x position
+     * @param mouseY the mouse's y position
+     */
+    private void renderOpenSection(List<T> entries, int height, int borderSize, int mouseX, int mouseY) {
+        boolean withinTopRange = this.withinTopdownRange(mouseX, mouseY);
 
-        int borderSize = 1;
-        int borderColor = -1;
-        int insideColor = 0xFF000000;
-        int insideSelectionColor = 0xFF303030;
-        int highlightColor = 0x2299bbff;
-        mc.renderEngine.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
-        RenderHelper.enableGUIStandardItemLighting();
+        for (int i = 0; i < entries.size(); i++) {
+            int yStart = (int) (this.yPos + this.cellHeight * (i + 1) - this.scroll * this.cellHeight);
+            //Usually it would be yStart + cellHeight, however because the ystart is offsetted (due to the active selection box), it cancels out
+            if (yStart >= this.yPos && yStart <= this.yPos + height) {
+                Gui.drawRect(this.xPos, yStart, this.xPos + this.width, yStart + this.cellHeight, this.cellHighlightColor);
+                Gui.drawRect(this.xPos, yStart, this.xPos + this.width, yStart + borderSize, this.borderColor);
+                entries.get(i).draw(this.xPos, yStart);
+            }
 
-        if(this.open) {
-            for (int i = 0; i < entries.size(); i++) {
-                int yStart = (int) (this.yPos + this.cellHeight * (i + 1) - this.scroll * this.cellHeight) - 1;
-                //Usually it would be yStart + cellHeight, however because the ystart is offsetted (due to the active selection box), it cancels out
-                if(yStart >= this.yPos && yStart <= this.yPos + height) {
-                    Gui.drawRect(this.xPos, yStart, this.xPos + this.width, yStart + this.cellHeight, insideSelectionColor);
-                    Gui.drawRect(this.xPos, yStart, this.xPos + this.width, yStart + borderSize, borderColor);
-                    entries.get(i).draw(this.xPos, yStart);
-                }
+            //Draw highlighted section of the cell (if mouse is over)
+            if (!this.mouseOverScrollBar(mouseX, mouseY, entries.size()) && withinTopRange && mouseY >= yStart && mouseY < yStart + this.cellHeight) {
+                Gui.drawRect(this.xPos, yStart, this.xPos + this.width, yStart + this.cellHeight, this.highlightColor);
             }
         }
+    }
 
-        boolean highlighedScrollbar = this.lastYClicked != -1;
+    /**
+     * Checks to see if the mouse is within the x range of this box, and below the top of the topmost cell.
+     * @param mouseX the mouse's x
+     * @param mouseY the mouse's y
+     * @return true if it is within range, false otherwise
+     */
+    private boolean withinTopdownRange(int mouseX, int mouseY){
+        return mouseX - this.xPos > 0 && mouseY - this.yPos > 0 && mouseX - this.xPos <= this.width;
+    }
 
-        if(relX > 0 && relY > 0) {
-            if(relX <= this.width){
-                if (relY <= this.cellHeight) {
-                    Gui.drawRect(this.xPos, this.yPos, this.xPos + this.width, this.yPos + this.cellHeight, highlightColor);
-                } else if(relY < height && this.open) {
-                    if(entries.size() > this.cellMax && mouseX >= scrollBarLeft && mouseX <= scrollBarLeft + scrollBarWidth && mouseY >= scrollYStart && mouseY <= scrollYStart + scrollLength) {
-                        highlighedScrollbar = true;
-                    } else if(this.lastYClicked == -1) {
-                        for (int i = 0; i < entries.size(); i++) {
-                            if(relY <= this.cellHeight * (i + 2) - this.scroll * this.cellHeight) {
-                                int yStart = (int) (this.yPos + this.cellHeight * (i + 1) - this.scroll * this.cellHeight);
-                                Gui.drawRect(this.xPos, yStart, this.xPos + this.width, yStart + this.cellHeight, highlightColor);
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-        }
+    /**
+     * Renders the main cell. If the user is searching, then this will render the search term instead of the cell entry.
+     * @param mouseX the mouse's x
+     * @param mouseY the mouse's y
+     */
+    private void renderMainCell(int mouseX, int mouseY) {
+        //Draw the main background
+        Gui.drawRect(this.xPos, this.yPos, this.xPos + this.width, this.yPos + this.cellHeight, this.insideColor);
 
-        if(this.open) {
-            if(entries.size() > this.cellMax) {
-                int l = (int) scrollLength;
-                int ys = (int) scrollYStart;
-
-                Gui.drawRect(scrollBarLeft, ys, scrollBarLeft + scrollBarWidth, ys + l, insideColor);
-
-                if(highlighedScrollbar) {
-                    Gui.drawRect(scrollBarLeft, ys, scrollBarLeft + scrollBarWidth, ys + l, highlightColor);
-                }
-
-                Gui.drawRect(scrollBarLeft, ys, scrollBarLeft + scrollBarWidth, ys + borderSize, borderColor);
-                Gui.drawRect(scrollBarLeft, ys + l, scrollBarLeft + scrollBarWidth, ys + l - borderSize, borderColor);
-                Gui.drawRect(scrollBarLeft, ys, scrollBarLeft + borderSize, ys + l, borderColor);
-//                Gui.drawRect(left + w, ys, left + w - borderSize, ys + l, borderColor);
-            }
-        }
-
-        RenderHelper.disableStandardItemLighting();
-
-        GL11.glDisable(GL11.GL_STENCIL_TEST);
-
-        GlStateManager.disableDepth();
-        Gui.drawRect(this.xPos, this.yPos, this.xPos + this.width, this.yPos + this.cellHeight, insideColor);
-
-
-        if(!this.search.isEmpty()) {
-            mc.fontRenderer.drawString(this.search, this.xPos + 5, this.yPos + this.cellHeight / 2 - mc.fontRenderer.FONT_HEIGHT / 2, -1);
-        } else if(this.active != null) {
+        if (!this.search.isEmpty()) {
+            MC.fontRenderer.drawString(this.search, this.xPos + 5, this.yPos + this.cellHeight / 2 - MC.fontRenderer.FONT_HEIGHT / 2, -1);
+        } else if (this.active != null) {
             this.active.draw(this.xPos, this.yPos);
         }
 
-        Gui.drawRect(this.xPos, this.yPos, this.xPos + this.width, this.yPos + borderSize, borderColor);
-        Gui.drawRect(this.xPos, this.yPos + height, this.xPos + this.width, this.yPos + height - borderSize, borderColor);
-        Gui.drawRect(this.xPos, this.yPos + cellHeight, this.xPos + this.width, this.yPos + cellHeight - borderSize, borderColor);
-        Gui.drawRect(this.xPos, this.yPos, this.xPos + borderSize, this.yPos + height, borderColor);
-        Gui.drawRect(this.xPos + this.width, this.yPos, this.xPos + this.width - borderSize, this.yPos + height, borderColor);
-        GlStateManager.enableDepth();
+        //Draw the highlighted section of the main part, if the mouse is over
+        if (mouseX - this.xPos > 0 && mouseX - this.xPos <= this.width && mouseY >= this.yPos && mouseY < this.yPos + this.cellHeight) {
+            Gui.drawRect(this.xPos, this.yPos, this.xPos + this.width, this.yPos + this.cellHeight, this.highlightColor);
+        }
+
     }
 
-    public void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
+    /**
+     * Gets the scrollbar position and dimensions
+     * @param listSize the size of the entries
+     * @return a rectangle of [xPosition, yPosition, xSize, ySize]
+     */
+    private Rectangle2D.Float getScrollBar(int listSize) {
+
+        int totalHeight = this.getTotalSize(listSize) - this.cellHeight;
+
+        int scrollBarWidth = 8;
+        int scrollBarLeft = this.xPos + this.width - scrollBarWidth;
+
+        int ySize = (listSize - this.cellMax) * this.cellHeight;
+        float scrollLength = MathHelper.clamp(totalHeight / ySize, 32, totalHeight - 8);
+        float scrollYStart = this.scroll * this.cellHeight * (totalHeight - scrollLength) / (Math.max((listSize -  this.cellMax) * this.cellHeight, 1)) + this.yPos + this.cellHeight - 1;
+        if (scrollYStart < this.yPos - 1) {
+            scrollYStart = this.yPos - 1F;
+        }
+
+        return new Rectangle2D.Float(scrollBarLeft, scrollYStart, scrollBarWidth, scrollLength);
+    }
+
+    /**
+     * Checks to see if the mouse is over the scrollbar.
+     * @param mouseX the mouse's x
+     * @param mouseY the mouse's y
+     * @param listSize the size of the entries
+     * @return true if the mouse is over the scrollbar, false otherwise.
+     */
+    private boolean mouseOverScrollBar(int mouseX, int mouseY, int listSize) {
+
+        Rectangle2D.Float scrollBar = this.getScrollBar(listSize);
+
+        return this.open
+
+                && mouseX - this.xPos > 0 && mouseX - this.xPos <= this.width
+                && mouseY - this.yPos > 0 && mouseY - this.yPos < this.getTotalSize(listSize)
+
+                && mouseX >= scrollBar.x && mouseX <= scrollBar.x + scrollBar.width
+                && mouseY >= scrollBar.y && mouseY <= scrollBar.y + scrollBar.height;
+    }
+
+    /**
+     * Renders the scrollbar
+     * @param scrollBar the scrollbar rectangle. See {@link #getScrollBar(int)}
+     * @param borderSize The size of the border
+     * @param mouseOver whether the mouse is over the scroll-bar or not
+     */
+    private void renderScrollBar(Rectangle2D.Float scrollBar, int borderSize, boolean mouseOver) {
+
+        Rectangle bar = new Rectangle((int) scrollBar.x, (int) scrollBar.y, (int) scrollBar.width, (int) scrollBar.height);
+
+        //render main bar
+        Gui.drawRect(bar.getX(), bar.getY(), bar.getX() + bar.getWidth(), bar.getY() + bar.getHeight(), this.insideColor);
+
+        //render an overlay to the bar if its overlayed
+        if (mouseOver) {
+            Gui.drawRect(bar.getX(), bar.getY(), bar.getX() + bar.getWidth(), bar.getY() + bar.getHeight(), this.highlightColor);
+        }
+
+        Gui.drawRect(bar.getX(), bar.getY(), bar.getX() + bar.getWidth(), bar.getY() + borderSize, this.borderColor);
+        Gui.drawRect(bar.getX(), bar.getY() + bar.getHeight(), bar.getX() + bar.getWidth(), bar.getY() + bar.getHeight() - borderSize, this.borderColor);
+        Gui.drawRect(bar.getX(), bar.getY(), bar.getX() + borderSize, bar.getY() + bar.getHeight(), this.borderColor);
+    }
+
+    /**
+     * Gets the total size of this box. If the box isn't open then this will be just the top cell, otherwise it will be the top cell and all the options.
+     * @param listSize The size of entry list
+     * @return the size this element currently.
+     */
+    private int getTotalSize(int listSize) {
+        return this.cellHeight + (this.open ?  Math.min(listSize, this.cellMax) * this.cellHeight : 0);
+    }
+
+    /**
+     * Draws the border around the object.
+     * @param height The height of the object. Should be the total height of this box
+     * @param borderSize The size of the border
+     */
+    private void drawBorder(int height, int borderSize) {
+        //Draw border
+        Gui.drawRect(this.xPos, this.yPos, this.xPos + this.width, this.yPos + borderSize, this.borderColor);
+        Gui.drawRect(this.xPos, this.yPos + height, this.xPos + this.width, this.yPos + height - borderSize, this.borderColor);
+        Gui.drawRect(this.xPos, this.yPos + cellHeight, this.xPos + this.width, this.yPos + cellHeight - borderSize, this.borderColor);
+        Gui.drawRect(this.xPos, this.yPos, this.xPos + borderSize, this.yPos + height, this.borderColor);
+        Gui.drawRect(this.xPos + this.width, this.yPos, this.xPos + this.width - borderSize, this.yPos + height, this.borderColor);
+
+    }
+
+    /**
+     * Called when the mouse is clicked.
+     * @param mouseX the mouse's x position
+     * @param mouseY the mouse's y position
+     * @param mouseButton the mouse button clicked.
+     * Should be called from {@link GuiScreen#mouseClicked(int, int, int)}
+     */
+    public void mouseClicked(int mouseX, int mouseY, int mouseButton) {
         if(mouseButton == 0) {
-            List<? extends SelectListEntry> entries = this.getSearchedList();
+            List<T> entries = this.getSearchedList();
 
-            int height = this.cellHeight + (this.open ?  Math.min(entries.size(), this.cellMax) * this.cellHeight : 0);
-            int totalHeight = height - this.cellHeight;
+            boolean additionalRows = entries.size() > this.cellMax;
 
-            float scrollLength = -1;
-            float scrollYStart = -1;
-            int scrollBarWidth = 8;
-            int scrollBarLeft = this.xPos + this.width - scrollBarWidth;
-
-            if(entries.size() > this.cellMax) {
-                int ySize = (entries.size() - this.cellMax) * this.cellHeight;
-                scrollLength = MathHelper.clamp(totalHeight / ySize, 32, totalHeight - 8);
-                scrollYStart = this.scroll * this.cellHeight * (totalHeight - scrollLength) / (Math.max((entries.size() -  this.cellMax) * this.cellHeight, 0)) + this.yPos + this.cellHeight - 1;
-                if (scrollYStart < this.yPos - 1) {
-                    scrollYStart = this.yPos - 1;
-                }
-            }
-
-            if(this.open && entries.size() > this.cellMax && mouseX >= scrollBarLeft && mouseX <= scrollBarLeft + scrollBarWidth && mouseY >= scrollYStart && mouseY <= scrollYStart + scrollLength) {
+            //Scroll bar clicked
+            if(this.open && additionalRows && this.mouseOverScrollBar(mouseX, mouseY, entries.size())) {
                 this.lastYClicked = mouseY;
                 return;
             }
 
-            int relX = mouseX - this.xPos;
-            int relY = mouseY - this.yPos;
-            if(relX > 0 && relY > 0) {
-                if(relX <= this.width) {
-                    if(relY <= this.cellHeight) {
-                        this.open = !this.open;
-                        return;
-                    } else if(relY < height && this.open){
-                        for (int i = 0; i < entries.size(); i++) {
-                            if(relY <= this.cellHeight * (i + 2) - this.scroll * this.cellHeight) {
-                                entries.get(i).onClicked(relX, relY);
-                                this.active = entries.get(i);
-                                break;
-                            }
-                        }
-                    }
+            if(this.withinTopdownRange(mouseX, mouseY)) {
+                if(mouseY <= this.yPos + this.cellHeight) {
+                    this.open = !this.open;
+                    return;
+                } else if(mouseY - this.yPos < this.getTotalSize(entries.size()) && this.open){
+                    this.testForEntryClicked(entries, mouseX, mouseY);
                 }
             }
         }
@@ -239,6 +336,27 @@ public class GuiDropdownBox {
         this.search = "";
     }
 
+
+    /**
+     * Tests each entry and checks to see if it were clicked. THIS METHOD ASSUMES THAT THE MOUSE IS DOWN
+     * @param entries The list of entries
+     * @param mouseX the mouse's x
+     * @param mouseY the mouse's y
+     */
+    private void testForEntryClicked(List<T> entries, int mouseX, int mouseY) {
+        for (int i = 0; i < entries.size(); i++) {
+            if(mouseY - this.yPos <= this.cellHeight * (i + 2) - this.scroll * this.cellHeight) {
+                entries.get(i).onClicked(mouseX - this.xPos, mouseY - this.yPos);
+                this.active = entries.get(i);
+                break;
+            }
+        }
+    }
+
+    /**
+     * Handles the mouse input.
+     * Should be called from {@link GuiScreen#handleMouseInput()}
+     */
     public void handleMouseInput() {
         int mouseInput = Mouse.getEventDWheel();
         if(mouseInput != 0) {
@@ -246,6 +364,11 @@ public class GuiDropdownBox {
         }
     }
 
+    /**
+     * Handles the keyboard input.
+     * Should be called from {@link GuiScreen#handleKeyboardInput()}
+     */
+    @SuppressWarnings("unused")
     public void handleKeyboardInput() {
         if(!this.open) {
             return;
@@ -263,27 +386,35 @@ public class GuiDropdownBox {
         }
     }
 
+    /**
+     * Checks to see if the mouse is over this element
+     * @param mouseX the mouse's x position
+     * @param mouseY the mouse's y position
+     * @return true if the mouse is over this element, false otherwise
+     */
     public boolean isMouseOver(int mouseX, int mouseY) {
-        int relX = mouseX - this.xPos;
-        int relY = mouseY - this.yPos;
-        if(relX > 0 && relY > 0) {
-            if(relX <= this.width) {
-                if(relY <= this.cellHeight) {
-                    return true;
-                } else if(this.open){
-                    return relY <= this.cellHeight * (Math.min(this.getSearchedList().size(), this.cellMax) + 1);
-                }
+        if(this.withinTopdownRange(mouseX, mouseY)) {
+            if(mouseY - this.yPos <= this.cellHeight) {
+                return true;
+            } else if(this.open){
+                return mouseY - this.yPos <= this.cellHeight * (Math.min(this.getSearchedList().size(), this.cellMax) + 1);
             }
         }
         return false;
     }
 
-    private List<? extends SelectListEntry> getSearchedList() {
+    /**
+     * Gets the searched list. If {@link #search} is empty, then the main list will be returned. <br>
+     *     If it is not empty then the main list is searched with each element of the list checking to see if the
+     *     {@link SelectListEntry#getSearch()} contains the {@link #search} term
+     * @return
+     */
+    private List<T> getSearchedList() {
         if(this.search.isEmpty()) {
             return this.listSupplier.get();
         }
-        List<SelectListEntry> list = Lists.newArrayList();
-        for (SelectListEntry listEntry : this.listSupplier.get()) {
+        List<T> list = Lists.newArrayList();
+        for (T listEntry : this.listSupplier.get()) {
             if(listEntry.getSearch().toLowerCase().contains(this.search)) {
                 list.add(listEntry);
             }
@@ -291,24 +422,40 @@ public class GuiDropdownBox {
         return list;
     }
 
+    /**
+     * Scrolls the gui by a certain amount
+     * @param amount
+     */
     public void scroll(float amount) {
         this.scroll -= amount;
         this.scroll = MathHelper.clamp(this.scroll, 0, Math.max(this.getSearchedList().size() -  this.cellMax, 0));
     }
 
-    public SelectListEntry getActive() {
-        return this.active;
-    }
 
-    public void setActive(SelectListEntry active) {
-        this.active = active;
-    }
-
+    /**
+     * The entry for the list
+     */
     public interface SelectListEntry {
+        /**
+         * Draws the element
+         * @param x the elements x position
+         * @param y the elements y position
+         */
         void draw(int x, int y);
 
+        /**
+         * Gets the search string used for searching. <br>
+         *     Searching is done by checking if this term contains the searched term.
+         * {@code selectListEntry.getSearch().contains("foo")} will mean any search terms with "foo" inside them at any point will be added to the found list
+         * @return the search term.
+         */
         String getSearch();
 
+        /**
+         * Called when the entry is clicked
+         * @param relMouseX the relative mouse's x position for this entry
+         * @param relMouseY the relative mouse's y position for this entry
+         */
         default void onClicked(int relMouseX, int relMouseY) {
 
         }

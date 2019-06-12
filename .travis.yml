@@ -5,24 +5,35 @@ addons:
     organization: "dumb-code"
     token:
       secure: "ECbzerRteeB5Cwfo7n9H0Tc9jpTJRcqp0XBKe2baCvwDD+ahwPnOzTALQrB0NPW4Q+v+i9+ndL2ZsUCD9J0WKJauQe03mrJ5N3MtG+6FhPqyVbS+yD8kKCuS6s4pswtIWwLNVXhP8TE6Hrh44vvkiM09TSdVqcfx5+KdCEFL0XBshhmH+pK7mJIkZ2uI6lySHmrm0bC7cngVDk31+0kQFmxoUaTfr1Hy/n4L6qMwB6f+EGZXxY4f+ua6xFPCDzyl5dZ371qtiBUPENTcgLEXU9avRvH1bWWKb7QeRkp805jnBRWFYwEkUmJIjJNyS5mdfF5VVnvivvaf87sDjqSjye4vUASMhIo8dg0wQZbL/ixDKwKZoAckX/bS3pHqtYRLFpHDif2KdZNQM2YOU7DGpfwgWwNJ37+4zWsLgDyFyXYMGb2Vv7Znb63nqPwZQBGwPbMK+8oQCNVchWQS/9Ghw6EPZnCzI5vqRdYbM8iMvh0Q8Pdfy6YTf3Tz3/rOJULVHH7LuPXq+nHKF7h2anK2sc7JON8T5UlziiT0bgp6L/uRM8QnxQCr0uBt7yYqnCsSd+tTFAe7N0Ql6+DKWQ4iDQfhz223cx5Hx3xobgpkvkRsJquTjgakowTejiKiqEvgHExrxwJprHyjZruQJbm4R0bKEvqNzbxTBTBvg0uZj90="
+
 jdk:
 - oraclejdk8
+-
 before_script:
 - export COMMITTER_EMAIL="$(git log -1 $TRAVIS_COMMIT --pretty="%cE")"
 - export COMMITTER_NAME="$(git log -1 $TRAVIS_COMMIT --pretty="%aN")"
 - export COMMIT_HASH="$(echo $TRAVIS_COMMIT | cut -c1-7)"
+-
 install:
 - true
+-
 script:
-- "sonar-scanner"
+- "./gradlew sonarqube"
 - "./gradlew postRequest"
+-
 after_script:
 - "bash changelog.sh"
+-
 after_failure:
   "./gradlew notifyIfError"
+
 cache:
   directories:
+    - '$HOME/.m2/repository'
     - '$HOME/.sonar/cache'
+    - '$HOME/.gradle'
+    - '.gradle'
+
 env:
   global:
   - secure: "JhFETxhYsUtmKBZhGah8V3CZ2mtOCvPsXNjzTB6zF+3c5f2cwUmncHoRWY3mXvpnhEJTpUmVA6el4cwLRQPNaihUmg8jQRsuTG/Y9R0VF+lyX/H8YSHKy3pJbpz16RufKy5mQRlAeCjvdQ1CbuB2knK+N2YxpUrGOuciLlxjkjIrlNtQlCqhPxibWMXIbUS3NbDa7G1Q0zML7YCYgGMM0nDq/tHQBIN0VM4eD8ns191kXFOgj/mqpZS2Q5pELUK7jsbll0LDtV3qX12RmLjH4zAUaUNRQVrr0XLX3XzIc19MgI6ILQ5pObH0IN+8tsPYTBJEnNkCjVz9Jq1tcPEB2M5IkdmiLmRMDrTQXbi4bPx+UDgjlA75XZPbKBTbki2EuHDKpzhgIsDWUrp5s5K18/pfeAMtzp972J9vmnxfbHW/eqD1rV0fLnVDb5/Vu7XrBZHVFBMeBcZoGL/8YtmIcX/fZxZ9C5+UKWhlyhf4VnXtyCfQ4tJDtr1Ng8hee5dtgVK8//EPpW5B5RUzxSvaAoEIPzpJ06rdODo+aqA/iuNF6iDuY4n1R0z1aAj/DLOHHXpbHCaRe+7CV2+pQi0eE5SbyjdgrFM38L2plod5eRDcIi516NI0+/apYEVej1zrKpQIUSDG7hYOV5lemrIXqjyAp+N7yxpRkzTHxADadec="

@@ -19,13 +19,12 @@ install:
 -
 script:
 - "./gradlew sonarqube"
-- "./gradlew postRequest"
--
+
 after_script:
 - "bash changelog.sh"
 -
 after_failure:
-  "./gradlew notifyIfError"
+- "./gradlew notifyIfError"
 
 cache:
   directories:

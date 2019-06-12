@@ -3,8 +3,10 @@ package net.dumbcode.dumblibrary.server.animation;
 import com.google.common.collect.Maps;
 import lombok.Cleanup;
 import lombok.experimental.UtilityClass;
+import net.dumbcode.dumblibrary.client.model.tabula.TabulaModel;
+import net.dumbcode.dumblibrary.client.model.tabula.TabulaModelAnimator;
+import net.dumbcode.dumblibrary.client.model.tabula.TabulaModelRenderer;
 import net.dumbcode.dumblibrary.server.animation.objects.AnimationLayer;
-import net.dumbcode.dumblibrary.client.model.tabula.*;
 import net.dumbcode.dumblibrary.server.info.ServerAnimatableCube;
 import net.dumbcode.dumblibrary.server.tabula.TabulaJsonHandler;
 import net.dumbcode.dumblibrary.server.tabula.TabulaModelInformation;
@@ -26,7 +28,6 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -60,10 +61,6 @@ public class TabulaUtils {
                     @Cleanup InputStream stream = Files.newInputStream(root);
                     TabulaModelInformation modelInfo = TabulaJsonHandler.GSON.fromJson(new InputStreamReader(getModelJsonStream(stream)), TabulaModelInformation.class);
 
-                    List<TabulaModelInformation.Cube> allCubes = modelInfo.getAllCubes();
-                    System.out.println(modelInfo.getCubes().size());
-                    System.out.println(allCubes.size());
-                    System.out.println(modelInfo.getCube("ribcage"));
                     for (TabulaModelInformation.Cube cube : modelInfo.getAllCubes()) {
                         parseCube(cube, null, map);
 
@@ -206,12 +203,12 @@ public class TabulaUtils {
         out.rotY(part.rotateAngleY);
         out.rotX(part.rotateAngleX);
 
-        if(part.scaleChildren) {
+        if(part.isScaleChildren()) {
             Matrix4f scaling = new Matrix4f();
             scaling.setIdentity();
-            scaling.m00 = part.scaleX;
-            scaling.m11 = part.scaleY;
-            scaling.m22 = part.scaleZ;
+            scaling.m00 = part.getScaleX();
+            scaling.m11 = part.getScaleY();
+            scaling.m22 = part.getScaleX();
             out.mul(scaling);
         }
     }

@@ -1,6 +1,8 @@
 package net.dumbcode.dumblibrary.client.model.tabula;
 
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.Setter;
 import net.dumbcode.dumblibrary.server.animation.objects.AnimationLayer;
 import net.dumbcode.dumblibrary.server.tabula.TabulaModelInformation;
 import net.minecraft.client.model.ModelBase;
@@ -16,19 +18,27 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 /**
  * The model renderer for each cube taken from a tabula model.
  */
+@Getter
+@Setter
 public class TabulaModelRenderer extends ModelRenderer implements AnimationLayer.AnimatableCube {
-    @Getter private final TabulaModelInformation.Cube cube;
+    private final TabulaModelInformation.Cube cube;
 
-    public float scaleX, scaleY, scaleZ;
-    public float cubeScaleX, cubeScaleY, cubeScaleZ;
+    private float scaleX;
+    private float scaleY;
+    private float scaleZ;
 
-    public boolean hideButShowChildren;
-    public boolean scaleChildren;
+    private float cubeScaleX;
+    private float cubeScaleY;
+    private float cubeScaleZ;
 
-    @Getter private TabulaModelRenderer parent;
 
-    private int displayList;
-    private boolean compiled;
+    private boolean hideButShowChildren;
+    private boolean scaleChildren;
+
+    @Setter(AccessLevel.NONE) private TabulaModelRenderer parent;
+
+    @Setter(AccessLevel.NONE) private int displayList;
+    @Setter(AccessLevel.NONE) private boolean compiled;
 
     public TabulaModelRenderer(ModelBase model, TabulaModelInformation.Cube cube) {
         super(model, cube.getName());
@@ -61,63 +71,77 @@ public class TabulaModelRenderer extends ModelRenderer implements AnimationLayer
 
     @Override
     public void render(float scale) {
-        if (!this.isHidden) {
-            if (this.showModel) {
-                if (!this.compiled) {
-                    this.compileDisplayList(scale);
-                }
+        if (!this.isHidden && this.showModel) {
+            if (!this.compiled) {
+                this.compileTabulaDisplayList(scale);
+            }
 
+            GlStateManager.pushMatrix();
+            this.applyTransformations(scale);
+
+            if (!this.hideButShowChildren) {
                 GlStateManager.pushMatrix();
-                GlStateManager.translate(this.offsetX, this.offsetY, this.offsetZ);
-                GlStateManager.translate(this.rotationPointX * scale, this.rotationPointY * scale, this.rotationPointZ * scale);
 
-                if (this.rotateAngleZ != 0.0F) {
-                    GlStateManager.rotate((float) Math.toDegrees(this.rotateAngleZ), 0.0F, 0.0F, 1.0F);
-                }
+                this.renderCube();
 
-                if (this.rotateAngleY != 0.0F) {
-                    GlStateManager.rotate((float) Math.toDegrees(this.rotateAngleY), 0.0F, 1.0F, 0.0F);
-                }
-
-                if (this.rotateAngleX != 0.0F) {
-                    GlStateManager.rotate((float) Math.toDegrees(this.rotateAngleX), 1.0F, 0.0F, 0.0F);
-                }
-
-                GlStateManager.pushMatrix();
-                if (this.scaleX != 1.0F || this.scaleY != 1.0F || this.scaleZ != 1.0F) {
-                    GlStateManager.scale(this.scaleX, this.scaleY, this.scaleZ);
-                }
-
-
-                if(!this.hideButShowChildren) {
-                    GlStateManager.pushMatrix();
-                    if (this.cubeScaleX != 1.0F || this.cubeScaleY != 1.0F || this.cubeScaleZ != 1.0F) {
-                        GlStateManager.scale(this.cubeScaleX, this.cubeScaleY, this.cubeScaleZ);
-                    }
-                    GlStateManager.callList(this.displayList);
-                    GlStateManager.popMatrix();
-                }
-
-                if(!this.scaleChildren) {
-                    GlStateManager.popMatrix();
-                    GlStateManager.pushMatrix();
-                }
-
-                if (this.childModels != null) {
-                    for (ModelRenderer childModel : this.childModels) {
-                        childModel.render(scale);
-                    }
-                }
-
-                GlStateManager.popMatrix();
                 GlStateManager.popMatrix();
             }
 
+            if (!this.scaleChildren) {
+                GlStateManager.popMatrix();
+                GlStateManager.pushMatrix();
+            }
+
+            if (this.childModels != null) {
+                for (ModelRenderer childModel : this.childModels) {
+                    childModel.render(scale);
+                }
+            }
+
+            GlStateManager.popMatrix();
+            GlStateManager.popMatrix();
         }
     }
 
+    /**
+     * Renders the actual cube. Also scales it by the cube scale
+     */
+    private void renderCube() {
+        if (this.cubeScaleX != 1.0F || this.cubeScaleY != 1.0F || this.cubeScaleZ != 1.0F) {
+            GlStateManager.scale(this.cubeScaleX, this.cubeScaleY, this.cubeScaleZ);
+        }
+        GlStateManager.callList(this.displayList);
+    }
+
+    /**
+     * Applies the translation and rotation transformations for this model
+     * @param scale The scale of the model. Usually 1/16
+     */
+    private void applyTransformations(float scale) {
+        GlStateManager.translate(this.offsetX, this.offsetY, this.offsetZ);
+        GlStateManager.translate(this.rotationPointX * scale, this.rotationPointY * scale, this.rotationPointZ * scale);
+
+        if (this.rotateAngleZ != 0.0F) {
+            GlStateManager.rotate((float) Math.toDegrees(this.rotateAngleZ), 0.0F, 0.0F, 1.0F);
+        }
+
+        if (this.rotateAngleY != 0.0F) {
+            GlStateManager.rotate((float) Math.toDegrees(this.rotateAngleY), 0.0F, 1.0F, 0.0F);
+        }
+
+        if (this.rotateAngleX != 0.0F) {
+            GlStateManager.rotate((float) Math.toDegrees(this.rotateAngleX), 1.0F, 0.0F, 0.0F);
+        }
+
+        GlStateManager.pushMatrix();
+        if (this.scaleX != 1.0F || this.scaleY != 1.0F || this.scaleZ != 1.0F) {
+            GlStateManager.scale(this.scaleX, this.scaleY, this.scaleZ);
+        }
+
+    }
+
     @SideOnly(Side.CLIENT)
-    private void compileDisplayList(float scale) {
+    private void compileTabulaDisplayList(float scale) {
         this.displayList = GLAllocation.generateDisplayLists(1);
         GlStateManager.glNewList(this.displayList, 4864);
         BufferBuilder bufferbuilder = Tessellator.getInstance().getBuffer();

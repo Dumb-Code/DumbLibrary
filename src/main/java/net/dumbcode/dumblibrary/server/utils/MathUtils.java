@@ -13,35 +13,15 @@ import java.util.Random;
 @UtilityClass
 public class MathUtils {
 
+    private static final Random RANDOM = new Random();
+
     public static double sigmoid(double x)
     {
         return 1 / (1 + Math.exp(-x));
     }
 
-
-    public static int[] generateWeightedList(int size) {
-        int[] out = new int[(size * (size - 1)) + 1]; //n(n-1)
-        for (int i = 0; i < size; i++) {
-            int base = (i * (i - 1));
-            for (int i1 = 0; i1 <= 2*i; i1++) {
-                out[base + i1] = size - i;
-            }
-        }
-        return out;
-    }
-
     public static int getWeightedResult(int size) {
-        int[] aint = generateWeightedList(size);
-        //Fisher–Yates shuffle
-        Random rnd = new Random();
-        for (int i = aint.length - 1; i > 0; i--)
-        {
-            int index = rnd.nextInt(i + 1);
-            int a = aint[index];
-            aint[index] = aint[i];
-            aint[i] = a;
-        }
-        return aint[new Random().nextInt(aint.length)];
+        return (int) Math.abs(RANDOM.nextGaussian() * size * 10);
     }
 
     public static int floorToZero(double value) {
@@ -72,7 +52,7 @@ public class MathUtils {
     public static double binomialExp(double a, double b, int[] n) {
         double total = 0;
         for (int i = 0; i < n.length; i++) {
-            total += n[i] * Math.pow(a, i) * Math.pow(b, n.length - i - 1);
+            total += n[i] * Math.pow(a, i) * Math.pow(b, n.length - i - 1D);
         }
         return total;
     }
@@ -95,17 +75,22 @@ public class MathUtils {
         return divationTotal / data.length;
     }
 
-    private static Map<TriVec, Vec3d> NORMAL_CACHE = Maps.newHashMap();
+    private static final Map<TriVec, Vec3d> NORMAL_CACHE = Maps.newHashMap();
 
-    public static Vec3d calculateNormal(double x1, double y1, double z1, double x2, double y2, double z2, double x3, double y3, double z3) {
-        Vec3d pos1 = new Vec3d(x1, y1, z1);
-        Vec3d pos2 = new Vec3d(x2, y2, z2);
-        Vec3d pos3 = new Vec3d(x3, y3, z3);
+    /**
+     * Calculate the normal of the given data
+     * @param data in the format [x1, y1, z1, x2, y2, z2, x3, y3, z3]
+     * @return the Vec3d normal
+     */
+    public static Vec3d calculateNormal(double... data) {
+        Vec3d pos1 = new Vec3d(data[0], data[1], data[2]);
+        Vec3d pos2 = new Vec3d(data[3], data[4], data[5]);
+        Vec3d pos3 = new Vec3d(data[6], data[7], data[8]);
         return NORMAL_CACHE.computeIfAbsent(new TriVec(pos1, pos2, pos3), v -> pos2.subtract(pos1).crossProduct(pos3.subtract(pos1)).normalize());
     }
 
-    public static Vector3f calcualeNormalF(double x1, double y1, double z1, double x2, double y2, double z2, double x3, double y3, double z3) {
-        Vec3d vec = calculateNormal(x1, y1, z1, x2, y2, z2, x3, y3, z3);
+    public static Vector3f calcualeNormalF(double... data) {
+        Vec3d vec = calculateNormal(data);
         return new Vector3f((float)vec.x, (float)vec.y, (float)vec.z);
     }
 

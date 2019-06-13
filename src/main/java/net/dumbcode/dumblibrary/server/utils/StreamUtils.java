@@ -9,6 +9,7 @@ import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.ModContainer;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.apache.commons.io.IOUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -25,31 +26,37 @@ public class StreamUtils {
         if (FMLCommonHandler.instance().getSide() == Side.CLIENT) {
             return openClientStream(location);
         }
+        return Files.newInputStream(getPath(location));
+    }
 
+    public static Path getPath(ResourceLocation location) {
         ModContainer container = Loader.instance().getIndexedModList().get(location.getNamespace());
         if (container != null) {
             String base = "assets/" + container.getModId() + "/" + location.getPath();
             File source = container.getSource();
-            try (FileSystem fs = FileSystems.newFileSystem(source.toPath(), null)) {
+            FileSystem fs = null;
+            try {
                 Path root = null;
                 if (source.isFile()) {
+                    fs = FileSystems.newFileSystem(source.toPath(), null);
                     root = fs.getPath("/" + base);
                 } else if (source.isDirectory()) {
                     root = source.toPath().resolve(base);
                 }
 
                 if (root != null && root.toFile().exists()) {
-                    return Files.newInputStream(root);
+                    return root;
                 } else {
                     throw new FileNotFoundException("Could not find file " + root);
                 }
             } catch (IOException e) {
                 FMLLog.log.error("Error loading FileSystem: ", e);
+            } finally {
+                IOUtils.closeQuietly(fs);
             }
         }
-        throw new IOException("Invalid mod container: " + location.getNamespace());
+        throw new IllegalArgumentException("Invalid mod container: " + location.getNamespace());
     }
-
     @SideOnly(Side.CLIENT)
     private static InputStream openClientStream(ResourceLocation location) throws IOException {
         return Minecraft.getMinecraft().getResourceManager().getResource(location).getInputStream();

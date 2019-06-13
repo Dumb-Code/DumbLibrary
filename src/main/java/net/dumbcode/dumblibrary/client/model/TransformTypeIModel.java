@@ -121,7 +121,7 @@ public class TransformTypeIModel implements IModel {
     private Map<ItemCameraTransforms.TransformType, IModel> transform(UnaryOperator<IModel> mapper) {
         Map<ItemCameraTransforms.TransformType, IModel> map = Maps.newHashMap();
         for (Map.Entry<ItemCameraTransforms.TransformType, IModel> entry : this.overrides.entrySet()) {
-            map.put(entry.getKey(), mapper.apply(entry.getValue()))
+            map.put(entry.getKey(), mapper.apply(entry.getValue()));
         }
         return map;
     }

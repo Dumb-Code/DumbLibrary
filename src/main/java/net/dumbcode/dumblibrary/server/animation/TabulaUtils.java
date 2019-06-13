@@ -3,6 +3,7 @@ package net.dumbcode.dumblibrary.server.animation;
 import com.google.common.collect.Maps;
 import lombok.Cleanup;
 import lombok.experimental.UtilityClass;
+import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.client.model.tabula.TabulaModel;
 import net.dumbcode.dumblibrary.client.model.tabula.TabulaModelAnimator;
 import net.dumbcode.dumblibrary.client.model.tabula.TabulaModelRenderer;
@@ -43,30 +44,14 @@ public class TabulaUtils {
         }
 
         Map<String, AnimationLayer.AnimatableCube> map = Maps.newHashMap();
-        ModContainer container = Loader.instance().getIndexedModList().get(location.getNamespace());
-        if (container != null) {
-            String base = "assets/" + container.getModId() + "/" + location.getPath();
-            File source = container.getSource();
-            try (FileSystem fs = FileSystems.newFileSystem(source.toPath(), null)) {
-                Path root = null;
-                if (source.isFile()) {
-                    root = fs.getPath("/" + base);
-                } else if (source.isDirectory()) {
-                    root = source.toPath().resolve(base);
-                }
-
-                if (root != null && Files.exists(root)) {
-                    @Cleanup InputStream stream = Files.newInputStream(root);
-                    TabulaModelInformation modelInfo = TabulaJsonHandler.GSON.fromJson(new InputStreamReader(getModelJsonStream(stream)), TabulaModelInformation.class);
-
-                    for (TabulaModelInformation.Cube cube : modelInfo.getAllCubes()) {
-                        parseCube(cube, null, map);
-
-                    }
-                }
-            } catch (IOException e) {
-                FMLLog.log.error("Error loading FileSystem: ", e);
+        try {
+            @Cleanup InputStream stream = Files.newInputStream(StreamUtils.getPath(location));
+            TabulaModelInformation modelInfo = TabulaJsonHandler.GSON.fromJson(new InputStreamReader(getModelJsonStream(stream)), TabulaModelInformation.class);
+            for (TabulaModelInformation.Cube cube : modelInfo.getAllCubes()) {
+                parseCube(cube, null, map);
             }
+        } catch (IOException e) {
+            DumbLibrary.getLogger().warn("Unable to load serside cubes from model " + location, e);
         }
         return map;
     }
@@ -136,8 +121,8 @@ public class TabulaUtils {
         float[] rotation = cube.getActualRotation();
 
         boxRotateX.rotX(rotation[0]);
-        boxRotateY.rotY(rotation[1]);
-        boxRotateZ.rotZ(rotation[2]);
+        boxRotateY.rotY(-rotation[1]);
+        boxRotateZ.rotZ(-rotation[2]);
 
         boxRotateX.transform(rendererPos);
         boxRotateY.transform(rendererPos);

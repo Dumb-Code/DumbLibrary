@@ -12,17 +12,20 @@ import net.dumbcode.dumblibrary.server.info.AnimationSystemInfo;
 import net.dumbcode.dumblibrary.server.info.AnimationSystemInfoRegistry;
 import net.dumbcode.dumblibrary.server.tabula.TabulaModelInformation;
 import net.dumbcode.dumblibrary.server.utils.StreamUtils;
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.JsonUtils;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.logging.log4j.util.Strings;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Function;
 
@@ -103,7 +106,8 @@ public class ModelContainer<E extends Entity> {
      */
     private void loadAnimations(Map<String, Map<String, CubeReference>> references, Map<Animation, List<PoseData>> animations, ResourceLocation regname, String baseLoc, String baseFileName) {
         try {
-            Map<String, List<PoseData>> rawAnimations = this.loadRawAnimations(regname, baseFileName);
+            Map<String, List<PoseData>> rawAnimations = Maps.newHashMap();
+            this.loadRawAnimations(regname, baseLoc, baseFileName, rawAnimations);
 
             List<PoseData> modelResources = Lists.newArrayList();
             //Iterate through all the lists poses in the rawData
@@ -119,7 +123,7 @@ public class ModelContainer<E extends Entity> {
             for (Map.Entry<String, List<PoseData>> entry : rawAnimations.entrySet()) {
                 //Use the animationGetter to get the Animation from the string
                 Animation animation = this.info.getAnimation(entry.getKey());
-                List<PoseData> poseData = Lists.newArrayList(entry.getValue());
+                List<PoseData> poseData = Lists.newLinkedList(entry.getValue());
 
                 this.info.setPoseData(animation, poseData);
                 animations.put(animation, poseData);
@@ -127,7 +131,7 @@ public class ModelContainer<E extends Entity> {
             //Get the main model for this ModelStage
             String location = Objects.requireNonNull(this.info.defaultAnimation().getIdentifier(), "Could not find main model location for " + regname + " as it was not defined");
             //load the animation info
-            loadMainModelInformation(references, new ResourceLocation(regname.getNamespace(), baseFileName + "_" + location), modelResources);
+            this.loadMainModelInformation(references, new ResourceLocation(regname.getNamespace(), baseFileName + "_" + location), modelResources);
         } catch (Exception e) {
             DumbLibrary.getLogger().error("Unable to loadRawAnimations poses for " + regname, e);
         }
@@ -137,37 +141,59 @@ public class ModelContainer<E extends Entity> {
      * Loads the raw map of (animation, List(Posedata))
      *
      * @param regname      The registry name of where to load the animations
+     * @param baseFolder The base folder, derived from regname
      * @param baseFileName The base file name, derived from the regname
-     * @return a map of animation-name to a list of the pose data for that animation
+     * @param map a map of animation-name to a list of the pose data for that animation
      */
-    private Map<String, List<PoseData>> loadRawAnimations(ResourceLocation regname, String baseFileName) {
+    private void loadRawAnimations(ResourceLocation regname, String baseFolder, String baseFileName, Map<String, List<PoseData>> map) {
         try {
             //Get the input stream of the json file
-            @Cleanup InputStream jsonStream = Minecraft.getMinecraft().getResourceManager().getResource(new ResourceLocation(regname.getNamespace(), baseFileName + JSON_EXTENSION)).getInputStream();
+            @Cleanup InputStream jsonStream = StreamUtils.openStream(new ResourceLocation(regname.getNamespace(), baseFileName + JSON_EXTENSION));
             //Create a reader of the input stream
             @Cleanup Reader reader = new InputStreamReader(jsonStream);
             //Parse the reader into a JsonObject, so i can deserialize it
             JsonObject json = new JsonParser().parse(reader).getAsJsonObject();
             //Get the Poses object within the json file
             JsonObject poses = JsonUtils.getJsonObject(json, "poses");
-            Map<String, List<PoseData>> map = Maps.newHashMap();
             //Iterate through all the supplied animation names
             for (String animation : this.info.allAnimationNames()) {
                 //If the poses object has a object called the "animation". Can be fully upper case or fully lowercase
                 for (String ani : Lists.newArrayList(animation.toLowerCase(), animation.toUpperCase())) {
                     if (JsonUtils.hasField(poses, ani)) {
-                        //Get the Json Array thats referenced by the "animation"
-                        for (JsonElement pose : JsonUtils.getJsonArray(poses, ani)) {
-                            //For the every object within the Json Array, deserialize it to a PoseData, and add it to the list
-                            map.computeIfAbsent(animation, a -> Lists.newArrayList()).add(GSON.fromJson(pose, PoseData.class));
+                        if(JsonUtils.isJsonArray(poses, ani)) {
+                            //Get the Json Array thats referenced by the "animation"
+                            for (JsonElement pose : JsonUtils.getJsonArray(poses, ani)) {
+                                //For the every object within the Json Array, deserialize it to a PoseData, and add it to the list
+                                map.computeIfAbsent(animation, a -> Lists.newLinkedList()).add(GSON.fromJson(pose, PoseData.class));
+                            }
+                        } else {
+                            this.loadJsonPose(JsonUtils.getJsonObject(poses, ani), animation, regname, baseFolder, map);
                         }
                         break;
                     }
                 }
             }
-            return map;
         } catch (IOException e) {
             throw new IllegalArgumentException("Could not main json loadRawAnimations input stream for " + regname, e);
+        }
+    }
+
+    private void loadJsonPose(JsonObject poseObject, String animation, ResourceLocation regName, String baseFolder, Map<String, List<PoseData>> map) {
+        String directory = JsonUtils.getString(poseObject, "directory");
+        float time = JsonUtils.getFloat(poseObject, "time");
+        Path root = StreamUtils.getPath(new ResourceLocation(regName.getNamespace(), baseFolder + "/" + directory));
+        try {
+            map.put(animation,
+            Files.walk(root)
+                    .filter(path -> path != root)
+                    .map(path -> path.getParent().getFileName() + "/" + FilenameUtils.getBaseName(path.getFileName().toString()))
+                    .filter(Strings::isNotEmpty)
+                    .sorted()
+                    .map(modelname -> new PoseData(modelname, time))
+                    .collect(Lists::newLinkedList, List::add, LinkedList::addAll)
+        );
+        } catch (IOException e) {
+            DumbLibrary.getLogger().warn(e);
         }
     }
 

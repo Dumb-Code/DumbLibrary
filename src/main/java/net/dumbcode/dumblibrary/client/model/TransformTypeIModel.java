@@ -3,6 +3,7 @@ package net.dumbcode.dumblibrary.client.model;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import lombok.experimental.Wither;
 import lombok.val;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
@@ -16,6 +17,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 /**
  * The IModel for the transform type models. Used to store the default IModel and the overrides
@@ -23,6 +25,7 @@ import java.util.function.Function;
  * @author Wyn Price
  * @see TransformTypeModelLoader
  */
+@Wither
 public class TransformTypeIModel implements IModel {
 
     private IModel defaultModel;
@@ -87,40 +90,39 @@ public class TransformTypeIModel implements IModel {
     @Override
     public IModel uvlock(boolean value) {
         //Apply the uvlock to all the models, including the overrides
-        this.defaultModel = this.defaultModel.uvlock(value);
-        this.overrides.replaceAll((transformType, iModel) -> iModel.uvlock(value));
-        return this;
+        return this.withDefaultModel(this.defaultModel.uvlock(value)).withOverrides(this.transform(model -> model.uvlock(value)));
     }
 
     @Override
     public IModel smoothLighting(boolean value) {
         //Apply the smoothLighting to all the models, including the overrides
-        this.defaultModel = this.defaultModel.smoothLighting(value);
-        this.overrides.replaceAll((transformType, iModel) -> iModel.smoothLighting(value));
-        return this;
+        return this.withDefaultModel(this.defaultModel.smoothLighting(value)).withOverrides(this.transform(model -> model.smoothLighting(value)));
     }
 
     @Override
     public IModel process(ImmutableMap<String, String> customData) {
         //Apply the process to all the models, including the overrides
-        this.defaultModel = this.defaultModel.process(customData);
-        this.overrides.replaceAll((transformType, iModel) -> iModel.process(customData));
-        return this;
+        return this.withDefaultModel(this.defaultModel.process(customData)).withOverrides(this.transform(model -> model.process(customData)));
     }
 
     @Override
     public IModel gui3d(boolean value) {
         //Apply the gui3d to all the models, including the overrides
-        this.defaultModel = this.defaultModel.gui3d(value);
-        this.overrides.replaceAll((transformType, iModel) -> iModel.gui3d(value));
-        return this;
+        return this.withDefaultModel(this.defaultModel.gui3d(value)).withOverrides(this.transform(model -> model.gui3d(value)));
+
     }
 
     @Override
     public IModel retexture(ImmutableMap<String, String> textures) {
         //Apply the retexture to all the models, including the overrides
-        this.defaultModel = this.defaultModel.retexture(textures);
-        this.overrides.replaceAll((transformType, iModel) -> iModel.retexture(textures));
-        return this;
+        return this.withDefaultModel(this.defaultModel.retexture(textures)).withOverrides(this.transform(model -> model.retexture(textures)));
+    }
+
+    private Map<ItemCameraTransforms.TransformType, IModel> transform(UnaryOperator<IModel> mapper) {
+        Map<ItemCameraTransforms.TransformType, IModel> map = Maps.newHashMap();
+        for (Map.Entry<ItemCameraTransforms.TransformType, IModel> entry : this.overrides.entrySet()) {
+            map.put(entry.getKey(), mapper.apply(entry.getValue()))
+        }
+        return map;
     }
 }

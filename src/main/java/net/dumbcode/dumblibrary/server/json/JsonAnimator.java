@@ -52,19 +52,18 @@ public class JsonAnimator implements TabulaModelAnimator<Entity> {
                 }
                 JsonObject factoryObject = jsonElement.getAsJsonObject();
                 String type = JsonUtils.getString(factoryObject, "type");
-                if (!JsonAnimationRegistry.factoryMap.containsKey(type)) {
+                if (!JsonAnimationRegistry.INSTANCE.factoryMap.containsKey(type)) {
                     throw new JsonParseException("Illegal type: " + type);
                 }
-                factoryList.add(Pair.of(JsonUtils.getJsonArray(factoryObject, "array"), JsonAnimationRegistry.factoryMap.get(type)));
+                factoryList.add(Pair.of(JsonUtils.getJsonArray(factoryObject, "array"), JsonAnimationRegistry.INSTANCE.factoryMap.get(type)));
             }
-            JsonAnimator animator = new JsonAnimator(
+
+            return new JsonAnimator(
                     JsonUtils.getFloat(json, "global_speed"),
                     JsonUtils.getFloat(json, "global_degree"),
                     context.deserialize(JsonUtils.getJsonArray(json, "constants"), Constants.class),
                     animationList
             );
-
-            return animator;
         }
     }
 }

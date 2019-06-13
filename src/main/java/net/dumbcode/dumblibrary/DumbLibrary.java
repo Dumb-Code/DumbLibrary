@@ -27,7 +27,7 @@ public class DumbLibrary
     @Mod.Instance(MODID)
     public static DumbLibrary MOD_INSTANCE;
 
-    public static SimpleNetworkWrapper NETWORK = new SimpleNetworkWrapper(MODID);
+    public static final SimpleNetworkWrapper NETWORK = new SimpleNetworkWrapper(MODID);
 
 
     @Mod.EventHandler

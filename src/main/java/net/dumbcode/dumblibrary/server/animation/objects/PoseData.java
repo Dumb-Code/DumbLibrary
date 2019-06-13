@@ -27,7 +27,7 @@ public class PoseData {
         INSTANCE;
 
         @Override
-        public PoseData deserialize(JsonElement element, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+        public PoseData deserialize(JsonElement element, Type typeOfT, JsonDeserializationContext context) {
             JsonObject json = element.getAsJsonObject();
             return new PoseData(
                     JsonUtils.getString(json ,"pose"),

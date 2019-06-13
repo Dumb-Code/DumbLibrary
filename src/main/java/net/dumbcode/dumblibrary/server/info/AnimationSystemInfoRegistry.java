@@ -12,7 +12,7 @@ import java.util.Map;
  * Used client-side for syncing
  */
 public class AnimationSystemInfoRegistry {
-    public static Map<ResourceLocation, AnimationSystemInfo> NAMESPACE = Maps.newHashMap();
+    public static final Map<ResourceLocation, AnimationSystemInfo> NAMESPACE = Maps.newHashMap();
 
     @SuppressWarnings("unchecked")
     public static void setAnimationToEntity(Entity entity, ResourceLocation info, String animationName) {

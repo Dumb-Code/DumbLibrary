@@ -42,16 +42,15 @@ public class TabulaUtils {
         if(!location.getPath().endsWith(".tbl")) {
             location = new ResourceLocation(location.getNamespace(), location.getPath() + ".tbl");
         }
+
         Map<String, AnimationLayer.AnimatableCube> map = Maps.newHashMap();
         ModContainer container = Loader.instance().getIndexedModList().get(location.getNamespace());
         if(container != null) {
-            FileSystem fs = null;
-            try {
-                String base = "assets/" + container.getModId() + "/" + location.getPath();
-                File source = container.getSource();
+            String base = "assets/" + container.getModId() + "/" + location.getPath();
+            File source = container.getSource();
+            try (FileSystem fs = FileSystems.newFileSystem(source.toPath(), null)) {
                 Path root = null;
                 if (source.isFile()) {
-                    fs = FileSystems.newFileSystem(source.toPath(), null);
                     root = fs.getPath("/" + base);
                 } else if (source.isDirectory()) {
                     root = source.toPath().resolve(base);
@@ -68,8 +67,6 @@ public class TabulaUtils {
                 }
             } catch (IOException e) {
                 FMLLog.log.error("Error loading FileSystem: ", e);
-            } finally {
-                IOUtils.closeQuietly(fs);
             }
         }
         return map;

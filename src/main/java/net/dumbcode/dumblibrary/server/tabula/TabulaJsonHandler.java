@@ -63,7 +63,7 @@ public enum TabulaJsonHandler implements JsonDeserializer<TabulaModelInformation
                 getArr(json, "scale"),
                 getArr(json, "txOffset"),
                 getBoolean(json, "txMirror"),
-                getFloat(json,"mcScale"),
+                getFloat(json, "mcScale"),
                 getFloat(json, "opacity"),
                 getBoolean(json, "hidden"),
                 getArrString(json, "metadata"),
@@ -80,7 +80,7 @@ public enum TabulaJsonHandler implements JsonDeserializer<TabulaModelInformation
     }
 
     private String[] getArrString(JsonObject json, String str) {
-        if(!isJsonArray(json, str)) {
+        if (!isJsonArray(json, str)) {
             return new String[0];
         }
         JsonArray jsonArray = getJsonArray(json, str);
@@ -92,7 +92,7 @@ public enum TabulaJsonHandler implements JsonDeserializer<TabulaModelInformation
     }
 
     private float[] getArr(JsonObject json, String str) {
-        if(!isJsonArray(json, str)) {
+        if (!isJsonArray(json, str)) {
             return new float[0];
         }
         JsonArray jsonArray = getJsonArray(json.get(str), str);

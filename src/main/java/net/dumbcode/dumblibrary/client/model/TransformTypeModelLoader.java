@@ -4,7 +4,6 @@ import com.google.common.collect.Maps;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import lombok.Cleanup;
-import lombok.val;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
@@ -32,10 +31,12 @@ import java.util.Map;
  * }
  * }</pre>
  * In this example, the default model will be an apple, however when the model is displayed in the gui, it will look like a stick, and when dropped on the floor will look like a stone block.
+ *
  * @author Wyn Price
  */
 public enum TransformTypeModelLoader implements ICustomModelLoader {
     INSTANCE;
+
     @Override
     public boolean accepts(ResourceLocation modelLocation) {
         //If the resource location ends with `.ttm`, allow it to be used here
@@ -56,7 +57,7 @@ public enum TransformTypeModelLoader implements ICustomModelLoader {
         for (ItemCameraTransforms.TransformType transformType : ItemCameraTransforms.TransformType.values()) {
             String typeName = transformType.name().toLowerCase(Locale.ROOT);
             //If the json object has the type as a string
-            if(JsonUtils.isString(json, typeName)) {
+            if (JsonUtils.isString(json, typeName)) {
                 //Create the resource location from the string
                 ResourceLocation location = new ResourceLocation(JsonUtils.getString(json, typeName));
                 IModel model;
@@ -65,7 +66,7 @@ public enum TransformTypeModelLoader implements ICustomModelLoader {
                     model = ModelLoaderRegistry.getModel(location);
                 } catch (Exception e) {
                     //Catches the error for this model, instead of letting the whole model fail
-                    DumbLibrary.getLogger().error("[TTM] Unable to get sub-model " + location.toString() + " for model " + modelLocation.toString(), e );
+                    DumbLibrary.getLogger().error("[TTM] Unable to get sub-model " + location.toString() + " for model " + modelLocation.toString(), e);
                     //Puts the model as the missing model, as to make it easier to see when somthing goes wrong
                     model = ModelLoaderRegistry.getMissingModel();
                 }

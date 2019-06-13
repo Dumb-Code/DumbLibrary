@@ -1,8 +1,8 @@
 package net.dumbcode.dumblibrary.client.animation;
 
 import lombok.val;
-import net.dumbcode.dumblibrary.client.model.tabula.TabulaModel;
 import net.dumbcode.dumblibrary.client.model.ModelMissing;
+import net.dumbcode.dumblibrary.client.model.tabula.TabulaModel;
 import net.dumbcode.dumblibrary.server.info.AnimationSystemInfo;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.entity.RenderLiving;
@@ -15,6 +15,7 @@ import java.util.function.Function;
 
 /**
  * The Renderer class to use for the animations to work.
+ *
  * @param <E> The entity class
  */
 public class AnimatableRenderer<E extends EntityLiving> extends RenderLiving<E> {
@@ -35,7 +36,7 @@ public class AnimatableRenderer<E extends EntityLiving> extends RenderLiving<E> 
         val info = this.animationSystemInfoGetter.apply(entity);
         TabulaModel model = info.getModelContainer(entity).getMainModel();
         this.mainModel = model;
-        if(this.mainModel == null) {
+        if (this.mainModel == null) {
             this.mainModel = ModelMissing.INSTANCE;
         }
         super.doRender(entity, x, y, z, entityYaw, partialTicks);

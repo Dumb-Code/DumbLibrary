@@ -1,7 +1,10 @@
 package net.dumbcode.dumblibrary.server.animation.objects;
 
 import com.google.common.collect.Maps;
-import com.google.gson.*;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import lombok.Data;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -19,7 +22,8 @@ import java.util.Map;
 public class PoseData {
     private final String modelName;
     private final float time;
-    @Accessors(chain = true) private ModelContainer.ModelLocation location;
+    @Accessors(chain = true)
+    private ModelContainer.ModelLocation location;
     private final Map<String, CubeReference> cubes = Maps.newHashMap();
 
 
@@ -30,7 +34,7 @@ public class PoseData {
         public PoseData deserialize(JsonElement element, Type typeOfT, JsonDeserializationContext context) {
             JsonObject json = element.getAsJsonObject();
             return new PoseData(
-                    JsonUtils.getString(json ,"pose"),
+                    JsonUtils.getString(json, "pose"),
                     JsonUtils.getFloat(json, "time")
             );
         }

@@ -25,7 +25,7 @@ public class ImageElement extends GuidebookElement {
         super(source, context);
         texture = new ResourceLocation(source.get("location").getAsString());
         JsonElement scaling = source.get("scale");
-        if(scaling.getAsString().equalsIgnoreCase("fit")) {
+        if (scaling.getAsString().equalsIgnoreCase("fit")) {
             scale = -1;
         } else {
             scale = scaling.getAsDouble();
@@ -33,7 +33,7 @@ public class ImageElement extends GuidebookElement {
     }
 
     private void readTextureSizeIfNeeded() {
-        if(textureWidth == -1 || textureHeight == -1) {
+        if (textureWidth == -1 || textureHeight == -1) {
             int previousTexture = GlStateManager.glGetInteger(GL11.GL_TEXTURE_BINDING_2D);
             ITextureObject textureObj = Minecraft.getMinecraft().getTextureManager().getTexture(texture);
             GL11.glBindTexture(GL11.GL_TEXTURE_2D, textureObj.getGlTextureId());
@@ -44,14 +44,14 @@ public class ImageElement extends GuidebookElement {
     }
 
     private double correctScale(Guidebook guidebook) {
-        if(scale < 0) { // fit to page
+        if (scale < 0) { // fit to page
             // attempt to use max width
-            double attemptedScaling = guidebook.getAvailableWidth()/(double)textureWidth;
+            double attemptedScaling = guidebook.getAvailableWidth() / (double) textureWidth;
 
-            double potentialHeight = guidebook.getAvailableWidth()*attemptedScaling;
+            double potentialHeight = guidebook.getAvailableWidth() * attemptedScaling;
 
-            if(potentialHeight > guidebook.getAvailableHeight()) { // use max height
-                return guidebook.getAvailableHeight()/textureHeight;
+            if (potentialHeight > guidebook.getAvailableHeight()) { // use max height
+                return guidebook.getAvailableHeight() / textureHeight;
             }
             return attemptedScaling;
         }
@@ -61,19 +61,19 @@ public class ImageElement extends GuidebookElement {
     @Override
     public int getWidth(Guidebook guidebook) {
         readTextureSizeIfNeeded();
-        return (int) (textureWidth*correctScale(guidebook));
+        return (int) (textureWidth * correctScale(guidebook));
     }
 
     @Override
     public int getHeight(Guidebook guidebook) {
         readTextureSizeIfNeeded();
-        return (int) (textureHeight*correctScale(guidebook));
+        return (int) (textureHeight * correctScale(guidebook));
     }
 
     @Override
     public int getLeftOffset(Guidebook guidebook) {
         int w = getWidth(guidebook);
-        return guidebook.getAvailableWidth()/2-w/2;
+        return guidebook.getAvailableWidth() / 2 - w / 2;
     }
 
     @Override
@@ -91,8 +91,8 @@ public class ImageElement extends GuidebookElement {
         int h = getHeight(guidebook);
         int x = getLeftOffset(guidebook);
         buffer.pos(x, h, 0).tex(0, 1).color(1f, 1f, 1f, 1f).endVertex();
-        buffer.pos(x+w, h, 0).tex(1, 1).color(1f, 1f, 1f, 1f).endVertex();
-        buffer.pos(x+w, 0, 0).tex(1, 0).color(1f, 1f, 1f, 1f).endVertex();
+        buffer.pos(x + w, h, 0).tex(1, 1).color(1f, 1f, 1f, 1f).endVertex();
+        buffer.pos(x + w, 0, 0).tex(1, 0).color(1f, 1f, 1f, 1f).endVertex();
         buffer.pos(x, 0, 0).tex(0, 0).color(1f, 1f, 1f, 1f).endVertex();
         tessellator.draw();
     }
@@ -105,7 +105,7 @@ public class ImageElement extends GuidebookElement {
     @Override
     public void writeToJSON(JsonObject destination, JsonSerializationContext context) {
         destination.addProperty("location", texture.toString());
-        if(scale < 0)
+        if (scale < 0)
             destination.addProperty("scale", "fit");
         else
             destination.addProperty("scale", scale);

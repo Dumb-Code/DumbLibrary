@@ -16,8 +16,7 @@ import org.apache.logging.log4j.Logger;
 
 @Mod(modid = DumbLibrary.MODID, name = DumbLibrary.NAME, version = DumbLibrary.VERSION)
 @Mod.EventBusSubscriber(modid = DumbLibrary.MODID)
-public class DumbLibrary
-{
+public class DumbLibrary {
     public static final String MODID = "dumblibrary";
     public static final String NAME = "Dumb Library";
     public static final String VERSION = "0.3.0";
@@ -40,7 +39,7 @@ public class DumbLibrary
 
         GuidebooksManager.createGuidebookFactories();
 
-        if(FMLCommonHandler.instance().getSide() == Side.CLIENT) {
+        if (FMLCommonHandler.instance().getSide() == Side.CLIENT) {
             this.clientPreInit();
         }
 

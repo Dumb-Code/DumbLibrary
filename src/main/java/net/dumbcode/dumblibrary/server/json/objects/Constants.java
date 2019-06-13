@@ -21,7 +21,7 @@ public class Constants {
         @Override
         public Constants deserialize(JsonElement element, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
             Constants constants = new Constants();
-            if(!element.isJsonArray()) {
+            if (!element.isJsonArray()) {
                 throw new JsonSyntaxException("Expected a Json array, found " + JsonUtils.toString(element));
             }
             for (JsonElement jsonElement : element.getAsJsonArray()) {

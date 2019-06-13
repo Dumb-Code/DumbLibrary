@@ -16,6 +16,7 @@ import java.util.Map;
 
 /**
  * The ModelBase handler for a tabula model
+ *
  * @author Wyn Price
  */
 @Getter
@@ -24,7 +25,8 @@ import java.util.Map;
 public class TabulaModel extends ModelBase {
     private final TabulaModelInformation information;
     private final List<TabulaModelRenderer> roots = Lists.newArrayList();
-    @Getter private final Map<String, TabulaModelRenderer> cubeNameMap = Maps.newHashMap();
+    @Getter
+    private final Map<String, TabulaModelRenderer> cubeNameMap = Maps.newHashMap();
     private TabulaModelAnimator modelAnimator;
 
     public TabulaModel(TabulaModelInformation information) {
@@ -53,7 +55,7 @@ public class TabulaModel extends ModelBase {
     public void setRotationAngles(float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scaleFactor, Entity entityIn) {
         super.setRotationAngles(limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scaleFactor, entityIn);
         this.getAllCubes().forEach(TabulaModelRenderer::reset);
-        if(this.modelAnimator != null) {
+        if (this.modelAnimator != null) {
             this.modelAnimator.setRotationAngles(this, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scaleFactor, entityIn);
         }
     }

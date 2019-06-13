@@ -49,7 +49,7 @@ public class S0SyncAnimation implements IMessage {
         @Override
         protected void handleMessage(S0SyncAnimation message, MessageContext ctx, World world, EntityPlayer player) {
             Entity entity = world.getEntityByID(message.entityid);
-            if(entity != null) {
+            if (entity != null) {
                 AnimationSystemInfoRegistry.setAnimationToEntity(entity, message.ais, message.animation);
             }
         }

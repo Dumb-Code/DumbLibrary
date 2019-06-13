@@ -30,17 +30,17 @@ public abstract class GuidebookElement {
     protected List<TextComponentBase> baseTooltip = new ArrayList<>();
 
     public GuidebookElement(JsonObject source, JsonDeserializationContext context) {
-        if(source != null) {
-            if(source.has("tooltip")) {
-                if(source.get("tooltip").isJsonObject()) {
+        if (source != null) {
+            if (source.has("tooltip")) {
+                if (source.get("tooltip").isJsonObject()) {
                     JsonObject tooltipObject = source.getAsJsonObject("tooltip");
                     String text = tooltipObject.get("text").getAsString();
-                    if(tooltipObject.has("translation_marker") && tooltipObject.get("translation_marker").getAsBoolean()) {
-                        for(String t : text.split("\n")) {
+                    if (tooltipObject.has("translation_marker") && tooltipObject.get("translation_marker").getAsBoolean()) {
+                        for (String t : text.split("\n")) {
                             baseTooltip.add(new TextComponentTranslation(t));
                         }
                     } else {
-                        for(String t : text.split("\n")) {
+                        for (String t : text.split("\n")) {
                             baseTooltip.add(new TextComponentString(t));
                         }
                     }
@@ -49,11 +49,11 @@ public abstract class GuidebookElement {
                 }
             }
 
-            if(source.has("onclick")) {
+            if (source.has("onclick")) {
                 JsonObject onClickObject = source.getAsJsonObject("onclick");
                 String functionID = onClickObject.get("function").getAsString();
                 ResourceLocation functionLocation;
-                if(functionID.contains(":")) {
+                if (functionID.contains(":")) {
                     functionLocation = new ResourceLocation(functionID);
                 } else {
                     functionLocation = new ResourceLocation(DumbLibrary.MODID, functionID);
@@ -73,6 +73,7 @@ public abstract class GuidebookElement {
 
     @SideOnly(Side.CLIENT)
     public abstract int getWidth(Guidebook guidebook);
+
     @SideOnly(Side.CLIENT)
     public abstract int getHeight(Guidebook guidebook);
 
@@ -82,8 +83,10 @@ public abstract class GuidebookElement {
     public abstract String getElementType();
 
     public abstract void writeToJSON(JsonObject destination, JsonSerializationContext context);
+
     /**
      * Returns the offset on the left relative to the page edge (used to know if the mouse is on the element)
+     *
      * @param guidebook the guidebook in which the element is
      * @return the offset on the left relative to the page edge
      */
@@ -91,20 +94,22 @@ public abstract class GuidebookElement {
 
     /**
      * Returns the offset above relative to the page edge (used to know if the mouse is on the element)
+     *
      * @param guidebook the guidebook in which the element is
      * @return the offset above relative to the page edge
      */
     public abstract int getTopOffset(Guidebook guidebook);
 
-    public void update() {}
+    public void update() {
+    }
 
     public boolean isAnimated() {
         return false;
     }
 
     public boolean isMouseOn(Guidebook guidebook, int elementX, int elementY, int pageMouseX, int pageMouseY) {
-        return pageMouseX-elementX >= getLeftOffset(guidebook) && pageMouseX-elementX < getLeftOffset(guidebook)+getWidth(guidebook)
-        && pageMouseY-elementY >= getTopOffset(guidebook) && pageMouseY-elementY < getTopOffset(guidebook)+getHeight(guidebook);
+        return pageMouseX - elementX >= getLeftOffset(guidebook) && pageMouseX - elementX < getLeftOffset(guidebook) + getWidth(guidebook)
+                && pageMouseY - elementY >= getTopOffset(guidebook) && pageMouseY - elementY < getTopOffset(guidebook) + getHeight(guidebook);
     }
 
     @FunctionalInterface
@@ -118,11 +123,11 @@ public abstract class GuidebookElement {
         public GuidebookElement deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
             JsonObject object = json.getAsJsonObject();
             String type;
-            if(object.has("type"))
+            if (object.has("type"))
                 type = object.get("type").getAsString();
             else
                 type = "text";
-            if(type.contains(":"))
+            if (type.contains(":"))
                 return GuidebookElement.ELEMENT_FACTORIES.getOrDefault(new ResourceLocation(type), MISSING_FACTORY).create(object, context);
             return GuidebookElement.ELEMENT_FACTORIES.getOrDefault(new ResourceLocation(DumbLibrary.MODID, type), MISSING_FACTORY).create(object, context);
         }

@@ -27,19 +27,19 @@ public class ItemElement extends GuidebookElement {
         scale = source.get("scale").getAsDouble();
         stack = new ItemStack(Item.REGISTRY.getObject(itemLocation));
 
-        if(baseTooltip.isEmpty() && FMLCommonHandler.instance().getSide() == Side.CLIENT) {
+        if (baseTooltip.isEmpty() && FMLCommonHandler.instance().getSide() == Side.CLIENT) {
             GuiHelper.getItemToolTip(stack).stream().map(TextComponentString::new).forEach(baseTooltip::add);
         }
     }
 
     @Override
     public int getWidth(Guidebook guidebook) {
-        return (int)(20*scale);
+        return (int) (20 * scale);
     }
 
     @Override
     public int getHeight(Guidebook guidebook) {
-        return (int)(20*scale);
+        return (int) (20 * scale);
     }
 
     @Override
@@ -52,7 +52,7 @@ public class ItemElement extends GuidebookElement {
         Minecraft mc = Minecraft.getMinecraft();
         RenderItem itemRender = mc.getRenderItem();
         net.minecraft.client.gui.FontRenderer font = stack.getItem().getFontRenderer(stack);
-        if(font == null) font = mc.fontRenderer;
+        if (font == null) font = mc.fontRenderer;
         itemRender.zLevel = 500f;
         GlStateManager.translate(x, y, 0f);
         GlStateManager.scale(scale, scale, 1f);
@@ -74,7 +74,7 @@ public class ItemElement extends GuidebookElement {
 
     @Override
     public int getLeftOffset(Guidebook guidebook) {
-        return (int) (guidebook.getPageWidth()/2-getWidth(guidebook)/2 - 5*scale);
+        return (int) (guidebook.getPageWidth() / 2 - getWidth(guidebook) / 2 - 5 * scale);
     }
 
     @Override

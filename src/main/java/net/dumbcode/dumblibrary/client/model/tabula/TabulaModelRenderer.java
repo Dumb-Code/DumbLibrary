@@ -35,10 +35,13 @@ public class TabulaModelRenderer extends ModelRenderer implements AnimationLayer
     private boolean hideButShowChildren;
     private boolean scaleChildren;
 
-    @Setter(AccessLevel.NONE) private TabulaModelRenderer parent;
+    @Setter(AccessLevel.NONE)
+    private TabulaModelRenderer parent;
 
-    @Setter(AccessLevel.NONE) private int displayList;
-    @Setter(AccessLevel.NONE) private boolean compiled;
+    @Setter(AccessLevel.NONE)
+    private int displayList;
+    @Setter(AccessLevel.NONE)
+    private boolean compiled;
 
     public TabulaModelRenderer(ModelBase model, TabulaModelInformation.Cube cube) {
         super(model, cube.getName());
@@ -47,7 +50,7 @@ public class TabulaModelRenderer extends ModelRenderer implements AnimationLayer
 
     @Override
     public void addChild(ModelRenderer renderer) {
-        if(renderer instanceof TabulaModelRenderer) {
+        if (renderer instanceof TabulaModelRenderer) {
             ((TabulaModelRenderer) renderer).parent = this;
         }
         super.addChild(renderer);
@@ -115,6 +118,7 @@ public class TabulaModelRenderer extends ModelRenderer implements AnimationLayer
 
     /**
      * Applies the translation and rotation transformations for this model
+     *
      * @param scale The scale of the model. Usually 1/16
      */
     private void applyTransformations(float scale) {
@@ -160,7 +164,7 @@ public class TabulaModelRenderer extends ModelRenderer implements AnimationLayer
 
     @Override
     public float[] getRotationPoint() {
-        return new float[]{ this.rotationPointX, this.rotationPointY, this.rotationPointZ };
+        return new float[]{this.rotationPointX, this.rotationPointY, this.rotationPointZ};
     }
 
     @Override
@@ -170,7 +174,7 @@ public class TabulaModelRenderer extends ModelRenderer implements AnimationLayer
 
     @Override
     public float[] getActualRotation() {
-        return new float[]{ this.rotateAngleX, this.rotateAngleY, this.rotateAngleZ };
+        return new float[]{this.rotateAngleX, this.rotateAngleY, this.rotateAngleZ};
     }
 
     @Override
@@ -211,7 +215,7 @@ public class TabulaModelRenderer extends ModelRenderer implements AnimationLayer
     }
 
     public void setParentedAngles(float scale) {
-        if(this.parent != null) {
+        if (this.parent != null) {
             this.parent.setParentedAngles(scale);
         }
         this.postRender(scale);

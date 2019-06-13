@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import lombok.val;
-import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -13,7 +12,6 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.IModel;
 import net.minecraftforge.common.model.IModelState;
 
-import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -21,8 +19,9 @@ import java.util.function.Function;
 
 /**
  * The IModel for the transform type models. Used to store the default IModel and the overrides
- * @see TransformTypeModelLoader
+ *
  * @author Wyn Price
+ * @see TransformTypeModelLoader
  */
 public class TransformTypeIModel implements IModel {
 
@@ -58,7 +57,7 @@ public class TransformTypeIModel implements IModel {
             //Iterate through the overrides textures
             for (ResourceLocation location : iModel.getTextures()) {
                 //Make sure the collection doesn't already contain the texture
-                if(!collection.contains(location)) {
+                if (!collection.contains(location)) {
                     //Add the texture to the collection
                     collection.add(location);
                 }
@@ -76,7 +75,7 @@ public class TransformTypeIModel implements IModel {
             //Iterate through the overrides dependencies
             for (ResourceLocation location : iModel.getDependencies()) {
                 //Make sure the collection doesn't already contain the dependency
-                if(!collection.contains(location)) {
+                if (!collection.contains(location)) {
                     //Add the dependency to the collection
                     collection.add(location);
                 }

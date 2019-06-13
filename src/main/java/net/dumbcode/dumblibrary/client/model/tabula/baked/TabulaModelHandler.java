@@ -70,7 +70,7 @@ public enum TabulaModelHandler implements ICustomModelLoader {
         for (String key : modelBlock.textures.keySet()) {
             int layer = -1;
             Matcher matcher = PATTERN.matcher(key);
-            if(matcher.matches()) {
+            if (matcher.matches()) {
                 layer = Integer.parseInt(matcher.group(1));
             }
             allTextures.add(new TextureLayer(key, new ResourceLocation(modelBlock.textures.get(key)), layer));
@@ -81,7 +81,7 @@ public enum TabulaModelHandler implements ICustomModelLoader {
 
         List<LightupData> lightupData = Lists.newArrayList();
 
-        if(JsonUtils.isJsonArray(json, "lightup_data")) {
+        if (JsonUtils.isJsonArray(json, "lightup_data")) {
             for (JsonElement data : JsonUtils.getJsonArray(json, "lightup_data")) {
                 lightupData.add(LightupData.parse(data.getAsJsonObject(), layers));
             }
@@ -96,7 +96,12 @@ public enum TabulaModelHandler implements ICustomModelLoader {
     }
 
     @Data
-    public static class TextureLayer { private final String layerName; private final ResourceLocation loc; private final int layer; private TextureAtlasSprite sprite; }
+    public static class TextureLayer {
+        private final String layerName;
+        private final ResourceLocation loc;
+        private final int layer;
+        private TextureAtlasSprite sprite;
+    }
 
     /**
      * Lightup data is used to apply fake light to the quads. Each entry goes in an array called "lightup_data". The following is an example
@@ -135,7 +140,7 @@ public enum TabulaModelHandler implements ICustomModelLoader {
 
         public static LightupData parse(JsonObject json, Set<String> layers) {
             Set<String> layersApplied = Sets.newHashSet();
-            if(JsonUtils.isJsonArray(json, "layers")) {
+            if (JsonUtils.isJsonArray(json, "layers")) {
                 JsonArray arr = JsonUtils.getJsonArray(json, "layers");
                 for (int i = 0; i < arr.size(); i++) {
                     layersApplied.add(JsonUtils.getString(arr.get(i), "layers[" + i + "]"));
@@ -147,7 +152,7 @@ public enum TabulaModelHandler implements ICustomModelLoader {
 
             List<LightupEntry> list = Lists.newArrayList();
             for (JsonElement cube : JsonUtils.getJsonArray(json, "cubes_lit")) {
-                if(cube.isJsonPrimitive() && ((JsonPrimitive)cube).isString()) {
+                if (cube.isJsonPrimitive() && ((JsonPrimitive) cube).isString()) {
                     list.add(new LightupEntry(cube.getAsString(), EnumFacing.values()));
                 } else if (cube.isJsonObject()) {
                     JsonObject cubeJson = cube.getAsJsonObject();
@@ -160,7 +165,7 @@ public enum TabulaModelHandler implements ICustomModelLoader {
                     Set<EnumFacing> facings = Sets.newHashSet();
                     for (EnumFacing value : EnumFacing.values()) {
                         for (String face : astr) {
-                            if(value.getName2().equalsIgnoreCase(face)) {
+                            if (value.getName2().equalsIgnoreCase(face)) {
                                 facings.add(value);
                                 break;
                             }
@@ -180,5 +185,9 @@ public enum TabulaModelHandler implements ICustomModelLoader {
         }
     }
 
-    @Value public static class LightupEntry { String cubeName; EnumFacing[] facing; }
+    @Value
+    public static class LightupEntry {
+        String cubeName;
+        EnumFacing[] facing;
+    }
 }

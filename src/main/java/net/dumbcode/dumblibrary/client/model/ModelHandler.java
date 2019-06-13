@@ -11,7 +11,8 @@ import net.minecraftforge.fml.relauncher.Side;
 @Mod.EventBusSubscriber(value = Side.CLIENT, modid = DumbLibrary.MODID)
 public class ModelHandler {
 
-    private ModelHandler() {}
+    private ModelHandler() {
+    }
 
     @SubscribeEvent
     public static void onModelReady(ModelRegistryEvent event) {

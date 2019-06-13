@@ -12,6 +12,7 @@ import java.util.List;
 
 /**
  * The {@link TabulaModelAnimator} used for this entity
+ *
  * @param <E> the entity type
  */
 @SideOnly(Side.CLIENT)
@@ -28,8 +29,9 @@ public class EntityAnimator<E extends Entity> implements TabulaModelAnimator<E> 
 
     /**
      * Get the {@link AnimationRunWrapper} linked with this entity. If there is none, create it
-     * @param entity the entity
-     * @param model the model
+     *
+     * @param entity  the entity
+     * @param model   the model
      * @param inertia whether inertia should be used
      * @return the pass wrapper
      */
@@ -37,7 +39,6 @@ public class EntityAnimator<E extends Entity> implements TabulaModelAnimator<E> 
     private AnimationRunWrapper<E> getAnimationPassWrapper(E entity, TabulaModel model, boolean inertia) {
         return modelContainer.getInfo().getOrCreateWrapper(entity, this.modelContainer, model, inertia);
     }
-
 
 
     @Override
@@ -48,14 +49,15 @@ public class EntityAnimator<E extends Entity> implements TabulaModelAnimator<E> 
 
     /**
      * An extra method to perform more animations.
-     * @param parModel The model
-     * @param entity The entity
-     * @param limbSwing the limb swing
+     *
+     * @param parModel        The model
+     * @param entity          The entity
+     * @param limbSwing       the limb swing
      * @param limbSwingAmount the limb swing amount
-     * @param ticks the ticks
-     * @param rotationYaw the rotation yaw
-     * @param rotationPitch the rotation pitch
-     * @param scale the scale
+     * @param ticks           the ticks
+     * @param rotationYaw     the rotation yaw
+     * @param rotationPitch   the rotation pitch
+     * @param scale           the scale
      */
     protected void performAnimations(TabulaModel parModel, E entity, float limbSwing, float limbSwingAmount, float ticks, float rotationYaw, float rotationPitch, float scale) {
         // Optional

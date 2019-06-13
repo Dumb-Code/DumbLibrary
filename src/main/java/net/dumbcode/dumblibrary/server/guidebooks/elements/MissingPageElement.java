@@ -1,6 +1,5 @@
 package net.dumbcode.dumblibrary.server.guidebooks.elements;
 
-import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
 import net.dumbcode.dumblibrary.DumbLibrary;
@@ -40,8 +39,8 @@ public class MissingPageElement extends GuidebookElement {
         int h = getHeight(guidebook);
         int x = -guidebook.getPageMargins();
         buffer.pos(x, h, 0).tex(0, 1).color(1f, 1f, 1f, 1f).endVertex();
-        buffer.pos(x+w, h, 0).tex(1, 1).color(1f, 1f, 1f, 1f).endVertex();
-        buffer.pos(x+w, 0, 0).tex(1, 0).color(1f, 1f, 1f, 1f).endVertex();
+        buffer.pos(x + w, h, 0).tex(1, 1).color(1f, 1f, 1f, 1f).endVertex();
+        buffer.pos(x + w, 0, 0).tex(1, 0).color(1f, 1f, 1f, 1f).endVertex();
         buffer.pos(x, 0, 0).tex(0, 0).color(1f, 1f, 1f, 1f).endVertex();
         tessellator.draw();
     }

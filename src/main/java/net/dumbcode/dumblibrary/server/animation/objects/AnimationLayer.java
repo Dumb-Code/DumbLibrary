@@ -148,19 +148,19 @@ public class AnimationLayer<E extends Entity> {
             this.tick += (age - this.entityAge);
 
             if (this.tick >= this.maxTicks && (!this.animation.hold() || this.poseStack.size() > 1)) {
-                    this.poseStack.pop();
-                    if (this.poseStack.isEmpty()) {
-                        if (AnimationLayer.this.loop()) {
-                            this.poseStack.addAll(Lists.reverse(AnimationLayer.this.info.getPoseData(this.animation)));
-                        } else {
-                            this.invalidated = true;
-                        }
+                this.poseStack.pop();
+                if (this.poseStack.isEmpty()) {
+                    if (AnimationLayer.this.loop()) {
+                        this.poseStack.addAll(Lists.reverse(AnimationLayer.this.info.getPoseData(this.animation)));
+                    } else {
+                        this.invalidated = true;
                     }
-                    if (!this.invalidated) {
-                        this.tick = 0;
-                        this.maxTicks = this.poseStack.peek().getTime();
-                        this.incrementVecs(true);
-                    }
+                }
+                if (!this.invalidated) {
+                    this.tick = 0;
+                    this.maxTicks = this.poseStack.peek().getTime();
+                    this.incrementVecs(true);
+                }
             }
             this.entityAge = age;
         }
@@ -174,7 +174,7 @@ public class AnimationLayer<E extends Entity> {
                 Vector3f np = cube.getRotationPoint();
                 Vector3f pp = cube.getPrevRotationPoint();
 
-                if(updatePrevious) {
+                if (updatePrevious) {
                     pr.x = cr.x;
                     pr.y = cr.y;
                     pr.z = cr.z;
@@ -197,14 +197,24 @@ public class AnimationLayer<E extends Entity> {
 
     public interface AnimatableCube {
         float[] getDefaultRotationPoint();
+
         float[] getRotationPoint();
+
         float[] getDefaultRotation();
+
         float[] getActualRotation();
+
         float[] getOffset();
+
         float[] getDimension();
+
         void addRotationPoint(float pointX, float pointY, float pointZ);
+
         void addRotation(float rotationX, float rotationY, float rotationZ);
+
         void reset();
-        @Nullable AnimatableCube getParent();
+
+        @Nullable
+        AnimatableCube getParent();
     }
 }

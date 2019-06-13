@@ -27,7 +27,7 @@ import java.util.*;
 import java.util.function.Function;
 
 /**
- * The model container. Used to hold information about the tabula model and the poses. 
+ * The model container. Used to hold information about the tabula model and the poses.
  */
 @Getter
 public class ModelContainer<E extends Entity> {
@@ -70,7 +70,7 @@ public class ModelContainer<E extends Entity> {
 
         TabulaModel model;
         //Make sure the model name isnt null
-        if(defaultAnimation == null) {
+        if (defaultAnimation == null) {
             DumbLibrary.getLogger().error("Unable to loadRawAnimations model for regname {} as main animation was not defined", regname);
             //If the name is null, set the model to null and continue
             model = null;
@@ -92,10 +92,11 @@ public class ModelContainer<E extends Entity> {
 
     /**
      * Iterate through all the all the raw animations and puts the pose data into the animation. Also loads the main model with all the animation data.
-     * @param references The map of which the model name will be added with the list of cube names to cube references
-     * @param animations The map of which all the animations will be loaded to
-     * @param regname The registry name of where to load the data from
-     * @param baseLoc The base location. Derived from regname
+     *
+     * @param references   The map of which the model name will be added with the list of cube names to cube references
+     * @param animations   The map of which all the animations will be loaded to
+     * @param regname      The registry name of where to load the data from
+     * @param baseLoc      The base location. Derived from regname
      * @param baseFileName The base file name. Derived from regname
      * @see ModelContainer#references
      * @see ModelContainer#animations
@@ -134,7 +135,8 @@ public class ModelContainer<E extends Entity> {
 
     /**
      * Loads the raw map of (animation, List(Posedata))
-     * @param regname The registry name of where to load the animations
+     *
+     * @param regname      The registry name of where to load the animations
      * @param baseFileName The base file name, derived from the regname
      * @return a map of animation-name to a list of the pose data for that animation
      */
@@ -172,9 +174,10 @@ public class ModelContainer<E extends Entity> {
 
     /**
      * Loads the main model
-     * @param references A map of which to add the model information too.
+     *
+     * @param references        A map of which to add the model information too.
      * @param mainModelLocation The main models location
-     * @param modelResources the list of pose data for the main model
+     * @param modelResources    the list of pose data for the main model
      * @see ModelContainer#references
      */
     private void loadMainModelInformation(Map<String, Map<String, CubeReference>> references, ResourceLocation mainModelLocation, Iterable<PoseData> modelResources) {
@@ -212,9 +215,10 @@ public class ModelContainer<E extends Entity> {
 
     /**
      * Loads a pose from a tabula model
-     * @param location The location of the tabula model
+     *
+     * @param location  The location of the tabula model
      * @param mainModel The main model of which to compare too and take cubes from when they don't exist in the given model
-     * @param innerMap The inner map of which to add the data too.
+     * @param innerMap  The inner map of which to add the data too.
      */
     private void loadTabulaPose(ResourceLocation location, TabulaModelInformation mainModel, Map<String, CubeReference> innerMap) {
         TabulaModelInformation model;
@@ -240,9 +244,10 @@ public class ModelContainer<E extends Entity> {
 
     /**
      * Loads a pose from a json file
-     * @param location The location of the json model
+     *
+     * @param location  The location of the json model
      * @param mainModel The main model, of which to compare and take cubes from when they don't exist in the given model
-     * @param innerMap The inner map of which to add the data too.
+     * @param innerMap  The inner map of which to add the data too.
      */
     private void loadJsonPose(ResourceLocation location, TabulaModelInformation mainModel, Map<String, CubeReference> innerMap) {
         try {
@@ -294,7 +299,8 @@ public class ModelContainer<E extends Entity> {
 
     /**
      * Loads a cube reference from a json object. Version 0
-     * @param obj the json object
+     *
+     * @param obj      the json object
      * @param mainCube the main cube
      * @return The cube reference loaded from the given json object
      */
@@ -317,10 +323,10 @@ public class ModelContainer<E extends Entity> {
     /**
      * Creates the animation wrapper.
      *
-     * @param entity              the entity you're creating the pass for
-     * @param model               the model the animation pass wrapper would be applied to
-     * @param inertia             should inertia be used
-     * @param factories           a list of {@link AnimationLayerFactory} (Note these should be Object::new)
+     * @param entity    the entity you're creating the pass for
+     * @param model     the model the animation pass wrapper would be applied to
+     * @param inertia   should inertia be used
+     * @param factories a list of {@link AnimationLayerFactory} (Note these should be Object::new)
      * @return A new animation wrapper.
      */
     @SideOnly(Side.CLIENT)

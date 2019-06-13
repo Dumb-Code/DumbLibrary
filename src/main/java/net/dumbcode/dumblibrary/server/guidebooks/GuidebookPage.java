@@ -10,11 +10,9 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.shader.Framebuffer;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 
 import javax.vecmath.Vector2f;
-import java.nio.FloatBuffer;
 import java.util.*;
 
 public class GuidebookPage {
@@ -44,20 +42,20 @@ public class GuidebookPage {
 
     @SideOnly(Side.CLIENT)
     public int getCompiledRenderTexture(Guidebook guidebook) {
-        if(elements.stream().anyMatch(GuidebookElement::isAnimated)) {
+        if (elements.stream().anyMatch(GuidebookElement::isAnimated)) {
             compiledRenderTexture = -1;
         }
-        if(compiledRenderTexture == -1)
+        if (compiledRenderTexture == -1)
             compiledRenderTexture = compilePageRender(guidebook);
         return compiledRenderTexture;
     }
 
     @SideOnly(Side.CLIENT)
     public int compilePageRender(Guidebook guidebook) {
-        if(framebuffer == null)
+        if (framebuffer == null)
             framebuffer = new Framebuffer(guidebook.getPageWidth(), guidebook.getAvailableHeight(), true);
         framebuffer.bindFramebuffer(true);
-        if(isCoverPage) {
+        if (isCoverPage) {
             GlStateManager.clearColor(1f, 1f, 1f, 0f);
         } else {
             GlStateManager.clearColor(1f, 1f, 1f, 1f);
@@ -83,10 +81,10 @@ public class GuidebookPage {
         GlStateManager.pushMatrix();
         GlStateManager.loadIdentity();
         GlStateManager.translate(guidebook.getPageMargins(), 0f, 0f);
-        if(elements != null) {
+        if (elements != null) {
             int y = 0;
             elementPositions.clear();
-            for(GuidebookElement element : elements) {
+            for (GuidebookElement element : elements) {
                 GlStateManager.pushMatrix();
                 GlStateManager.enableBlend();
                 GlStateManager.enableAlpha();

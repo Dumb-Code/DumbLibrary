@@ -16,7 +16,6 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.fml.common.FMLLog;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.ModContainer;
-import org.apache.commons.io.IOUtils;
 
 import javax.annotation.Nullable;
 import javax.vecmath.*;
@@ -39,13 +38,13 @@ import java.util.zip.ZipInputStream;
 public class TabulaUtils {
 
     public static Map<String, AnimationLayer.AnimatableCube> getServersideCubes(ResourceLocation location) {
-        if(!location.getPath().endsWith(".tbl")) {
+        if (!location.getPath().endsWith(".tbl")) {
             location = new ResourceLocation(location.getNamespace(), location.getPath() + ".tbl");
         }
 
         Map<String, AnimationLayer.AnimatableCube> map = Maps.newHashMap();
         ModContainer container = Loader.instance().getIndexedModList().get(location.getNamespace());
-        if(container != null) {
+        if (container != null) {
             String base = "assets/" + container.getModId() + "/" + location.getPath();
             File source = container.getSource();
             try (FileSystem fs = FileSystems.newFileSystem(source.toPath(), null)) {
@@ -80,16 +79,16 @@ public class TabulaUtils {
         }
     }
 
-    public static TabulaModel getModel(ResourceLocation location){
+    public static TabulaModel getModel(ResourceLocation location) {
         return getModel(location, null);
     }
 
-    public static TabulaModel getModel(ResourceLocation location, TabulaModelAnimator animator){
+    public static TabulaModel getModel(ResourceLocation location, TabulaModelAnimator animator) {
         return getModelInformation(location).createModel().setModelAnimator(animator);
     }
 
-    public static TabulaModelInformation getModelInformation(ResourceLocation location){
-        if(!location.getPath().endsWith(".tbl")) {
+    public static TabulaModelInformation getModelInformation(ResourceLocation location) {
+        if (!location.getPath().endsWith(".tbl")) {
             location = new ResourceLocation(location.getNamespace(), location.getPath() + ".tbl");
         }
         try {
@@ -132,7 +131,7 @@ public class TabulaUtils {
         Matrix4d boxRotateZ = new Matrix4d();
 
         float[] point = cube.getRotationPoint();
-        boxTranslate.set(new Vector3d(point[0]/16D, -point[1]/16D, -point[2]/16D));
+        boxTranslate.set(new Vector3d(point[0] / 16D, -point[1] / 16D, -point[2] / 16D));
 
         float[] rotation = cube.getActualRotation();
 
@@ -154,6 +153,7 @@ public class TabulaUtils {
 
     /**
      * Computes the origin of a given part relative to the model origin. Takes into account parent parts.
+     *
      * @param part the model part
      * @return the translation vector relative to the model origin
      */
@@ -166,6 +166,7 @@ public class TabulaUtils {
 
     /**
      * Computes the matrix representing the rotation and translation of a given part. Takes into account parent parts
+     *
      * @param part the model part
      * @return the matrix representing the rotation and translation
      */
@@ -178,12 +179,13 @@ public class TabulaUtils {
 
     /**
      * Apply the translation and rotations of a part to the given matrix. Takes into account parent parts.
+     *
      * @param part the model part
-     * @param out the matrix to apply the transformations to
+     * @param out  the matrix to apply the transformations to
      */
     public static void applyTransformations(TabulaModelRenderer part, Matrix4f out) {
         TabulaModelRenderer parent = part.getParent();
-        if(parent != null) {
+        if (parent != null) {
             applyTransformations(parent, out);
         }
         Matrix4f translation = new Matrix4f();
@@ -191,16 +193,16 @@ public class TabulaUtils {
         translation.setTranslation(new Vector3f(part.offsetX, part.offsetY, part.offsetZ));
         out.mul(translation);
 
-        float scale = 1f/16f;
+        float scale = 1f / 16f;
         translation.setIdentity();
-        translation.setTranslation(new Vector3f(part.rotationPointX*scale, part.rotationPointY*scale, part.rotationPointZ*scale));
+        translation.setTranslation(new Vector3f(part.rotationPointX * scale, part.rotationPointY * scale, part.rotationPointZ * scale));
         out.mul(translation);
 
         out.rotZ(part.rotateAngleZ);
         out.rotY(part.rotateAngleY);
         out.rotX(part.rotateAngleX);
 
-        if(part.isScaleChildren()) {
+        if (part.isScaleChildren()) {
             Matrix4f scaling = new Matrix4f();
             scaling.setIdentity();
             scaling.m00 = part.getScaleX();
@@ -212,6 +214,7 @@ public class TabulaUtils {
 
     /**
      * Computes the matrix representing the rotation of a given part. Takes into account parent parts.
+     *
      * @param part the model part
      * @return the matrix representing the rotation
      */
@@ -224,12 +227,13 @@ public class TabulaUtils {
 
     /**
      * Apply only the rotations of a part to the given matrix. Takes into account parent parts.
-     * @param part the model part
+     *
+     * @param part   the model part
      * @param result the matrix to apply the rotations to
      */
     public static void applyRotations(TabulaModelRenderer part, Matrix3f result) {
         TabulaModelRenderer parent = part.getParent();
-        if(parent != null) {
+        if (parent != null) {
             applyRotations(part, result);
         }
         result.rotZ(part.rotateAngleZ);

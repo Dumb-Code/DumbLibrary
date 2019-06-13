@@ -10,8 +10,9 @@ import java.util.Map;
 
 /**
  * The transform type baked model class.
- * @see TransformTypeModelLoader
+ *
  * @author Wyn Price
+ * @see TransformTypeModelLoader
  */
 public class TransformTypeBakedModel implements IBakedModel {
 
@@ -20,13 +21,14 @@ public class TransformTypeBakedModel implements IBakedModel {
     private final Map<ItemCameraTransforms.TransformType, IBakedModel> modelOverrides;
 
     /**
-     * @param defaultModel The default model
+     * @param defaultModel   The default model
      * @param modelOverrides The map of overrides to use
      */
     public TransformTypeBakedModel(IBakedModel defaultModel, Map<ItemCameraTransforms.TransformType, IBakedModel> modelOverrides) {
         this.defaultModel = defaultModel;
         this.modelOverrides = modelOverrides;
     }
+
     @Override
     public Pair<? extends IBakedModel, Matrix4f> handlePerspective(ItemCameraTransforms.TransformType cameraTransformType) {
         //Get the override, or the default model if there is no override, and let it handle the models.

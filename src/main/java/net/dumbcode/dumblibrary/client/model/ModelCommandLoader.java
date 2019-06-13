@@ -29,21 +29,22 @@ import java.util.regex.Pattern;
  * This would first scale the model by [0.5, 2, 1] around the point [0.5, 0.5, 0.5], then rotate the model around [0.5, 0, 0.5] with angles [0, 20, 0] <br>
  * So far, these are the following commands:
  * <ul>
- *     <li>Rotation - rotates the model around a point by given angles (in degrees). Format: <br>
- *         {@code rotate:angle.x,angle.y,angle.z@point.x,point.y,point.z } <br>
- *         <pre>Examples:
+ * <li>Rotation - rotates the model around a point by given angles (in degrees). Format: <br>
+ * {@code rotate:angle.x,angle.y,angle.z@point.x,point.y,point.z } <br>
+ * <pre>Examples:
  *     rotate:25, 45, 90@0.22, 0.5, 0.75;   -- Rotates the model by [25, 45, 90] degrees around the point [0.22, 0.5, 0.75]
  *     rotate:0, -45, 0@0.5, 0.5, 0.5;      -- Rotates the model by [0, -45, 0] degrees around the point [0.5, 0.5, 0.5]
  *         </pre>
- *     </li>
- *     <li>Scale - scales the model from a certain point by a given amount in each axis: <br>
- *         {@code scale:scale.x,scale.y,scale.z@point.x,point.y,point.z }
- *         <pre>Examples:
+ * </li>
+ * <li>Scale - scales the model from a certain point by a given amount in each axis: <br>
+ * {@code scale:scale.x,scale.y,scale.z@point.x,point.y,point.z }
+ * <pre>Examples:
  *     scale:2, 2, 2@0.5, 0.5, 0.5;         -- Scales the model by [2, 2, 2] around the point [0.5, 0.5, 0.5]. This is essentially doubling the size of the model.
  *     scale:0.5, 1, 0@1, 0.5, 0.25;        -- Scales the model by [0.5, 1, 0] around the point [1, 0.5, 0.25]. This removes the z depth the model had and would put all cubes on the z = 0.25 plane
  *         </pre>
- *     </li>
+ * </li>
  * </ul>
+ *
  * @author Wyn Price
  */
 public enum ModelCommandLoader implements ICustomModelLoader {
@@ -61,7 +62,7 @@ public enum ModelCommandLoader implements ICustomModelLoader {
     public IModel loadModel(ResourceLocation modelLocation) throws Exception {
         String loc = modelLocation.toString();
         Matcher filterMatcher = filter.matcher(loc);
-        if(!filterMatcher.find()) {
+        if (!filterMatcher.find()) {
             throw new IllegalStateException("No match found");
         }
         ResourceLocation location = new ResourceLocation(filterMatcher.group(1));
@@ -87,7 +88,11 @@ public enum ModelCommandLoader implements ICustomModelLoader {
 
     }
 
-    @AllArgsConstructor  public class CommandEntry { ModelCommandRegistry.Command command; String data; }
+    @AllArgsConstructor
+    public class CommandEntry {
+        ModelCommandRegistry.Command command;
+        String data;
+    }
 
     public class Model implements IModel {
         private final IModel delegate;

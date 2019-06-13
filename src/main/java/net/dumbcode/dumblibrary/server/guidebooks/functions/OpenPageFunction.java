@@ -14,7 +14,7 @@ public class OpenPageFunction implements GuidebookFunction {
     @Override
     public void onClick(GuiGuidebook guiGuidebook, int localPageX, int localPageY, int mouseX, int mouseY) {
         GuidebookPage page = guiGuidebook.getBook().getAllPages().get(target);
-        System.out.println(">> "+page);
+        System.out.println(">> " + page);
         guiGuidebook.showPage(page);
     }
 }

@@ -28,7 +28,7 @@ public class ServerAnimatableCube implements AnimationLayer.AnimatableCube {
 
     @Override
     public float[] getRotationPoint() {
-        return new float[]{ this.rotationPoint.x, this.rotationPoint.y, this.rotationPoint.z };
+        return new float[]{this.rotationPoint.x, this.rotationPoint.y, this.rotationPoint.z};
     }
 
     @Override
@@ -38,7 +38,7 @@ public class ServerAnimatableCube implements AnimationLayer.AnimatableCube {
 
     @Override
     public float[] getActualRotation() {
-        return new float[]{ this.rotation.x, this.rotation.y, this.rotation.z };
+        return new float[]{this.rotation.x, this.rotation.y, this.rotation.z};
     }
 
     @Override

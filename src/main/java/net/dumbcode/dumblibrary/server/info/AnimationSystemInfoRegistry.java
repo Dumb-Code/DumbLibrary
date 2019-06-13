@@ -17,9 +17,9 @@ public class AnimationSystemInfoRegistry {
     @SuppressWarnings("unchecked")
     public static void setAnimationToEntity(Entity entity, ResourceLocation info, String animationName) {
         AnimationSystemInfo asi = NAMESPACE.get(info);
-        if(asi != null) {
+        if (asi != null) {
             Animation animation = asi.getAnimation(animationName);
-            if(animation != null) {
+            if (animation != null) {
                 asi.setAnimation(entity, animation);
             }
         }

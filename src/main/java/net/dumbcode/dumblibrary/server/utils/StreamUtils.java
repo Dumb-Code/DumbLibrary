@@ -1,7 +1,6 @@
 package net.dumbcode.dumblibrary.server.utils;
 
 import lombok.experimental.UtilityClass;
-import net.dumbcode.dumblibrary.DumbLibrary;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.FMLCommonHandler;
@@ -10,7 +9,6 @@ import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.ModContainer;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import org.apache.commons.io.IOUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -24,12 +22,12 @@ import java.nio.file.Path;
 @UtilityClass
 public class StreamUtils {
     public static InputStream openStream(ResourceLocation location) throws IOException {
-        if(FMLCommonHandler.instance().getSide() == Side.CLIENT) {
+        if (FMLCommonHandler.instance().getSide() == Side.CLIENT) {
             return openClientStream(location);
         }
 
         ModContainer container = Loader.instance().getIndexedModList().get(location.getNamespace());
-        if(container != null) {
+        if (container != null) {
             String base = "assets/" + container.getModId() + "/" + location.getPath();
             File source = container.getSource();
             try (FileSystem fs = FileSystems.newFileSystem(source.toPath(), null)) {

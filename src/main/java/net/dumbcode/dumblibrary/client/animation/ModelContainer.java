@@ -55,7 +55,7 @@ public class ModelContainer<E extends Entity> {
 
 
     public ModelContainer(ResourceLocation regname, AnimationSystemInfo<E> info) {
-        AnimationSystemInfoRegistry.NAMESPACE.put(info.identifier(), info);
+        AnimationSystemInfoRegistry.INSTANCE.namespace.put(info.identifier(), info);
         this.info = info;
         //The base location of all the models
         String baseLoc = "models/entities/" + regname.getPath().replace("_", "/") + "/";

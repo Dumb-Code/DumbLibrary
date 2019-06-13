@@ -13,22 +13,23 @@ import net.dumbcode.dumblibrary.server.json.objects.animation.Facing;
 import java.util.Map;
 import java.util.function.BiFunction;
 
-public class JsonAnimationRegistry {
+public enum JsonAnimationRegistry {
 
-    public static final Map<String, BiFunction<JsonArray, JsonAnimator, JsonAnimationModule>> factoryMap = Maps.newHashMap();
+    INSTANCE;
+
+    public final Map<String, BiFunction<JsonArray, JsonAnimator, JsonAnimationModule>> factoryMap = Maps.newHashMap();
 
     public static final Gson GSON = new GsonBuilder()
             .registerTypeAdapter(JsonAnimator.class, new JsonAnimator.Deserializer())
             .registerTypeAdapter(Constants.class, new Constants.Deserializer())
             .create();
 
-    static {
-        factoryMap.put("bob", Bob::new);
-        factoryMap.put("chain_wave", ChainWave.LimbSwing::new);
-        factoryMap.put("chain_swing", ChainSwing::new);
-        factoryMap.put("idle_chain_wave", ChainWave.IdleTick::new);
-        factoryMap.put("facing", Facing::new);
-
+    JsonAnimationRegistry() {
+        this.factoryMap.put("bob", Bob::new);
+        this.factoryMap.put("chain_wave", ChainWave.LimbSwing::new);
+        this.factoryMap.put("chain_swing", ChainSwing::new);
+        this.factoryMap.put("idle_chain_wave", ChainWave.IdleTick::new);
+        this.factoryMap.put("facing", Facing::new);
     }
 
 }

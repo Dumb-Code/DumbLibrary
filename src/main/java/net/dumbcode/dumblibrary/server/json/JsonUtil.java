@@ -2,6 +2,7 @@ package net.dumbcode.dumblibrary.server.json;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
+import lombok.Cleanup;
 import lombok.experimental.UtilityClass;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.minecraft.util.JsonUtils;
@@ -49,23 +50,18 @@ public class JsonUtil {
                                 }
                                 String relative = root.relativize(file).toString();
                                 ResourceLocation key = new ResourceLocation(mod.getModId(), FilenameUtils.removeExtension(relative).replaceAll("\\\\", "/"));
-                                BufferedReader reader = null;
+
                                 try {
-                                    reader = Files.newBufferedReader(file);
+                                    @Cleanup BufferedReader reader = Files.newBufferedReader(file);
                                     T value = JsonUtils.fromJson(gson, reader, registry.getRegistrySuperType());
                                     if (value == null) {
                                         return false;
                                     } else {
                                         registry.register(value.setRegistryName(key));
                                     }
-                                } catch (JsonParseException e) {
+                                } catch (JsonParseException | IOException e) {
                                     DumbLibrary.getLogger().error("Parsing error loading json: " + key, e);
                                     return false;
-                                } catch (IOException e) {
-                                    DumbLibrary.getLogger().error("Couldn't read json " + key + " from " + file, e);
-                                    return false;
-                                } finally {
-                                    IOUtils.closeQuietly(reader);
                                 }
                                 return true;
                             }, true, true));
@@ -86,7 +82,7 @@ public class JsonUtil {
         Arrays.stream(folderNames).forEach(name ->
         {
             try (Stream<Path> paths = Files.walk(Paths.get(".", FOLDER_NAME, modid, name))) {
-                paths.filter(Files::isRegularFile).forEach(path ->
+                paths.filter(file -> file.toFile().isFile()).forEach(path ->
                 {
                     File file = new File(path.toString());
                     if (!"json".equals(FilenameUtils.getExtension(file.toString()))) {
@@ -113,7 +109,7 @@ public class JsonUtil {
                     }
                 });
             } catch (IOException e) {
-                e.printStackTrace();
+                DumbLibrary.getLogger().warn(e);
             }
         });
     }
@@ -125,7 +121,7 @@ public class JsonUtil {
      * @return the folder
      */
     public static File createModFolder(String modid) {
-        File folder = new File(".", FOLDER_NAME + "/" + modid);
+        File folder = new File(new File(".", FOLDER_NAME), modid);
         if (!folder.exists()) {
             folder.mkdirs();
         }

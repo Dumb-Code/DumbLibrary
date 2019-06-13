@@ -2,7 +2,6 @@ package net.dumbcode.dumblibrary;
 
 import net.dumbcode.dumblibrary.client.model.TransformTypeModelLoader;
 import net.dumbcode.dumblibrary.server.DumbGuiHandler;
-import net.dumbcode.dumblibrary.server.guidebooks.GuidebooksManager;
 import net.dumbcode.dumblibrary.server.network.S0SyncAnimation;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.fml.common.FMLCommonHandler;
@@ -36,8 +35,6 @@ public class DumbLibrary {
 
         NETWORK.registerMessage(new S0SyncAnimation.Handler(), S0SyncAnimation.class, 0, Side.CLIENT);
 
-
-        GuidebooksManager.createGuidebookFactories();
 
         if (FMLCommonHandler.instance().getSide() == Side.CLIENT) {
             this.clientPreInit();

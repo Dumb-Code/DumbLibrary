@@ -3,6 +3,7 @@ package net.dumbcode.dumblibrary.client.model;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import lombok.AllArgsConstructor;
+import net.dumbcode.dumblibrary.DumbLibrary;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.VertexFormat;
@@ -59,23 +60,23 @@ public enum ModelCommandLoader implements ICustomModelLoader {
     @Override
     public IModel loadModel(ResourceLocation modelLocation) throws Exception {
         String loc = modelLocation.toString();
-        Matcher filter = this.filter.matcher(loc);
-        if(!filter.find()) {
+        Matcher filterMatcher = filter.matcher(loc);
+        if(!filterMatcher.find()) {
             throw new IllegalStateException("No match found");
         }
-        ResourceLocation location = new ResourceLocation(filter.group(1));
+        ResourceLocation location = new ResourceLocation(filterMatcher.group(1));
         IModel model;
         try {
             model = ModelLoaderRegistry.getModel(new ResourceLocation(location.getNamespace(), location.getPath().substring("models/".length())));
         } catch (Exception e) {
-            e.printStackTrace();
+            DumbLibrary.getLogger().warn(e);
             throw e;
         }
 
-        Matcher command = this.command.matcher(filter.group(2));
+        Matcher commandMacher = this.command.matcher(filterMatcher.group(2));
         List<CommandEntry> list = Lists.newArrayList();
-        while (command.find()) {
-            list.add(new CommandEntry(ModelCommandRegistry.get(command.group(1)), command.group(2).replaceAll("\\s+", "")));
+        while (commandMacher.find()) {
+            list.add(new CommandEntry(ModelCommandRegistry.get(commandMacher.group(1)), commandMacher.group(2).replaceAll("\\s+", "")));
         }
 
         return new Model(model, list);
@@ -99,9 +100,9 @@ public enum ModelCommandLoader implements ICustomModelLoader {
 
         @Override
         public IBakedModel bake(IModelState state, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
-            IBakedModel model = this.delegate.bake(state, format, bakedTextureGetter);
-            for (CommandEntry command : this.commands) {
-                command.command.applyChanges(model, command.data);
+            IBakedModel model = delegate.bake(state, format, bakedTextureGetter);
+            for (CommandEntry cmd : commands) {
+                cmd.command.applyChanges(model, cmd.data);
             }
             return model;
         }

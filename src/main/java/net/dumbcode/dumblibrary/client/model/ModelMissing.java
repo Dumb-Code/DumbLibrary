@@ -9,7 +9,7 @@ import net.minecraft.entity.Entity;
  */
 public class ModelMissing extends ModelBase {
 
-    public static ModelMissing INSTANCE = new ModelMissing();
+    public static final ModelMissing INSTANCE = new ModelMissing();
 
     private ModelRenderer cube;
 

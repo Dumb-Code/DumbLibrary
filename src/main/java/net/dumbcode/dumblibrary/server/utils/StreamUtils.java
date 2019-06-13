@@ -1,6 +1,7 @@
 package net.dumbcode.dumblibrary.server.utils;
 
 import lombok.experimental.UtilityClass;
+import net.dumbcode.dumblibrary.DumbLibrary;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.FMLCommonHandler;
@@ -29,27 +30,23 @@ public class StreamUtils {
 
         ModContainer container = Loader.instance().getIndexedModList().get(location.getNamespace());
         if(container != null) {
-            FileSystem fs = null;
-            try {
-                String base = "assets/" + container.getModId() + "/" + location.getPath();
-                File source = container.getSource();
+            String base = "assets/" + container.getModId() + "/" + location.getPath();
+            File source = container.getSource();
+            try (FileSystem fs = FileSystems.newFileSystem(source.toPath(), null)) {
                 Path root = null;
                 if (source.isFile()) {
-                    fs = FileSystems.newFileSystem(source.toPath(), null);
                     root = fs.getPath("/" + base);
                 } else if (source.isDirectory()) {
                     root = source.toPath().resolve(base);
                 }
 
-                if (root != null && Files.exists(root)) {
+                if (root != null && root.toFile().exists()) {
                     return Files.newInputStream(root);
                 } else {
                     throw new FileNotFoundException("Could not find file " + root);
                 }
             } catch (IOException e) {
                 FMLLog.log.error("Error loading FileSystem: ", e);
-            } finally {
-                IOUtils.closeQuietly(fs);
             }
         }
         throw new IOException("Invalid mod container: " + location.getNamespace());
@@ -59,6 +56,4 @@ public class StreamUtils {
     private static InputStream openClientStream(ResourceLocation location) throws IOException {
         return Minecraft.getMinecraft().getResourceManager().getResource(location).getInputStream();
     }
-
-
 }

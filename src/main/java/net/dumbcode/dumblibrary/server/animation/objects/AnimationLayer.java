@@ -10,10 +10,7 @@ import net.minecraft.util.math.MathHelper;
 
 import javax.annotation.Nullable;
 import javax.vecmath.Vector3f;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Stack;
+import java.util.*;
 import java.util.function.Function;
 
 @Getter
@@ -94,7 +91,7 @@ public class AnimationLayer<E extends Entity> {
 
     public class AnimationWrap {
         private final Animation animation;
-        private final Stack<PoseData> poseStack = new Stack<>();
+        private final Deque<PoseData> poseStack = new LinkedList<>();
 
         private float entityAge;
 
@@ -150,8 +147,7 @@ public class AnimationLayer<E extends Entity> {
             }
             this.tick += (age - this.entityAge);
 
-            if (this.tick >= this.maxTicks) {
-                if (!this.animation.hold() || this.poseStack.size() > 1) {
+            if (this.tick >= this.maxTicks && (!this.animation.hold() || this.poseStack.size() > 1)) {
                     this.poseStack.pop();
                     if (this.poseStack.isEmpty()) {
                         if (AnimationLayer.this.loop()) {
@@ -165,7 +161,6 @@ public class AnimationLayer<E extends Entity> {
                         this.maxTicks = this.poseStack.peek().getTime();
                         this.incrementVecs(true);
                     }
-                }
             }
             this.entityAge = age;
         }

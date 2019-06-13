@@ -47,13 +47,13 @@ public class AnimationRunWrapper<E extends Entity> {
 
         public CubeWrapper(AnimationLayer.AnimatableCube box) {
             float[] point = box.getDefaultRotationPoint();
-            float[] rotation = box.getDefaultRotation();
+            float[] defaultRotation = box.getDefaultRotation();
             this.rotationPoint.x = this.prevRotationPoint.x = point[0];
             this.rotationPoint.y = this.prevRotationPoint.y = point[1];
             this.rotationPoint.z = this.prevRotationPoint.z = point[2];
-            this.rotation.x = this.prevRotation.x = rotation[0];
-            this.rotation.y = this.prevRotation.y = rotation[1];
-            this.rotation.z = this.prevRotation.z = rotation[2];
+            this.rotation.x = this.prevRotation.x = defaultRotation[0];
+            this.rotation.y = this.prevRotation.y = defaultRotation[1];
+            this.rotation.z = this.prevRotation.z = defaultRotation[2];
         }
     }
 

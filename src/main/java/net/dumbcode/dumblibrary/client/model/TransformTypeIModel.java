@@ -37,7 +37,7 @@ public class TransformTypeIModel implements IModel {
     @Override
     public IBakedModel bake(IModelState state, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
         //Bake the default model
-        IBakedModel defaultModel = this.defaultModel.bake(state, format, bakedTextureGetter);
+        IBakedModel model = defaultModel.bake(state, format, bakedTextureGetter);
         //Create a new map, to add the baked overrides to
         Map<ItemCameraTransforms.TransformType, IBakedModel> modelOverrides = Maps.newEnumMap(ItemCameraTransforms.TransformType.class);
         //Iterate through every entry in the overrides
@@ -46,9 +46,10 @@ public class TransformTypeIModel implements IModel {
             modelOverrides.put(entry.getKey(), entry.getValue().bake(state, format, bakedTextureGetter));
         }
         //Create a new BakedModel
-        return new TransformTypeBakedModel(defaultModel, modelOverrides);
+        return new TransformTypeBakedModel(model, modelOverrides);
     }
 
+    @Override
     public Collection<ResourceLocation> getTextures() {
         //Create a copy of the default models textures
         List<ResourceLocation> collection = Lists.newArrayList(this.defaultModel.getTextures());
@@ -66,6 +67,7 @@ public class TransformTypeIModel implements IModel {
         return collection;
     }
 
+    @Override
     public Collection<ResourceLocation> getDependencies() {
         //Create a copy of the default models dependencies
         List<ResourceLocation> collection = Lists.newArrayList(this.defaultModel.getDependencies());
@@ -83,6 +85,7 @@ public class TransformTypeIModel implements IModel {
         return collection;
     }
 
+    @Override
     public IModel uvlock(boolean value) {
         //Apply the uvlock to all the models, including the overrides
         this.defaultModel = this.defaultModel.uvlock(value);
@@ -90,6 +93,7 @@ public class TransformTypeIModel implements IModel {
         return this;
     }
 
+    @Override
     public IModel smoothLighting(boolean value) {
         //Apply the smoothLighting to all the models, including the overrides
         this.defaultModel = this.defaultModel.smoothLighting(value);
@@ -97,6 +101,7 @@ public class TransformTypeIModel implements IModel {
         return this;
     }
 
+    @Override
     public IModel process(ImmutableMap<String, String> customData) {
         //Apply the process to all the models, including the overrides
         this.defaultModel = this.defaultModel.process(customData);
@@ -104,6 +109,7 @@ public class TransformTypeIModel implements IModel {
         return this;
     }
 
+    @Override
     public IModel gui3d(boolean value) {
         //Apply the gui3d to all the models, including the overrides
         this.defaultModel = this.defaultModel.gui3d(value);
@@ -111,6 +117,7 @@ public class TransformTypeIModel implements IModel {
         return this;
     }
 
+    @Override
     public IModel retexture(ImmutableMap<String, String> textures) {
         //Apply the retexture to all the models, including the overrides
         this.defaultModel = this.defaultModel.retexture(textures);

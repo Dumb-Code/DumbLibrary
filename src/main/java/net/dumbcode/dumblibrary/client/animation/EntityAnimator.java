@@ -58,6 +58,7 @@ public class EntityAnimator<E extends Entity> implements TabulaModelAnimator<E> 
      * @param scale the scale
      */
     protected void performAnimations(TabulaModel parModel, E entity, float limbSwing, float limbSwingAmount, float ticks, float rotationYaw, float rotationPitch, float scale) {
+        // Optional
     }
 
 

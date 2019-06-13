@@ -25,7 +25,7 @@ public class Guidebook extends IForgeRegistryEntry.Impl<Guidebook> {
 
     public static final Guidebook MISSING = new Guidebook() {
         {
-            setRegistryName(DumbLibrary.MODID,"missing");
+            setRegistryName(DumbLibrary.MODID, "missing");
             setCover(GuidebookPage.MISSING_PAGE);
             setPageWidth(500);
         }
@@ -78,13 +78,13 @@ public class Guidebook extends IForgeRegistryEntry.Impl<Guidebook> {
     private <T> Map<String, T> createMap(Class<T> contentType, String pathSuffix) {
         Map<String, T> map = new HashMap<>();
         Gson gson = GuidebooksManager.prepareGsonBuilderForGuidebooks(new GsonBuilder()).create();
-        CraftingHelper.findFiles(modContainer, "assets/" + modContainer.getModId() + "/" + DumbLibrary.MODID + "/guidebook_contents/" + getInternalID()+"_"+pathSuffix,
+        CraftingHelper.findFiles(modContainer, "assets/" + modContainer.getModId() + "/" + DumbLibrary.MODID + "/guidebook_contents/" + getInternalID() + "_" + pathSuffix,
                 null,
                 (root, file) -> {
                     if (!"json".equals(FilenameUtils.getExtension(file.toString()))) {
                         return true;
                     }
-                    try(BufferedReader reader = Files.newBufferedReader(file)) {
+                    try (BufferedReader reader = Files.newBufferedReader(file)) {
                         String relative = root.relativize(file).toString();
                         String key = FilenameUtils.removeExtension(relative).replaceAll("\\\\", "/");
                         T value = JsonUtils.fromJson(gson, reader, contentType);
@@ -106,11 +106,11 @@ public class Guidebook extends IForgeRegistryEntry.Impl<Guidebook> {
     }
 
     public int getAvailableWidth() {
-        return pageWidth-pageMargins*2;
+        return pageWidth - pageMargins * 2;
     }
 
     public float getAspectRatio() {
-        return 5f/8f; // corresponds to the aspect ratio of page in the book model from vanilla
+        return 5f / 8f; // corresponds to the aspect ratio of page in the book model from vanilla
     }
 
     public int getAvailableHeight() {
@@ -119,6 +119,7 @@ public class Guidebook extends IForgeRegistryEntry.Impl<Guidebook> {
 
     /**
      * Returns a flat list of all pages inside the book (cover included)
+     *
      * @return
      */
     public List<GuidebookPage> compilePages() {
@@ -132,7 +133,7 @@ public class Guidebook extends IForgeRegistryEntry.Impl<Guidebook> {
         sortedChapters.forEach(chapter -> {
             chapter.getPages().forEach(pageID -> {
                 GuidebookPage page = getAllPages().get(pageID);
-                if(page == null) {
+                if (page == null) {
                     page = GuidebookPage.MISSING_PAGE;
                 }
                 compiledPages.add(page);
@@ -148,7 +149,7 @@ public class Guidebook extends IForgeRegistryEntry.Impl<Guidebook> {
     public void recompile() {
         compilePages();
         cover.recompile(this);
-        for(GuidebookPage page : compiledPages) {
+        for (GuidebookPage page : compiledPages) {
             page.recompile(this);
         }
     }

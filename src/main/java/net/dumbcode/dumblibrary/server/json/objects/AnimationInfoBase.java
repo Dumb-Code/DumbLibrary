@@ -24,7 +24,7 @@ public class AnimationInfoBase {
     }
 
     public static List<String> getParts(JsonObject json, Constants constants) {
-        if(JsonUtils.isString(json, "constant")) {
+        if (JsonUtils.isString(json, "constant")) {
             return constants.getStringParts(JsonUtils.getString(json, "constant"));
         } else if (JsonUtils.isJsonArray(json, "names")) {
             List<String> list = Lists.newArrayList();

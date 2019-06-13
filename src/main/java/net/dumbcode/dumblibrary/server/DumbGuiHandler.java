@@ -23,11 +23,9 @@ public class DumbGuiHandler implements IGuiHandler {
     @Override
     public Object getClientGuiElement(int id, EntityPlayer player, World world, int x, int y, int z) {
         DumbLibrary.getLogger().debug(ModelHandler.class);
-        if (id == 0)
-        {
+        if (id == 0) {
             ItemStack stack = player.getHeldItem(EnumHand.values()[x]);
-            if (stack.getItem() instanceof GuidebookItem)
-            {
+            if (stack.getItem() instanceof GuidebookItem) {
                 return new GuiGuidebook(((GuidebookItem) stack.getItem()).getBookData());
             }
             return null;

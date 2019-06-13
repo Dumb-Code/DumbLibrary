@@ -18,6 +18,7 @@ import java.util.function.BiFunction;
 
 /**
  * The Json handler for
+ *
  * @author Wyn Price
  */
 @Data
@@ -39,19 +40,19 @@ public class JsonAnimator implements TabulaModelAnimator<Entity> {
     public static final class Deserializer implements JsonDeserializer<JsonAnimator> {
         @Override
         public JsonAnimator deserialize(JsonElement element, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-            if(!element.isJsonObject()) {
+            if (!element.isJsonObject()) {
                 throw new JsonParseException("Expected a json object, found " + JsonUtils.toString(element));
             }
             JsonObject json = element.getAsJsonObject();
             List<JsonAnimationModule> animationList = Lists.newArrayList();
             List<Pair<JsonArray, BiFunction<JsonArray, JsonAnimator, JsonAnimationModule>>> factoryList = Lists.newArrayList();
             for (JsonElement jsonElement : JsonUtils.getJsonArray(json, "animation_tasks")) {
-                if(!element.isJsonObject()) {
+                if (!element.isJsonObject()) {
                     throw new JsonParseException("Expected a json object, found " + JsonUtils.toString(element));
                 }
                 JsonObject factoryObject = jsonElement.getAsJsonObject();
                 String type = JsonUtils.getString(factoryObject, "type");
-                if(!JsonAnimationRegistry.factoryMap.containsKey(type)) {
+                if (!JsonAnimationRegistry.factoryMap.containsKey(type)) {
                     throw new JsonParseException("Illegal type: " + type);
                 }
                 factoryList.add(Pair.of(JsonUtils.getJsonArray(factoryObject, "array"), JsonAnimationRegistry.factoryMap.get(type)));

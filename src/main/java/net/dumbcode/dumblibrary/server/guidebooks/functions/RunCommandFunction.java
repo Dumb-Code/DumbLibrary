@@ -1,7 +1,6 @@
 package net.dumbcode.dumblibrary.server.guidebooks.functions;
 
 import net.dumbcode.dumblibrary.client.gui.GuiGuidebook;
-import net.dumbcode.dumblibrary.server.guidebooks.GuidebookPage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 

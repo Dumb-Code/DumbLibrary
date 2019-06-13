@@ -13,7 +13,8 @@ import java.util.HashMap;
 @FunctionalInterface
 public interface GuidebookFunction {
     HashMap<ResourceLocation, Factory> FUNCTION_FACTORIES = new HashMap<>();
-    Factory MISSING_FACTORY = (element, functionObject, context) -> (guiGuidebook, localPageX, localPageY, mouseX, mouseY) -> {};
+    Factory MISSING_FACTORY = (element, functionObject, context) -> (guiGuidebook, localPageX, localPageY, mouseX, mouseY) -> {
+    };
 
     @SideOnly(Side.CLIENT)
     void onClick(GuiGuidebook guiGuidebook, int localPageX, int localPageY, int mouseX, int mouseY);

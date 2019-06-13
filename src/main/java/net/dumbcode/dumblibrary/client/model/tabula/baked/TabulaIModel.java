@@ -33,6 +33,7 @@ import java.util.function.Function;
 /**
  * Used to hold the information about the model, like the texutres used and the lightup data. <br>
  * Also holds any of the custom transforms the user may define.
+ *
  * @author Wyn Price
  */
 @Wither
@@ -58,7 +59,7 @@ public class TabulaIModel implements IModel {
 
         Collection<TabulaModelHandler.TextureLayer> textures = Lists.newArrayList(TabulaModelHandler.MISSING);
         //If there are not textures then just add the missing one. Maybe log?
-        if(!this.allTextures.isEmpty()) {
+        if (!this.allTextures.isEmpty()) {
             textures = this.allTextures;
         }
 
@@ -68,7 +69,7 @@ public class TabulaIModel implements IModel {
         }
 
         //If it has lightup data, then we need to make sure the vertex format has the lightmap element
-        if(!this.lightupData.isEmpty()) {
+        if (!this.lightupData.isEmpty()) {
             if (format == DefaultVertexFormats.ITEM) { // ITEM is convertible to BLOCK (replace normal+padding with lmap)
                 format = DefaultVertexFormats.BLOCK;
             } else if (!format.getElements().contains(DefaultVertexFormats.TEX_2S)) { // Otherwise, this format is unknown, add TEX_2S if it does not exist
@@ -102,14 +103,15 @@ public class TabulaIModel implements IModel {
      * Builds the 6 quads from the cube. This is recursive, with the cube calling this again for each of its children. <br>
      * A quad may not be build for the following reasons:
      * <ul>
-     *     <li>If the quad is 1 dimensional. This occurs when you have a cube acting as a plane. As this quad will never be seen, don't bother rendering it</li>
-     *     <li>If the quads texture is all transparent. This occurs mostly with overlays, where you only want to overlay a certain part of the model. The parts you don't overlay will not be created.</li>
+     * <li>If the quad is 1 dimensional. This occurs when you have a cube acting as a plane. As this quad will never be seen, don't bother rendering it</li>
+     * <li>If the quads texture is all transparent. This occurs mostly with overlays, where you only want to overlay a certain part of the model. The parts you don't overlay will not be created.</li>
      * </ul>
-     * @param format The vertex format to build the quads to.
+     *
+     * @param format  The vertex format to build the quads to.
      * @param outList The output list of quads that the generated quads will be added to.
-     * @param stack The matrix stack of which the topmost is the current matrix for this cube. This is used to get the absolute positions of the cubes vertices with parenting rotation/translation
-     * @param cube The cube of which to generated the 6 quads from.
-     * @param layer The texture layer of which to use for the uv coords. If the quad has no texture on this layer then the quad isn't generated and is instead ignored.
+     * @param stack   The matrix stack of which the topmost is the current matrix for this cube. This is used to get the absolute positions of the cubes vertices with parenting rotation/translation
+     * @param cube    The cube of which to generated the 6 quads from.
+     * @param layer   The texture layer of which to use for the uv coords. If the quad has no texture on this layer then the quad isn't generated and is instead ignored.
      */
     private void build(VertexFormat format, List<BakedQuad> outList, Deque<Matrix4f> stack, TabulaModelInformation.Cube cube, TabulaModelHandler.TextureLayer layer) {
 
@@ -135,15 +137,14 @@ public class TabulaIModel implements IModel {
             int[] uvData = uvMap.get(value); //The uv data
 
             //Check to make sure that the quad has a texture in the specific uv section
-            if(!this.hasSpriteGotTexture(layer.getSprite(), uvData)) {
+            if (!this.hasSpriteGotTexture(layer.getSprite(), uvData)) {
                 continue;
             }
 
 
-
             Point3f[] pointVertices = this.generateSideVertices(value, vertices);
 
-            if(!this.isOneDimensional(pointVertices)) {
+            if (!this.isOneDimensional(pointVertices)) {
 
                 //Flip the uv data if the texture is mirrored. As the model is scaled [-1, -1, 1], the UV data is already flipped.
                 //So just un-flip it if the texture isn't mirrored
@@ -171,10 +172,11 @@ public class TabulaIModel implements IModel {
      * Generates a list of all the verticies. Uses bit-math to organize. <br>
      * The maximum vector is defined by {@code min.add(dims)}<br>
      * The list uses numbers 0->7 to generate the vertices.<br>
-     *     If the leftmost bit is 1, then the maximum vector is used for the x coordinate, otherwise the minimum vector is used <br>
-     *     If the middle bit is 1, then the maximum vector is used for the y coordinate, otherwise the minimum vector is used <br>
-     *     If the rightmost bit is 1, then the maximum vector is used for the z coordinate, otherwise the minimum vector is used <br>
-     * @param min The minimum position of the cube
+     * If the leftmost bit is 1, then the maximum vector is used for the x coordinate, otherwise the minimum vector is used <br>
+     * If the middle bit is 1, then the maximum vector is used for the y coordinate, otherwise the minimum vector is used <br>
+     * If the rightmost bit is 1, then the maximum vector is used for the z coordinate, otherwise the minimum vector is used <br>
+     *
+     * @param min  The minimum position of the cube
      * @param dims The dimensions of the cube
      * @return an array[8] of points, organized as mentioned above.
      */
@@ -182,7 +184,7 @@ public class TabulaIModel implements IModel {
         Vec3d max = min.add(dims[0], dims[1], dims[2]);
         Point3f[] vertices = new Point3f[8];
         for (int i = 0; i < 8; i++) {
-            vertices[i] = new Point3f((float) ((i>>2&1) == 1 ? max : min ).x, (float) ((i>>1&1) == 1 ? max : min ).y, (float) ((i&1) == 1 ? max : min ).z);
+            vertices[i] = new Point3f((float) ((i >> 2 & 1) == 1 ? max : min).x, (float) ((i >> 1 & 1) == 1 ? max : min).y, (float) ((i & 1) == 1 ? max : min).z);
         }
         return vertices;
     }
@@ -210,6 +212,7 @@ public class TabulaIModel implements IModel {
      *                      depth      width      depth      width
      * }</pre>
      * All uvs are from bottom left to top right of their section
+     *
      * @param cube The cube to generate the map from
      * @return A map of EnumFacing -> int[4] of uvs
      */
@@ -226,7 +229,7 @@ public class TabulaIModel implements IModel {
         Map<EnumFacing, int[]> uvMap = Maps.newEnumMap(EnumFacing.class);
 
         //The line along the bottom of the texture-map (in order)
-        EnumFacing[] horizontals = new EnumFacing[] { EnumFacing.WEST, EnumFacing.NORTH, EnumFacing.EAST, EnumFacing.SOUTH };
+        EnumFacing[] horizontals = new EnumFacing[]{EnumFacing.WEST, EnumFacing.NORTH, EnumFacing.EAST, EnumFacing.SOUTH};
 
         //This is incremented each iteration to get to the next x position.
         int offX = 0;
@@ -240,7 +243,7 @@ public class TabulaIModel implements IModel {
         }
 
         //The line along the top of the texture-map (in reverse order)
-        EnumFacing[] verticals = new EnumFacing[] { EnumFacing.UP, EnumFacing.DOWN };
+        EnumFacing[] verticals = new EnumFacing[]{EnumFacing.UP, EnumFacing.DOWN};
         for (int i = 0; i < verticals.length; i++) {
             int minX = (int) cube.getTexOffset()[0] + d + w * i;
             int minY = (int) cube.getTexOffset()[1];
@@ -253,8 +256,9 @@ public class TabulaIModel implements IModel {
 
     /**
      * Generates the lightup data given the layer and the cube
+     *
      * @param layer The layer to generate the lightup data with
-     * @param cube The cube of which to generate the data from
+     * @param cube  The cube of which to generate the data from
      * @return a float[2] of lightup data ranging from 0-16 on each component
      */
     private float[] generateLightupData(TabulaModelHandler.TextureLayer layer, TabulaModelInformation.Cube cube) {
@@ -263,9 +267,9 @@ public class TabulaIModel implements IModel {
 
         //On UP&DOWN side, directional up on the texture sheet is south for texture
         for (TabulaModelHandler.LightupData datum : this.lightupData) {
-            if(datum.getLayersApplied().contains(layer.getLayerName())) {
+            if (datum.getLayersApplied().contains(layer.getLayerName())) {
                 for (TabulaModelHandler.LightupEntry entry : datum.getEntry()) {
-                    if(entry.getCubeName().equals(cube.getName())) {
+                    if (entry.getCubeName().equals(cube.getName())) {
                         ts[0] = datum.getBlockLight();
                         ts[1] = datum.getSkyLight();
                     }
@@ -307,6 +311,7 @@ public class TabulaIModel implements IModel {
      *      2------------->1
      *
      * }</pre>     * @param facing The direction facing
+     *
      * @param vertices the list of 8 verticies, generated from {@link #generatedAllVertices(Vec3d, float...)}
      * @return a list of 4 vertices, in the order as discussed above.
      */
@@ -321,11 +326,11 @@ public class TabulaIModel implements IModel {
             EnumFacing startingPlane = facing.rotateAround(rotateAxis);
 
             //Due to the fact that the model is scaled -1 on the y axis, we need to account for the fact that our direction is going to be the opposite of tabuls direction.
-            if(!horizontal) {
+            if (!horizontal) {
                 startingPlane = startingPlane.getOpposite();
             }
             //If it is the last 2 vertices being drawn, then it is at the other-side of the screen, in the other x direction.
-            if(i > 1) {
+            if (i > 1) {
                 startingPlane = startingPlane.getOpposite();
             }
             vertex |= this.encode(startingPlane);
@@ -334,22 +339,23 @@ public class TabulaIModel implements IModel {
             EnumFacing midPlane = EnumFacing.getFacingFromAxis(EnumFacing.AxisDirection.POSITIVE, rotateAxis);
 
             //If it is either the second or the third vertex
-            if(i % 3 != 0) {
+            if (i % 3 != 0) {
                 midPlane = midPlane.getOpposite();
             }
             vertex |= this.encode(midPlane);
 
             //If the plane is on the horizontals, then we need to account for the fact that the vertices should be in the form 2,3,0,1.
             //This only needs to happen if the quad is a horizontal. The top and bottom plane are fine
-            pointVertices[horizontal?(i+2)%4:i] = vertices[vertex];
+            pointVertices[horizontal ? (i + 2) % 4 : i] = vertices[vertex];
         }
         return pointVertices;
     }
 
     /**
      * Applies the matrix changes for that cube
+     *
      * @param stack the stack to apply the changes too
-     * @param cube the cube of which to get the values for the transformations
+     * @param cube  the cube of which to get the values for the transformations
      */
     private void applyMatrixChanges(Deque<Matrix4f> stack, TabulaModelInformation.Cube cube) {
         //Push a new matrix and set the matrix translation/scale/rotation that this cube contains.
@@ -370,11 +376,12 @@ public class TabulaIModel implements IModel {
 
     /**
      * Builds the quad from the given data.
+     *
      * @param pointVertices The 4 vertices generated from {@link #generateSideVertices(EnumFacing, Point3f[])}
-     * @param layer The texture layer to generate the texture from
-     * @param uvData The uv data in the form [minU, minV, maxU, maxV]
-     * @param ts the 2 sized lightup data array
-     * @param format the vertex format the build too
+     * @param layer         The texture layer to generate the texture from
+     * @param uvData        The uv data in the form [minU, minV, maxU, maxV]
+     * @param ts            the 2 sized lightup data array
+     * @param format        the vertex format the build too
      * @return the build quad.
      */
     private BakedQuad buildQuad(Point3f[] pointVertices, TabulaModelHandler.TextureLayer layer, int[] uvData, float[] ts, VertexFormat format) {
@@ -387,8 +394,8 @@ public class TabulaIModel implements IModel {
         builder.setQuadTint(layer.getLayer());
         for (int i = 0; i < pointVertices.length; i++) {
             this.putVertexData(builder, pointVertices[i], normal,
-                    layer.getSprite().getInterpolatedU(uvData[(i / 2)*2] / (float) this.model.getTexWidth() * 16D),
-                    layer.getSprite().getInterpolatedV(uvData[(i%3==0)?1:3] / (float) this.model.getTexHeight() * 16D),
+                    layer.getSprite().getInterpolatedU(uvData[(i / 2) * 2] / (float) this.model.getTexWidth() * 16D),
+                    layer.getSprite().getInterpolatedV(uvData[(i % 3 == 0) ? 1 : 3] / (float) this.model.getTexHeight() * 16D),
                     ts, format);
 
         }
@@ -397,13 +404,14 @@ public class TabulaIModel implements IModel {
 
     /**
      * Puts the vertex data inside a quad
+     *
      * @param builder the quad builder to add the data too
-     * @param vert the quad's vertex that this quad is being drawn from
-     * @param normal the vertex's normal data
-     * @param u the vertex's texture U
-     * @param v the vertex's texture'V
-     * @param ts the vertex's lightup data
-     * @param format the quads format
+     * @param vert    the quad's vertex that this quad is being drawn from
+     * @param normal  the vertex's normal data
+     * @param u       the vertex's texture U
+     * @param v       the vertex's texture'V
+     * @param ts      the vertex's lightup data
+     * @param format  the quads format
      */
     private void putVertexData(UnpackedBakedQuad.Builder builder, Point3f vert, Vector3f normal, float u, float v, float[] ts, VertexFormat format) {
         //Put the data into the quad.
@@ -416,7 +424,7 @@ public class TabulaIModel implements IModel {
                     builder.put(e, 1, 1, 1, 1);
                     break;
                 case UV:
-                    if(format.getElement(e).getIndex() == 0) { //normal uv
+                    if (format.getElement(e).getIndex() == 0) { //normal uv
                         builder.put(e, u, v);
                     } else { //lightmap uv
                         //The `* 16F` is used to take the data from 0-15 to 0-240
@@ -435,6 +443,7 @@ public class TabulaIModel implements IModel {
 
     /**
      * Tests to check whether the sprite has a texture within the specified section
+     *
      * @param sprite The sprite to test on
      * @param uvData the uv data [minU, minV, maxU, maxV]
      * @return Whether the sprite has a texture in the specified section
@@ -451,7 +460,7 @@ public class TabulaIModel implements IModel {
                     int xPos = (int) ((x / this.model.getTexWidth()) * width);
                     int yPos = (int) ((y / this.model.getTexHeight()) * height);
                     int alpha = (data[xPos + yPos * width] >> 24) & 0xFF;
-                    if(alpha != 0) { //If it has alpha, then break the alpha testing section.
+                    if (alpha != 0) { //If it has alpha, then break the alpha testing section.
                         return true;
                     }
                 }
@@ -462,6 +471,7 @@ public class TabulaIModel implements IModel {
 
     /**
      * Checks to make sure that the quad produced by these vertices isn't one dimensional
+     *
      * @param pointVertices the vertices to check on
      * @return true if it is one dimensional, false otherwise
      */
@@ -508,9 +518,9 @@ public class TabulaIModel implements IModel {
     public IModel retexture(ImmutableMap<String, String> textures) {
         List<TabulaModelHandler.TextureLayer> textureLayers = new ArrayList<>(this.allTextures.size());
         for (TabulaModelHandler.TextureLayer texture : this.allTextures) {
-            if(textures.containsKey(texture.getLayerName())) {
+            if (textures.containsKey(texture.getLayerName())) {
                 String remapped = textures.get(texture.getLayerName());
-                if(!remapped.isEmpty()) { //Removed texture
+                if (!remapped.isEmpty()) { //Removed texture
                     textureLayers.add(new TabulaModelHandler.TextureLayer(texture.getLayerName(), new ResourceLocation(remapped), texture.getLayer()));
                 }
             } else {
@@ -522,6 +532,7 @@ public class TabulaIModel implements IModel {
 
     /**
      * Gets the nonnull matrix
+     *
      * @param stack the stack to get the matrix from
      * @return the matrix at the top of the stack
      */
@@ -532,7 +543,8 @@ public class TabulaIModel implements IModel {
 
     /**
      * Translate a matrix stack
-     * @param stack the matrix stack of which the top element will be translated
+     *
+     * @param stack  the matrix stack of which the top element will be translated
      * @param floats an array of length 3 defined as [x, y, z]
      */
     private void translate(Deque<Matrix4f> stack, float... floats) {
@@ -545,11 +557,12 @@ public class TabulaIModel implements IModel {
 
     /**
      * Rotate a matrix stack by an angle
+     *
      * @param stack The matrix stack of which the topmost element will be rotated
      * @param angle the angle, in radians, of which to rotate it by
-     * @param x the x magnitude. 1 or 0
-     * @param y the y magnitude. 1 or 0
-     * @param z the z magnitude. 1 or 0
+     * @param x     the x magnitude. 1 or 0
+     * @param y     the y magnitude. 1 or 0
+     * @param z     the z magnitude. 1 or 0
      */
     private void rotate(Deque<Matrix4f> stack, float angle, int x, int y, int z) {
         Matrix4f matrix = this.getMatrix(stack);
@@ -561,7 +574,8 @@ public class TabulaIModel implements IModel {
 
     /**
      * Scales a matrix stack by an angle
-     * @param stack The stack of which the topmost element will be scale
+     *
+     * @param stack  The stack of which the topmost element will be scale
      * @param floats an array of length 3, defined as [x, y, z]
      */
     private void scale(Deque<Matrix4f> stack, float... floats) {
@@ -578,18 +592,19 @@ public class TabulaIModel implements IModel {
      * Encodes the EnumFacing to an integer. This integer's bits are in the form: [x][y][z],
      * where 1 represents the positive direction, and 0 is the negative direction <br>
      * For example;
-     *     <ul>
-     *         <li>{@link EnumFacing#UP}    -> 0b010 -> 2</li>
-     *         <li>{@link EnumFacing#DOWN}  -> 0b000 -> 0</li>
-     *         <li>{@link EnumFacing#EAST}  -> 0b100 -> 4</li>
-     *         <li>{@link EnumFacing#NORTH} -> 0b000 -> 0</li>
-     *     </ul>
+     * <ul>
+     * <li>{@link EnumFacing#UP}    -> 0b010 -> 2</li>
+     * <li>{@link EnumFacing#DOWN}  -> 0b000 -> 0</li>
+     * <li>{@link EnumFacing#EAST}  -> 0b100 -> 4</li>
+     * <li>{@link EnumFacing#NORTH} -> 0b000 -> 0</li>
+     * </ul>
      * Note that this is not a 1->1 function. If the {@code facing } is facing the negative direction on it's axis,
      * then the result will just be 0.
+     *
      * @param facing the facing
      * @return the encoded integer
      */
     private int encode(EnumFacing facing) {
-        return Math.max(facing.getXOffset(), 0)<<2 | Math.max(facing.getYOffset(), 0)<<1 | Math.max(facing.getZOffset(), 0);
+        return Math.max(facing.getXOffset(), 0) << 2 | Math.max(facing.getYOffset(), 0) << 1 | Math.max(facing.getZOffset(), 0);
     }
 }

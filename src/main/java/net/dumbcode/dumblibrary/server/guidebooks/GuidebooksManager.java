@@ -24,7 +24,7 @@ public class GuidebooksManager {
         JsonUtil.registerModJsons(GuidebooksManager.GUIDEBOOK_REGISTRY, gson, DumbLibrary.MODID, "guidebooks");
         GUIDEBOOK_REGISTRY.forEach(book -> {
             Loader.instance().setActiveModContainer(Loader.instance().getIndexedModList().get(book.getRegistryName().getNamespace()));
-            String id = "guidebook_"+book.getRegistryName().getPath();
+            String id = "guidebook_" + book.getRegistryName().getPath();
             registry.register(new GuidebookItem(book).setTranslationKey(id).setCreativeTab(CreativeTabs.MISC).setRegistryName(new ResourceLocation(book.getRegistryName().getNamespace(), id)));
 
             book.compilePages();

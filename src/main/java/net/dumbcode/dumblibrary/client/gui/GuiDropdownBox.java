@@ -49,9 +49,13 @@ public class GuiDropdownBox<T extends GuiDropdownBox.SelectListEntry> {
 
     private T active;
 
-    @Getter(AccessLevel.NONE) @Setter(AccessLevel.NONE) private final Supplier<List<T>> listSupplier;
+    @Getter(AccessLevel.NONE)
+    @Setter(AccessLevel.NONE)
+    private final Supplier<List<T>> listSupplier;
 
-    @Getter(AccessLevel.NONE) @Setter(AccessLevel.NONE) private int lastYClicked = -1;
+    @Getter(AccessLevel.NONE)
+    @Setter(AccessLevel.NONE)
+    private int lastYClicked = -1;
 
     public GuiDropdownBox(int xPos, int yPos, int width, int cellHeight, int cellMax, Supplier<List<T>> listSupplier) {
         this.xPos = xPos;
@@ -64,6 +68,7 @@ public class GuiDropdownBox<T extends GuiDropdownBox.SelectListEntry> {
 
     /**
      * Renders the box
+     *
      * @param mouseX the mouse's x position
      * @param mouseY the mouse's y position
      */
@@ -77,7 +82,7 @@ public class GuiDropdownBox<T extends GuiDropdownBox.SelectListEntry> {
 
         Rectangle2D.Float scrollBar = this.getScrollBar(entries.size());
 
-        if(additionalRows) {
+        if (additionalRows) {
             this.updateScroll(entries, totalHeight, scrollBar.height, mouseY);
         }
         if (!Minecraft.getMinecraft().getFramebuffer().isStencilEnabled()) {
@@ -91,10 +96,10 @@ public class GuiDropdownBox<T extends GuiDropdownBox.SelectListEntry> {
         MC.renderEngine.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
         RenderHelper.enableGUIStandardItemLighting();
 
-        if(this.open) {
+        if (this.open) {
             this.renderOpenSection(entries, height, borderSize, mouseX, mouseY);
 
-            if(additionalRows) {
+            if (additionalRows) {
                 this.renderScrollBar(scrollBar, borderSize, this.mouseOverScrollBar(mouseX, mouseY, entries.size()));
             }
         }
@@ -114,10 +119,11 @@ public class GuiDropdownBox<T extends GuiDropdownBox.SelectListEntry> {
 
     /**
      * Checks to see if the scroll wheel has been used, and if so then scrolls the screen.
-     * @param entries the list of entries
-     * @param totalHeight the total height of the additional section of the box.
+     *
+     * @param entries      the list of entries
+     * @param totalHeight  the total height of the additional section of the box.
      * @param scrollLength The y size of the scroll bar
-     * @param mouseY the mouse's y position
+     * @param mouseY       the mouse's y position
      */
     private void updateScroll(List<T> entries, int totalHeight, float scrollLength, int mouseY) {
         if (this.lastYClicked != -1) {
@@ -136,6 +142,7 @@ public class GuiDropdownBox<T extends GuiDropdownBox.SelectListEntry> {
 
     /**
      * Renders the stencil of the dropdown box.
+     *
      * @param height The height of which to render the box. Should be the total height of the box
      */
     private void renderStencil(int height) {
@@ -158,11 +165,12 @@ public class GuiDropdownBox<T extends GuiDropdownBox.SelectListEntry> {
 
     /**
      * Renders the open/additional section. This is the part that opens when you click on the box
-     * @param entries The list of entries
-     * @param height the total size of this box
+     *
+     * @param entries    The list of entries
+     * @param height     the total size of this box
      * @param borderSize the size of the border
-     * @param mouseX the mouse's x position
-     * @param mouseY the mouse's y position
+     * @param mouseX     the mouse's x position
+     * @param mouseY     the mouse's y position
      */
     private void renderOpenSection(List<T> entries, int height, int borderSize, int mouseX, int mouseY) {
         boolean withinTopRange = this.withinTopdownRange(mouseX, mouseY);
@@ -185,16 +193,18 @@ public class GuiDropdownBox<T extends GuiDropdownBox.SelectListEntry> {
 
     /**
      * Checks to see if the mouse is within the x range of this box, and below the top of the topmost cell.
+     *
      * @param mouseX the mouse's x
      * @param mouseY the mouse's y
      * @return true if it is within range, false otherwise
      */
-    private boolean withinTopdownRange(int mouseX, int mouseY){
+    private boolean withinTopdownRange(int mouseX, int mouseY) {
         return mouseX - this.xPos > 0 && mouseY - this.yPos > 0 && mouseX - this.xPos <= this.width;
     }
 
     /**
      * Renders the main cell. If the user is searching, then this will render the search term instead of the cell entry.
+     *
      * @param mouseX the mouse's x
      * @param mouseY the mouse's y
      */
@@ -217,6 +227,7 @@ public class GuiDropdownBox<T extends GuiDropdownBox.SelectListEntry> {
 
     /**
      * Gets the scrollbar position and dimensions
+     *
      * @param listSize the size of the entries
      * @return a rectangle of [xPosition, yPosition, xSize, ySize]
      */
@@ -229,7 +240,7 @@ public class GuiDropdownBox<T extends GuiDropdownBox.SelectListEntry> {
 
         int ySize = (listSize - this.cellMax) * this.cellHeight;
         float scrollLength = MathHelper.clamp(totalHeight / ySize, 32, totalHeight - 8);
-        float scrollYStart = this.scroll * this.cellHeight * (totalHeight - scrollLength) / (Math.max((listSize -  this.cellMax) * this.cellHeight, 1)) + this.yPos + this.cellHeight - 1;
+        float scrollYStart = this.scroll * this.cellHeight * (totalHeight - scrollLength) / (Math.max((listSize - this.cellMax) * this.cellHeight, 1)) + this.yPos + this.cellHeight - 1;
         if (scrollYStart < this.yPos - 1) {
             scrollYStart = this.yPos - 1F;
         }
@@ -239,8 +250,9 @@ public class GuiDropdownBox<T extends GuiDropdownBox.SelectListEntry> {
 
     /**
      * Checks to see if the mouse is over the scrollbar.
-     * @param mouseX the mouse's x
-     * @param mouseY the mouse's y
+     *
+     * @param mouseX   the mouse's x
+     * @param mouseY   the mouse's y
      * @param listSize the size of the entries
      * @return true if the mouse is over the scrollbar, false otherwise.
      */
@@ -259,9 +271,10 @@ public class GuiDropdownBox<T extends GuiDropdownBox.SelectListEntry> {
 
     /**
      * Renders the scrollbar
-     * @param scrollBar the scrollbar rectangle. See {@link #getScrollBar(int)}
+     *
+     * @param scrollBar  the scrollbar rectangle. See {@link #getScrollBar(int)}
      * @param borderSize The size of the border
-     * @param mouseOver whether the mouse is over the scroll-bar or not
+     * @param mouseOver  whether the mouse is over the scroll-bar or not
      */
     private void renderScrollBar(Rectangle2D.Float scrollBar, int borderSize, boolean mouseOver) {
 
@@ -282,16 +295,18 @@ public class GuiDropdownBox<T extends GuiDropdownBox.SelectListEntry> {
 
     /**
      * Gets the total size of this box. If the box isn't open then this will be just the top cell, otherwise it will be the top cell and all the options.
+     *
      * @param listSize The size of entry list
      * @return the size this element currently.
      */
     private int getTotalSize(int listSize) {
-        return this.cellHeight + (this.open ?  Math.min(listSize, this.cellMax) * this.cellHeight : 0);
+        return this.cellHeight + (this.open ? Math.min(listSize, this.cellMax) * this.cellHeight : 0);
     }
 
     /**
      * Draws the border around the object.
-     * @param height The height of the object. Should be the total height of this box
+     *
+     * @param height     The height of the object. Should be the total height of this box
      * @param borderSize The size of the border
      */
     private void drawBorder(int height, int borderSize) {
@@ -306,28 +321,28 @@ public class GuiDropdownBox<T extends GuiDropdownBox.SelectListEntry> {
 
     /**
      * Called when the mouse is clicked.
-     * @param mouseX the mouse's x position
-     * @param mouseY the mouse's y position
+     *
+     * @param mouseX      the mouse's x position
+     * @param mouseY      the mouse's y position
      * @param mouseButton the mouse button clicked.
-     * Should be called from {@link GuiScreen#mouseClicked(int, int, int)}
      */
     public void mouseClicked(int mouseX, int mouseY, int mouseButton) {
-        if(mouseButton == 0) {
+        if (mouseButton == 0) {
             List<T> entries = this.getSearchedList();
 
             boolean additionalRows = entries.size() > this.cellMax;
 
             //Scroll bar clicked
-            if(this.open && additionalRows && this.mouseOverScrollBar(mouseX, mouseY, entries.size())) {
+            if (this.open && additionalRows && this.mouseOverScrollBar(mouseX, mouseY, entries.size())) {
                 this.lastYClicked = mouseY;
                 return;
             }
 
-            if(this.withinTopdownRange(mouseX, mouseY)) {
-                if(mouseY <= this.yPos + this.cellHeight) {
+            if (this.withinTopdownRange(mouseX, mouseY)) {
+                if (mouseY <= this.yPos + this.cellHeight) {
                     this.open = !this.open;
                     return;
-                } else if(mouseY - this.yPos < this.getTotalSize(entries.size()) && this.open){
+                } else if (mouseY - this.yPos < this.getTotalSize(entries.size()) && this.open) {
                     this.testForEntryClicked(entries, mouseX, mouseY);
                 }
             }
@@ -339,13 +354,14 @@ public class GuiDropdownBox<T extends GuiDropdownBox.SelectListEntry> {
 
     /**
      * Tests each entry and checks to see if it were clicked. THIS METHOD ASSUMES THAT THE MOUSE IS DOWN
+     *
      * @param entries The list of entries
-     * @param mouseX the mouse's x
-     * @param mouseY the mouse's y
+     * @param mouseX  the mouse's x
+     * @param mouseY  the mouse's y
      */
     private void testForEntryClicked(List<T> entries, int mouseX, int mouseY) {
         for (int i = 0; i < entries.size(); i++) {
-            if(mouseY - this.yPos <= this.cellHeight * (i + 2) - this.scroll * this.cellHeight) {
+            if (mouseY - this.yPos <= this.cellHeight * (i + 2) - this.scroll * this.cellHeight) {
                 entries.get(i).onClicked(mouseX - this.xPos, mouseY - this.yPos);
                 this.active = entries.get(i);
                 break;
@@ -359,7 +375,7 @@ public class GuiDropdownBox<T extends GuiDropdownBox.SelectListEntry> {
      */
     public void handleMouseInput() {
         int mouseInput = Mouse.getEventDWheel();
-        if(mouseInput != 0) {
+        if (mouseInput != 0) {
             this.scroll((mouseInput < 0 ? -1 : 1) * SCROLL_AMOUNT);
         }
     }
@@ -370,16 +386,16 @@ public class GuiDropdownBox<T extends GuiDropdownBox.SelectListEntry> {
      */
     @SuppressWarnings("unused")
     public void handleKeyboardInput() {
-        if(!this.open) {
+        if (!this.open) {
             return;
         }
         char c = Keyboard.getEventCharacter();
         if (Keyboard.getEventKey() == 0 && c >= ' ' || Keyboard.getEventKeyState()) {
-            if(Keyboard.getEventKey() == Keyboard.KEY_BACK) {
-                if(!this.search.isEmpty()) {
+            if (Keyboard.getEventKey() == Keyboard.KEY_BACK) {
+                if (!this.search.isEmpty()) {
                     this.search = this.search.substring(0, this.search.length() - 1);
                 }
-            } else if(ChatAllowedCharacters.isAllowedCharacter(c)) {
+            } else if (ChatAllowedCharacters.isAllowedCharacter(c)) {
                 this.search += Character.toLowerCase(c);
                 this.scroll = 0;
             }
@@ -388,15 +404,16 @@ public class GuiDropdownBox<T extends GuiDropdownBox.SelectListEntry> {
 
     /**
      * Checks to see if the mouse is over this element
+     *
      * @param mouseX the mouse's x position
      * @param mouseY the mouse's y position
      * @return true if the mouse is over this element, false otherwise
      */
     public boolean isMouseOver(int mouseX, int mouseY) {
-        if(this.withinTopdownRange(mouseX, mouseY)) {
-            if(mouseY - this.yPos <= this.cellHeight) {
+        if (this.withinTopdownRange(mouseX, mouseY)) {
+            if (mouseY - this.yPos <= this.cellHeight) {
                 return true;
-            } else if(this.open){
+            } else if (this.open) {
                 return mouseY - this.yPos <= this.cellHeight * (Math.min(this.getSearchedList().size(), this.cellMax) + 1);
             }
         }
@@ -405,17 +422,18 @@ public class GuiDropdownBox<T extends GuiDropdownBox.SelectListEntry> {
 
     /**
      * Gets the searched list. If {@link #search} is empty, then the main list will be returned. <br>
-     *     If it is not empty then the main list is searched with each element of the list checking to see if the
-     *     {@link SelectListEntry#getSearch()} contains the {@link #search} term
+     * If it is not empty then the main list is searched with each element of the list checking to see if the
+     * {@link SelectListEntry#getSearch()} contains the {@link #search} term
+     *
      * @return
      */
     private List<T> getSearchedList() {
-        if(this.search.isEmpty()) {
+        if (this.search.isEmpty()) {
             return this.listSupplier.get();
         }
         List<T> list = Lists.newArrayList();
         for (T listEntry : this.listSupplier.get()) {
-            if(listEntry.getSearch().toLowerCase().contains(this.search)) {
+            if (listEntry.getSearch().toLowerCase().contains(this.search)) {
                 list.add(listEntry);
             }
         }
@@ -424,11 +442,12 @@ public class GuiDropdownBox<T extends GuiDropdownBox.SelectListEntry> {
 
     /**
      * Scrolls the gui by a certain amount
+     *
      * @param amount
      */
     public void scroll(float amount) {
         this.scroll -= amount;
-        this.scroll = MathHelper.clamp(this.scroll, 0, Math.max(this.getSearchedList().size() -  this.cellMax, 0));
+        this.scroll = MathHelper.clamp(this.scroll, 0, Math.max(this.getSearchedList().size() - this.cellMax, 0));
     }
 
 
@@ -438,6 +457,7 @@ public class GuiDropdownBox<T extends GuiDropdownBox.SelectListEntry> {
     public interface SelectListEntry {
         /**
          * Draws the element
+         *
          * @param x the elements x position
          * @param y the elements y position
          */
@@ -445,14 +465,16 @@ public class GuiDropdownBox<T extends GuiDropdownBox.SelectListEntry> {
 
         /**
          * Gets the search string used for searching. <br>
-         *     Searching is done by checking if this term contains the searched term.
+         * Searching is done by checking if this term contains the searched term.
          * {@code selectListEntry.getSearch().contains("foo")} will mean any search terms with "foo" inside them at any point will be added to the found list
+         *
          * @return the search term.
          */
         String getSearch();
 
         /**
          * Called when the entry is clicked
+         *
          * @param relMouseX the relative mouse's x position for this entry
          * @param relMouseY the relative mouse's y position for this entry
          */

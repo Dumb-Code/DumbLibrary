@@ -67,7 +67,7 @@ public class TabulaModelInformation {
     @Nullable
     public Cube getCube(String cubeName) {
         for (Cube cube : this.getAllCubes()) {
-            if(cube.getName().equals(cubeName)) {
+            if (cube.getName().equals(cubeName)) {
                 return cube;
             }
         }
@@ -78,7 +78,9 @@ public class TabulaModelInformation {
     @Accessors(chain = true)
     @RequiredArgsConstructor
     public class CubeGroup {
-        @NonFinal @Setter private boolean isRoot = true;
+        @NonFinal
+        @Setter
+        private boolean isRoot = true;
         List<Cube> cubeList = Lists.newArrayList();
         List<CubeGroup> childGroups = Lists.newArrayList();
         String name;
@@ -128,14 +130,17 @@ public class TabulaModelInformation {
         List<Cube> children = Lists.newArrayList();
         String parentIdentifier;
         String identifier;
-        @NonFinal @Nullable @Setter private Cube parent;
+        @NonFinal
+        @Nullable
+        @Setter
+        private Cube parent;
 
         public TabulaModelRenderer createRenderer(TabulaModel base, boolean root) {
             TabulaModelRenderer cube = new TabulaModelRenderer(base, this);
-            cube.setTextureOffset((int)this.texOffset[0], (int)this.texOffset[1]);
+            cube.setTextureOffset((int) this.texOffset[0], (int) this.texOffset[1]);
             cube.mirror = this.textureMirror;
             cube.setRotationPoint(this.rotationPoint[0], this.rotationPoint[1], this.rotationPoint[2]);
-            cube.addBox(this.offset[0], this.offset[1], this.offset[2], (int)this.dimension[0], (int)this.dimension[1], (int)this.dimension[2], this.mcScale);
+            cube.addBox(this.offset[0], this.offset[1], this.offset[2], (int) this.dimension[0], (int) this.dimension[1], (int) this.dimension[2], this.mcScale);
             cube.rotateAngleX = this.rotation[0];
             cube.rotateAngleY = this.rotation[1];
             cube.rotateAngleZ = this.rotation[2];
@@ -143,7 +148,7 @@ public class TabulaModelInformation {
             for (Cube child : this.children) {
                 cube.addChild(child.createRenderer(base, false));
             }
-            if(root) {
+            if (root) {
                 base.getRoots().add(cube);
             }
             base.getCubeNameMap().put(this.name, cube);

@@ -2,7 +2,6 @@ package net.dumbcode.dumblibrary.server.animation.objects;
 
 import lombok.Getter;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.IStringSerializable;
 
 import javax.vecmath.Vector3f;
 import java.util.List;
@@ -13,8 +12,10 @@ import java.util.List;
  * @param <E> the entity type this is used for
  */
 public class AnimationRunWrapper<E extends Entity> {
-    @Getter private final E entity;
-    @Getter private final List<AnimationLayer<E>> layers;
+    @Getter
+    private final E entity;
+    @Getter
+    private final List<AnimationLayer<E>> layers;
 
     /**
      * @param entity the entity

@@ -16,7 +16,7 @@ public class JsonDinosaurModel {
     public static class Deserializer implements JsonDeserializer<JsonDinosaurModel> {
         @Override
         public JsonDinosaurModel deserialize(JsonElement element, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-            if(!element.isJsonObject()) {
+            if (!element.isJsonObject()) {
                 throw new JsonParseException("Expected Json Object, found " + JsonUtils.toString(element));
             }
             JsonObject json = element.getAsJsonObject();

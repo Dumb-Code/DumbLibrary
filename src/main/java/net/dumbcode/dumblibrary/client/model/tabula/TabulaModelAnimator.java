@@ -4,6 +4,7 @@ import net.minecraft.entity.Entity;
 
 /**
  * Used to apply additional animations onto an entity
+ *
  * @param <E> the entity
  */
 @FunctionalInterface

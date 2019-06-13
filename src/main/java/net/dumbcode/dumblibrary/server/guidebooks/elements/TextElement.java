@@ -10,9 +10,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.item.EnumDyeColor;
-import net.minecraft.util.StringUtils;
 import net.minecraft.util.text.TextComponentTranslation;
-import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -34,22 +32,22 @@ public class TextElement extends GuidebookElement {
         super(source, context);
         String text = source.get("text").getAsString();
         this.rawText = text;
-        if(source.has("translation_marker") && source.get("translation_marker").getAsBoolean()) {
+        if (source.has("translation_marker") && source.get("translation_marker").getAsBoolean()) {
             translatable = true;
             contents = new TextComponentTranslation(text).getFormattedText();
         } else {
             translatable = false;
             contents = text;
         }
-        if(source.has("color") && FMLCommonHandler.instance().getSide() == Side.CLIENT)
+        if (source.has("color") && FMLCommonHandler.instance().getSide() == Side.CLIENT)
             color = resolveColor(source.get("color"));
         else
             color = 0xFF000000;
-        if(source.has("scale"))
+        if (source.has("scale"))
             scale = source.get("scale").getAsDouble();
         else
             scale = 1.0;
-        if(source.has("alignment")) {
+        if (source.has("alignment")) {
             alignment = DumbStringUtils.TextAlignment.valueOf(source.get("alignment").getAsString().toUpperCase());
         } else {
             alignment = DumbStringUtils.TextAlignment.LEFT;
@@ -69,19 +67,19 @@ public class TextElement extends GuidebookElement {
     @SideOnly(Side.CLIENT)
     @Override
     public int getWidth(Guidebook guidebook) {
-        if(alignment == DumbStringUtils.TextAlignment.CENTERED)
+        if (alignment == DumbStringUtils.TextAlignment.CENTERED)
             return guidebook.getAvailableWidth();
         FontRenderer fontRenderer = Minecraft.getMinecraft().fontRenderer;
-        List<String> lines = fontRenderer.listFormattedStringToWidth(contents, (int) (guidebook.getAvailableWidth()/scale));
-        return (int) (lines.stream().mapToInt(fontRenderer::getStringWidth).max().getAsInt()*scale);
+        List<String> lines = fontRenderer.listFormattedStringToWidth(contents, (int) (guidebook.getAvailableWidth() / scale));
+        return (int) (lines.stream().mapToInt(fontRenderer::getStringWidth).max().getAsInt() * scale);
     }
 
     @SideOnly(Side.CLIENT)
     @Override
     public int getHeight(Guidebook guidebook) {
         FontRenderer fontRenderer = Minecraft.getMinecraft().fontRenderer;
-        List<String> lines = fontRenderer.listFormattedStringToWidth(contents, (int) (guidebook.getAvailableWidth()/scale));
-        return (int) ((lines.size() * (fontRenderer.FONT_HEIGHT) + (lines.size()-1) * LINE_SPACING) * scale);
+        List<String> lines = fontRenderer.listFormattedStringToWidth(contents, (int) (guidebook.getAvailableWidth() / scale));
+        return (int) ((lines.size() * (fontRenderer.FONT_HEIGHT) + (lines.size() - 1) * LINE_SPACING) * scale);
     }
 
     @Override
@@ -89,9 +87,9 @@ public class TextElement extends GuidebookElement {
         int w = getWidth(guidebook);
         switch (alignment) {
             case CENTERED:
-                return guidebook.getAvailableWidth()/2-w/2;
+                return guidebook.getAvailableWidth() / 2 - w / 2;
             case RIGHT:
-                return guidebook.getAvailableWidth()-w;
+                return guidebook.getAvailableWidth() - w;
             default:
                 return 0;
         }
@@ -106,9 +104,9 @@ public class TextElement extends GuidebookElement {
     @Override
     public void render(Guidebook guidebook) {
         FontRenderer fontRenderer = Minecraft.getMinecraft().fontRenderer;
-        List<String> lines = fontRenderer.listFormattedStringToWidth(contents, (int) (guidebook.getAvailableWidth()/scale));
+        List<String> lines = fontRenderer.listFormattedStringToWidth(contents, (int) (guidebook.getAvailableWidth() / scale));
         float y = 0f;
-        for(String line : lines) {
+        for (String line : lines) {
             GlStateManager.pushMatrix();
             float x;
             switch (alignment) {
@@ -119,7 +117,7 @@ public class TextElement extends GuidebookElement {
                     x = (float) (guidebook.getAvailableWidth() - fontRenderer.getStringWidth(line) * scale);
                     break;
                 case CENTERED:
-                    x = (float) (guidebook.getAvailableWidth()/2 - (fontRenderer.getStringWidth(line)  * scale)/2);
+                    x = (float) (guidebook.getAvailableWidth() / 2 - (fontRenderer.getStringWidth(line) * scale) / 2);
                     break;
                 default:
                     x = 0f;

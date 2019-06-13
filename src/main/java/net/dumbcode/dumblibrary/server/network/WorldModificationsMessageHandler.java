@@ -25,6 +25,7 @@ public abstract class WorldModificationsMessageHandler<REQ extends IMessage, REP
     }
 
     protected abstract void handleMessage(REQ message, MessageContext ctx, World world, EntityPlayer player);
+
     protected REP answer(REQ message, MessageContext ctx, World world, EntityPlayer player) {
         return null;
     }

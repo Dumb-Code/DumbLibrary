@@ -15,8 +15,7 @@ public class MathUtils {
 
     private static final Random RANDOM = new Random();
 
-    public static double sigmoid(double x)
-    {
+    public static double sigmoid(double x) {
         return 1 / (1 + Math.exp(-x));
     }
 
@@ -30,14 +29,14 @@ public class MathUtils {
 
     public static int[] binChoose(int n) {
         n += 1;
-        int[][] cache = new int[n+1][n];
+        int[][] cache = new int[n + 1][n];
 
         for (int i = 0; i <= n; i++) {
             for (int j = 0; j < Math.min(i, n); j++) {
-                if(j == 0 || j == i) {
+                if (j == 0 || j == i) {
                     cache[i][j] = 1;
                 } else {
-                    cache[i][j] = cache[i-1][j-1] + cache[i-1][j];
+                    cache[i][j] = cache[i - 1][j - 1] + cache[i - 1][j];
                 }
             }
         }
@@ -79,6 +78,7 @@ public class MathUtils {
 
     /**
      * Calculate the normal of the given data
+     *
      * @param data in the format [x1, y1, z1, x2, y2, z2, x3, y3, z3]
      * @return the Vec3d normal
      */
@@ -91,17 +91,21 @@ public class MathUtils {
 
     public static Vector3f calcualeNormalF(double... data) {
         Vec3d vec = calculateNormal(data);
-        return new Vector3f((float)vec.x, (float)vec.y, (float)vec.z);
+        return new Vector3f((float) vec.x, (float) vec.y, (float) vec.z);
     }
 
     public static double horizontalDegree(double x, double z, boolean forward) {
         double angle = Math.atan(z / x);
-        if(x < 0 == forward) {
+        if (x < 0 == forward) {
             angle += Math.PI;
         }
         return angle * 180 / Math.PI;
     }
 
     @Value
-    private static class TriVec { Vec3d pos1; Vec3d pos2; Vec3d pos3; }
+    private static class TriVec {
+        Vec3d pos1;
+        Vec3d pos2;
+        Vec3d pos3;
+    }
 }

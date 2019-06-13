@@ -18,9 +18,9 @@ public class GuiHelper {
     public static void prepareModelRendering(int posX, int posY, float scale, float cameraPitch, float cameraYaw) {
         GlStateManager.enableColorMaterial();
         GlStateManager.pushMatrix();
-        GlStateManager.translate((float)posX, (float)posY, 500.0F);
+        GlStateManager.translate((float) posX, (float) posY, 500.0F);
         GlStateManager.translate(0f, -20f, 0f);
-        GlStateManager.scale((float)(-scale), (float)scale, (float)scale);
+        GlStateManager.scale((float) (-scale), (float) scale, (float) scale);
         RenderHelper.enableStandardItemLighting();
         GlStateManager.rotate(cameraPitch, 1.0F, 0.0F, 0.0F);
         GlStateManager.rotate(cameraYaw, 0.0F, 1.0F, 0.0F);

@@ -2,8 +2,12 @@ package net.dumbcode.dumblibrary;
 
 import net.dumbcode.dumblibrary.client.model.TransformTypeModelLoader;
 import net.dumbcode.dumblibrary.server.DumbGuiHandler;
+import net.dumbcode.dumblibrary.server.entity.EntityManager;
 import net.dumbcode.dumblibrary.server.network.S0SyncAnimation;
+import net.dumbcode.dumblibrary.server.utils.InjectedUtils;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
@@ -24,6 +28,10 @@ public class DumbLibrary {
 
     @Mod.Instance(MODID)
     public static DumbLibrary MOD_INSTANCE;
+
+
+    @CapabilityInject(EntityManager.class)
+    public static final Capability<EntityManager> ENTITY_MANAGER = InjectedUtils.injected();
 
     public static final SimpleNetworkWrapper NETWORK = new SimpleNetworkWrapper(MODID);
 

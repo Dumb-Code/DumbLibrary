@@ -12,32 +12,21 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.annotation.Nonnull;
-import java.util.Collection;
 import java.util.List;
 
 public interface AnimationSystemInfo<E extends Entity> {
 
-    Collection<String> allAnimationNames();
-
     EntityAnimator<E> createAnimator(ModelContainer<E> modelContainer);
-
-    Animation defaultAnimation();
-
-    Animation getAnimation(String animation);
 
     List<ModelContainer.AnimationLayerFactory<E>> createFactories();
 
     @Nonnull
     Animation getAnimation(E entity);
 
-    void setAnimation(E entity, @Nonnull Animation animation);
-
     @SideOnly(Side.CLIENT)
     ModelContainer<E> getModelContainer(E entity);
 
     ResourceLocation getTexture(E entity);
-
-    ResourceLocation identifier();
 
     AnimationRunWrapper<E> getOrCreateWrapper(E entity, ModelContainer<E> modelContainer, TabulaModel model, boolean inertia);
 

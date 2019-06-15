@@ -6,15 +6,16 @@ import com.google.gson.*;
 import lombok.*;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.client.model.tabula.TabulaModel;
+import net.dumbcode.dumblibrary.server.registry.DumbRegistries;
 import net.dumbcode.dumblibrary.server.animation.TabulaUtils;
 import net.dumbcode.dumblibrary.server.animation.objects.*;
 import net.dumbcode.dumblibrary.server.info.AnimationSystemInfo;
-import net.dumbcode.dumblibrary.server.info.AnimationSystemInfoRegistry;
 import net.dumbcode.dumblibrary.server.tabula.TabulaModelInformation;
 import net.dumbcode.dumblibrary.server.utils.StreamUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.JsonUtils;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.commons.io.FilenameUtils;
@@ -42,9 +43,8 @@ public class ModelContainer<E extends Entity> {
 
     private final AnimationSystemInfo<E> info;
 
-
     @SideOnly(Side.CLIENT)
-    private final TabulaModel mainModel;
+    private TabulaModel mainModel;
 
     /**
      * Map of {@code <Model Name, <Cube Name, Cube Reference>>}
@@ -58,28 +58,35 @@ public class ModelContainer<E extends Entity> {
 
 
     public ModelContainer(ResourceLocation regname, AnimationSystemInfo<E> info) {
-        AnimationSystemInfoRegistry.INSTANCE.namespace.put(info.identifier(), info);
         this.info = info;
         //The base location of all the models
         String baseLoc = "models/entities/" + regname.getPath().replace("_", "/") + "/";
         String baseFileName = baseLoc + regname.getPath();
-        Animation defaultAnimation = info.defaultAnimation();
 
+        this.loadAnimations(regname, baseLoc, baseFileName);
 
-        this.loadAnimations(this.references, this.animations, regname, baseLoc, baseFileName);
+        if(FMLCommonHandler.instance().getSide() == Side.CLIENT) {
+            this.loadMainModel(regname, baseLoc);
+        }
 
+    }
 
+    /**
+     * Loads the main model, client side only
+     * @param regname
+     * @param baseLoc
+     */
+    @SideOnly(Side.CLIENT)
+    private void loadMainModel(ResourceLocation regname, String baseLoc) {
         //Load the main models
-
         TabulaModel model;
         //Make sure the model name isnt null
-        if (defaultAnimation == null) {
-            DumbLibrary.getLogger().error("Unable to loadRawAnimations model for regname {} as main animation was not defined", regname);
-            //If the name is null, set the model to null and continue
+        if(!this.animations.containsKey(Animation.NONE) || this.animations.get(Animation.NONE).isEmpty()) {
+            DumbLibrary.getLogger().error("Default animation (dumblibrary:none) had no models defined for {}", regname);
             model = null;
         } else {
             //Get the resource location of where the model is,
-            ResourceLocation modelName = new ResourceLocation(regname.getNamespace(), baseFileName + "_" + defaultAnimation.getIdentifier());
+            ResourceLocation modelName = new ResourceLocation(regname.getNamespace(), baseLoc + this.animations.get(Animation.NONE).get(0).getModelName());
             try {
                 //Try and loadRawAnimations the model, and also try to loadRawAnimations the EntityAnimator (factory.createAnimator)
                 model = TabulaUtils.getModel(modelName, info.createAnimator(this));
@@ -90,24 +97,21 @@ public class ModelContainer<E extends Entity> {
             }
         }
         this.mainModel = model;
-
     }
 
     /**
      * Iterate through all the all the raw animations and puts the pose data into the animation. Also loads the main model with all the animation data.
      *
-     * @param references   The map of which the model name will be added with the list of cube names to cube references
-     * @param animations   The map of which all the animations will be loaded to
-     * @param regname      The registry name of where to load the data from
+     * @param regname      The registry name of where to loadAnimationFromElement the data from
      * @param baseLoc      The base location. Derived from regname
      * @param baseFileName The base file name. Derived from regname
      * @see ModelContainer#references
      * @see ModelContainer#animations
      */
-    private void loadAnimations(Map<String, Map<String, CubeReference>> references, Map<Animation, List<PoseData>> animations, ResourceLocation regname, String baseLoc, String baseFileName) {
+    private void loadAnimations(ResourceLocation regname, String baseLoc, String baseFileName) {
         try {
-            Map<String, List<PoseData>> rawAnimations = Maps.newHashMap();
-            this.loadRawAnimations(regname, baseLoc, baseFileName, rawAnimations);
+            Map<String, List<PoseData>> rawAnimations = this.loadRawAnimations(regname, baseLoc, baseFileName);
+
 
             List<PoseData> modelResources = Lists.newArrayList();
             //Iterate through all the lists poses in the rawData
@@ -122,16 +126,18 @@ public class ModelContainer<E extends Entity> {
             //Iterate through the list of poses defined in the json file
             for (Map.Entry<String, List<PoseData>> entry : rawAnimations.entrySet()) {
                 //Use the animationGetter to get the Animation from the string
-                Animation animation = this.info.getAnimation(entry.getKey());
+                Animation animation = DumbRegistries.ANIMATION_REGISTRY.getValue(new ResourceLocation(entry.getKey()));
                 List<PoseData> poseData = Lists.newLinkedList(entry.getValue());
 
                 this.info.setPoseData(animation, poseData);
-                animations.put(animation, poseData);
+                this.animations.put(animation, poseData);
             }
-            //Get the main model for this ModelStage
-            String location = Objects.requireNonNull(this.info.defaultAnimation().getIdentifier(), "Could not find main model location for " + regname + " as it was not defined");
-            //load the animation info
-            this.loadMainModelInformation(references, new ResourceLocation(regname.getNamespace(), baseFileName + "_" + location), modelResources);
+            //loadAnimationFromElement the animation info
+            if(!this.animations.containsKey(Animation.NONE) || this.animations.get(Animation.NONE).isEmpty()) {
+                DumbLibrary.getLogger().error("Default animation (dumblibrary:none) had no models defined for {}", regname);
+                return;
+            }
+            this.loadMainModelInformation(new ResourceLocation(regname.getNamespace(), baseLoc + this.animations.get(Animation.NONE).get(0).getModelName()), modelResources);
         } catch (Exception e) {
             DumbLibrary.getLogger().error("Unable to loadRawAnimations poses for " + regname, e);
         }
@@ -140,12 +146,13 @@ public class ModelContainer<E extends Entity> {
     /**
      * Loads the raw map of (animation, List(Posedata))
      *
-     * @param regname      The registry name of where to load the animations
+     * @param regname      The registry name of where to loadAnimationFromElement the animations
      * @param baseFolder The base folder, derived from regname
      * @param baseFileName The base file name, derived from the regname
-     * @param map a map of animation-name to a list of the pose data for that animation
+     * @return the map of (animation, List(Posedata))
      */
-    private void loadRawAnimations(ResourceLocation regname, String baseFolder, String baseFileName, Map<String, List<PoseData>> map) {
+    private Map<String, List<PoseData>> loadRawAnimations(ResourceLocation regname, String baseFolder, String baseFileName) {
+        Map<String, List<PoseData>> map = Maps.newHashMap();
         try {
             //Get the input stream of the json file
             @Cleanup InputStream jsonStream = StreamUtils.openStream(new ResourceLocation(regname.getNamespace(), baseFileName + JSON_EXTENSION));
@@ -155,20 +162,14 @@ public class ModelContainer<E extends Entity> {
             JsonObject json = new JsonParser().parse(reader).getAsJsonObject();
             //Get the Poses object within the json file
             JsonObject poses = JsonUtils.getJsonObject(json, "poses");
-            //Iterate through all the supplied animation names
-            for (String animation : this.info.allAnimationNames()) {
+            //Iterate through all the animation names
+            for (ResourceLocation key : DumbRegistries.ANIMATION_REGISTRY.getKeys()) {
+                //If the registry name is the same as the animation, then ignore the namespace of the key
+                String animation = regname.getNamespace().equals(key.getNamespace()) ? key.getPath() : key.toString();
                 //If the poses object has a object called the "animation". Can be fully upper case or fully lowercase
                 for (String ani : Lists.newArrayList(animation.toLowerCase(), animation.toUpperCase())) {
                     if (JsonUtils.hasField(poses, ani)) {
-                        if(JsonUtils.isJsonArray(poses, ani)) {
-                            //Get the Json Array thats referenced by the "animation"
-                            for (JsonElement pose : JsonUtils.getJsonArray(poses, ani)) {
-                                //For the every object within the Json Array, deserialize it to a PoseData, and add it to the list
-                                map.computeIfAbsent(animation, a -> Lists.newLinkedList()).add(GSON.fromJson(pose, PoseData.class));
-                            }
-                        } else {
-                            this.loadJsonPose(JsonUtils.getJsonObject(poses, ani), animation, regname, baseFolder, map);
-                        }
+                        this.loadAnimationFromElement(poses.get(ani), key.toString(), regname, baseFolder, map);
                         break;
                     }
                 }
@@ -176,8 +177,37 @@ public class ModelContainer<E extends Entity> {
         } catch (IOException e) {
             throw new IllegalArgumentException("Could not main json loadRawAnimations input stream for " + regname, e);
         }
+        return map;
     }
 
+    /**
+     * Loads the animation from a JsonElement.
+     * @param element The element to load the field from
+     * @param animation The animation name
+     * @param regname The registry name of this object
+     * @param baseFolder the base folder. Derived from {@code regname}
+     * @param map the result map to add the poses too
+     */
+    private void loadAnimationFromElement(JsonElement element, String animation, ResourceLocation regname, String baseFolder, Map<String, List<PoseData>> map) {
+        if(element.isJsonArray()) {
+            //Get the Json Array thats referenced by the "animation"
+            for (JsonElement pose : element.getAsJsonArray()) {
+                //For the every object within the Json Array, deserialize it to a PoseData, and add it to the list
+                map.computeIfAbsent(animation, a -> Lists.newLinkedList()).add(GSON.fromJson(pose, PoseData.class));
+            }
+        } else {
+            this.loadJsonPose(element.getAsJsonObject(), animation, regname, baseFolder, map);
+        }
+    }
+
+    /**
+     * Loads a list of poses from a directory. The pose order will be the alphabetical order of the files inside that directory
+     * @param poseObject the json object to get the data from
+     * @param animation the animation name
+     * @param regName the registry name of this object
+     * @param baseFolder the base folder, derived from {@code regName}
+     * @param map the result map to add the poses too.
+     */
     private void loadJsonPose(JsonObject poseObject, String animation, ResourceLocation regName, String baseFolder, Map<String, List<PoseData>> map) {
         String directory = JsonUtils.getString(poseObject, "directory");
         float time = JsonUtils.getFloat(poseObject, "time");
@@ -201,12 +231,11 @@ public class ModelContainer<E extends Entity> {
     /**
      * Loads the main model
      *
-     * @param references        A map of which to add the model information too.
      * @param mainModelLocation The main models location
      * @param modelResources    the list of pose data for the main model
      * @see ModelContainer#references
      */
-    private void loadMainModelInformation(Map<String, Map<String, CubeReference>> references, ResourceLocation mainModelLocation, Iterable<PoseData> modelResources) {
+    private void loadMainModelInformation(ResourceLocation mainModelLocation, Iterable<PoseData> modelResources) {
         //Load the main model, used for comparing the diffrence in cube location/rotation
         TabulaModelInformation mainInfo = TabulaUtils.getModelInformation(mainModelLocation);
         //Iterate through all the ModelLocations
@@ -214,12 +243,12 @@ public class ModelContainer<E extends Entity> {
             data.getCubes().clear();
             //Get the model location. If its in the map then just initialize the pose data, otherwise generate the cubes
             ModelLocation modelResource = data.getLocation();
-            if (references.containsKey(modelResource.getFileName())) {
-                data.getCubes().putAll(references.get(modelResource.getFileName()));
+            if (this.references.containsKey(modelResource.getFileName())) {
+                data.getCubes().putAll(this.references.get(modelResource.getFileName()));
                 continue;
             }
             Map<String, CubeReference> innerMap = Maps.newHashMap();
-            references.put(modelResource.getFileName(), innerMap);
+            this.references.put(modelResource.getFileName(), innerMap);
             //Get the location of the model that represents the pose, and that we're going to generate the data for
             ResourceLocation location = new ResourceLocation(mainModelLocation.getNamespace(), modelResource.getFullLocation());
             //If the pose location is the same as the mainInfo, skip it and add all the mainInfo data instead. Prevents loading the same model twice
@@ -360,8 +389,7 @@ public class ModelContainer<E extends Entity> {
                                                          List<AnimationLayerFactory<E>> factories) {
         List<AnimationLayer<E>> list = Lists.newArrayList();
         for (val factory : factories) {
-            Map<String, AnimationRunWrapper.CubeWrapper> cacheMap = new HashMap<>();
-            list.add(factory.createWrapper(entity, model.getAllCubesNames(), model::getCube, s -> cacheMap.computeIfAbsent(s, o -> new AnimationRunWrapper.CubeWrapper(model.getCube(o))), this.info, inertia));
+            list.add(factory.createLayer(entity, model.getAllCubesNames(), model::getCube, this.info, inertia));
         }
         return new AnimationRunWrapper<>(entity, list);
     }
@@ -383,6 +411,6 @@ public class ModelContainer<E extends Entity> {
      * The factory for creating {@link AnimationLayer}
      */
     public interface AnimationLayerFactory<E extends Entity> {
-        AnimationLayer<E> createWrapper(E entity, Collection<String> cubeNames, Function<String, AnimationLayer.AnimatableCube> anicubeRef, Function<String, AnimationRunWrapper.CubeWrapper> cuberef, AnimationSystemInfo<E> info, boolean inertia);
+        AnimationLayer<E> createLayer(E entity, Collection<String> cubeNames, Function<String, AnimationLayer.AnimatableCube> anicubeRef, AnimationSystemInfo<E> info, boolean inertia);
     }
 }

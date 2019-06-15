@@ -1,47 +1,44 @@
 package net.dumbcode.dumblibrary.server.network;
 
 import io.netty.buffer.ByteBuf;
-import net.dumbcode.dumblibrary.server.animation.objects.Animation;
+import net.dumbcode.dumblibrary.server.animation.objects.AnimationLayer;
+import net.dumbcode.dumblibrary.server.entity.ComponentAccess;
+import net.dumbcode.dumblibrary.server.entity.component.EntityComponentTypes;
 import net.dumbcode.dumblibrary.server.info.AnimationSystemInfo;
-import net.dumbcode.dumblibrary.server.info.AnimationSystemInfoRegistry;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
 public class S0SyncAnimation implements IMessage {
 
     private int entityid;
-    private ResourceLocation ais;
-    private String animation;
-
+    private AnimationLayer.AnimationEntry entry;
+    private int channel;
 
     public S0SyncAnimation() {
-
     }
 
-    public <E extends Entity> S0SyncAnimation(E entity, AnimationSystemInfo<?> info, Animation animation) {
+    public <E extends Entity> S0SyncAnimation(int operation, E entity, AnimationSystemInfo<?> info, AnimationLayer.AnimationEntry entry, int channel) {
         this.entityid = entity.getEntityId();
-        this.ais = info.identifier();
-        this.animation = animation.getIdentifier();
+        this.entry = entry;
+        this.channel = channel;
     }
 
 
     @Override
     public void fromBytes(ByteBuf buf) {
         this.entityid = buf.readInt();
-        this.ais = new ResourceLocation(ByteBufUtils.readUTF8String(buf));
-        this.animation = ByteBufUtils.readUTF8String(buf);
+        this.entry = AnimationLayer.AnimationEntry.deserialize(buf);
+        this.channel = buf.readInt();
     }
 
     @Override
     public void toBytes(ByteBuf buf) {
         buf.writeInt(this.entityid);
-        ByteBufUtils.writeUTF8String(buf, this.ais.toString());
-        ByteBufUtils.writeUTF8String(buf, this.animation);
+        this.entry.serialize(buf);
+        buf.writeInt(this.channel);
     }
 
     public static class Handler extends WorldModificationsMessageHandler<S0SyncAnimation, S0SyncAnimation> {
@@ -49,8 +46,8 @@ public class S0SyncAnimation implements IMessage {
         @Override
         protected void handleMessage(S0SyncAnimation message, MessageContext ctx, World world, EntityPlayer player) {
             Entity entity = world.getEntityByID(message.entityid);
-            if (entity != null) {
-                AnimationSystemInfoRegistry.INSTANCE.setAnimationToEntity(entity, message.ais, message.animation);
+            if (entity instanceof ComponentAccess) {
+                ((ComponentAccess) entity).get(EntityComponentTypes.ANIMATION).ifPresent(c -> c.playAnimation((ComponentAccess) entity, message.entry, message.channel));
             }
         }
     }

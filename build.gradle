@@ -14,8 +14,8 @@ buildscript {
     }
     dependencies {
         classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
-        classpath "gradle.plugin.com.matthewprenger:CurseGradle:1.1.0"
-		classpath "net.dumbcode.gradlehook:GradleHook:1.2.0"
+        classpath "gradle.plugin.com.matthewprenger:CurseGradle:1.3.0"
+	classpath "net.dumbcode.gradlehook:GradleHook:1.2.0"
     }
 }
 
@@ -116,13 +116,7 @@ setChangelog.finalizedBy tasks.getByName("curseforge")
 
 task publishMod (group: "upload", description: "Publish the mod to curseforge and the webhook", dependsOn: setChangelog) {
     doLast {
-        //This is kind of a hack, I am aware. However, cursegradle doesnt store their IDs anywhere, apart from parent IDs on additional artifacts.
-        //Maybe we could ask CurseGradle to store their Ids in the artifact class.
-        List<CurseArtifact> artifacts = tasks.getByName("curseforge$curseforgeID").property("additionalArtifacts") as List<CurseArtifact>
-        if (artifacts.isEmpty()) {
-            println "Error, unable to access artifact parent ID. Need to have additional artifacts for this to work"
-        }
-        def id = artifacts.get(0).parentFileID
+        def id = (tasks.getByName("curseforge$curseforgeID").property("mainArtifact") as CurseArtifact).fileID
 
         println "Artifact uploaded with id $id"
 

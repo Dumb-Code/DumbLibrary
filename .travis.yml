@@ -13,7 +13,8 @@ before_script:
   - export COMMITTER_EMAIL="$(git log -1 $TRAVIS_COMMIT --pretty="%cE")"
   - export COMMITTER_NAME="$(git log -1 $TRAVIS_COMMIT --pretty="%aN")"
   - export COMMIT_HASH="$(echo $TRAVIS_COMMIT | cut -c1-7)"
-
+  - "git fetch --unshallow"
+  
 install:
   - true
 

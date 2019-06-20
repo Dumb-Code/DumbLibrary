@@ -19,6 +19,7 @@ import org.lwjgl.util.Rectangle;
 
 import java.awt.geom.Rectangle2D;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Supplier;
 
 @Getter
@@ -80,11 +81,15 @@ public class GuiDropdownBox<T extends GuiDropdownBox.SelectListEntry> {
         int height = this.getTotalSize(entries.size());
         int totalHeight = height - this.cellHeight;
 
-        Rectangle2D.Float scrollBar = this.getScrollBar(entries.size());
+        Rectangle2D.Float scrollBar = null;
 
-        if (additionalRows) {
-            this.updateScroll(entries, totalHeight, scrollBar.height, mouseY);
+        if (this.open) {
+            scrollBar = this.getScrollBar(entries.size());
+            if (additionalRows) {
+                this.updateScroll(entries, totalHeight, scrollBar.height, mouseY);
+            }
         }
+
         if (!Minecraft.getMinecraft().getFramebuffer().isStencilEnabled()) {
             Minecraft.getMinecraft().getFramebuffer().enableStencil();
         }
@@ -100,7 +105,7 @@ public class GuiDropdownBox<T extends GuiDropdownBox.SelectListEntry> {
             this.renderOpenSection(entries, height, borderSize, mouseX, mouseY);
 
             if (additionalRows) {
-                this.renderScrollBar(scrollBar, borderSize, this.mouseOverScrollBar(mouseX, mouseY, entries.size()));
+                this.renderScrollBar(Objects.requireNonNull(scrollBar), borderSize, this.mouseOverScrollBar(mouseX, mouseY, entries.size()));
             }
         }
 
@@ -239,13 +244,15 @@ public class GuiDropdownBox<T extends GuiDropdownBox.SelectListEntry> {
         int scrollBarLeft = this.xPos + this.width - scrollBarWidth;
 
         int ySize = (listSize - this.cellMax) * this.cellHeight;
-        float scrollLength = MathHelper.clamp(totalHeight / ySize, 32, totalHeight - 8);
-        float scrollYStart = this.scroll * this.cellHeight * (totalHeight - scrollLength) / (Math.max((listSize - this.cellMax) * this.cellHeight, 1)) + this.yPos + this.cellHeight - 1;
-        if (scrollYStart < this.yPos - 1) {
-            scrollYStart = this.yPos - 1F;
+        if(ySize > 0) {
+            float scrollLength = MathHelper.clamp(totalHeight / ySize, 32, totalHeight - 8);
+            float scrollYStart = this.scroll * this.cellHeight * (totalHeight - scrollLength) / (Math.max((listSize - this.cellMax) * this.cellHeight, 1)) + this.yPos + this.cellHeight - 1;
+            if (scrollYStart < this.yPos - 1) {
+                scrollYStart = this.yPos - 1F;
+            }
+            return new Rectangle2D.Float(scrollBarLeft, scrollYStart, scrollBarWidth, scrollLength);
         }
-
-        return new Rectangle2D.Float(scrollBarLeft, scrollYStart, scrollBarWidth, scrollLength);
+        return new Rectangle2D.Float(0,0,0,0);
     }
 
     /**

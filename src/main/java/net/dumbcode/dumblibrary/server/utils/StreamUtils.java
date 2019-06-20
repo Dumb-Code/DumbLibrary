@@ -28,8 +28,11 @@ public class StreamUtils {
         }
         return Files.newInputStream(getPath(location));
     }
-
     public static Path getPath(ResourceLocation location) {
+        return getPath(location, true);
+    }
+
+    public static Path getPath(ResourceLocation location, boolean mustExist) {
         ModContainer container = Loader.instance().getIndexedModList().get(location.getNamespace());
         if (container != null) {
             String base = "assets/" + container.getModId() + "/" + location.getPath();
@@ -44,7 +47,7 @@ public class StreamUtils {
                     root = source.toPath().resolve(base);
                 }
 
-                if (root != null && root.toFile().exists()) {
+                if (!mustExist || (root != null && root.toFile().exists())) {
                     return root;
                 } else {
                     throw new FileNotFoundException("Could not find file " + root);
@@ -57,6 +60,7 @@ public class StreamUtils {
         }
         throw new IllegalArgumentException("Invalid mod container: " + location.getNamespace());
     }
+
     @SideOnly(Side.CLIENT)
     private static InputStream openClientStream(ResourceLocation location) throws IOException {
         return Minecraft.getMinecraft().getResourceManager().getResource(location).getInputStream();

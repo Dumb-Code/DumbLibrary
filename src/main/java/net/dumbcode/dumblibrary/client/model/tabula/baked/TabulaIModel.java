@@ -248,7 +248,6 @@ public class TabulaIModel implements IModel {
             int minX = (int) cube.getTexOffset()[0] + d + w * i;
             int minY = (int) cube.getTexOffset()[1];
             uvMap.put(verticals[i], new int[]{minX, minY, minX + w, minY + d});
-
         }
 
         return uvMap;

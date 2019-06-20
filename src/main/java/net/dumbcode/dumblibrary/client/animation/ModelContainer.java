@@ -3,13 +3,14 @@ package net.dumbcode.dumblibrary.client.animation;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gson.*;
+import io.netty.util.internal.IntegerHolder;
 import lombok.*;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.client.model.tabula.TabulaModel;
-import net.dumbcode.dumblibrary.server.registry.DumbRegistries;
 import net.dumbcode.dumblibrary.server.animation.TabulaUtils;
 import net.dumbcode.dumblibrary.server.animation.objects.*;
 import net.dumbcode.dumblibrary.server.info.AnimationSystemInfo;
+import net.dumbcode.dumblibrary.server.registry.DumbRegistries;
 import net.dumbcode.dumblibrary.server.tabula.TabulaModelInformation;
 import net.dumbcode.dumblibrary.server.utils.StreamUtils;
 import net.minecraft.entity.Entity;
@@ -24,7 +25,6 @@ import org.apache.logging.log4j.util.Strings;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -61,9 +61,8 @@ public class ModelContainer<E extends Entity> {
         this.info = info;
         //The base location of all the models
         String baseLoc = "models/entities/" + regname.getPath().replace("_", "/") + "/";
-        String baseFileName = baseLoc + regname.getPath();
 
-        this.loadAnimations(regname, baseLoc, baseFileName);
+        this.loadAnimations(regname, baseLoc);
 
         if(FMLCommonHandler.instance().getSide() == Side.CLIENT) {
             this.loadMainModel(regname, baseLoc);
@@ -104,13 +103,12 @@ public class ModelContainer<E extends Entity> {
      *
      * @param regname      The registry name of where to loadAnimationFromElement the data from
      * @param baseLoc      The base location. Derived from regname
-     * @param baseFileName The base file name. Derived from regname
      * @see ModelContainer#references
      * @see ModelContainer#animations
      */
-    private void loadAnimations(ResourceLocation regname, String baseLoc, String baseFileName) {
+    private void loadAnimations(ResourceLocation regname, String baseLoc) {
         try {
-            Map<String, List<PoseData>> rawAnimations = this.loadRawAnimations(regname, baseLoc, baseFileName);
+            Map<String, List<PoseData>> rawAnimations = this.loadRawAnimations(regname, baseLoc);
 
 
             List<PoseData> modelResources = Lists.newArrayList();
@@ -137,7 +135,7 @@ public class ModelContainer<E extends Entity> {
                 DumbLibrary.getLogger().error("Default animation (dumblibrary:none) had no models defined for {}", regname);
                 return;
             }
-            this.loadMainModelInformation(new ResourceLocation(regname.getNamespace(), baseLoc + this.animations.get(Animation.NONE).get(0).getModelName()), modelResources);
+            this.loadModelInformation(new ResourceLocation(regname.getNamespace(), baseLoc + this.animations.get(Animation.NONE).get(0).getModelName()), modelResources);
         } catch (Exception e) {
             DumbLibrary.getLogger().error("Unable to loadRawAnimations poses for " + regname, e);
         }
@@ -148,31 +146,17 @@ public class ModelContainer<E extends Entity> {
      *
      * @param regname      The registry name of where to loadAnimationFromElement the animations
      * @param baseFolder The base folder, derived from regname
-     * @param baseFileName The base file name, derived from the regname
      * @return the map of (animation, List(Posedata))
      */
-    private Map<String, List<PoseData>> loadRawAnimations(ResourceLocation regname, String baseFolder, String baseFileName) {
+    private Map<String, List<PoseData>> loadRawAnimations(ResourceLocation regname, String baseFolder) {
         Map<String, List<PoseData>> map = Maps.newHashMap();
         try {
-            //Get the input stream of the json file
-            @Cleanup InputStream jsonStream = StreamUtils.openStream(new ResourceLocation(regname.getNamespace(), baseFileName + JSON_EXTENSION));
-            //Create a reader of the input stream
-            @Cleanup Reader reader = new InputStreamReader(jsonStream);
-            //Parse the reader into a JsonObject, so i can deserialize it
-            JsonObject json = new JsonParser().parse(reader).getAsJsonObject();
-            //Get the Poses object within the json file
-            JsonObject poses = JsonUtils.getJsonObject(json, "poses");
             //Iterate through all the animation names
             for (ResourceLocation key : DumbRegistries.ANIMATION_REGISTRY.getKeys()) {
                 //If the registry name is the same as the animation, then ignore the namespace of the key
-                String animation = regname.getNamespace().equals(key.getNamespace()) ? key.getPath() : key.toString();
-                //If the poses object has a object called the "animation". Can be fully upper case or fully lowercase
-                for (String ani : Lists.newArrayList(animation.toLowerCase(), animation.toUpperCase())) {
-                    if (JsonUtils.hasField(poses, ani)) {
-                        this.loadAnimationFromElement(poses.get(ani), key.toString(), regname, baseFolder, map);
-                        break;
-                    }
-                }
+                String animation = regname.getNamespace().equals(key.getNamespace()) ? key.getPath() : key.toString().replace(':', '/');
+                //Loads the animation from the directory name
+                this.loadAnimationFromDirectory(animation.toLowerCase(), key.toString(), regname, baseFolder, map);
             }
         } catch (IOException e) {
             throw new IllegalArgumentException("Could not main json loadRawAnimations input stream for " + regname, e);
@@ -181,61 +165,57 @@ public class ModelContainer<E extends Entity> {
     }
 
     /**
-     * Loads the animation from a JsonElement.
-     * @param element The element to load the field from
+     * Loads the animation from a directory
+     * @param folder The inner folder name to use
      * @param animation The animation name
-     * @param regname The registry name of this object
-     * @param baseFolder the base folder. Derived from {@code regname}
-     * @param map the result map to add the poses too
+     * @param regName The registry name for this
+     * @param baseFolder The base folder for the directory. Derived from regName
+     * @param map The map to add the animations too
+     * @throws IOException if an I/O error occurs
      */
-    private void loadAnimationFromElement(JsonElement element, String animation, ResourceLocation regname, String baseFolder, Map<String, List<PoseData>> map) {
-        if(element.isJsonArray()) {
-            //Get the Json Array thats referenced by the "animation"
-            for (JsonElement pose : element.getAsJsonArray()) {
-                //For the every object within the Json Array, deserialize it to a PoseData, and add it to the list
-                map.computeIfAbsent(animation, a -> Lists.newLinkedList()).add(GSON.fromJson(pose, PoseData.class));
-            }
-        } else {
-            this.loadJsonPose(element.getAsJsonObject(), animation, regname, baseFolder, map);
+    private void loadAnimationFromDirectory(String folder, String animation, ResourceLocation regName, String baseFolder, Map<String, List<PoseData>> map) throws IOException {
+        Path root = StreamUtils.getPath(new ResourceLocation(regName.getNamespace(), baseFolder + folder), false);
+        if(!root.toFile().exists()) {
+            map.put(animation, Lists.newArrayList(new PoseData(regName.getPath() + ".tbl", 10)));
+            return;
         }
-    }
+        JsonObject parsed = new JsonParser().parse(new InputStreamReader(Files.newInputStream(root.resolve("animation.json")))).getAsJsonObject();
 
-    /**
-     * Loads a list of poses from a directory. The pose order will be the alphabetical order of the files inside that directory
-     * @param poseObject the json object to get the data from
-     * @param animation the animation name
-     * @param regName the registry name of this object
-     * @param baseFolder the base folder, derived from {@code regName}
-     * @param map the result map to add the poses too.
-     */
-    private void loadJsonPose(JsonObject poseObject, String animation, ResourceLocation regName, String baseFolder, Map<String, List<PoseData>> map) {
-        String directory = JsonUtils.getString(poseObject, "directory");
-        float time = JsonUtils.getFloat(poseObject, "time");
-        Path root = StreamUtils.getPath(new ResourceLocation(regName.getNamespace(), baseFolder + "/" + directory));
+        int time = JsonUtils.getInt(parsed, "base_time");
+        Map<Integer, Integer> overrides = Maps.newHashMap();
+        for (JsonElement jsonElement : JsonUtils.getJsonArray(parsed, "overrides", new JsonArray())) {
+            JsonObject jobj = JsonUtils.getJsonObject(jsonElement, "overrides member");
+            overrides.put(JsonUtils.getInt(jobj, "index"), JsonUtils.getInt(jobj, "time"));
+        }
+        IntegerHolder index = new IntegerHolder();
         try {
             map.put(animation,
-            Files.walk(root)
-                    .filter(path -> path != root)
-                    .map(path -> path.getParent().getFileName() + "/" + FilenameUtils.getBaseName(path.getFileName().toString()))
-                    .filter(Strings::isNotEmpty)
-                    .sorted()
-                    .map(modelname -> new PoseData(modelname, time))
-                    .collect(Lists::newLinkedList, List::add, LinkedList::addAll)
-        );
+                    Files.walk(root)
+                            .filter(path -> path.getFileName().toString().endsWith(".tbl"))
+                            .map(path -> path.getParent().getFileName() + "/" + FilenameUtils.getBaseName(path.getFileName().toString()))
+                            .filter(Strings::isNotEmpty)
+                            .sorted()
+                            .map(modelname -> new PoseData(modelname, overrides.getOrDefault(index.value++, time)))
+                            .collect(Lists::newLinkedList, List::add, LinkedList::addAll)
+            );
+            List<PoseData> poseData = map.get(animation);
+            if(poseData.isEmpty()) {
+                poseData.add(new PoseData(regName.getPath() + ".tbl", 10));
+            }
         } catch (IOException e) {
             DumbLibrary.getLogger().warn(e);
         }
+
     }
 
-
     /**
-     * Loads the main model
+     * Loads the main model, as well as all the animation info
      *
      * @param mainModelLocation The main models location
      * @param modelResources    the list of pose data for the main model
      * @see ModelContainer#references
      */
-    private void loadMainModelInformation(ResourceLocation mainModelLocation, Iterable<PoseData> modelResources) {
+    private void loadModelInformation(ResourceLocation mainModelLocation, Iterable<PoseData> modelResources) {
         //Load the main model, used for comparing the diffrence in cube location/rotation
         TabulaModelInformation mainInfo = TabulaUtils.getModelInformation(mainModelLocation);
         //Iterate through all the ModelLocations

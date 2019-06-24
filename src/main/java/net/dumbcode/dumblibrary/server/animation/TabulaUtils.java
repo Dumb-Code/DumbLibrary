@@ -14,20 +14,14 @@ import net.dumbcode.dumblibrary.server.tabula.TabulaModelInformation;
 import net.dumbcode.dumblibrary.server.utils.StreamUtils;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.Vec3d;
-import net.minecraftforge.fml.common.FMLLog;
-import net.minecraftforge.fml.common.Loader;
-import net.minecraftforge.fml.common.ModContainer;
 
 import javax.annotation.Nullable;
 import javax.vecmath.*;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
-import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -47,13 +41,20 @@ public class TabulaUtils {
         try {
             @Cleanup InputStream stream = Files.newInputStream(StreamUtils.getPath(location));
             TabulaModelInformation modelInfo = TabulaJsonHandler.GSON.fromJson(new InputStreamReader(getModelJsonStream(stream)), TabulaModelInformation.class);
-            for (TabulaModelInformation.Cube cube : modelInfo.getAllCubes()) {
-                parseCube(cube, null, map);
-            }
+            parseGroups(modelInfo.getGroups(), map);
         } catch (IOException e) {
             DumbLibrary.getLogger().warn("Unable to load serside cubes from model " + location, e);
         }
         return map;
+    }
+
+    private static void parseGroups(List<TabulaModelInformation.CubeGroup> groups, Map<String, AnimationLayer.AnimatableCube> map) {
+        for (TabulaModelInformation.CubeGroup group : groups) {
+            for (TabulaModelInformation.Cube cube : group.getCubeList()) {
+                parseCube(cube, null, map);
+            }
+            parseGroups(group.getChildGroups(), map);
+        }
     }
 
     private static void parseCube(TabulaModelInformation.Cube cube, @Nullable ServerAnimatableCube parent, Map<String, AnimationLayer.AnimatableCube> map) {
@@ -115,7 +116,7 @@ public class TabulaUtils {
         Matrix4d boxRotateY = new Matrix4d();
         Matrix4d boxRotateZ = new Matrix4d();
 
-        float[] point = cube.getRotationPoint();
+        float[] point = cube.getActualRotationPoint();
         boxTranslate.set(new Vector3d(point[0] / 16D, -point[1] / 16D, -point[2] / 16D));
 
         float[] rotation = cube.getActualRotation();

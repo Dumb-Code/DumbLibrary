@@ -3,9 +3,7 @@ package net.dumbcode.dumblibrary.server.animation.objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.Getter;
-import lombok.Value;
 import net.dumbcode.dumblibrary.server.info.AnimationSystemInfo;
 import net.minecraft.entity.Entity;
 
@@ -70,7 +68,8 @@ public class MultiAnimationLayer<E extends Entity> extends AnimationLayer<E> {
                         (data.positions[1] - positions[1]) * ci,
                         (data.positions[2] - positions[2]) * ci
                 );
-                data.ci -= (ticks % 1F) / 7.5F; //Takes 7.5 ticks to go back
+
+                data.ci = 1 - ((ticks - data.minAge) / 7.5F); //Takes 7.5 ticks to go back.
             }
             ghosts.removeIf(data -> data.ci <= 0);
         }
@@ -96,18 +95,26 @@ public class MultiAnimationLayer<E extends Entity> extends AnimationLayer<E> {
     }
 
     public void removeAnimation(AnimationWrap animation) {
+        List<AnimationEntry> exitEntries = Lists.newArrayList();
         Iterator<AnimationWrap> iterator = this.animations.iterator();
         while (iterator.hasNext()) {
             AnimationWrap wrap = iterator.next();
             if (wrap == animation) {
                 for (String name : wrap.getCubeNames()) {
                     AnimationRunWrapper.CubeWrapper cube = wrap.getCuberef().apply(name);
-                    this.ghostWraps.computeIfAbsent(name, s -> Lists.newArrayList()).add(new GhostAnimationData(wrap.getInterpPos(cube), wrap.getInterpRot(cube), 1F));
+                    this.ghostWraps.computeIfAbsent(name, s -> Lists.newArrayList()).add(new GhostAnimationData(wrap.getInterpPos(cube), wrap.getInterpRot(cube), animation.getEntityAge(), 1F));
                 }
                 wrap.onFinish();
+                if(wrap.getEntry().getExitAnimation() != null) {
+                    exitEntries.add(wrap.getEntry().getExitAnimation());
+                }
                 iterator.remove();
             }
         }
+        for (AnimationEntry entry : exitEntries) {
+            this.addAnimation(this.create(entry));
+        }
+
     }
 
     public boolean isPlaying(Animation animation) {
@@ -119,13 +126,12 @@ public class MultiAnimationLayer<E extends Entity> extends AnimationLayer<E> {
         return false;
     }
 
-
-    @Data
     @AllArgsConstructor
     private class GhostAnimationData {
         float[] positions;
         float[] rotations;
         float ci;
+        float minAge;
     }
 
 

@@ -1,15 +1,22 @@
 package net.dumbcode.dumblibrary.server.entity.component;
 
 import com.google.common.collect.Lists;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import lombok.Getter;
 import lombok.Value;
 import lombok.experimental.Wither;
 import net.dumbcode.dumblibrary.server.entity.ComponentWriteAccess;
+import net.dumbcode.dumblibrary.server.registry.DumbRegistries;
+import net.minecraft.util.JsonUtils;
+import net.minecraft.util.ResourceLocation;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 @Getter
 public class EntityComponentAttacher {
@@ -20,6 +27,39 @@ public class EntityComponentAttacher {
         S storage = type.constructStorage();
         this.allPairs.add(new ComponentPair<>(type, storage));
         return storage;
+    }
+
+    public JsonArray writeToJson(JsonArray jarr) {
+        for (ComponentPair allPair : this.allPairs) {
+            JsonObject obj = new JsonObject();
+            obj.addProperty("name", allPair.getType().getIdentifier().toString());
+
+            if(allPair.getStorage() != null) {
+                JsonObject storageObj = new JsonObject();
+                allPair.getStorage().writeJson(storageObj);
+                obj.add("storage", storageObj);
+            }
+
+            jarr.add(obj);
+
+        }
+        return jarr;
+    }
+
+    @SuppressWarnings("unchecked")
+    public void readFromJson(JsonArray jarr) {
+        this.allPairs.clear();
+        for (JsonElement element : jarr) {
+            JsonObject json = JsonUtils.getJsonObject(element, "attacherEntry");
+            EntityComponentType<?, ?> value = DumbRegistries.COMPONENT_REGISTRY.getValue(new ResourceLocation(JsonUtils.getString(json, "name")));
+            if(value != null) {
+                EntityComponentStorage<?> storage = value.constructStorage();
+                if(storage != null) {
+                    storage.readJson(JsonUtils.getJsonObject(json, "storage"));
+                }
+                this.allPairs.add(new ComponentPair(value, storage));
+            }
+        }
     }
 
     @Nonnull
@@ -60,9 +100,10 @@ public class EntityComponentAttacher {
 
         public ConstructConfiguration withoutType(EntityComponentType type) {
             List<EntityComponentType> temp = Lists.newArrayList(this.removedTypes);
-            temp.add(type);
+            temp.remove(type);
             return new ConstructConfiguration(this.defaultTypes, this.addedTypes, Collections.unmodifiableList(temp));
         }
+
         public List<ComponentPair> getTypes() {
             List<ComponentPair> out = Lists.newArrayList();
             for (ComponentPair pair : EntityComponentAttacher.this.allPairs) {

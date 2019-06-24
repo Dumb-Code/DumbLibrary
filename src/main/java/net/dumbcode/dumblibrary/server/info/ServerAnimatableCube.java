@@ -27,7 +27,7 @@ public class ServerAnimatableCube implements AnimationLayer.AnimatableCube {
     }
 
     @Override
-    public float[] getRotationPoint() {
+    public float[] getActualRotationPoint() {
         return new float[]{this.rotationPoint.x, this.rotationPoint.y, this.rotationPoint.z};
     }
 

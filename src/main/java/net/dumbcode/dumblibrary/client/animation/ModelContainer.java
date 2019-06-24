@@ -48,8 +48,8 @@ public class ModelContainer<E extends Entity> {
 
     /**
      * Map of {@code <Model Name, <Cube Name, Cube Reference>>}
+     * Only used clientside
      */
-    @SideOnly(Side.CLIENT)
     private final Map<String, Map<String, CubeReference>> references = Maps.newHashMap();
     /**
      * A map of the list of model datas to use in per animation

@@ -99,6 +99,8 @@ public class AnimationLayer<E extends Entity> {
 
         private final Deque<PoseData> poseStack = new ArrayDeque<>();
 
+        private final float totalPoseTime;
+
         private float entityAge;
 
         private float maxTicks;
@@ -117,6 +119,13 @@ public class AnimationLayer<E extends Entity> {
             this.entry = animation;
             this.poseStack.addAll(this.info.getPoseData(animation.getAnimation()));
             this.maxTicks = this.getData().getTime();
+
+            float tpt = 0;
+            for (PoseData poseData : this.poseStack) {
+                tpt += poseData.getTime();
+            }
+            this.totalPoseTime = tpt;
+
             this.incrementVecs(false);
         }
 
@@ -152,19 +161,11 @@ public class AnimationLayer<E extends Entity> {
                 );
             }
 
-            this.tick += (age - this.entityAge);
-
-            //If it isn't looping and isn't running till complete
-            if(this.entry.time >= 0) {
-                this.fullTime += (age - this.entityAge);
-                if(this.fullTime >= this.entry.time) {
-                    if(this.entry.hold) {
-                        return;
-                    } else {
-                        this.invalidated = true;
-                    }
-                }
+            float timeModifier = 1f;
+            if(this.entry.time > 0) {
+                timeModifier = this.entry.time / this.totalPoseTime;
             }
+            this.tick += (age - this.entityAge) / timeModifier;
 
             //Make sure to catchup to correct render
             while (!this.invalidated && this.tick >= this.maxTicks && (!this.entry.hold || this.poseStack.size() > 1)) {
@@ -183,10 +184,6 @@ public class AnimationLayer<E extends Entity> {
                 }
             }
             this.entityAge = age;
-        }
-
-        private void reachedPoseEnd() {
-
         }
 
         private void incrementVecs(boolean updatePrevious) {
@@ -334,7 +331,7 @@ public class AnimationLayer<E extends Entity> {
     public interface AnimatableCube {
         float[] getDefaultRotationPoint();
 
-        float[] getRotationPoint();
+        float[] getActualRotationPoint();
 
         float[] getDefaultRotation();
 

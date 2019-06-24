@@ -163,7 +163,7 @@ public class TabulaModelRenderer extends ModelRenderer implements AnimationLayer
     }
 
     @Override
-    public float[] getRotationPoint() {
+    public float[] getActualRotationPoint() {
         return new float[]{this.rotationPointX, this.rotationPointY, this.rotationPointZ};
     }
 

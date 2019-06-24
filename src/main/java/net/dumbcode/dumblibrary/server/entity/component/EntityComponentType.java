@@ -10,7 +10,7 @@ public interface EntityComponentType<T extends EntityComponent, S extends Entity
     @Nonnull
     T constructEmpty();
 
-    @Nonnull
+    @Nullable
     S constructStorage();
 
     @Nonnull

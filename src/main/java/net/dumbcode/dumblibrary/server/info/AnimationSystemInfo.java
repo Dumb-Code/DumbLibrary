@@ -14,6 +14,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import javax.annotation.Nonnull;
 import java.util.List;
 
+//todo: try and phase this out?
 public interface AnimationSystemInfo<E extends Entity> {
 
     EntityAnimator<E> createAnimator(ModelContainer<E> modelContainer);

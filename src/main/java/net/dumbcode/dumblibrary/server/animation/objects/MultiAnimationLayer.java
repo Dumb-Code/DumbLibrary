@@ -52,24 +52,23 @@ public class MultiAnimationLayer<E extends Entity> extends AnimationLayer<E> {
             AnimatableCube cube = this.getCurrentWrap().getAnicubeRef().apply(cubeName);
             List<GhostAnimationData> ghosts = this.ghostWraps.getOrDefault(cubeName, Lists.newArrayList());
             for (GhostAnimationData data : ghosts) {
-                float ci = data.ci;
+                data.ci = 1 - ((ticks - data.minAge) / 7.5F); //Takes 7.5 ticks to go back.
 
                 float[] rotation = cube.getDefaultRotation();
                 cube.addRotation(
-                        (data.rotations[0] - rotation[0]) * ci,
-                        (data.rotations[1] - rotation[1]) * ci,
-                        (data.rotations[2] - rotation[2]) * ci
+                        (data.rotations[0] - rotation[0]) * data.ci,
+                        (data.rotations[1] - rotation[1]) * data.ci,
+                        (data.rotations[2] - rotation[2]) * data.ci
                 );
 
 
                 float[] positions = cube.getDefaultRotationPoint();
                 cube.addRotationPoint(
-                        (data.positions[0] - positions[0]) * ci,
-                        (data.positions[1] - positions[1]) * ci,
-                        (data.positions[2] - positions[2]) * ci
+                        (data.positions[0] - positions[0]) * data.ci,
+                        (data.positions[1] - positions[1]) * data.ci,
+                        (data.positions[2] - positions[2]) * data.ci
                 );
 
-                data.ci = 1 - ((ticks - data.minAge) / 7.5F); //Takes 7.5 ticks to go back.
             }
             ghosts.removeIf(data -> data.ci <= 0);
         }
@@ -102,7 +101,7 @@ public class MultiAnimationLayer<E extends Entity> extends AnimationLayer<E> {
             if (wrap == animation) {
                 for (String name : wrap.getCubeNames()) {
                     AnimationRunWrapper.CubeWrapper cube = wrap.getCuberef().apply(name);
-                    this.ghostWraps.computeIfAbsent(name, s -> Lists.newArrayList()).add(new GhostAnimationData(wrap.getInterpPos(cube), wrap.getInterpRot(cube), animation.getEntityAge(), 1F));
+                    this.ghostWraps.computeIfAbsent(name, s -> Lists.newArrayList()).add(new GhostAnimationData(wrap.getInterpPos(cube), wrap.getInterpRot(cube), 1F, animation.getEntityAge()));
                 }
                 wrap.onFinish();
                 if(wrap.getEntry().getExitAnimation() != null) {

@@ -1,7 +1,6 @@
 package net.dumbcode.dumblibrary.server.entity.component;
 
 import io.netty.buffer.ByteBuf;
-import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NBTTagCompound;
 
 public interface EntityComponent {

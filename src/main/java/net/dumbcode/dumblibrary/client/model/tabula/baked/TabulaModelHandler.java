@@ -104,11 +104,11 @@ public enum TabulaModelHandler implements ICustomModelLoader {
     }
 
     /**
-     * Lightup data is used to apply fake light to the quads. Each entry goes in an array called "lightup_data". The following is an example
+     * Lightup data is used to finalizeComponent fake light to the quads. Each entry goes in an array called "lightup_data". The following is an example
      *
      * <pre>{@code
      *     {
-     *         "layers_applied": [          <--- These are the layers that this full-bright should apply to. These are defined before in your "textures" section of the json file
+     *         "layers_applied": [          <--- These are the layers that this full-bright should finalizeComponent to. These are defined before in your "textures" section of the json file
      *             "layer0",
      *             "layer1",
      *         ],

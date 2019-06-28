@@ -7,10 +7,10 @@ import lombok.experimental.Accessors;
 import net.dumbcode.dumblibrary.server.entity.ComponentAccess;
 import net.dumbcode.dumblibrary.server.entity.component.EntityComponentStorage;
 import net.dumbcode.dumblibrary.server.entity.component.EntityComponentTypes;
+import net.dumbcode.dumblibrary.server.entity.component.FinalizableComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.ai.EntityAITasks;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
@@ -21,7 +21,7 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-public class HerdComponent implements AiComponent {
+public class HerdComponent implements FinalizableComponent {
 
     public UUID herdUUID;
     public boolean leader;
@@ -104,7 +104,7 @@ public class HerdComponent implements AiComponent {
     }
 
     @Override
-    public void apply(EntityAITasks tasks, Entity entity) {
+    public void finalizeComponent(Entity entity) {
         this.entityUUID = entity.getUniqueID();
         if(entity instanceof EntityLivingBase) {
             ((EntityLivingBase)entity).getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(120.0D);

@@ -8,7 +8,7 @@ import net.dumbcode.dumblibrary.server.entity.component.EntityComponentType;
 import javax.annotation.Nullable;
 
 public interface ComponentWriteAccess extends ComponentAccess {
-    default <T extends EntityComponent, S extends EntityComponentStorage<T>> void attachComponent(EntityComponentType<T, S> type, @Nullable S storage) {
+    default <T extends EntityComponent, S extends EntityComponentStorage<T>> void attachComponent(EntityComponentType<T, ?> type, @Nullable S storage) {
         if(storage == null) {
             this.attachComponent(type);
         } else {
@@ -20,5 +20,5 @@ public interface ComponentWriteAccess extends ComponentAccess {
         this.attachComponent(type, type.constructEmpty());
     }
 
-    <T extends EntityComponent, S extends EntityComponentStorage<T>> void attachComponent(EntityComponentType<T, S> type, T component);
+    <T extends EntityComponent, S extends EntityComponentStorage<T>> void attachComponent(EntityComponentType<T, ?> type, T component);
 }

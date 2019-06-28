@@ -10,6 +10,7 @@ import net.minecraft.entity.Entity;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.relauncher.Side;
 
+//todo: remove
 @Mod.EventBusSubscriber(value = Side.CLIENT, modid = DumbLibrary.MODID)
 public enum AnimationSystem implements EntitySystem {
     INSTANCE;
@@ -31,9 +32,9 @@ public enum AnimationSystem implements EntitySystem {
             Entity entity = this.entities[i];
             AnimationComponent animation = this.animations[i];
             if(!entity.world.isRemote) { //Server side only. Client side is already handled
-                if(animation.getAnimationWrapper() == null) {
-                    animation.createServersideWrapper(entity);
-                }
+//                if(animation.getAnimationLayer() == null) {
+//                    animation.createServersideLayer(entity);
+//                }
             }
         }
     }

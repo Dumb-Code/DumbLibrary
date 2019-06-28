@@ -4,7 +4,6 @@ import io.netty.buffer.ByteBuf;
 import net.dumbcode.dumblibrary.server.animation.objects.AnimationLayer;
 import net.dumbcode.dumblibrary.server.entity.ComponentAccess;
 import net.dumbcode.dumblibrary.server.entity.component.EntityComponentTypes;
-import net.dumbcode.dumblibrary.server.info.AnimationSystemInfo;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.World;
@@ -20,7 +19,7 @@ public class S0SyncAnimation implements IMessage {
     public S0SyncAnimation() {
     }
 
-    public <E extends Entity> S0SyncAnimation(int operation, E entity, AnimationSystemInfo<?> info, AnimationLayer.AnimationEntry entry, int channel) {
+    public <E extends Entity> S0SyncAnimation(int operation, E entity, AnimationLayer.AnimationEntry entry, int channel) {
         this.entityid = entity.getEntityId();
         this.entry = entry;
         this.channel = channel;

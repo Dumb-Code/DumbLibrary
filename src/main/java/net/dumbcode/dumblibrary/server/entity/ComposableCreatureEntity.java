@@ -1,11 +1,7 @@
 package net.dumbcode.dumblibrary.server.entity;
 
 import io.netty.buffer.ByteBuf;
-import net.dumbcode.dumblibrary.server.entity.component.EntityComponent;
-import net.dumbcode.dumblibrary.server.entity.component.EntityComponentMap;
-import net.dumbcode.dumblibrary.server.entity.component.EntityComponentStorage;
-import net.dumbcode.dumblibrary.server.entity.component.EntityComponentType;
-import net.dumbcode.dumblibrary.server.entity.component.impl.AiComponent;
+import net.dumbcode.dumblibrary.server.entity.component.*;
 import net.minecraft.entity.EntityCreature;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
@@ -15,6 +11,7 @@ import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collection;
 
 public abstract class ComposableCreatureEntity extends EntityCreature implements ComponentWriteAccess, IEntityAdditionalSpawnData {
     private final EntityComponentMap components = new EntityComponentMap();
@@ -29,11 +26,17 @@ public abstract class ComposableCreatureEntity extends EntityCreature implements
     }
 
     @Override
-    public <T extends EntityComponent, S extends EntityComponentStorage<T>> void attachComponent(EntityComponentType<T, S> type, T component) {
-        if (component instanceof AiComponent) {
-            AiComponent aiComponent = (AiComponent) component;
-            aiComponent.apply(this.tasks, this);
+    public void finalizeComponents() {
+        for (EntityComponent component : this.getAllComponents()) {
+            if (component instanceof FinalizableComponent) {
+                FinalizableComponent aiComponent = (FinalizableComponent) component;
+                aiComponent.finalizeComponent(this);
+            }
         }
+    }
+
+    @Override
+    public <T extends EntityComponent, S extends EntityComponentStorage<T>> void attachComponent(EntityComponentType<T, ?> type, T component) {
         if(component == null) {
             throw new NullPointerException("Component on type " + type.getIdentifier() + " is null.");
         }
@@ -56,6 +59,12 @@ public abstract class ComposableCreatureEntity extends EntityCreature implements
         return component;
     }
 
+    @Nonnull
+    @Override
+    public Collection<EntityComponent> getAllComponents() {
+        return this.components.values();
+    }
+
     @Override
     public boolean contains(EntityComponentType<?, ?> type) {
         return this.components.containsKey(type);
@@ -75,6 +84,7 @@ public abstract class ComposableCreatureEntity extends EntityCreature implements
 
         NBTTagList componentList = compound.getTagList("components", Constants.NBT.TAG_COMPOUND);
         this.components.deserialize(componentList);
+        this.finalizeComponents();
     }
 
     @Override
@@ -85,5 +95,6 @@ public abstract class ComposableCreatureEntity extends EntityCreature implements
     @Override
     public void readSpawnData(ByteBuf buf) {
         this.components.deserialize(buf);
+        this.finalizeComponents();
     }
 }

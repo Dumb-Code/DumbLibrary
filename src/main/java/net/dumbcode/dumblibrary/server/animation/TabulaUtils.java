@@ -32,6 +32,8 @@ import java.util.zip.ZipInputStream;
 @UtilityClass
 public class TabulaUtils {
 
+    public static final ResourceLocation MISSING = new ResourceLocation(DumbLibrary.MODID, "nomodel");
+
     public static Map<String, AnimationLayer.AnimatableCube> getServersideCubes(ResourceLocation location) {
         if (!location.getPath().endsWith(".tbl")) {
             location = new ResourceLocation(location.getNamespace(), location.getPath() + ".tbl");
@@ -74,6 +76,9 @@ public class TabulaUtils {
     }
 
     public static TabulaModelInformation getModelInformation(ResourceLocation location) {
+        if(MISSING.equals(location)) {
+            return TabulaModelInformation.MISSING;
+        }
         if (!location.getPath().endsWith(".tbl")) {
             location = new ResourceLocation(location.getNamespace(), location.getPath() + ".tbl");
         }
@@ -81,7 +86,8 @@ public class TabulaUtils {
             @Cleanup InputStream stream = StreamUtils.openStream(location);
             return TabulaJsonHandler.GSON.fromJson(new InputStreamReader(getModelJsonStream(stream)), TabulaModelInformation.class);
         } catch (IOException e) {
-            throw new IllegalArgumentException("Unable to load model " + location, e);
+            DumbLibrary.getLogger().error("Unable to load model " + location, e);
+            return TabulaModelInformation.MISSING;
         }
     }
 
@@ -167,7 +173,7 @@ public class TabulaUtils {
      * Apply the translation and rotations of a part to the given matrix. Takes into account parent parts.
      *
      * @param part the model part
-     * @param out  the matrix to apply the transformations to
+     * @param out  the matrix to finalizeComponent the transformations to
      */
     public static void applyTransformations(TabulaModelRenderer part, Matrix4f out) {
         TabulaModelRenderer parent = part.getParent();
@@ -215,7 +221,7 @@ public class TabulaUtils {
      * Apply only the rotations of a part to the given matrix. Takes into account parent parts.
      *
      * @param part   the model part
-     * @param result the matrix to apply the rotations to
+     * @param result the matrix to finalizeComponent the rotations to
      */
     public static void applyRotations(TabulaModelRenderer part, Matrix3f result) {
         TabulaModelRenderer parent = part.getParent();

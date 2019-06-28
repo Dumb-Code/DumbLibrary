@@ -7,6 +7,7 @@ import net.dumbcode.dumblibrary.server.entity.component.EntityComponentType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.Optional;
 
 public interface ComponentAccess {
@@ -15,6 +16,9 @@ public interface ComponentAccess {
 
     @Nonnull
     <T extends EntityComponent, S extends EntityComponentStorage<T>> T getOrExcept(EntityComponentType<T, S> type);
+
+    @Nonnull
+    Collection<EntityComponent> getAllComponents();
 
     @Nonnull
     default <T extends EntityComponent, S extends EntityComponentStorage<T>> Optional<T> get(EntityComponentType<T, S> type) {
@@ -33,4 +37,6 @@ public interface ComponentAccess {
         }
         return true;
     }
+
+    void finalizeComponents();
 }

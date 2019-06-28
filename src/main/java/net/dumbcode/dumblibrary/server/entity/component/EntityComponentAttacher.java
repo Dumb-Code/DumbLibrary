@@ -11,12 +11,12 @@ import net.dumbcode.dumblibrary.server.entity.ComponentWriteAccess;
 import net.dumbcode.dumblibrary.server.registry.DumbRegistries;
 import net.minecraft.util.JsonUtils;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 
 @Getter
 public class EntityComponentAttacher {
@@ -25,7 +25,13 @@ public class EntityComponentAttacher {
 
     public <T extends EntityComponent, S extends EntityComponentStorage<T>> S addComponent(EntityComponentType<T, S> type) {
         S storage = type.constructStorage();
-        this.allPairs.add(new ComponentPair<>(type, storage));
+        this.allPairs.add(new ComponentPair<>(type, storage, ""));
+        return storage;
+    }
+
+    public <T extends EntityComponent, S extends EntityComponentStorage<T>> S addComponent(EntityComponentType<T, ?> type, EntityComponentType.StorageOverride<T, S> override) {
+        S storage = override.getStorage().get();
+        this.allPairs.add(new ComponentPair<>(type, storage, override.getStorageID()));
         return storage;
     }
 
@@ -37,6 +43,9 @@ public class EntityComponentAttacher {
             if(allPair.getStorage() != null) {
                 JsonObject storageObj = new JsonObject();
                 allPair.getStorage().writeJson(storageObj);
+                if (!StringUtils.isNullOrEmpty(allPair.storageId)) {
+                    storageObj.addProperty("storage_id", allPair.storageId);
+                }
                 obj.add("storage", storageObj);
             }
 
@@ -53,11 +62,13 @@ public class EntityComponentAttacher {
             JsonObject json = JsonUtils.getJsonObject(element, "attacherEntry");
             EntityComponentType<?, ?> value = DumbRegistries.COMPONENT_REGISTRY.getValue(new ResourceLocation(JsonUtils.getString(json, "name")));
             if(value != null) {
-                EntityComponentStorage<?> storage = value.constructStorage();
+                JsonObject storageObj = JsonUtils.getJsonObject(json, "storage");
+                String storageId = JsonUtils.getString(storageObj, "storage_id", "");
+                EntityComponentStorage<?> storage = value.constructStorage();///////////////////////////////TODO@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@GET STORGAE
                 if(storage != null) {
-                    storage.readJson(JsonUtils.getJsonObject(json, "storage"));
+                    storage.readJson(storageObj);
                 }
-                this.allPairs.add(new ComponentPair(value, storage));
+                this.allPairs.add(new ComponentPair(value, storage, storageId));
             }
         }
     }
@@ -121,15 +132,18 @@ public class EntityComponentAttacher {
             for (ComponentPair type : this.getTypes()) {
                 type.attach(cwa);
             }
+
+            cwa.finalizeComponents();
         }
         
     }
 
     @Value
     public static class ComponentPair<T extends EntityComponent, S extends EntityComponentStorage<T>> {
-        private final EntityComponentType<T, S> type;
+        private final EntityComponentType<T, ?> type;
         @Nullable
         private final S storage;
+        private final String storageId;
 
         public void attach(ComponentWriteAccess access) {
             access.attachComponent(this.type, this.storage);

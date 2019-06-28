@@ -3,7 +3,7 @@ package net.dumbcode.dumblibrary.client.model.tabula;
 import net.minecraft.entity.Entity;
 
 /**
- * Used to apply additional animations onto an entity
+ * Used to finalizeComponent additional animations onto an entity
  *
  * @param <E> the entity
  */

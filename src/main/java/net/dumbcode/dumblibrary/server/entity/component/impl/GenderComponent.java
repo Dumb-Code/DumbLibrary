@@ -2,9 +2,10 @@ package net.dumbcode.dumblibrary.server.entity.component.impl;
 
 import io.netty.buffer.ByteBuf;
 import net.dumbcode.dumblibrary.server.entity.component.EntityComponent;
+import net.dumbcode.dumblibrary.server.entity.component.additionals.RenderLocationComponent;
 import net.minecraft.nbt.NBTTagCompound;
 
-public class GenderComponent implements EntityComponent {
+public class GenderComponent implements RenderLocationComponent {
     public boolean male = false;
 
     @Override
@@ -26,5 +27,10 @@ public class GenderComponent implements EntityComponent {
     @Override
     public void deserialize(ByteBuf buf) {
         this.male = buf.readBoolean();
+    }
+
+    @Override
+    public void editLocations(ConfigurableLocation texture, ConfigurableLocation fileLocation) {
+        texture.addFileName(this.male ? "male" : "female", 10);
     }
 }

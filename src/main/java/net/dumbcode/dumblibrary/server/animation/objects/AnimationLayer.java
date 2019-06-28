@@ -1,13 +1,13 @@
 package net.dumbcode.dumblibrary.server.animation.objects;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import io.netty.buffer.ByteBuf;
-import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.experimental.Wither;
-import net.dumbcode.dumblibrary.server.info.AnimationSystemInfo;
 import net.dumbcode.dumblibrary.server.registry.DumbRegistries;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.MathHelper;
@@ -20,80 +20,126 @@ import java.util.function.Function;
 
 @Getter
 @Setter
-public class AnimationLayer<E extends Entity> {
+public class AnimationLayer {
 
     public static final int LOOP = -2;
     public static final int RUN_TILL_COMPLETE = -1;
 
-    private final E entity;
-    private final AnimationSystemInfo<E> info;
+    private final Entity entity;
+    private final Function<Animation, List<PoseData>> animationDataGetter;
     private final Function<String, AnimatableCube> anicubeRef;
     private final Collection<String> cubeNames;
     private final boolean inertia;
 
-    @Setter(AccessLevel.NONE)
-    private AnimationWrap currentWrap;
+    @Getter private final List<AnimationWrap> animations = Lists.newArrayList();
+    private final Map<String, List<GhostAnimationData>> ghostWraps = Maps.newHashMap();
 
-    public AnimationLayer(E entity, Collection<String> cubeNames, Function<String, AnimatableCube> anicubeRef, AnimationSystemInfo<E> info, boolean inertia) {
+    public AnimationLayer(Entity entity, Collection<String> cubeNames, Function<String, AnimatableCube> anicubeRef, Function<Animation, List<PoseData>> animationDataGetter, boolean inertia) {
         this.entity = entity;
-        this.info = info;
+        this.animationDataGetter = animationDataGetter;
         this.anicubeRef = anicubeRef;
         this.cubeNames = cubeNames;
         this.inertia = inertia;
-        this.currentWrap = this.create(new AnimationEntry(Animation.NONE));
     }
 
-    public void animate(float age) {
-        if (this.canAnimate()) {
-            Animation animation = this.getAnimation();
-            if (animation != this.currentWrap.entry.animation) {
-                this.setAnimation(animation, age);
-            } else if (this.currentWrap.invalidated) {
-                this.setAnimation(Animation.NONE, age);
+    public void animate(float ticks) {
+        this.checkInvalidations();
+
+        this.adjustForGhostWraps(ticks);
+
+        for (AnimationWrap wrap : this.animations) {
+            wrap.tick(ticks);
+        }
+    }
+
+    public void addAnimation(AnimationWrap wrap) {
+        this.animations.add(wrap);
+    }
+
+    public void removeAnimation(AnimationWrap animation) {
+        List<AnimationEntry> exitEntries = Lists.newArrayList();
+        Iterator<AnimationWrap> iterator = this.animations.iterator();
+        while (iterator.hasNext()) {
+            AnimationWrap wrap = iterator.next();
+            if (wrap == animation) {
+                for (String name : wrap.getCubeNames()) {
+                    CubeWrapper cube = wrap.getCuberef().apply(name);
+                    this.ghostWraps.computeIfAbsent(name, s -> Lists.newArrayList()).add(new GhostAnimationData(wrap.getInterpPos(cube), wrap.getInterpRot(cube), 1F, animation.getEntityAge()));
+                }
+                wrap.onFinish();
+                if(wrap.getEntry().getExitAnimation() != null) {
+                    exitEntries.add(wrap.getEntry().getExitAnimation());
+                }
+                iterator.remove();
             }
-            this.currentWrap.tick(age);
+        }
+        for (AnimationEntry entry : exitEntries) {
+            this.addAnimation(this.create(entry));
+        }
+
+    }
+
+    private void checkInvalidations() {
+        for (int i = 0; i < this.animations.size(); i++) {
+            AnimationWrap wrap = this.animations.get(i);
+            if(wrap.isInvalidated()) {
+                this.removeAnimation(wrap);
+                i--;
+            }
         }
     }
 
-    public Animation getAnimation() {
-        return this.info.getAnimation(this.entity);
+    private void adjustForGhostWraps(float ticks) {
+        for (String cubeName : this.getCubeNames()) {
+            AnimatableCube cube = this.anicubeRef.apply(cubeName);
+            List<GhostAnimationData> ghosts = this.ghostWraps.getOrDefault(cubeName, Lists.newArrayList());
+            for (GhostAnimationData data : ghosts) {
+                data.ci = 1 - ((ticks - data.minAge) / 7.5F); //Takes 7.5 ticks to go back.
+
+                float[] rotation = cube.getDefaultRotation();
+                cube.addRotation(
+                        (data.rotations[0] - rotation[0]) * data.ci,
+                        (data.rotations[1] - rotation[1]) * data.ci,
+                        (data.rotations[2] - rotation[2]) * data.ci
+                );
+
+
+                float[] positions = cube.getDefaultRotationPoint();
+                cube.addRotationPoint(
+                        (data.positions[0] - positions[0]) * data.ci,
+                        (data.positions[1] - positions[1]) * data.ci,
+                        (data.positions[2] - positions[2]) * data.ci
+                );
+
+            }
+            ghosts.removeIf(data -> data.ci <= 0);
+        }
     }
 
-
-    public void setAnimation(Animation animation, float age) {
-        if (this.info.getPoseData(animation).isEmpty()) {
-            animation = Animation.NONE;
+    public boolean isPlaying(Animation animation) {
+        for (AnimationWrap wrap : this.animations) {
+            if (wrap.entry.getAnimation() == animation) {
+                return true;
+            }
         }
-        this.currentWrap.onFinish();
-        this.currentWrap = this.create(new AnimationEntry(animation, this.loop() ? LOOP : RUN_TILL_COMPLETE, animation.inertia(), animation.hold(), null));
+        return false;
     }
 
     public AnimationWrap create(AnimationEntry entry) {
 
         //Do we really need this as a cached map?
         //yes
-        Map<String, AnimationRunWrapper.CubeWrapper> cacheMap = new HashMap<>();
-        return new AnimationWrap(entry, this.info, s -> cacheMap.computeIfAbsent(s, o -> new AnimationRunWrapper.CubeWrapper(this.anicubeRef.apply(o))), this.anicubeRef, this.cubeNames, this.entity.ticksExisted);
+        Map<String, CubeWrapper> cacheMap = new HashMap<>();
+        return new AnimationWrap(entry, this.animationDataGetter, s -> cacheMap.computeIfAbsent(s, o -> new CubeWrapper(this.anicubeRef.apply(o))), this.anicubeRef, this.cubeNames, this.entity.ticksExisted);
     }
 
-    public boolean canAnimate() {
-        return true;
-    }
-
-    public boolean loop() {
-        return false;
-    }
-
-    protected void onPoseIncremented() {
-        //NO OP
-    }
 
     @Getter
     public static class AnimationWrap {
         protected AnimationEntry entry;
 
-        private final AnimationSystemInfo<?> info;
-        private final Function<String, AnimationRunWrapper.CubeWrapper> cuberef;
+        private final Function<Animation, List<PoseData>> animationDataGetter;
+        private final Function<String, CubeWrapper> cuberef;
         private final Function<String, AnimatableCube> anicubeRef;
         private final Collection<String> cubeNames;
 
@@ -110,14 +156,14 @@ public class AnimationLayer<E extends Entity> {
 
         private boolean invalidated;
 
-        private AnimationWrap(AnimationEntry animation, AnimationSystemInfo info, Function<String, AnimationRunWrapper.CubeWrapper> cuberef, Function<String, AnimatableCube> anicubeRef, Collection<String> cubeNames , float age) {
-            this.info = info;
+        private AnimationWrap(AnimationEntry animation, Function<Animation, List<PoseData>> animationDataGetter, Function<String, CubeWrapper> cuberef, Function<String, AnimatableCube> anicubeRef, Collection<String> cubeNames , float age) {
+            this.animationDataGetter = animationDataGetter;
             this.cuberef = cuberef;
             this.anicubeRef = anicubeRef;
             this.cubeNames = cubeNames;
             this.entityAge = age;
             this.entry = animation;
-            this.poseStack.addAll(this.info.getPoseData(animation.getAnimation()));
+            this.poseStack.addAll(this.animationDataGetter.apply(animation.getAnimation()));
             this.maxTicks = this.getData().getTime();
 
             float tpt = 0;
@@ -139,7 +185,7 @@ public class AnimationLayer<E extends Entity> {
             this.ci = MathHelper.clamp(this.entry.useInertia && perc <= 1F ? (float) (Math.sin(Math.PI * (perc - 0.5D)) * 0.5D + 0.5D) : perc, 0, 1);
 
             for (String partName : this.cubeNames) {
-                AnimationRunWrapper.CubeWrapper cubeWrapper = Objects.requireNonNull(this.cuberef.apply(partName));
+                CubeWrapper cubeWrapper = Objects.requireNonNull(this.cuberef.apply(partName));
                 AnimatableCube cube = this.anicubeRef.apply(partName);
 
                 float[] interpolatedRotation = this.getInterpRot(cubeWrapper);
@@ -172,7 +218,7 @@ public class AnimationLayer<E extends Entity> {
                 this.poseStack.pop();
                 if (this.poseStack.isEmpty()) {
                     if (this.entry.time == LOOP) {
-                        this.poseStack.addAll(Lists.reverse(this.info.getPoseData(this.entry.animation)));
+                        this.poseStack.addAll(Lists.reverse(this.animationDataGetter.apply(this.entry.animation)));
                     } else {
                         this.invalidated = true;
                     }
@@ -188,7 +234,7 @@ public class AnimationLayer<E extends Entity> {
 
         private void incrementVecs(boolean updatePrevious) {
             for (Map.Entry<String, CubeReference> mapEntry : this.getData().getCubes().entrySet()) {
-                AnimationRunWrapper.CubeWrapper cube = Objects.requireNonNull(this.cuberef.apply(mapEntry.getKey()));
+                CubeWrapper cube = Objects.requireNonNull(this.cuberef.apply(mapEntry.getKey()));
                 Vector3f cr = cube.getRotation();
                 Vector3f pr = cube.getPrevRotation();
 
@@ -215,24 +261,9 @@ public class AnimationLayer<E extends Entity> {
             }
         }
 
-        public AnimationWrap copyAndApply(AnimationEntry entry) {
-            AnimationWrap wrap = new AnimationWrap(entry, this.info, this.cuberef, this.anicubeRef, this.cubeNames, this.entityAge);
-
-            wrap.poseStack.clear();
-            wrap.poseStack.addAll(this.poseStack);
-
-            wrap.maxTicks = this.maxTicks;
-            wrap.tick = this.tick;
-            wrap.fullTime = Math.min(wrap.fullTime, this.fullTime);
-
-            wrap.ci = this.ci;
-
-            return wrap;
-        }
-
         public void onFinish() {
             for (String name : this.cubeNames) {
-                AnimationRunWrapper.CubeWrapper cube = this.cuberef.apply(name);
+                CubeWrapper cube = this.cuberef.apply(name);
 
                 float[] rot = this.getInterpRot(cube);
                 float[] pos = this.getInterpPos(cube);
@@ -251,7 +282,7 @@ public class AnimationLayer<E extends Entity> {
             }
         }
 
-        public float[] getInterpRot(AnimationRunWrapper.CubeWrapper cube) {
+        public float[] getInterpRot(CubeWrapper cube) {
             Vector3f cr = cube.getRotation();
             Vector3f pr = cube.getPrevRotation();
 
@@ -262,7 +293,7 @@ public class AnimationLayer<E extends Entity> {
             };
         }
 
-        public float[] getInterpPos(AnimationRunWrapper.CubeWrapper cube) {
+        public float[] getInterpPos(CubeWrapper cube) {
             Vector3f np = cube.getRotationPoint();
             Vector3f pp = cube.getPrevRotationPoint();
 
@@ -349,5 +380,34 @@ public class AnimationLayer<E extends Entity> {
 
         @Nullable
         AnimatableCube getParent();
+    }
+
+
+    @Getter
+    static class CubeWrapper {
+        private final Vector3f rotationPoint = new Vector3f();
+        private final Vector3f prevRotationPoint = new Vector3f();
+        private final Vector3f rotation = new Vector3f();
+        private final Vector3f prevRotation = new Vector3f();
+
+
+        CubeWrapper(AnimationLayer.AnimatableCube box) {
+            float[] point = box.getDefaultRotationPoint();
+            float[] defaultRotation = box.getDefaultRotation();
+            this.rotationPoint.x = this.prevRotationPoint.x = point[0];
+            this.rotationPoint.y = this.prevRotationPoint.y = point[1];
+            this.rotationPoint.z = this.prevRotationPoint.z = point[2];
+            this.rotation.x = this.prevRotation.x = defaultRotation[0];
+            this.rotation.y = this.prevRotation.y = defaultRotation[1];
+            this.rotation.z = this.prevRotation.z = defaultRotation[2];
+        }
+    }
+
+    @AllArgsConstructor
+    private class GhostAnimationData {
+        float[] positions;
+        float[] rotations;
+        float ci;
+        float minAge;
     }
 }

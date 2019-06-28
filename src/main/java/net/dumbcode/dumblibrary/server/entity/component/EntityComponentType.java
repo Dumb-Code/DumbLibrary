@@ -1,10 +1,14 @@
 package net.dumbcode.dumblibrary.server.entity.component;
 
+import com.google.common.collect.Maps;
+import lombok.Value;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Map;
+import java.util.function.Supplier;
 
 public interface EntityComponentType<T extends EntityComponent, S extends EntityComponentStorage<T>> extends IForgeRegistryEntry<EntityComponentType<?, ?>> {
     @Nonnull
@@ -41,5 +45,14 @@ public interface EntityComponentType<T extends EntityComponent, S extends Entity
     @SuppressWarnings("unchecked")
     static Class<EntityComponentType<?, ?>> getWildcardType() {
         return (Class<EntityComponentType<?, ?>>) (Class<?>) EntityComponentType.class;
+    }
+
+    @Value
+    class StorageOverride<T extends EntityComponent, S extends EntityComponentStorage<T>> {
+
+        public static Map<EntityComponentType<?, ?>, StorageOverride> overrides = Maps.newHashMap();
+
+        String storageID;
+        Supplier<S> storage;
     }
 }

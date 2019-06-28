@@ -8,7 +8,7 @@ import com.google.gson.JsonObject;
 import lombok.Data;
 import lombok.Getter;
 import lombok.experimental.Accessors;
-import net.dumbcode.dumblibrary.client.animation.ModelContainer;
+import net.dumbcode.dumblibrary.client.animation.AnimationContainer;
 import net.minecraft.util.JsonUtils;
 
 import java.lang.reflect.Type;
@@ -23,7 +23,7 @@ public class PoseData {
     private final String modelName;
     private final float time;
     @Accessors(chain = true)
-    private ModelContainer.ModelLocation location;
+    private AnimationContainer.ModelLocation location;
     private final Map<String, CubeReference> cubes = Maps.newHashMap();
 
 

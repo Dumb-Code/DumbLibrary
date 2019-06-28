@@ -4,12 +4,14 @@ import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.server.animation.objects.Animation;
 import net.dumbcode.dumblibrary.server.entity.component.EntityComponentType;
 import net.dumbcode.dumblibrary.server.entity.component.RegisterComponentsEvent;
+import net.dumbcode.dumblibrary.server.entity.component.RegisterStoragesEvent;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.registries.IForgeRegistry;
+import net.minecraftforge.registries.ObjectHolderRegistry;
 import net.minecraftforge.registries.RegistryBuilder;
 
 @Mod.EventBusSubscriber(modid = DumbLibrary.MODID)
@@ -28,7 +30,11 @@ public class DumbRegistryHandler {
                 .setType(EntityComponentType.getWildcardType())
                 .setName(new ResourceLocation(DumbLibrary.MODID, "component"))
                 .create();
+
+
         MinecraftForge.EVENT_BUS.post(new RegisterComponentsEvent(registry));
+        ObjectHolderRegistry.INSTANCE.applyObjectHolders();
+        MinecraftForge.EVENT_BUS.post(new RegisterStoragesEvent());
 
     }
 

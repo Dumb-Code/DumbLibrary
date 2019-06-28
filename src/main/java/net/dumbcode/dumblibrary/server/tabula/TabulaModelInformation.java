@@ -16,6 +16,8 @@ import java.util.stream.Collectors;
 @Value
 public class TabulaModelInformation {
 
+    public static final TabulaModelInformation MISSING = new TabulaModelInformation("missing", "n/a", 0, new String[0], 0, 0, new float[3], 0);
+
     String modelName;
     String authorName;
     int projectVersion;

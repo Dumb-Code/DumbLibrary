@@ -79,7 +79,7 @@ public class TabulaIModel implements IModel {
 
         List<BakedQuad> quadList = Lists.newArrayList();
 
-        //Set the custom matrix values from the model state, and apply the translation and scale to get the model in the correct place. (due to tabula)
+        //Set the custom matrix values from the model state, and finalizeComponent the translation and scale to get the model in the correct place. (due to tabula)
         this.getMatrix(stack).mul(state.apply(Optional.empty()).orElse(TRSRTransformation.identity()).getMatrix());
         //Due to minecraft, the ModelRenderer has it's, x and y coords flipped. Tabula then (rightly) saves it like this.
         this.scale(stack, -0.0625F, -0.0625F, 0.0625F);
@@ -353,7 +353,7 @@ public class TabulaIModel implements IModel {
     /**
      * Applies the matrix changes for that cube
      *
-     * @param stack the stack to apply the changes too
+     * @param stack the stack to finalizeComponent the changes too
      * @param cube  the cube of which to get the values for the transformations
      */
     private void applyMatrixChanges(Deque<Matrix4f> stack, TabulaModelInformation.Cube cube) {

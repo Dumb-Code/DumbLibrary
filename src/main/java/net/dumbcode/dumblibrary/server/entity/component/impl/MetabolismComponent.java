@@ -5,13 +5,13 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.dumbcode.dumblibrary.server.entity.ai.FeedingAi;
 import net.dumbcode.dumblibrary.server.entity.component.EntityComponentStorage;
+import net.dumbcode.dumblibrary.server.entity.component.FinalizableComponent;
 import net.dumbcode.dumblibrary.server.entity.objects.FeedingDiet;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.ai.EntityAITasks;
 import net.minecraft.nbt.NBTTagCompound;
 
-public class MetabolismComponent implements AiComponent {
+public class MetabolismComponent implements FinalizableComponent {
     public int food;
     public int water;
 
@@ -40,9 +40,9 @@ public class MetabolismComponent implements AiComponent {
     }
 
     @Override
-    public void apply(EntityAITasks tasks, Entity entity) {
+    public void finalizeComponent(Entity entity) {
         if(entity instanceof EntityLiving) {
-            tasks.addTask(2, new FeedingAi((EntityLiving) entity, this));
+            ((EntityLiving) entity).tasks.addTask(2, new FeedingAi((EntityLiving) entity, this));
         }
     }
 

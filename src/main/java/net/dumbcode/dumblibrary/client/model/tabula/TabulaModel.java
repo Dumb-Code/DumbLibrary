@@ -54,10 +54,10 @@ public class TabulaModel extends ModelBase {
     @Override
     public void setRotationAngles(float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scaleFactor, Entity entityIn) {
         super.setRotationAngles(limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scaleFactor, entityIn);
-        this.getAllCubes().forEach(TabulaModelRenderer::reset);
-        if (this.modelAnimator != null) {
-            this.modelAnimator.setRotationAngles(this, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scaleFactor, entityIn);
-        }
+//        this.getAllCubes().forEach(TabulaModelRenderer::reset);
+//        if (this.modelAnimator != null) {
+//            this.modelAnimator.setRotationAngles(this, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scaleFactor, entityIn);
+//        }
     }
 
     public Collection<TabulaModelRenderer> getAllCubes() {

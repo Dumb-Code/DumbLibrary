@@ -1,30 +1,32 @@
 package net.dumbcode.dumblibrary.server.entity.component.impl;
 
+import com.google.common.collect.Lists;
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.experimental.Accessors;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.client.animation.AnimationContainer;
+import net.dumbcode.dumblibrary.client.model.tabula.TabulaModel;
 import net.dumbcode.dumblibrary.server.animation.TabulaUtils;
 import net.dumbcode.dumblibrary.server.animation.objects.AnimationLayer;
 import net.dumbcode.dumblibrary.server.entity.ComponentAccess;
 import net.dumbcode.dumblibrary.server.entity.component.EntityComponent;
-import net.dumbcode.dumblibrary.server.entity.component.EntityComponentStorage;
+import net.dumbcode.dumblibrary.server.entity.component.EntityComponentType;
 import net.dumbcode.dumblibrary.server.entity.component.EntityComponentTypes;
-import net.dumbcode.dumblibrary.server.entity.component.FinalizableComponent;
+import net.dumbcode.dumblibrary.server.entity.component.additionals.RenderCallbackComponent;
 import net.dumbcode.dumblibrary.server.network.S0SyncAnimation;
+import net.dumbcode.dumblibrary.server.utils.SidedExecutor;
+import net.minecraft.client.model.ModelBase;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NBTTagCompound;
 
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.function.Function;
+import java.util.stream.Collectors;
 
-public class AnimationComponent<E extends Entity & ComponentAccess> implements EntityComponent {
+public class AnimationComponent<E extends Entity & ComponentAccess> implements RenderCallbackComponent {
 
-    @Getter private Function<Entity, AnimationContainer> animationContainer;
+    @Setter @Getter AnimationContainer animationContainer;
 
     private AnimationLayer animationLayer;
 
@@ -89,23 +91,40 @@ public class AnimationComponent<E extends Entity & ComponentAccess> implements E
     public AnimationLayer getAnimationLayer(Entity e) {
         if(this.animationLayer == null) {
             ComponentAccess entity = (ComponentAccess) e;
-            Map<String, AnimationLayer.AnimatableCube> cubes = TabulaUtils.getServersideCubes(entity.get(EntityComponentTypes.MODEL).map(com -> com.getFileLocation().getLocation()).orElse(TabulaUtils.MISSING));
-            this.animationLayer = new AnimationLayer(e, cubes.keySet(), cubes::get, animation -> new ArrayList<>(), true);//this.animationContainer.apply(entity).getAnimations()::get
+            if(e.world.isRemote) {
+                ModelComponent component = entity.get(EntityComponentTypes.MODEL).orElseThrow(() -> new IllegalStateException("Animation component needs a model component"));
+                this.animationLayer = SidedExecutor.getClient(() -> () -> {
+                    ModelBase model = component.getModelCache();
+                    if(model instanceof TabulaModel) {
+                        TabulaModel tm = (TabulaModel) model;
+                        return new AnimationLayer(e, tm.getAllCubesNames(), tm::getCube, this.animationContainer.getAnimations()::get);
+                    } else {
+                        //todo: make an implementation for non tabula models?
+                        return new AnimationLayer(e, Lists.newArrayList(), s -> AnimationLayer.AnimatableCubeEmpty.INSTANCE, this.animationContainer.getAnimations()::get);
+
+                    }
+                }, null);
+
+            } else {
+                Map<String, AnimationLayer.AnimatableCube> cubes = TabulaUtils.getServersideCubes(entity.get(EntityComponentTypes.MODEL).map(com -> com.getFileLocation().getLocation()).orElse(TabulaUtils.MISSING));
+                this.animationLayer = new AnimationLayer(e, cubes.keySet(), cubes::get, this.animationContainer.getAnimations()::get);//this.animationContainer.apply(entity).getAnimations()::get
+            }
         }
         return animationLayer;
     }
 
-    @Accessors(chain = true)
-    @Setter
-    public static class Storage implements EntityComponentStorage<AnimationComponent> {
+    @Override
+    public void addCallbacks(List<SubCallback> preRenderCallbacks, List<MainCallback> renderCallbacks, List<SubCallback> postRenderCallback) {
+        preRenderCallbacks.add((context, entity, x, y, z, entityYaw, partialTicks) -> {
 
-        private Function<ComponentAccess, AnimationContainer> animationContainer;
+            if(this.animationLayer != null) {
+                for (String cubeName : this.animationLayer.getCubeNames()) {
+                    this.animationLayer.getAnicubeRef().apply(cubeName).reset();
+                }
 
-        @Override
-        public AnimationComponent construct() {
-            AnimationComponent component = new AnimationComponent<>();
-            component.animationContainer = Objects.requireNonNull(this.animationContainer, "Need an animation container to work");
-            return component;
-        }
+                this.animationLayer.animate(entity.ticksExisted + partialTicks);
+            }
+
+        });
     }
 }

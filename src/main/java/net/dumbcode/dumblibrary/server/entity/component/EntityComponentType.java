@@ -50,9 +50,13 @@ public interface EntityComponentType<T extends EntityComponent, S extends Entity
     @Value
     class StorageOverride<T extends EntityComponent, S extends EntityComponentStorage<T>> {
 
-        public static Map<EntityComponentType<?, ?>, StorageOverride> overrides = Maps.newHashMap();
+        public static Map<EntityComponentType<?, ?>, Map<String, StorageOverride>> overrides = Maps.newHashMap();
 
         String storageID;
         Supplier<S> storage;
+
+        public EntityComponentStorage<?> construct() {
+            return this.storage.get();
+        }
     }
 }

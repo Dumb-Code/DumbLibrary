@@ -17,6 +17,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 @Getter
 public class EntityComponentAttacher {
@@ -64,7 +65,14 @@ public class EntityComponentAttacher {
             if(value != null) {
                 JsonObject storageObj = JsonUtils.getJsonObject(json, "storage");
                 String storageId = JsonUtils.getString(storageObj, "storage_id", "");
-                EntityComponentStorage<?> storage = value.constructStorage();///////////////////////////////TODO@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@GET STORGAE
+
+                EntityComponentStorage<?> storage = value.constructStorage();
+                if(!StringUtils.isNullOrEmpty(storageId)) {
+                    Map<String, EntityComponentType.StorageOverride> overrideMap = EntityComponentType.StorageOverride.overrides.get(value);
+                    if(overrideMap != null && overrideMap.containsKey(storageId)) {
+                        storage = overrideMap.get(storageId).construct();
+                    }
+                }
                 if(storage != null) {
                     storage.readJson(storageObj);
                 }
@@ -82,6 +90,23 @@ public class EntityComponentAttacher {
                     throw new IllegalArgumentException("Requested storage on " + type.getIdentifier() + " but none were found");
                 }
                 return (S) allPair.storage;
+            }
+        }
+        throw new IllegalArgumentException("Requested storage on component " + type.getIdentifier() + " but component was not attached");
+    }
+
+    @Nonnull
+    @SuppressWarnings("unchecked")
+    public <T extends EntityComponent, S extends EntityComponentStorage<T>> S getStorage(EntityComponentType<T, ?> type, EntityComponentType.StorageOverride<T, S> storage) {
+        for (ComponentPair allPair : this.allPairs) {
+            if (allPair.type == type) {
+                if (allPair.storage == null) {
+                    throw new IllegalArgumentException("Requested storage on " + type.getIdentifier() + " but none were found");
+                }
+                if(allPair.storageId.equals(storage.getStorageID())) {
+                    return (S) allPair.storage;
+                }
+                throw new IllegalArgumentException("Requested storage on \"" + type.getIdentifier() + "\" with override " + storage.getStorageID() + " but override of \"" + allPair.storageId + "\"");
             }
         }
         throw new IllegalArgumentException("Requested storage on component " + type.getIdentifier() + " but component was not attached");

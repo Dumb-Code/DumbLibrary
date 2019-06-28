@@ -14,7 +14,7 @@ public class EntityComponentTypes {
     public static final EntityComponentType<GenderComponent,?> GENDER = InjectedUtils.injected();
     public static final EntityComponentType<HerdComponent, HerdComponent.Storage> HERD = InjectedUtils.injected();
     public static final EntityComponentType<MetabolismComponent, MetabolismComponent.Storage> METABOLISM = InjectedUtils.injected();
-    public static final EntityComponentType<AnimationComponent, AnimationComponent.Storage> ANIMATION = InjectedUtils.injected();
+    public static final EntityComponentType<AnimationComponent,?> ANIMATION = InjectedUtils.injected();
     public static final EntityComponentType<ModelComponent, ?> MODEL = InjectedUtils.injected();
     public static final EntityComponentType<RenderAdjustmentsComponent, RenderAdjustmentsComponent.Storage> RENDER_ADJUSTMENTS = InjectedUtils.injected();
 
@@ -35,10 +35,9 @@ public class EntityComponentTypes {
                         .withStorage(MetabolismComponent.Storage::new)
                         .withConstructor(MetabolismComponent::new)
                         .build(),
-                SimpleComponentType.builder(AnimationComponent.class, AnimationComponent.Storage.class)
+                SimpleComponentType.builder(AnimationComponent.class)
                         .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "animation"))
                         .withConstructor(AnimationComponent::new)
-                        .withStorage(AnimationComponent.Storage::new)
                         .build(),
                 SimpleComponentType.builder(ModelComponent.class)
                         .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "model"))

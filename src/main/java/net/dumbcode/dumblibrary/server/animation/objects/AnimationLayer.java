@@ -26,20 +26,19 @@ public class AnimationLayer {
     public static final int RUN_TILL_COMPLETE = -1;
 
     private final Entity entity;
+    //todo: now that we don't need to abstract this as much, maybe cut back on the amount of functions needed
     private final Function<Animation, List<PoseData>> animationDataGetter;
     private final Function<String, AnimatableCube> anicubeRef;
     private final Collection<String> cubeNames;
-    private final boolean inertia;
 
     @Getter private final List<AnimationWrap> animations = Lists.newArrayList();
     private final Map<String, List<GhostAnimationData>> ghostWraps = Maps.newHashMap();
 
-    public AnimationLayer(Entity entity, Collection<String> cubeNames, Function<String, AnimatableCube> anicubeRef, Function<Animation, List<PoseData>> animationDataGetter, boolean inertia) {
+    public AnimationLayer(Entity entity, Collection<String> cubeNames, Function<String, AnimatableCube> anicubeRef, Function<Animation, List<PoseData>> animationDataGetter) {
         this.entity = entity;
         this.animationDataGetter = animationDataGetter;
         this.anicubeRef = anicubeRef;
         this.cubeNames = cubeNames;
-        this.inertia = inertia;
     }
 
     public void animate(float ticks) {
@@ -380,6 +379,66 @@ public class AnimationLayer {
 
         @Nullable
         AnimatableCube getParent();
+    }
+
+    public static final class AnimatableCubeEmpty implements AnimatableCube {
+
+        public static final AnimatableCubeEmpty INSTANCE = new AnimatableCubeEmpty();
+
+        private AnimatableCubeEmpty() {
+
+        }
+
+        @Override
+        public float[] getDefaultRotationPoint() {
+            return new float[3];
+        }
+
+        @Override
+        public float[] getActualRotationPoint() {
+            return new float[3];
+        }
+
+        @Override
+        public float[] getDefaultRotation() {
+            return new float[3];
+        }
+
+        @Override
+        public float[] getActualRotation() {
+            return new float[3];
+        }
+
+        @Override
+        public float[] getOffset() {
+            return new float[3];
+        }
+
+        @Override
+        public float[] getDimension() {
+            return new float[3];
+        }
+
+        @Override
+        public void addRotationPoint(float pointX, float pointY, float pointZ) {
+            //NO OP
+        }
+
+        @Override
+        public void addRotation(float rotationX, float rotationY, float rotationZ) {
+            //NO OP
+        }
+
+        @Override
+        public void reset() {
+            //NO OP
+        }
+
+        @Nullable
+        @Override
+        public AnimatableCube getParent() {
+            return null;
+        }
     }
 
 

@@ -3,6 +3,7 @@ package net.dumbcode.dumblibrary.server.entity.component.impl;
 import com.google.gson.JsonObject;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import net.dumbcode.dumblibrary.server.entity.ComponentAccess;
 import net.dumbcode.dumblibrary.server.entity.ai.FeedingAi;
 import net.dumbcode.dumblibrary.server.entity.component.EntityComponentStorage;
 import net.dumbcode.dumblibrary.server.entity.component.FinalizableComponent;
@@ -40,7 +41,7 @@ public class MetabolismComponent implements FinalizableComponent {
     }
 
     @Override
-    public void finalizeComponent(Entity entity) {
+    public void finalizeComponent(ComponentAccess entity) {
         if(entity instanceof EntityLiving) {
             ((EntityLiving) entity).tasks.addTask(2, new FeedingAi((EntityLiving) entity, this));
         }

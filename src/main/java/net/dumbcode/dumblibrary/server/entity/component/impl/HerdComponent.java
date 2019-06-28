@@ -104,10 +104,12 @@ public class HerdComponent implements FinalizableComponent {
     }
 
     @Override
-    public void finalizeComponent(Entity entity) {
-        this.entityUUID = entity.getUniqueID();
-        if(entity instanceof EntityLivingBase) {
-            ((EntityLivingBase)entity).getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(120.0D);
+    public void finalizeComponent(ComponentAccess entity) {
+        if(entity instanceof Entity) {
+            this.entityUUID = ((Entity) entity).getUniqueID();
+            if(entity instanceof EntityLivingBase) {
+                ((EntityLivingBase)entity).getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(120.0D);
+            }
         }
 
     }

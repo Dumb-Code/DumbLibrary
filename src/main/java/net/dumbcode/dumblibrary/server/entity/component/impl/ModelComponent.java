@@ -68,11 +68,10 @@ public class ModelComponent implements RenderCallbackComponent, FinalizableCompo
     }
 
     @Override
-    public void finalizeComponent(Entity entity) {
-        ComponentAccess access = (ComponentAccess) entity;
+    public void finalizeComponent(ComponentAccess entity) {
         this.texture.reset();
         this.fileLocation.reset();
-        for (EntityComponent component : access.getAllComponents()) {
+        for (EntityComponent component : entity.getAllComponents()) {
             if(component instanceof RenderLocationComponent) {
                 ((RenderLocationComponent) component).editLocations(this.texture, this.fileLocation);
             }

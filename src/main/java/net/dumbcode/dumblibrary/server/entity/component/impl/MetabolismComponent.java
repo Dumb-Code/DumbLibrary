@@ -4,11 +4,11 @@ import com.google.gson.JsonObject;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.dumbcode.dumblibrary.server.entity.ComponentAccess;
-import net.dumbcode.dumblibrary.server.entity.ai.FeedingAi;
+import net.dumbcode.dumblibrary.server.entity.ai.DrinkingAI;
+import net.dumbcode.dumblibrary.server.entity.ai.FeedingAI;
 import net.dumbcode.dumblibrary.server.entity.component.EntityComponentStorage;
 import net.dumbcode.dumblibrary.server.entity.component.FinalizableComponent;
 import net.dumbcode.dumblibrary.server.entity.objects.FeedingDiet;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.nbt.NBTTagCompound;
 
@@ -43,7 +43,9 @@ public class MetabolismComponent implements FinalizableComponent {
     @Override
     public void finalizeComponent(ComponentAccess entity) {
         if(entity instanceof EntityLiving) {
-            ((EntityLiving) entity).tasks.addTask(2, new FeedingAi((EntityLiving) entity, this));
+            EntityLiving living = (EntityLiving) entity;
+            living.tasks.addTask(2, new FeedingAI((EntityLiving) entity, this));
+            living.tasks.addTask(2, new DrinkingAI((EntityLiving) entity, this));
         }
     }
 

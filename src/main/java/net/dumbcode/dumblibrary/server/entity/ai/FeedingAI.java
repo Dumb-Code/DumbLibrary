@@ -15,14 +15,15 @@ import net.minecraft.world.World;
 import java.util.Comparator;
 import java.util.List;
 
-public class FeedingAi extends EntityAIBase {
+public class FeedingAI extends EntityAIBase {
+
     private final EntityLiving entityLiving;
     private final MetabolismComponent metabolism;
     private final BlockStateWorker worker;
 
     private FeedingProcess process = null;
 
-    public FeedingAi(EntityLiving entityLiving, MetabolismComponent metabolism) {
+    public FeedingAI(EntityLiving entityLiving, MetabolismComponent metabolism) {
         this.entityLiving = entityLiving;
         this.metabolism = metabolism;
         this.worker = new BlockStateWorker((state, pos) -> this.metabolism.diet.getBlocks().contains(state) && this.entityLiving.getNavigator().getPathToPos(pos) != null, entityLiving, metabolism.foodSmellDistance);
@@ -32,11 +33,11 @@ public class FeedingAi extends EntityAIBase {
     @Override
     public boolean shouldExecute() {
         if (this.metabolism.food <= 10 || true) {
-            if(this.process == null) {
+            if (this.process == null) {
                 World world = this.entityLiving.world;
                 //Search entities first
                 for (Entity entity : world.loadedEntityList) {
-                    if (entity.getDistanceSq(this.entityLiving) < this.metabolism.foodSmellDistance*this.metabolism.foodSmellDistance) {
+                    if (entity.getDistanceSq(this.entityLiving) < this.metabolism.foodSmellDistance * this.metabolism.foodSmellDistance) {
                         if (entity instanceof EntityItem && this.metabolism.diet.test(((EntityItem) entity).getItem())) {
                             this.process = new ItemStackProcess((EntityItem) entity);
                             break;
@@ -58,7 +59,7 @@ public class FeedingAi extends EntityAIBase {
                         this.process = new BlockStateProcess(world, results.get(0));
                     }
                 }
-                if(this.process != null) {
+                if (this.process != null) {
                     System.out.println(this.process.toString());
                 }
             }
@@ -80,8 +81,9 @@ public class FeedingAi extends EntityAIBase {
     }
 
     public interface FeedingProcess {
-       boolean active();
-       Vec3d position();
+        boolean active();
+
+        Vec3d position();
     }
 
     @ToString

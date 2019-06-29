@@ -23,12 +23,13 @@ import net.minecraftforge.common.model.IModelState;
 import net.minecraftforge.common.model.TRSRTransformation;
 
 import javax.annotation.Nonnull;
-import javax.vecmath.AxisAngle4f;
 import javax.vecmath.Matrix4f;
 import javax.vecmath.Point3f;
 import javax.vecmath.Vector3f;
 import java.util.*;
 import java.util.function.Function;
+
+import static net.dumbcode.dumblibrary.server.utils.MatrixUtils.*;
 
 /**
  * Used to hold the information about the model, like the texutres used and the lightup data. <br>
@@ -82,9 +83,9 @@ public class TabulaIModel implements IModel {
         //Set the custom matrix values from the model state, and finalizeComponent the translation and scale to get the model in the correct place. (due to tabula)
         this.getMatrix(stack).mul(state.apply(Optional.empty()).orElse(TRSRTransformation.identity()).getMatrix());
         //Due to minecraft, the ModelRenderer has it's, x and y coords flipped. Tabula then (rightly) saves it like this.
-        this.scale(stack, -0.0625F, -0.0625F, 0.0625F);
+        scale(this.getMatrix(stack), -0.0625F, -0.0625F, 0.0625F);
         //to get from tabula's origin to the world origin you have to go move [-8, -24, 8], thus we need to translate by that amount
-        this.translate(stack, -8, -24, 8);
+        translate(this.getMatrix(stack), -8, -24, 8);
 
         //Iterate through all the layers, then through every group, and on each group go through all the root cubes.
         for (TabulaModelHandler.TextureLayer layer : textures) {
@@ -359,17 +360,17 @@ public class TabulaIModel implements IModel {
     private void applyMatrixChanges(Deque<Matrix4f> stack, TabulaModelInformation.Cube cube) {
         //Push a new matrix and set the matrix translation/scale/rotation that this cube contains.
         stack.push(new Matrix4f(this.getMatrix(stack)));
-        translate(stack, cube.getRotationPoint());
-        scale(stack, cube.getScale());
+        translate(this.getMatrix(stack), cube.getRotationPoint());
+        scale(this.getMatrix(stack), cube.getScale());
         float[] rotation = cube.getRotation();
         if (rotation[2] != 0) {
-            rotate(stack, rotation[2], 0, 0, 1);
+            rotate(this.getMatrix(stack), rotation[2], 0, 0, 1);
         }
         if (rotation[1] != 0) {
-            rotate(stack, rotation[1], 0, 1, 0);
+            rotate(this.getMatrix(stack), rotation[1], 0, 1, 0);
         }
         if (rotation[0] != 0) {
-            rotate(stack, rotation[0], 1, 0, 0);
+            rotate(this.getMatrix(stack), rotation[0], 1, 0, 0);
         }
     }
 
@@ -540,52 +541,6 @@ public class TabulaIModel implements IModel {
         return Objects.requireNonNull(stack.peek());
     }
 
-    /**
-     * Translate a matrix stack
-     *
-     * @param stack  the matrix stack of which the top element will be translated
-     * @param floats an array of length 3 defined as [x, y, z]
-     */
-    private void translate(Deque<Matrix4f> stack, float... floats) {
-        Matrix4f matrix = this.getMatrix(stack);
-        Matrix4f translation = new Matrix4f();
-        translation.setIdentity();
-        translation.setTranslation(new Vector3f(floats[0], floats[1], floats[2]));
-        matrix.mul(translation);
-    }
-
-    /**
-     * Rotate a matrix stack by an angle
-     *
-     * @param stack The matrix stack of which the topmost element will be rotated
-     * @param angle the angle, in radians, of which to rotate it by
-     * @param x     the x magnitude. 1 or 0
-     * @param y     the y magnitude. 1 or 0
-     * @param z     the z magnitude. 1 or 0
-     */
-    private void rotate(Deque<Matrix4f> stack, float angle, int x, int y, int z) {
-        Matrix4f matrix = this.getMatrix(stack);
-        Matrix4f rotation = new Matrix4f();
-        rotation.setIdentity();
-        rotation.setRotation(new AxisAngle4f(x, y, z, angle));
-        matrix.mul(rotation);
-    }
-
-    /**
-     * Scales a matrix stack by an angle
-     *
-     * @param stack  The stack of which the topmost element will be scale
-     * @param floats an array of length 3, defined as [x, y, z]
-     */
-    private void scale(Deque<Matrix4f> stack, float... floats) {
-        Matrix4f matrix = this.getMatrix(stack);
-        Matrix4f scale = new Matrix4f();
-        scale.m00 = floats[0];
-        scale.m11 = floats[1];
-        scale.m22 = floats[2];
-        scale.m33 = 1;
-        matrix.mul(scale);
-    }
 
     /**
      * Encodes the EnumFacing to an integer. This integer's bits are in the form: [x][y][z],

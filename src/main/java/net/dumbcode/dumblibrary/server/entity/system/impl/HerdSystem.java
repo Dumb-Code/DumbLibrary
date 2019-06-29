@@ -1,6 +1,5 @@
 package net.dumbcode.dumblibrary.server.entity.system.impl;
 
-import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.server.entity.ComponentAccess;
 import net.dumbcode.dumblibrary.server.entity.EntityFamily;
 import net.dumbcode.dumblibrary.server.entity.EntityManager;
@@ -12,13 +11,11 @@ import net.minecraft.entity.EntityLiving;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
-import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 import java.util.List;
 import java.util.UUID;
 
-@Mod.EventBusSubscriber(modid = DumbLibrary.MODID)
 public enum HerdSystem implements EntitySystem {
 
     INSTANCE;
@@ -96,7 +93,7 @@ public enum HerdSystem implements EntitySystem {
 
 
     @SubscribeEvent
-    public static void onEntityDie(LivingDeathEvent event) {
+    public void onEntityDie(LivingDeathEvent event) {
         Entity entity = event.getEntity();
         if(entity instanceof ComponentAccess) {
             HerdComponent component = ((ComponentAccess) entity).getOrNull(EntityComponentTypes.HERD);
@@ -113,7 +110,7 @@ public enum HerdSystem implements EntitySystem {
     }
 
     @SubscribeEvent
-    public static void onEntityDamaged(LivingAttackEvent event) {
+    public void onEntityDamaged(LivingAttackEvent event) {
         Entity entity = event.getEntity();
         Entity source = event.getSource().getTrueSource();
         if(source !=  null && entity instanceof ComponentAccess) {

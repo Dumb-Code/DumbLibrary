@@ -41,7 +41,7 @@ public class ComponentRenderer<E extends Entity & ComponentAccess> extends Rende
         List<RenderCallbackComponent.MainCallback> now = Lists.newArrayList();
         List<RenderCallbackComponent.SubCallback> post = Lists.newArrayList();
 
-        RenderLocationComponent.ConfigurableLocation textureLocation = new RenderLocationComponent.ConfigurableLocation();
+        RenderLocationComponent.ConfigurableLocation textureLocation = new RenderLocationComponent.ConfigurableLocation(".png");
         RenderLocationComponent.ConfigurableLocation fileLocation = new RenderLocationComponent.ConfigurableLocation();
 
         for (EntityComponent component : entity.getAllComponents()) {

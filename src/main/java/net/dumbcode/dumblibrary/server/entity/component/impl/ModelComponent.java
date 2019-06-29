@@ -1,5 +1,6 @@
 package net.dumbcode.dumblibrary.server.entity.component.impl;
 
+import com.google.common.collect.BiMap;
 import lombok.Getter;
 import net.dumbcode.dumblibrary.client.component.RenderComponentContext;
 import net.dumbcode.dumblibrary.client.model.ModelMissing;
@@ -28,7 +29,7 @@ import java.util.List;
 @Getter
 public class ModelComponent implements RenderCallbackComponent, FinalizableComponent {
 
-    private final ConfigurableLocation texture = new ConfigurableLocation();
+    private final ConfigurableLocation texture = new ConfigurableLocation(".png");
     private final ConfigurableLocation fileLocation = new ConfigurableLocation();
 
     @SideOnly(Side.CLIENT)
@@ -129,8 +130,7 @@ public class ModelComponent implements RenderCallbackComponent, FinalizableCompo
         @Nullable
         @Override
         protected ResourceLocation getEntityTexture(EntityLivingBase entity) {
-            ResourceLocation loc = ModelComponent.this.texture.getLocation();
-            return new ResourceLocation(loc.getNamespace(), loc.getPath() + ".png");
+            return ModelComponent.this.texture.getLocation();
         }
     }
 }

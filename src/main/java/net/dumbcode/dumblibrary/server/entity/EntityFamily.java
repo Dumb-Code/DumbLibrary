@@ -21,7 +21,7 @@ public class EntityFamily {
         return this.populateBuffer(type, null);
     }
 
-        @SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked")
     public <T extends EntityComponent> T[] populateBuffer(EntityComponentType<T, ?> type, T[] buffer) {
         Entity[] matched = this.matchedEntities;
         if (buffer == null || buffer.length != matched.length) {

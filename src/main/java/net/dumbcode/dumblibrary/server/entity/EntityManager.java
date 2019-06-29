@@ -29,6 +29,9 @@ public interface EntityManager extends ICapabilityProvider {
         event.addCapability(new ResourceLocation(DumbLibrary.MODID, "entity_manager"), capability);
 
         MinecraftForge.EVENT_BUS.post(new RegisterSystemsEvent(event.getObject(), capability.systems));
+        for (EntitySystem system : capability.systems) {
+            MinecraftForge.EVENT_BUS.register(system);
+        }
     }
 
     @SubscribeEvent

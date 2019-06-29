@@ -210,7 +210,7 @@ public class AnimationLayer {
             if(this.entry.time > 0) {
                 timeModifier = this.entry.time / this.totalPoseTime;
             }
-            this.tick += (age - this.entityAge) / timeModifier;
+            this.tick += (age - this.entityAge) / timeModifier;//todo: add animaion speed / degree factor. Check that looping and holding work
 
             //Make sure to catchup to correct render
             while (!this.invalidated && this.tick >= this.maxTicks && (!this.entry.hold || this.poseStack.size() > 1)) {
@@ -261,6 +261,7 @@ public class AnimationLayer {
         }
 
         public void onFinish() {
+            this.invalidated = true;
             for (String name : this.cubeNames) {
                 CubeWrapper cube = this.cuberef.apply(name);
 

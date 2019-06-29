@@ -14,6 +14,9 @@ public interface RenderLocationComponent extends EntityComponent {
 
     class ConfigurableLocation {
 
+        //Suffix is used for the suffix for the file name. For example, could be a file extension
+        private final String suffix;
+
         @Setter private String modid;
 
         //List of folder names. Sorted by index
@@ -21,6 +24,14 @@ public interface RenderLocationComponent extends EntityComponent {
 
         //List of file names. Sorted by index, then joined with '_'
         private final List<IndexedString> fileNames = Lists.newArrayList();
+
+        public ConfigurableLocation() {
+            this("");
+        }
+
+        public ConfigurableLocation(String suffix) {
+            this.suffix = suffix;
+        }
 
         public void addFolderName(String name, float index) {
             this.folderNames.add(new IndexedString(name, index));
@@ -44,7 +55,7 @@ public interface RenderLocationComponent extends EntityComponent {
                     .sorted(Comparator.comparing(IndexedString::getIndex))
                     .map(IndexedString::getStr)
                     .iterator());
-            return new ResourceLocation(this.modid, (this.folderNames.isEmpty() ? "" : joinedFolder) + joinedFile);
+            return new ResourceLocation(this.modid, (this.folderNames.isEmpty() ? "" : joinedFolder) + joinedFile + this.suffix);
         }
 
 

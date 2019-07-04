@@ -9,6 +9,7 @@ import net.minecraft.entity.Entity;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
+//TODO: remove this, it's not really needed
 public enum ItemDropSystem implements EntitySystem {
     INSTANCE;
 

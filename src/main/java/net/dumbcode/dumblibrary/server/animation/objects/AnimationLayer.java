@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.experimental.Wither;
+import net.dumbcode.dumblibrary.server.entity.ComponentAccess;
 import net.dumbcode.dumblibrary.server.registry.DumbRegistries;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.MathHelper;
@@ -75,7 +76,10 @@ public class AnimationLayer {
         for (AnimationEntry entry : exitEntries) {
             this.addAnimation(this.create(entry));
         }
+    }
 
+    public void removeAll() {
+        this.animations.clear();
     }
 
     private void checkInvalidations() {
@@ -134,7 +138,7 @@ public class AnimationLayer {
 
 
     @Getter
-    public static class AnimationWrap {
+    public class AnimationWrap {
         protected AnimationEntry entry;
 
         private final Function<Animation, List<PoseData>> animationDataGetter;
@@ -150,7 +154,6 @@ public class AnimationLayer {
 
         private float maxTicks;
         private float tick;
-        private float fullTime;
         private float ci;
 
         private boolean invalidated;
@@ -191,10 +194,11 @@ public class AnimationLayer {
                 float[] interpolatedPosition = this.getInterpPos(cubeWrapper);
 
                 float[] rotation = cube.getDefaultRotation();
+                float factor = this.entry.degreeFactor.getDegree((ComponentAccess) AnimationLayer.this.entity, age % 1F);
                 cube.addRotation(
-                        interpolatedRotation[0] - rotation[0],
-                        interpolatedRotation[1] - rotation[1],
-                        interpolatedRotation[2] - rotation[2]
+                        (interpolatedRotation[0] - rotation[0]) * factor,
+                        (interpolatedRotation[1] - rotation[1]) * factor,
+                        (interpolatedRotation[2] - rotation[2]) * factor
                 );
 
 
@@ -210,14 +214,17 @@ public class AnimationLayer {
             if(this.entry.time > 0) {
                 timeModifier = this.entry.time / this.totalPoseTime;
             }
-            this.tick += (age - this.entityAge) / timeModifier;//todo: add animaion speed / degree factor. Check that looping and holding work
+
+            timeModifier /= this.entry.speedFactor.getDegree((ComponentAccess) AnimationLayer.this.entity, age % 1F);
+
+            this.tick += (age - this.entityAge) / timeModifier;//todo: Check that looping and holding work
 
             //Make sure to catchup to correct render
             while (!this.invalidated && this.tick >= this.maxTicks && (!this.entry.hold || this.poseStack.size() > 1)) {
                 this.poseStack.pop();
                 if (this.poseStack.isEmpty()) {
                     if (this.entry.time == LOOP) {
-                        this.poseStack.addAll(Lists.reverse(this.animationDataGetter.apply(this.entry.animation)));
+                        this.poseStack.addAll(this.animationDataGetter.apply(this.entry.animation));
                     } else {
                         this.invalidated = true;
                     }
@@ -318,18 +325,22 @@ public class AnimationLayer {
         private final int time; //-2 = loop, -1 = run until finished, x > 0 run for x amount of ticks
         private final boolean useInertia;
         private final boolean hold;
+        private final AnimationFactor speedFactor;
+        private final AnimationFactor degreeFactor;
         @Nullable
         private final AnimationEntry exitAnimation;
 
         public AnimationEntry(Animation animation) {
-            this(animation, -1, animation.inertia(), animation.hold(), null);
+            this(animation, -1, animation.inertia(), animation.hold(), AnimationFactor.DEFAULT, AnimationFactor.DEFAULT, null);
         }
 
-        public AnimationEntry(Animation animation, int time, boolean useInertia, boolean hold, @Nullable AnimationEntry andThen) {
+        public AnimationEntry(Animation animation, int time, boolean useInertia, boolean hold, AnimationFactor speedFactor, AnimationFactor degreeFactor, @Nullable AnimationEntry andThen) {
             this.animation = animation;
             this.time = time;
             this.useInertia = useInertia;
             this.hold = hold;
+            this.speedFactor = speedFactor;
+            this.degreeFactor = degreeFactor;
             this.exitAnimation = andThen;
         }
 
@@ -342,6 +353,8 @@ public class AnimationLayer {
             buf.writeInt(this.time);
             buf.writeBoolean(this.useInertia);
             buf.writeBoolean(this.hold);
+            ByteBufUtils.writeRegistryEntry(buf, this.speedFactor);
+            ByteBufUtils.writeRegistryEntry(buf, this.degreeFactor);
             buf.writeBoolean(this.exitAnimation != null);
             if(this.exitAnimation != null) {
                 this.exitAnimation.serialize(buf);
@@ -354,8 +367,10 @@ public class AnimationLayer {
                     buf.readInt(),
                     buf.readBoolean(),
                     buf.readBoolean(),
+                    ByteBufUtils.readRegistryEntry(buf, DumbRegistries.FLOAT_SUPPLIER_REGISTRY),
+                    ByteBufUtils.readRegistryEntry(buf, DumbRegistries.FLOAT_SUPPLIER_REGISTRY),
                     buf.readBoolean() ? deserialize(buf) : null
-            );
+                    );
         }
     }
 

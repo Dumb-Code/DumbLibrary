@@ -2,6 +2,11 @@ package net.dumbcode.dumblibrary.server.entity.component;
 
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.server.entity.component.impl.*;
+import net.dumbcode.dumblibrary.server.entity.system.RegisterSystemsEvent;
+import net.dumbcode.dumblibrary.server.entity.system.impl.AnimationSystem;
+import net.dumbcode.dumblibrary.server.entity.system.impl.HerdSystem;
+import net.dumbcode.dumblibrary.server.entity.system.impl.ItemDropSystem;
+import net.dumbcode.dumblibrary.server.entity.system.impl.MetabolismSystem;
 import net.dumbcode.dumblibrary.server.utils.InjectedUtils;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.Mod;
@@ -49,5 +54,13 @@ public class EntityComponentTypes {
                         .withStorage(RenderAdjustmentsComponent.Storage::new)
                         .build()
         );
+    }
+
+    @SubscribeEvent
+    public static void register(RegisterSystemsEvent event) {
+        event.registerSystem(MetabolismSystem.INSTANCE);
+        event.registerSystem(HerdSystem.INSTANCE);
+        event.registerSystem(AnimationSystem.INSTANCE);
+        event.registerSystem(ItemDropSystem.INSTANCE);
     }
 }

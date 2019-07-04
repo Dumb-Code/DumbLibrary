@@ -2,6 +2,7 @@ package net.dumbcode.dumblibrary.server.registry;
 
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.server.animation.objects.Animation;
+import net.dumbcode.dumblibrary.server.animation.objects.AnimationFactor;
 import net.dumbcode.dumblibrary.server.entity.component.EntityComponentType;
 import net.dumbcode.dumblibrary.server.entity.component.RegisterComponentsEvent;
 import net.dumbcode.dumblibrary.server.entity.component.RegisterStoragesEvent;
@@ -26,10 +27,18 @@ public class DumbRegistryHandler {
                 .set((key, isNetwork) -> Animation.NONE)
                 .create();
 
+        new RegistryBuilder<AnimationFactor>()
+                .setType(AnimationFactor.class)
+                .setName(new ResourceLocation(DumbLibrary.MODID, "animation_factor"))
+                .setDefaultKey(new ResourceLocation(DumbLibrary.MODID, "default"))
+                .set((key, isNetwork) -> AnimationFactor.DEFAULT)
+                .create();
+
         IForgeRegistry<EntityComponentType<?, ?>> registry = new RegistryBuilder<EntityComponentType<?, ?>>()
                 .setType(EntityComponentType.getWildcardType())
                 .setName(new ResourceLocation(DumbLibrary.MODID, "component"))
                 .create();
+
 
 
         MinecraftForge.EVENT_BUS.post(new RegisterComponentsEvent(registry));
@@ -41,5 +50,10 @@ public class DumbRegistryHandler {
     @SubscribeEvent
     public static void onAnimationRegister(RegistryEvent.Register<Animation> event) {
         event.getRegistry().register(new Animation().setRegistryName("none"));
+    }
+
+    @SubscribeEvent
+    public static void onFloatSupplierRegistry(RegistryEvent.Register<AnimationFactor> event) {
+        event.getRegistry().register(AnimationFactor.DEFAULT);
     }
 }

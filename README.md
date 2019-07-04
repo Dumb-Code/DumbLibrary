@@ -6,7 +6,7 @@
 A Minecraft modding library made for DumbCode mods. It builds off of the library: LLibrary (See Below), and includes animation among other useful tools.
 
 ## Documentation
-[Entity Component System](https://github.com/Dumb-Code/DumbLibrary/wiki/ECS---Entity-Component-System)
+[Entity Component System](https://github.com/Dumb-Code/DumbLibrary/wiki/ECS---Entity-Component-System)  
 [Animation System](https://github.com/Dumb-Code/DumbLibrary/wiki/Animation-API)
 
 ### Contributing

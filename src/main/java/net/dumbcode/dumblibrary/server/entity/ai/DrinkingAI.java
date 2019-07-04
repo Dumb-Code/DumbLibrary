@@ -16,7 +16,7 @@ public class DrinkingAI extends EntityAIBase {
     private BlockPos pos;
     private MetabolismComponent metabolism;
 
-    private final int waterThreshold = 10;
+    private static final int WATER_THRESHOLD = 10; // TODO: Vary
 
     public DrinkingAI(EntityLiving entity, MetabolismComponent metabolism) {
         this.entity = entity;
@@ -25,14 +25,13 @@ public class DrinkingAI extends EntityAIBase {
 
     @Override
     public boolean shouldExecute() {
-        if(metabolism.water >= waterThreshold || true) {
+        if(metabolism.water >= WATER_THRESHOLD || true) {
             List<BlockPos> pos = AIUtils.traverseXZ((int) entity.posX, (int) entity.posY - 1, (int) entity.posZ, 10);
             for (BlockPos bPos : pos) {
                 if (entity.world.getBlockState(bPos).getMaterial() == Material.WATER) {
                     this.pos = bPos;
                     return true;
                 }
-                return false;
             }
         }
         return false;
@@ -40,12 +39,12 @@ public class DrinkingAI extends EntityAIBase {
 
     @Override
     public void startExecuting() {
-        entity.getNavigator().tryMoveToXYZ(pos.getX() + 1, pos.getY(), pos.getZ(), entity.getAIMoveSpeed());
+        entity.getNavigator().tryMoveToXYZ((double) (pos.getX() + 1), pos.getY(), pos.getZ(), entity.getAIMoveSpeed());
         metabolism.water += metabolism.waterRate * 10;
     }
 
     @Override
     public boolean shouldContinueExecuting() {
-        return metabolism.water >= waterThreshold;
+        return metabolism.water >= WATER_THRESHOLD;
     }
 }

@@ -18,14 +18,27 @@ import java.util.function.Function;
 @AllArgsConstructor
 @GameRegistry.ObjectHolder(DumbLibrary.MODID)
 public class AnimationFactor extends IForgeRegistryEntry.Impl<AnimationFactor> {
-    public static final AnimationFactor DEFAULT = new AnimationFactor((access, partialTicks) -> 1F).setRegistryName("default");
+    public static final AnimationFactor DEFAULT = new AnimationFactor((access, type, partialTicks) -> 1F).setRegistryName("default");
     private final FactorFunction function;
 
-    public float getDegree(ComponentAccess access, float partialTicks) {
-        return this.function.getDegree(access, partialTicks);
+    public float getDegree(ComponentAccess access, Type type, float partialTicks) {
+        return this.function.getDegree(access, type, partialTicks);
     }
 
     public interface FactorFunction {
-        float getDegree(ComponentAccess access, float partialTicks);
+        float getDegree(ComponentAccess access, Type type, float partialTicks);
     }
+
+    public enum Type {
+        SPEED, ANGLE;
+
+        public boolean isSpeed() {
+            return this == SPEED;
+        }
+
+        public boolean isAngle() {
+            return this == ANGLE;
+        }
+    }
+
 }

@@ -194,7 +194,7 @@ public class AnimationLayer {
                 float[] interpolatedPosition = this.getInterpPos(cubeWrapper);
 
                 float[] rotation = cube.getDefaultRotation();
-                float factor = this.entry.degreeFactor.getDegree((ComponentAccess) AnimationLayer.this.entity, age % 1F);
+                float factor = this.entry.degreeFactor.getDegree((ComponentAccess) AnimationLayer.this.entity, AnimationFactor.Type.ANGLE, age % 1F);
                 cube.addRotation(
                         (interpolatedRotation[0] - rotation[0]) * factor,
                         (interpolatedRotation[1] - rotation[1]) * factor,
@@ -215,7 +215,7 @@ public class AnimationLayer {
                 timeModifier = this.entry.time / this.totalPoseTime;
             }
 
-            timeModifier /= this.entry.speedFactor.getDegree((ComponentAccess) AnimationLayer.this.entity, age % 1F);
+            timeModifier /= this.entry.speedFactor.getDegree((ComponentAccess) AnimationLayer.this.entity, AnimationFactor.Type.SPEED, age % 1F);
 
             this.tick += (age - this.entityAge) / timeModifier;//todo: Check that looping and holding work
 

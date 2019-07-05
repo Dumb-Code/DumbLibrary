@@ -3,10 +3,7 @@ package net.dumbcode.dumblibrary.server.entity.component;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.server.entity.component.impl.*;
 import net.dumbcode.dumblibrary.server.entity.system.RegisterSystemsEvent;
-import net.dumbcode.dumblibrary.server.entity.system.impl.AnimationSystem;
-import net.dumbcode.dumblibrary.server.entity.system.impl.HerdSystem;
-import net.dumbcode.dumblibrary.server.entity.system.impl.ItemDropSystem;
-import net.dumbcode.dumblibrary.server.entity.system.impl.MetabolismSystem;
+import net.dumbcode.dumblibrary.server.entity.system.impl.*;
 import net.dumbcode.dumblibrary.server.utils.InjectedUtils;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.Mod;
@@ -22,6 +19,7 @@ public class EntityComponentTypes {
     public static final EntityComponentType<AnimationComponent,?> ANIMATION = InjectedUtils.injected();
     public static final EntityComponentType<ModelComponent, ?> MODEL = InjectedUtils.injected();
     public static final EntityComponentType<RenderAdjustmentsComponent, RenderAdjustmentsComponent.Storage> RENDER_ADJUSTMENTS = InjectedUtils.injected();
+    public static final EntityComponentType<SpeedTrackingComponent, ?> SPEED_TRACKING = InjectedUtils.injected();
 
     @SubscribeEvent
     public static void onRegisterComponents(RegisterComponentsEvent event) {
@@ -52,6 +50,10 @@ public class EntityComponentTypes {
                         .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "render_adjustments"))
                         .withConstructor(RenderAdjustmentsComponent::new)
                         .withStorage(RenderAdjustmentsComponent.Storage::new)
+                        .build(),
+                SimpleComponentType.builder(SpeedTrackingComponent.class)
+                        .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "speed_tracking"))
+                        .withConstructor(SpeedTrackingComponent::new)
                         .build()
         );
     }
@@ -62,5 +64,6 @@ public class EntityComponentTypes {
         event.registerSystem(HerdSystem.INSTANCE);
         event.registerSystem(AnimationSystem.INSTANCE);
         event.registerSystem(ItemDropSystem.INSTANCE);
+        event.registerSystem(SpeedTrackingSystem.INSTANCE);
     }
 }

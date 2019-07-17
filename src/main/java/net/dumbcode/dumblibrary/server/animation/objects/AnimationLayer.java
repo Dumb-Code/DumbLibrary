@@ -8,6 +8,8 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.experimental.Wither;
+import net.dumbcode.dumblibrary.server.animation.interpolation.Interpolation;
+import net.dumbcode.dumblibrary.server.animation.interpolation.LinearInterpolation;
 import net.dumbcode.dumblibrary.server.entity.ComponentAccess;
 import net.dumbcode.dumblibrary.server.registry.DumbRegistries;
 import net.minecraft.entity.Entity;
@@ -32,7 +34,7 @@ public class AnimationLayer {
     private final Function<String, AnimatableCube> anicubeRef;
     private final Collection<String> cubeNames;
 
-    @Getter private final List<AnimationWrap> animations = Lists.newArrayList();
+    private final List<AnimationWrap> animations = Lists.newArrayList();
     private final Map<String, List<GhostAnimationData>> ghostWraps = Maps.newHashMap();
 
     public AnimationLayer(Entity entity, Collection<String> cubeNames, Function<String, AnimatableCube> anicubeRef, Function<Animation, List<PoseData>> animationDataGetter) {
@@ -64,7 +66,8 @@ public class AnimationLayer {
             if (wrap == animation) {
                 for (String name : wrap.getCubeNames()) {
                     CubeWrapper cube = wrap.getCuberef().apply(name);
-                    this.ghostWraps.computeIfAbsent(name, s -> Lists.newArrayList()).add(new GhostAnimationData(wrap.getInterpPos(cube), wrap.getInterpRot(cube), 1F, animation.getEntityAge()));
+                    this.ghostWraps.computeIfAbsent(name, s -> Lists.newArrayList()).add(
+                            new GhostAnimationData(wrap.getInterpolation().getInterpPos(cube, wrap.getCi()), wrap.getInterpolation().getInterpRot(cube, wrap.getCi()), 1F, animation.getEntityAge()));
                 }
                 wrap.onFinish();
                 if(wrap.getEntry().getExitAnimation() != null) {
@@ -146,6 +149,8 @@ public class AnimationLayer {
         private final Function<String, AnimatableCube> anicubeRef;
         private final Collection<String> cubeNames;
 
+        private Interpolation interpolation;
+
         private final Deque<PoseData> poseStack = new ArrayDeque<>();
 
         private final float totalPoseTime;
@@ -167,6 +172,7 @@ public class AnimationLayer {
             this.entry = animation;
             this.poseStack.addAll(this.animationDataGetter.apply(animation.getAnimation()));
             this.maxTicks = this.getData().getTime();
+            this.interpolation = animation.getInterpolation();
 
             float tpt = 0;
             for (PoseData poseData : this.poseStack) {
@@ -190,8 +196,8 @@ public class AnimationLayer {
                 CubeWrapper cubeWrapper = Objects.requireNonNull(this.cuberef.apply(partName));
                 AnimatableCube cube = this.anicubeRef.apply(partName);
 
-                float[] interpolatedRotation = this.getInterpRot(cubeWrapper);
-                float[] interpolatedPosition = this.getInterpPos(cubeWrapper);
+                float[] interpolatedRotation = this.interpolation.getInterpRot(cubeWrapper, ci);
+                float[] interpolatedPosition = this.interpolation.getInterpPos(cubeWrapper, ci);
 
                 float[] rotation = cube.getDefaultRotation();
                 float factor = this.entry.degreeFactor.getDegree((ComponentAccess) AnimationLayer.this.entity, AnimationFactor.Type.ANGLE, age % 1F);
@@ -272,8 +278,8 @@ public class AnimationLayer {
             for (String name : this.cubeNames) {
                 CubeWrapper cube = this.cuberef.apply(name);
 
-                float[] rot = this.getInterpRot(cube);
-                float[] pos = this.getInterpPos(cube);
+                float[] rot = this.interpolation.getInterpRot(cube, ci);
+                float[] pos = this.interpolation.getInterpPos(cube, ci);
 
                 Vector3f pr = cube.getPrevRotation();
                 Vector3f pp = cube.getPrevRotationPoint();
@@ -287,28 +293,6 @@ public class AnimationLayer {
                 pp.z = pos[2];
 
             }
-        }
-
-        public float[] getInterpRot(CubeWrapper cube) {
-            Vector3f cr = cube.getRotation();
-            Vector3f pr = cube.getPrevRotation();
-
-            return new float[] {
-                    pr.x + (cr.x - pr.x) * this.ci,
-                    pr.y + (cr.y - pr.y) * this.ci,
-                    pr.z + (cr.z - pr.z) * this.ci
-            };
-        }
-
-        public float[] getInterpPos(CubeWrapper cube) {
-            Vector3f np = cube.getRotationPoint();
-            Vector3f pp = cube.getPrevRotationPoint();
-
-            return new float[] {
-                    pp.x + (np.x - pp.x) * this.ci,
-                    pp.y + (np.y - pp.y) * this.ci,
-                    pp.z + (np.z - pp.z) * this.ci
-            };
         }
 
         private PoseData getData() {
@@ -327,14 +311,14 @@ public class AnimationLayer {
         private final boolean hold;
         private final AnimationFactor speedFactor;
         private final AnimationFactor degreeFactor;
-        @Nullable
         private final AnimationEntry exitAnimation;
+        private final Interpolation interpolation;
 
         public AnimationEntry(Animation animation) {
-            this(animation, -1, animation.inertia(), animation.hold(), AnimationFactor.DEFAULT, AnimationFactor.DEFAULT, null);
+            this(animation, -1, animation.inertia(), animation.hold(), AnimationFactor.DEFAULT, AnimationFactor.DEFAULT, null, new LinearInterpolation());
         }
 
-        public AnimationEntry(Animation animation, int time, boolean useInertia, boolean hold, AnimationFactor speedFactor, AnimationFactor degreeFactor, @Nullable AnimationEntry andThen) {
+        public AnimationEntry(Animation animation, int time, boolean useInertia, boolean hold, AnimationFactor speedFactor, AnimationFactor degreeFactor, @Nullable AnimationEntry andThen, @Nullable Interpolation interpolation) {
             this.animation = animation;
             this.time = time;
             this.useInertia = useInertia;
@@ -342,6 +326,11 @@ public class AnimationLayer {
             this.speedFactor = speedFactor;
             this.degreeFactor = degreeFactor;
             this.exitAnimation = andThen;
+            if(interpolation != null) {
+                this.interpolation = interpolation;
+            } else {
+                this.interpolation = new LinearInterpolation();
+            }
         }
 
         public AnimationEntry loop() {
@@ -369,8 +358,9 @@ public class AnimationLayer {
                     buf.readBoolean(),
                     ByteBufUtils.readRegistryEntry(buf, DumbRegistries.FLOAT_SUPPLIER_REGISTRY),
                     ByteBufUtils.readRegistryEntry(buf, DumbRegistries.FLOAT_SUPPLIER_REGISTRY),
-                    buf.readBoolean() ? deserialize(buf) : null
-                    );
+                    buf.readBoolean() ? deserialize(buf) : null,
+                    null // TODO: Serialize
+            );
         }
     }
 
@@ -459,7 +449,7 @@ public class AnimationLayer {
 
 
     @Getter
-    static class CubeWrapper {
+    public static class CubeWrapper {
         private final Vector3f rotationPoint = new Vector3f();
         private final Vector3f prevRotationPoint = new Vector3f();
         private final Vector3f rotation = new Vector3f();

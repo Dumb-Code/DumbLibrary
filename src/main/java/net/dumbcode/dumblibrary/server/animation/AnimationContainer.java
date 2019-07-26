@@ -1,4 +1,4 @@
-package net.dumbcode.dumblibrary.client.animation;
+package net.dumbcode.dumblibrary.server.animation;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -9,7 +9,7 @@ import lombok.Cleanup;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import net.dumbcode.dumblibrary.DumbLibrary;
-import net.dumbcode.dumblibrary.server.animation.TabulaUtils;
+import net.dumbcode.dumblibrary.server.animation.keyframes.KeyframeCompiler;
 import net.dumbcode.dumblibrary.server.animation.objects.Animation;
 import net.dumbcode.dumblibrary.server.animation.objects.CubeReference;
 import net.dumbcode.dumblibrary.server.animation.objects.PoseData;
@@ -18,9 +18,11 @@ import net.dumbcode.dumblibrary.server.tabula.TabulaModelInformation;
 import net.dumbcode.dumblibrary.server.utils.StreamUtils;
 import net.minecraft.util.JsonUtils;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.MathHelper;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.util.Strings;
 
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -30,6 +32,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 /**
  * The animation container. Used to hold information about the animation container
@@ -37,9 +40,6 @@ import java.util.Objects;
 @Getter
 public class AnimationContainer {
 
-    private static final Gson GSON = new GsonBuilder()
-            .registerTypeAdapter(PoseData.class, PoseData.Deserializer.INSTANCE)
-            .create();
     private static final String JSON_EXTENSION = ".json";
 
     /**
@@ -47,19 +47,15 @@ public class AnimationContainer {
      */
     private final Map<Animation, List<PoseData>> animations = Maps.newHashMap();
 
-    /**
-     * The main model location
-     */
-    private final ResourceLocation modelLocation;
-
+    private final TabulaModelInformation mainModel;
 
     public AnimationContainer(ResourceLocation regname) {
 
         //The base location of all the models
         String baseLoc = "models/entities/" + regname.getPath().replace("_", "/") + "/";
 
+        this.mainModel = TabulaUtils.getModelInformation(new ResourceLocation(regname.getNamespace(), baseLoc + regname.getPath() + ".tbl"));
         this.loadAnimations(regname, baseLoc);
-        this.modelLocation = this.getMainModelLocation(regname, baseLoc);
     }
 
 
@@ -78,11 +74,7 @@ public class AnimationContainer {
             List<PoseData> modelResources = Lists.newArrayList();
             //Iterate through all the lists poses in the rawData
             for (List<PoseData> poses : rawAnimations.values()) {
-                //Iterate through each individual pose in that list
-                for (PoseData pose : poses) {
-                    //Load the model location, and add it to the list
-                    modelResources.add(pose.setLocation(new ModelLocation(pose.getModelName(), baseLoc + pose.getModelName())));
-                }
+                modelResources.addAll(poses);
             }
 
             //Iterate through the list of poses defined in the json file
@@ -98,27 +90,10 @@ public class AnimationContainer {
                 DumbLibrary.getLogger().error("Default animation (dumblibrary:none) had no models defined for {}", regname);
                 return;
             }
-            this.loadModelInformation(new ResourceLocation(regname.getNamespace(), baseLoc + this.animations.get(Animation.NONE).get(0).getModelName()), modelResources);
+            this.loadModelInformation(regname.getNamespace(), baseLoc, modelResources);
         } catch (Exception e) {
             DumbLibrary.getLogger().error("Unable to loadRawAnimations poses for " + regname, e);
         }
-    }
-
-    /**
-     * Gets the main model location for the dinosaur
-     * @param regname   The registry name of where to loadAnimationFromElement the animations
-     * @param baseLoc   The base folder, derived from regname
-     * @return the main model location, or {@link TabulaUtils#MISSING} if none can be found
-     */
-    private ResourceLocation getMainModelLocation(ResourceLocation regname, String baseLoc) {
-        //Make sure the model name isnt null
-        if(!this.animations.containsKey(Animation.NONE) || this.animations.get(Animation.NONE).isEmpty()) {
-            DumbLibrary.getLogger().error("Default animation (dumblibrary:none) had no models defined for {}", regname);
-            return TabulaUtils.MISSING;
-        } else {
-            return new ResourceLocation(regname.getNamespace(), baseLoc + this.animations.get(Animation.NONE).get(0).getModelName());
-        }
-
     }
 
     /**
@@ -154,9 +129,13 @@ public class AnimationContainer {
      * @throws IOException if an I/O error occurs
      */
     private void loadAnimationFromDirectory(String folder, String animation, ResourceLocation regName, String baseFolder, Map<String, List<PoseData>> map) throws IOException {
-        Path root = StreamUtils.getPath(new ResourceLocation(regName.getNamespace(), baseFolder + folder), false);
-        if(!root.toFile().exists()) {
-            map.put(animation, Lists.newArrayList(new PoseData(regName.getPath() + ".tbl", 10)));
+        ResourceLocation folderLoc = new ResourceLocation(regName.getNamespace(), baseFolder + folder);
+        if(this.tryLoadAnimationFromFile(folderLoc, map.computeIfAbsent(animation, a -> Lists.newArrayList()))) {
+            return;
+        }
+        Path root = StreamUtils.getPath(folderLoc, false);
+        if(Files.notExists(root)) {
+            map.put(animation, Lists.newArrayList(new PoseData.FileResolvablePoseData(regName.getPath() + ".tbl", 10)));
             return;
         }
         JsonObject parsed = new JsonParser().parse(new InputStreamReader(Files.newInputStream(root.resolve("animation.json")))).getAsJsonObject();
@@ -168,64 +147,95 @@ public class AnimationContainer {
             overrides.put(JsonUtils.getInt(jobj, "index"), JsonUtils.getInt(jobj, "time"));
         }
         IntegerHolder index = new IntegerHolder();
-        try {
+        try (Stream<Path> stream = Files.walk(root)){
             map.put(animation,
-                    Files.walk(root)
+                    stream
                             .filter(path -> path.getFileName().toString().endsWith(".tbl"))
                             .map(path -> path.getParent().getFileName() + "/" + FilenameUtils.getBaseName(path.getFileName().toString()))
                             .filter(Strings::isNotEmpty)
                             .sorted()
-                            .map(modelname -> new PoseData(modelname, overrides.getOrDefault(index.value++, time)))
+                            .map(modelname -> new PoseData.FileResolvablePoseData(modelname, overrides.getOrDefault(index.value++, time)))
                             .collect(Lists::newLinkedList, List::add, LinkedList::addAll)
             );
             List<PoseData> poseData = map.get(animation);
             if(poseData.isEmpty()) {
-                poseData.add(new PoseData(regName.getPath() + ".tbl", 10));
+                poseData.add(new PoseData.FileResolvablePoseData(regName.getPath() + ".tbl", 10));
             }
         } catch (IOException e) {
             DumbLibrary.getLogger().warn(e);
         }
+    }
 
+    private boolean tryLoadAnimationFromFile(ResourceLocation folder, List<PoseData> poseData) {
+        poseData.clear();
+
+        Path path = StreamUtils.getPath(new ResourceLocation(folder.getNamespace(), folder.getPath() + ".dca"), false);
+        if(Files.notExists(path)) {
+            return false;
+        }
+        try(DataInputStream dis = new DataInputStream(Files.newInputStream(path))) {
+            float version = dis.readFloat(); //version
+            if(version < 1) {
+                throw new IOException("Need animation of at least version 1 to load. Please upload and re-download the animation"); //maybe have a method that instead of reading an unsigned short it should read a integer
+            }
+
+            KeyframeCompiler compiler = KeyframeCompiler.create(this.mainModel, (int) version);
+
+            float length = dis.readFloat();
+            for (int i = 0; i < length; i++) {
+                KeyframeCompiler.Keyframe kf = compiler.addKeyframe(dis.readFloat(), dis.readFloat());
+
+                float rotSize = dis.readFloat();
+                for (int r = 0; r < rotSize; r++) {
+                    kf.getRotationMap().put(dis.readUTF(), new float[]{(float) Math.toRadians(dis.readFloat()), (float) Math.toRadians(dis.readFloat()), (float) Math.toRadians(dis.readFloat())});
+                }
+
+                float posSize = dis.readFloat();
+                for (int r = 0; r < posSize; r++) {
+                    kf.getRotationPointMap().put(dis.readUTF(), new float[]{dis.readFloat(), dis.readFloat(), dis.readFloat()});
+                }
+            }
+
+            poseData.addAll(compiler.compile());
+
+            return true;
+        } catch (IOException io) {
+            DumbLibrary.getLogger().error(io);
+            return false;
+        }
     }
 
     /**
      * Loads the main model, as well as all the animation info
-     *
-     * @param mainModelLocation The main models location
+     * @param namespace            The registry name namespace
+     * @param baseLoc    The base folder for the directory. Derived from regName
      * @param modelResources    the list of pose data for the main model
      */
-    private void loadModelInformation(ResourceLocation mainModelLocation, Iterable<PoseData> modelResources) {
+    private void loadModelInformation(String namespace, String baseLoc, Iterable<PoseData> modelResources) {
         Map<String, Map<String, CubeReference>> refCache = Maps.newHashMap();
 
         //Load the main model, used for comparing the diffrence in cube location/rotation
-        TabulaModelInformation mainInfo = TabulaUtils.getModelInformation(mainModelLocation);
         //Iterate through all the ModelLocations
         for (PoseData data : modelResources) {
-            data.getCubes().clear();
-            //Get the model location. If its in the map then just initialize the pose data, otherwise generate the cubes
-            ModelLocation modelResource = data.getLocation();
-            if (refCache.containsKey(modelResource.getFileName())) {
-                data.getCubes().putAll(refCache.get(modelResource.getFileName()));
-                continue;
-            }
-            Map<String, CubeReference> innerMap = Maps.newHashMap();
-            refCache.put(modelResource.getFileName(), innerMap);
-            //Get the location of the model that represents the pose, and that we're going to generate the data for
-            ResourceLocation location = new ResourceLocation(mainModelLocation.getNamespace(), modelResource.getFullLocation());
-            //If the pose location is the same as the mainInfo, skip it and add all the mainInfo data instead. Prevents loading the same model twice
-            if (location.equals(mainModelLocation)) {
-                for (TabulaModelInformation.Cube cube : mainInfo.getAllCubes()) {
-                    innerMap.put(cube.getName(), CubeReference.fromCube(cube));
+            if(data instanceof PoseData.FileResolvablePoseData) {
+                PoseData.FileResolvablePoseData ppd = (PoseData.FileResolvablePoseData) data;
+                data.getCubes().clear();
+                if (refCache.containsKey(ppd.getModelName())) {
+                    data.getCubes().putAll(refCache.get(ppd.getModelName()));
+                    continue;
                 }
-            } else {
-                //If the file ends with .tbl (The old way). Currently only the working way which is why its enforced. I need to check the integrity of the python script
-                if (modelResource.getFileName().endsWith(JSON_EXTENSION)) {
-                    this.loadJsonPose(location, mainInfo, innerMap);
+                Map<String, CubeReference> innerMap = Maps.newHashMap();
+                refCache.put(ppd.getModelName(), innerMap);
+                //Get the location of the model that represents the pose, and that we're going to generate the data for
+                ResourceLocation location = new ResourceLocation(namespace, baseLoc + ppd.getModelName());
+
+                if (ppd.getModelName().endsWith(JSON_EXTENSION)) {
+                    this.loadJsonPose(location, this.mainModel, innerMap);
                 } else {
-                    this.loadTabulaPose(location, mainInfo, innerMap);
+                    this.loadTabulaPose(location, this.mainModel, innerMap);
                 }
+                data.getCubes().putAll(innerMap);
             }
-            data.getCubes().putAll(innerMap);
         }
     }
 

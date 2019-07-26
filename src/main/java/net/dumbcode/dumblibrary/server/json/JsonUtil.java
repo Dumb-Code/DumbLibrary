@@ -82,7 +82,7 @@ public class JsonUtil {
         Arrays.stream(folderNames).forEach(name ->
         {
             try (Stream<Path> paths = Files.walk(Paths.get(".", FOLDER_NAME, modid, name))) {
-                paths.filter(file -> file.toFile().isFile()).forEach(path ->
+                paths.filter(Files::isRegularFile).forEach(path ->
                 {
                     File file = new File(path.toString());
                     if (!"json".equals(FilenameUtils.getExtension(file.toString()))) {

@@ -43,19 +43,19 @@ public class TabulaUtils {
         try {
             @Cleanup InputStream stream = Files.newInputStream(StreamUtils.getPath(location));
             TabulaModelInformation modelInfo = TabulaJsonHandler.GSON.fromJson(new InputStreamReader(getModelJsonStream(stream)), TabulaModelInformation.class);
-            parseGroups(modelInfo.getGroups(), map);
+            createCubeGroups(modelInfo.getGroups(), map);
         } catch (IOException e) {
             DumbLibrary.getLogger().warn("Unable to load serside cubes from model " + location, e);
         }
         return map;
     }
 
-    private static void parseGroups(List<TabulaModelInformation.CubeGroup> groups, Map<String, AnimationLayer.AnimatableCube> map) {
+    public static void createCubeGroups(List<TabulaModelInformation.CubeGroup> groups, Map<String, AnimationLayer.AnimatableCube> map) {
         for (TabulaModelInformation.CubeGroup group : groups) {
             for (TabulaModelInformation.Cube cube : group.getCubeList()) {
                 parseCube(cube, null, map);
             }
-            parseGroups(group.getChildGroups(), map);
+            createCubeGroups(group.getChildGroups(), map);
         }
     }
 

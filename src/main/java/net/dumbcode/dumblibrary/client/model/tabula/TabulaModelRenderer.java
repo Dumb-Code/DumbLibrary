@@ -202,6 +202,13 @@ public class TabulaModelRenderer extends ModelRenderer implements AnimationLayer
     }
 
     @Override
+    public void setRotation(float rotationX, float rotationY, float rotationZ) {
+        this.rotateAngleX = rotationX;
+        this.rotateAngleY = rotationY;
+        this.rotateAngleZ = rotationZ;
+    }
+
+    @Override
     public void reset() {
         this.resetRotations();
         this.resetRotationPoint();

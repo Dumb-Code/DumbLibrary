@@ -47,7 +47,7 @@ public class StreamUtils {
                     root = source.toPath().resolve(base);
                 }
 
-                if (!mustExist || (root != null && root.toFile().exists())) {
+                if (!mustExist || (root != null && Files.exists(root))) {
                     return root;
                 } else {
                     throw new FileNotFoundException("Could not find file " + root);

@@ -58,11 +58,24 @@ public class ServerAnimatableCube implements AnimationLayer.AnimatableCube {
         this.rotationPoint.z += pointZ;
     }
 
+    public void setRotationPoint(float pointX, float pointY, float pointZ) {
+        this.rotationPoint.x = pointX;
+        this.rotationPoint.y = pointY;
+        this.rotationPoint.z = pointZ;
+    }
+
     @Override
     public void addRotation(float rotationX, float rotationY, float rotationZ) {
         this.rotation.x += rotationX;
         this.rotation.y += rotationY;
         this.rotation.z += rotationZ;
+    }
+
+    @Override
+    public void setRotation(float rotationX, float rotationY, float rotationZ) {
+        this.rotation.x = rotationX;
+        this.rotation.y = rotationY;
+        this.rotation.z = rotationZ;
     }
 
     @Override

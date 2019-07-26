@@ -8,7 +8,7 @@ import com.google.gson.JsonObject;
 import lombok.Data;
 import lombok.Getter;
 import lombok.experimental.Accessors;
-import net.dumbcode.dumblibrary.client.animation.AnimationContainer;
+import net.dumbcode.dumblibrary.server.animation.AnimationContainer;
 import net.minecraft.util.JsonUtils;
 
 import java.lang.reflect.Type;
@@ -20,23 +20,20 @@ import java.util.Map;
 @Getter
 @Data
 public class PoseData {
-    private final String modelName;
     private final float time;
-    @Accessors(chain = true)
-    private AnimationContainer.ModelLocation location;
     private final Map<String, CubeReference> cubes = Maps.newHashMap();
 
+    /**
+     * This class should be used if the pose data should be resolved with our file system. <br>
+     * This can be the the json file system, or the folder with poses in system
+     */
+    @Getter
+    public static class FileResolvablePoseData extends PoseData {
+        private final String modelName;
 
-    public enum Deserializer implements JsonDeserializer<PoseData> {
-        INSTANCE;
-
-        @Override
-        public PoseData deserialize(JsonElement element, Type typeOfT, JsonDeserializationContext context) {
-            JsonObject json = element.getAsJsonObject();
-            return new PoseData(
-                    JsonUtils.getString(json, "pose"),
-                    JsonUtils.getFloat(json, "time")
-            );
+        public FileResolvablePoseData(String modelName, float time) {
+            super(time);
+            this.modelName = modelName;
         }
     }
 

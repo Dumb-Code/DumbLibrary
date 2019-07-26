@@ -388,8 +388,10 @@ public class AnimationLayer {
         float[] getDimension();
 
         void addRotationPoint(float pointX, float pointY, float pointZ);
+        void setRotationPoint(float pointX, float pointY, float pointZ);
 
         void addRotation(float rotationX, float rotationY, float rotationZ);
+        void setRotation(float rotationX, float rotationY, float rotationZ);
 
         void reset();
 
@@ -441,7 +443,17 @@ public class AnimationLayer {
         }
 
         @Override
+        public void setRotationPoint(float pointX, float pointY, float pointZ) {
+            //NO OP
+        }
+
+        @Override
         public void addRotation(float rotationX, float rotationY, float rotationZ) {
+            //NO OP
+        }
+
+        @Override
+        public void setRotation(float rotationX, float rotationY, float rotationZ) {
             //NO OP
         }
 

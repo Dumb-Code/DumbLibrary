@@ -8,6 +8,8 @@ addons:
 
 jdk:
   - oraclejdk8
+  
+dist: trusty
 
 before_script:
   - export COMMITTER_EMAIL="$(git log -1 $TRAVIS_COMMIT --pretty="%cE")"

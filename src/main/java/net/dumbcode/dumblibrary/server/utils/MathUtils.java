@@ -19,8 +19,8 @@ public class MathUtils {
         return 1 / (1 + Math.exp(-x));
     }
 
-    public static int getWeightedResult(int size) {
-        return (int) Math.abs(RANDOM.nextGaussian() * size * 10);
+    public static int getWeightedResult(double sd, double mean) {
+        return (int) Math.abs(RANDOM.nextGaussian() * sd + mean);
     }
 
     public static int floorToZero(double value) {

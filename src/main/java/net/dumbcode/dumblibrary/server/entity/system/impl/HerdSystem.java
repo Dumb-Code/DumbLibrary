@@ -66,6 +66,7 @@ public enum HerdSystem implements EntitySystem {
     }
 
     private void createNewHerd(Entity entity, HerdComponent herd) {
+        System.out.println("Created Herd!");
         herd.herdUUID = UUID.randomUUID();
         this.ensureHerdData(entity, herd);
 
@@ -73,6 +74,7 @@ public enum HerdSystem implements EntitySystem {
         herd.herdData.leader = entity.getUniqueID();
     }
 
+    //Currently, this moves all the entities 30 blocks away to where the leader is. This could maybe be changed.
     private void moveAsHeard(Entity entity, HerdComponent herd) {
         if(herd.herdData != null && entity.getUniqueID().equals(herd.herdData.leader)) {
             if(herd.herdData.tryMoveCooldown <= 0) {

@@ -7,7 +7,6 @@ import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.client.model.tabula.TabulaModel;
 import net.dumbcode.dumblibrary.client.model.tabula.TabulaModelAnimator;
 import net.dumbcode.dumblibrary.client.model.tabula.TabulaModelRenderer;
-import net.dumbcode.dumblibrary.server.animation.objects.AnimationLayer;
 import net.dumbcode.dumblibrary.server.info.ServerAnimatableCube;
 import net.dumbcode.dumblibrary.server.tabula.TabulaJsonHandler;
 import net.dumbcode.dumblibrary.server.tabula.TabulaModelInformation;
@@ -34,12 +33,12 @@ public class TabulaUtils {
 
     public static final ResourceLocation MISSING = new ResourceLocation(DumbLibrary.MODID, "nomodel");
 
-    public static Map<String, AnimationLayer.AnimatableCube> getServersideCubes(ResourceLocation location) {
+    public static Map<String, AnimatableCube> getServersideCubes(ResourceLocation location) {
         if (!location.getPath().endsWith(".tbl")) {
             location = new ResourceLocation(location.getNamespace(), location.getPath() + ".tbl");
         }
 
-        Map<String, AnimationLayer.AnimatableCube> map = Maps.newHashMap();
+        Map<String, AnimatableCube> map = Maps.newHashMap();
         try {
             @Cleanup InputStream stream = Files.newInputStream(StreamUtils.getPath(location));
             TabulaModelInformation modelInfo = TabulaJsonHandler.GSON.fromJson(new InputStreamReader(getModelJsonStream(stream)), TabulaModelInformation.class);
@@ -50,7 +49,7 @@ public class TabulaUtils {
         return map;
     }
 
-    public static void createCubeGroups(List<TabulaModelInformation.CubeGroup> groups, Map<String, AnimationLayer.AnimatableCube> map) {
+    public static void createCubeGroups(List<TabulaModelInformation.CubeGroup> groups, Map<String, AnimatableCube> map) {
         for (TabulaModelInformation.CubeGroup group : groups) {
             for (TabulaModelInformation.Cube cube : group.getCubeList()) {
                 parseCube(cube, null, map);
@@ -59,7 +58,7 @@ public class TabulaUtils {
         }
     }
 
-    private static void parseCube(TabulaModelInformation.Cube cube, @Nullable ServerAnimatableCube parent, Map<String, AnimationLayer.AnimatableCube> map) {
+    private static void parseCube(TabulaModelInformation.Cube cube, @Nullable ServerAnimatableCube parent, Map<String, AnimatableCube> map) {
         ServerAnimatableCube animatableCube = new ServerAnimatableCube(parent, cube);
         map.put(cube.getName(), animatableCube);
         for (TabulaModelInformation.Cube child : cube.getChildren()) {
@@ -104,7 +103,7 @@ public class TabulaUtils {
         throw new IOException("No model.json present");
     }
 
-    public static Vec3d getModelPosAlpha(AnimationLayer.AnimatableCube cube, float xalpha, float yalpha, float zalpha) {
+    public static Vec3d getModelPosAlpha(AnimatableCube cube, float xalpha, float yalpha, float zalpha) {
         float[] offset = cube.getOffset();
         float[] dimensions = cube.getDimension();
         return getModelPos(cube,
@@ -114,7 +113,7 @@ public class TabulaUtils {
         );
     }
 
-    public static Vec3d getModelPos(AnimationLayer.AnimatableCube cube, double x, double y, double z) {
+    public static Vec3d getModelPos(AnimatableCube cube, double x, double y, double z) {
         Point3d rendererPos = new Point3d(x, y, z);
 
         Matrix4d boxTranslate = new Matrix4d();
@@ -136,7 +135,7 @@ public class TabulaUtils {
         boxRotateZ.transform(rendererPos);
         boxTranslate.transform(rendererPos);
 
-        AnimationLayer.AnimatableCube parent = cube.getParent();
+        AnimatableCube parent = cube.getParent();
         if (parent != null) {
             return getModelPos(parent, rendererPos.getX(), rendererPos.getY(), rendererPos.getZ());
         }

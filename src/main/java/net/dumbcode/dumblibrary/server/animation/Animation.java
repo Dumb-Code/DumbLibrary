@@ -1,4 +1,4 @@
-package net.dumbcode.dumblibrary.server.animation.objects;
+package net.dumbcode.dumblibrary.server.animation;
 
 import lombok.Getter;
 import lombok.experimental.Accessors;

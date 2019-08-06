@@ -1,7 +1,7 @@
 package net.dumbcode.dumblibrary.server.registry;
 
-import net.dumbcode.dumblibrary.server.animation.objects.Animation;
-import net.dumbcode.dumblibrary.server.animation.objects.AnimationFactor;
+import net.dumbcode.dumblibrary.server.animation.Animation;
+import net.dumbcode.dumblibrary.server.animation.data.AnimationFactor;
 import net.dumbcode.dumblibrary.server.entity.component.EntityComponentType;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.registries.IForgeRegistry;

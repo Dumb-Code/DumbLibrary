@@ -3,7 +3,7 @@ package net.dumbcode.dumblibrary.client.model.tabula;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
-import net.dumbcode.dumblibrary.server.animation.objects.AnimationLayer;
+import net.dumbcode.dumblibrary.server.animation.AnimatableCube;
 import net.dumbcode.dumblibrary.server.tabula.TabulaModelInformation;
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.model.ModelBox;
@@ -20,7 +20,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
  */
 @Getter
 @Setter
-public class TabulaModelRenderer extends ModelRenderer implements AnimationLayer.AnimatableCube {
+public class TabulaModelRenderer extends ModelRenderer implements AnimatableCube {
     private final TabulaModelInformation.Cube cube;
 
     private float scaleX;

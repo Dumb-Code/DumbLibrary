@@ -1,17 +1,9 @@
-package net.dumbcode.dumblibrary.server.animation.objects;
+package net.dumbcode.dumblibrary.server.animation.data;
 
 import com.google.common.collect.Maps;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import lombok.Data;
 import lombok.Getter;
-import lombok.experimental.Accessors;
-import net.dumbcode.dumblibrary.server.animation.AnimationContainer;
-import net.minecraft.util.JsonUtils;
 
-import java.lang.reflect.Type;
 import java.util.Map;
 
 /**

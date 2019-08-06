@@ -1,6 +1,6 @@
 package net.dumbcode.dumblibrary.server.animation.interpolation;
 
-import net.dumbcode.dumblibrary.server.animation.objects.AnimationLayer;
+import net.dumbcode.dumblibrary.server.animation.AnimationLayer;
 
 /**
  * An interface that allows for custom

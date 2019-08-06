@@ -23,6 +23,7 @@ import java.util.Map;
 @Setter
 @Accessors(chain = true)
 public class TabulaModel extends ModelBase {
+
     private final TabulaModelInformation information;
     private final List<TabulaModelRenderer> roots = Lists.newArrayList();
     @Getter

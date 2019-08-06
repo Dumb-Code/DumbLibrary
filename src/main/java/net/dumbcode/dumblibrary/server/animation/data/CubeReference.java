@@ -1,4 +1,4 @@
-package net.dumbcode.dumblibrary.server.animation.objects;
+package net.dumbcode.dumblibrary.server.animation.data;
 
 import lombok.Value;
 import net.dumbcode.dumblibrary.server.tabula.TabulaModelInformation;

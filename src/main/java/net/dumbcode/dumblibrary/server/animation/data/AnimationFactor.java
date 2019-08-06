@@ -1,13 +1,10 @@
-package net.dumbcode.dumblibrary.server.animation.objects;
+package net.dumbcode.dumblibrary.server.animation.data;
 
 import lombok.AllArgsConstructor;
-import lombok.experimental.Delegate;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.server.entity.ComponentAccess;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.registries.IForgeRegistryEntry;
-
-import java.util.function.Function;
 
 /**
  * Float suppliers are currently only used in 2 context. To control the speed of the animation, and to control the

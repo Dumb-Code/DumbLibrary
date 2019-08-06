@@ -6,10 +6,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import net.dumbcode.dumblibrary.DumbLibrary;
-import net.dumbcode.dumblibrary.server.animation.AnimationContainer;
 import net.dumbcode.dumblibrary.client.model.tabula.TabulaModel;
-import net.dumbcode.dumblibrary.server.animation.TabulaUtils;
-import net.dumbcode.dumblibrary.server.animation.objects.AnimationLayer;
+import net.dumbcode.dumblibrary.server.animation.*;
+import net.dumbcode.dumblibrary.server.animation.impl.AnimatableCubeEmpty;
 import net.dumbcode.dumblibrary.server.entity.ComponentAccess;
 import net.dumbcode.dumblibrary.server.entity.component.EntityComponentTypes;
 import net.dumbcode.dumblibrary.server.entity.component.additionals.RenderCallbackComponent;
@@ -30,7 +29,7 @@ public class AnimationComponent<E extends Entity & ComponentAccess> implements R
 
     private AnimationLayer animationLayer;
 
-    private AnimationLayer.AnimationWrap[] layersActive = new AnimationLayer.AnimationWrap[Byte.MAX_VALUE];
+    private AnimationWrap[] layersActive = new AnimationWrap[Byte.MAX_VALUE];
 
     /**
      * Plays the animation on a certain channel, after a series of time
@@ -41,7 +40,7 @@ public class AnimationComponent<E extends Entity & ComponentAccess> implements R
      *              The maximum channel is
      * @param delay the delay, in ticks, until this animation should be played.
      */
-    public void proposeAnimation(ComponentAccess entity, AnimationLayer.AnimationEntry entry, int channel, int delay) {
+    public void proposeAnimation(ComponentAccess entity, AnimationEntry entry, int channel, int delay) {
         this.futureAnimations.add(new FutureAnimation(entity, entry, channel, delay));
     }
     /**
@@ -52,7 +51,7 @@ public class AnimationComponent<E extends Entity & ComponentAccess> implements R
      *              If this is less than 0, then no animation will be stopped <br>
      *              The maximum channel is
      */
-    public void playAnimation(ComponentAccess entity, AnimationLayer.AnimationEntry entry, int channel) {
+    public void playAnimation(ComponentAccess entity, AnimationEntry entry, int channel) {
         this.playAnimation(entity, this.animationLayer.create(entry), channel);
     }
 
@@ -65,9 +64,9 @@ public class AnimationComponent<E extends Entity & ComponentAccess> implements R
      *              The maximum channel is
      */
     @SuppressWarnings("unchecked")
-    public void playAnimation(ComponentAccess entity, AnimationLayer.AnimationWrap newWrap, int channel) {
+    public void playAnimation(ComponentAccess entity, AnimationWrap newWrap, int channel) {
         if(channel >= 0) {
-            AnimationLayer.AnimationWrap current = this.layersActive[channel];
+            AnimationWrap current = this.layersActive[channel];
             if(current != null) {
                 this.animationLayer.removeAnimation(current);
             }
@@ -118,13 +117,13 @@ public class AnimationComponent<E extends Entity & ComponentAccess> implements R
                         return new AnimationLayer(e, tm.getAllCubesNames(), tm::getCube, this.animationContainer.getAnimations()::get);
                     } else {
                         //todo: make an implementation for non tabula models?
-                        return new AnimationLayer(e, Lists.newArrayList(), s -> AnimationLayer.AnimatableCubeEmpty.INSTANCE, this.animationContainer.getAnimations()::get);
+                        return new AnimationLayer(e, Lists.newArrayList(), s -> AnimatableCubeEmpty.INSTANCE, this.animationContainer.getAnimations()::get);
 
                     }
                 }, null);
 
             } else {
-                Map<String, AnimationLayer.AnimatableCube> cubes = TabulaUtils.getServersideCubes(entity.get(EntityComponentTypes.MODEL).map(com -> com.getFileLocation().getLocation()).orElse(TabulaUtils.MISSING));
+                Map<String, AnimatableCube> cubes = TabulaUtils.getServersideCubes(entity.get(EntityComponentTypes.MODEL).map(com -> com.getFileLocation().getLocation()).orElse(TabulaUtils.MISSING));
                 this.animationLayer = new AnimationLayer(e, cubes.keySet(), cubes::get, this.animationContainer.getAnimations()::get);//this.animationContainer.apply(entity).getAnimations()::get
             }
         }
@@ -149,7 +148,7 @@ public class AnimationComponent<E extends Entity & ComponentAccess> implements R
     @AllArgsConstructor
     public class FutureAnimation {
         private final ComponentAccess entity;
-        private final AnimationLayer.AnimationEntry entry;
+        private final AnimationEntry entry;
         private final int channel;
 
         private int ticksLeft;

@@ -89,6 +89,15 @@ public class AnimationComponent<E extends Entity & ComponentAccess> implements R
         this.animationLayer.removeAll();
     }
 
+    /**
+     * Is the animation component ready for playing animations
+     * @return true if {@link #playAnimation(ComponentAccess, AnimationLayer.AnimationEntry, int)} can be called.
+     * If it cannot be called, you should use {@link #proposeAnimation(ComponentAccess, AnimationLayer.AnimationEntry, int, int)}
+     */
+    public boolean isReadyForAnimations() {
+        return this.animationLayer != null;
+    }
+
     @Override
     public NBTTagCompound serialize(NBTTagCompound compound) {
         return compound; //TODO: serialize the animation ?

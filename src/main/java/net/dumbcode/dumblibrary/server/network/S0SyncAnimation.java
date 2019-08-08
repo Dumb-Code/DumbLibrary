@@ -46,7 +46,13 @@ public class S0SyncAnimation implements IMessage {
         protected void handleMessage(S0SyncAnimation message, MessageContext ctx, World world, EntityPlayer player) {
             Entity entity = world.getEntityByID(message.entityid);
             if (entity instanceof ComponentAccess) {
-                ((ComponentAccess) entity).get(EntityComponentTypes.ANIMATION).ifPresent(c -> c.playAnimation((ComponentAccess) entity, message.entry, message.channel));
+                ((ComponentAccess) entity).get(EntityComponentTypes.ANIMATION).ifPresent(c -> {
+                    if(c.isReadyForAnimations()) {
+                        c.playAnimation((ComponentAccess) entity, message.entry, message.channel);
+                    } else {
+                        c.proposeAnimation((ComponentAccess) entity, message.entry, message.channel, 10);
+                    }
+                });
             }
         }
     }

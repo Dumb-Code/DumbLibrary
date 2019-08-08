@@ -56,11 +56,13 @@ public class HerdComponent implements FinalizableComponent {
 
     public void addMember(UUID uniqueID, HerdComponent herd) {
         herd.herdUUID = this.herdUUID;
+        herd.herdData = this.herdData;
         this.herdData.addMember(uniqueID);
     }
 
     public void removeMember(UUID uniqueID, HerdComponent herd) {
         herd.herdUUID = null;
+        herd.herdData = null;
         this.herdData.removeMember(uniqueID);
     }
 

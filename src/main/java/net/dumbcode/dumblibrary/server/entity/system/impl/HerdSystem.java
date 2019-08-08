@@ -46,6 +46,7 @@ public enum HerdSystem implements EntitySystem {
                     this.createNewHerd(entity, herd);
                 }
             } else {
+                this.ensureHerdData(entity, herd);
                 this.moveAsHeard(entity, herd);
             }
         }
@@ -66,7 +67,8 @@ public enum HerdSystem implements EntitySystem {
     }
 
     private void createNewHerd(Entity entity, HerdComponent herd) {
-        System.out.println("Created Herd!");
+        System.out.println("Created New Herd!");
+
         herd.herdUUID = UUID.randomUUID();
         this.ensureHerdData(entity, herd);
 
@@ -106,7 +108,7 @@ public enum HerdSystem implements EntitySystem {
         if(entity instanceof ComponentAccess) {
             HerdComponent component = ((ComponentAccess) entity).getOrNull(EntityComponentTypes.HERD);
             if(component != null && component.herdData != null) {
-                component.herdData.removeMember(entity.getUniqueID());
+                component.removeMember(entity.getUniqueID(), component);
                 if(component.herdData.leader.equals(entity.getUniqueID())) {
                     List<UUID> herdMembers = component.herdData.getMembers();
                     if(!herdMembers.isEmpty()) {

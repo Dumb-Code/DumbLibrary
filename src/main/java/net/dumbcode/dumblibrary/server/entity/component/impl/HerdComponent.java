@@ -61,9 +61,9 @@ public class HerdComponent implements FinalizableComponent {
     }
 
     public void removeMember(UUID uniqueID, HerdComponent herd) {
+        this.herdData.removeMember(uniqueID);
         herd.herdUUID = null;
         herd.herdData = null;
-        this.herdData.removeMember(uniqueID);
     }
 
     @Accessors(chain = true)

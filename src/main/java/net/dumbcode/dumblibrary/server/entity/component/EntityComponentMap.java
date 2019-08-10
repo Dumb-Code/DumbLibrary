@@ -2,7 +2,9 @@ package net.dumbcode.dumblibrary.server.entity.component;
 
 import com.google.common.collect.Lists;
 import io.netty.buffer.ByteBuf;
+import lombok.Getter;
 import net.dumbcode.dumblibrary.DumbLibrary;
+import net.dumbcode.dumblibrary.server.entity.ComponentMapWriteAccess;
 import net.dumbcode.dumblibrary.server.registry.DumbRegistries;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
@@ -17,6 +19,8 @@ import java.util.Map;
 import java.util.Optional;
 
 public class EntityComponentMap extends LinkedHashMap<EntityComponentType<?, ?>, EntityComponent> {
+
+    @Getter private final transient Writeable writeable = new Writeable();
 
     @Nullable
     @SuppressWarnings("unchecked")
@@ -84,6 +88,14 @@ public class EntityComponentMap extends LinkedHashMap<EntityComponentType<?, ?>,
             EntityComponent component = type.constructEmpty();
             component.deserialize(buf);
             this.put(type, component);
+        }
+    }
+
+    private class Writeable implements ComponentMapWriteAccess {
+
+        @Override
+        public EntityComponentMap getComponentMap() {
+            return EntityComponentMap.this;
         }
     }
 }

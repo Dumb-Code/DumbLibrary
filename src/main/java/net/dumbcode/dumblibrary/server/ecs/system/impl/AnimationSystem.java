@@ -4,6 +4,7 @@ import net.dumbcode.dumblibrary.server.ecs.EntityManager;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentTypes;
 import net.dumbcode.dumblibrary.server.ecs.component.impl.AnimationComponent;
 import net.dumbcode.dumblibrary.server.ecs.system.EntitySystem;
+import net.minecraft.world.World;
 
 public enum AnimationSystem implements EntitySystem {
     INSTANCE;
@@ -16,7 +17,7 @@ public enum AnimationSystem implements EntitySystem {
     }
 
     @Override
-    public void update() {
+    public void update(World world) {
         for (AnimationComponent<?> component : this.components) {
             component.getFutureAnimations().removeIf(AnimationComponent.FutureAnimation::tick);
         }

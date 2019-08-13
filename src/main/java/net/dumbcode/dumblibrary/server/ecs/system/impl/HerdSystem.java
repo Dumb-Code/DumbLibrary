@@ -11,6 +11,7 @@ import net.dumbcode.dumblibrary.server.utils.WorldUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.world.World;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -34,7 +35,7 @@ public enum HerdSystem implements EntitySystem {
     }
 
     @Override
-    public void update() {
+    public void update(World world) {
         for (int i = 0; i < this.herds.length; i++) {
             Entity entity = this.matchedEntities[i];
             HerdComponent herd = this.herds[i];

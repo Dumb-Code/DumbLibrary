@@ -6,6 +6,7 @@ import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentTypes;
 import net.dumbcode.dumblibrary.server.ecs.component.impl.MetabolismComponent;
 import net.dumbcode.dumblibrary.server.ecs.system.EntitySystem;
 import net.minecraft.entity.Entity;
+import net.minecraft.world.World;
 
 public enum MetabolismSystem implements EntitySystem {
     INSTANCE;
@@ -20,7 +21,7 @@ public enum MetabolismSystem implements EntitySystem {
     }
 
     @Override
-    public void update() {
+    public void update(World world) {
         for (int i = 0; i < this.metabolism.length; i++) {
             if(this.entities[i].ticksExisted % 20 == 0) {
                 MetabolismComponent meta = metabolism[i];

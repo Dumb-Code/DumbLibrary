@@ -1,6 +1,8 @@
 package net.dumbcode.dumblibrary.server.ecs.component;
 
 import net.dumbcode.dumblibrary.DumbLibrary;
+import net.dumbcode.dumblibrary.server.ecs.blocks.components.GrowingComponent;
+import net.dumbcode.dumblibrary.server.ecs.blocks.systems.GrowingSystem;
 import net.dumbcode.dumblibrary.server.ecs.component.impl.*;
 import net.dumbcode.dumblibrary.server.ecs.system.RegisterSystemsEvent;
 import net.dumbcode.dumblibrary.server.ecs.system.impl.*;
@@ -20,6 +22,8 @@ public class EntityComponentTypes {
     public static final EntityComponentType<ModelComponent, ?> MODEL = InjectedUtils.injected();
     public static final EntityComponentType<RenderAdjustmentsComponent, RenderAdjustmentsComponent.Storage> RENDER_ADJUSTMENTS = InjectedUtils.injected();
     public static final EntityComponentType<SpeedTrackingComponent, ?> SPEED_TRACKING = InjectedUtils.injected();
+
+    public static final EntityComponentType<GrowingComponent, GrowingComponent.Storage> BLOCK_GROWING = InjectedUtils.injected();
 
     @SubscribeEvent
     public static void onRegisterComponents(RegisterComponentsEvent event) {
@@ -54,6 +58,12 @@ public class EntityComponentTypes {
                 SimpleComponentType.builder(SpeedTrackingComponent.class)
                         .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "speed_tracking"))
                         .withConstructor(SpeedTrackingComponent::new)
+                        .build(),
+
+                SimpleComponentType.builder(GrowingComponent.class, GrowingComponent.Storage.class)
+                        .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "block_growing"))
+                        .withConstructor(GrowingComponent::new)
+                        .withStorage(GrowingComponent.Storage::new)
                         .build()
         );
     }
@@ -65,5 +75,7 @@ public class EntityComponentTypes {
         event.registerSystem(AnimationSystem.INSTANCE);
         event.registerSystem(ItemDropSystem.INSTANCE);
         event.registerSystem(SpeedTrackingSystem.INSTANCE);
+
+        event.registerSystem(GrowingSystem.INSTANCE);
     }
 }

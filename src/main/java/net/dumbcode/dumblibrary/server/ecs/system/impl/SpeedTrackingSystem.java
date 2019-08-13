@@ -29,7 +29,7 @@ public enum SpeedTrackingSystem implements EntitySystem {
     }
 
     @Override
-    public void update() {
+    public void update(World world) {
         for (int i = 0; i < this.entities.length; i++) {
             this.updateEntity(this.entities[i], this.speedComponents[i]);
         }

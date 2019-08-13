@@ -6,6 +6,7 @@ import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.ItemDropComponent;
 import net.dumbcode.dumblibrary.server.ecs.system.EntitySystem;
 import net.minecraft.entity.Entity;
+import net.minecraft.world.World;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
@@ -19,7 +20,7 @@ public enum ItemDropSystem implements EntitySystem {
     }
 
     @Override
-    public void update() {
+    public void update(World world) {
         //NO OP
     }
 

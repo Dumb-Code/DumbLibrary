@@ -40,12 +40,12 @@ public interface EntityManager extends ICapabilityProvider {
         if (event.phase == TickEvent.Phase.START) {
             EntityManager entityManager = event.world.getCapability(DumbLibrary.ENTITY_MANAGER, null);
             if (entityManager != null) {
-                entityManager.updateSystems();
+                entityManager.updateSystems(event.world);
             }
         }
     }
 
-    void updateSystems();
+    void updateSystems(World world);
 
     void addEntity(Entity entity);
 
@@ -59,7 +59,7 @@ public interface EntityManager extends ICapabilityProvider {
         private boolean systemsDirty = true;
 
         @Override
-        public void updateSystems() {
+        public void updateSystems(World world) {
             if (this.systemsDirty) {
                 this.systemsDirty = false;
                 for (EntitySystem system : this.systems) {
@@ -67,7 +67,7 @@ public interface EntityManager extends ICapabilityProvider {
                 }
             }
             for (EntitySystem system : this.systems) {
-                system.update();
+                system.update(world);
             }
         }
 

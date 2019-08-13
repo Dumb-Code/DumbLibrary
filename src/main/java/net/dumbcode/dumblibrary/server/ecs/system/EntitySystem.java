@@ -1,9 +1,12 @@
 package net.dumbcode.dumblibrary.server.ecs.system;
 
 import net.dumbcode.dumblibrary.server.ecs.EntityManager;
+import net.minecraft.world.World;
 
 public interface EntitySystem {
-    void populateBuffers(EntityManager manager);
+    default void populateBuffers(EntityManager manager) {
+        //NO-OP
+    }
 
-    void update();
+    void update(World world);
 }

@@ -3,9 +3,9 @@ package net.dumbcode.dumblibrary.client.model.tabula;
 import net.minecraft.entity.Entity;
 
 /**
- * Used to finalizeComponent additional animations onto an entity
+ * Used to finalizeComponent additional animations onto an ecs
  *
- * @param <E> the entity
+ * @param <E> the ecs
  */
 @FunctionalInterface
 public interface TabulaModelAnimator<E extends Entity> {

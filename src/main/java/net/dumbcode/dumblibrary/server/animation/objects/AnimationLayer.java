@@ -10,7 +10,7 @@ import lombok.Setter;
 import lombok.experimental.Wither;
 import net.dumbcode.dumblibrary.server.animation.interpolation.Interpolation;
 import net.dumbcode.dumblibrary.server.animation.interpolation.LinearInterpolation;
-import net.dumbcode.dumblibrary.server.entity.ComponentAccess;
+import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.registry.DumbRegistries;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.MathHelper;

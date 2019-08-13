@@ -13,7 +13,7 @@ public class AIUtils {
      * Gets all of the blocks in a circle with respect to the radius.
      *
      * @param h      center x position
-     * @param y      entity y position
+     * @param y      ecs y position
      * @param k      center z position
      * @param radius radius you want to search through
      * @return list of all block positions in the circle.

@@ -2,8 +2,8 @@ package net.dumbcode.dumblibrary.client.component;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import net.dumbcode.dumblibrary.server.entity.component.additionals.RenderCallbackComponent;
-import net.dumbcode.dumblibrary.server.entity.component.additionals.RenderLocationComponent;
+import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderCallbackComponent;
+import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLocationComponent;
 
 import java.util.List;
 

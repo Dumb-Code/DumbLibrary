@@ -2,7 +2,7 @@ package net.dumbcode.dumblibrary;
 
 import net.dumbcode.dumblibrary.client.model.TransformTypeModelLoader;
 import net.dumbcode.dumblibrary.server.DumbGuiHandler;
-import net.dumbcode.dumblibrary.server.entity.EntityManager;
+import net.dumbcode.dumblibrary.server.ecs.EntityManager;
 import net.dumbcode.dumblibrary.server.network.S0SyncAnimation;
 import net.dumbcode.dumblibrary.server.utils.InjectedUtils;
 import net.minecraftforge.client.model.ModelLoaderRegistry;

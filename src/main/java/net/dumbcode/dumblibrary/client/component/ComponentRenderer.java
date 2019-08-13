@@ -1,10 +1,10 @@
 package net.dumbcode.dumblibrary.client.component;
 
 import com.google.common.collect.Lists;
-import net.dumbcode.dumblibrary.server.entity.ComponentAccess;
-import net.dumbcode.dumblibrary.server.entity.component.EntityComponent;
-import net.dumbcode.dumblibrary.server.entity.component.additionals.RenderCallbackComponent;
-import net.dumbcode.dumblibrary.server.entity.component.additionals.RenderLocationComponent;
+import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
+import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
+import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderCallbackComponent;
+import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLocationComponent;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.Entity;

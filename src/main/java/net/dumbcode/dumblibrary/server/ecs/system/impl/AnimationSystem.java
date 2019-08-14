@@ -12,7 +12,7 @@ public enum AnimationSystem implements EntitySystem {
     private AnimationComponent<?>[] components = null;
 
     @Override
-    public void populateBuffers(EntityManager manager) {
+    public void populateEntityBuffers(EntityManager manager) {
         this.components = manager.resolveFamily(EntityComponentTypes.ANIMATION).populateBuffer(EntityComponentTypes.ANIMATION, this.components);
     }
 

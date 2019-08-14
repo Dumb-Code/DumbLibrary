@@ -6,25 +6,11 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.JsonUtils;
 
 public class GrowingComponent implements EntityComponent {
 
-    private static final String GROW_TO_KEY = "grow_to";
-
     @Getter private String growTo;
-
-    @Override
-    public NBTTagCompound serialize(NBTTagCompound compound) {
-        compound.setString(GROW_TO_KEY, this.growTo);
-        return compound;
-    }
-
-    @Override
-    public void deserialize(NBTTagCompound compound) {
-        this.growTo = compound.getString(GROW_TO_KEY);
-    }
 
     @Accessors(chain = true)
     @Setter
@@ -42,13 +28,12 @@ public class GrowingComponent implements EntityComponent {
 
         @Override
         public void readJson(JsonObject json) {
-            this.growTo = JsonUtils.getString(json, GROW_TO_KEY);
+            this.growTo = JsonUtils.getString(json, "grow_to");
         }
 
         @Override
         public void writeJson(JsonObject json) {
-            json.addProperty(GROW_TO_KEY, this.growTo);
+            json.addProperty("grow_to", this.growTo);
         }
     }
-
 }

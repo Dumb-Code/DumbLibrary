@@ -22,8 +22,8 @@ public enum SpeedTrackingSystem implements EntitySystem {
     private SpeedTrackingComponent[] speedComponents;
 
     @Override
-    public void populateBuffers(EntityManager manager) {
-        EntityFamily family = manager.resolveFamily(EntityComponentTypes.SPEED_TRACKING);
+    public void populateEntityBuffers(EntityManager manager) {
+        EntityFamily<Entity> family = manager.resolveFamily(EntityComponentTypes.SPEED_TRACKING);
         this.entities = family.getEntities();
         this.speedComponents = family.populateBuffer(EntityComponentTypes.SPEED_TRACKING, this.speedComponents);
     }

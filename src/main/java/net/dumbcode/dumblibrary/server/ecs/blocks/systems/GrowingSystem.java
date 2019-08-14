@@ -1,6 +1,5 @@
 package net.dumbcode.dumblibrary.server.ecs.blocks.systems;
 
-import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.server.ecs.blocks.BlockPropertyAccess;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentTypes;
 import net.dumbcode.dumblibrary.server.ecs.system.EntitySystem;
@@ -10,11 +9,9 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
-import net.minecraftforge.fml.common.Mod;
 
 import java.util.Random;
 
-@Mod.EventBusSubscriber(modid = DumbLibrary.MODID)
 public enum GrowingSystem implements EntitySystem {
     INSTANCE;
 
@@ -41,7 +38,7 @@ public enum GrowingSystem implements EntitySystem {
                         //If the specified blockstate is a component access block, then get the access property.
                         //Then, with the component acess, get the #BLOCK_GROWING component type. If that is present,
                         //Then set a new block to the blocks position with the #getGrowTo as the property.
-                        BlockPropertyAccess.getAccessFromState(iblockstate).ifPresent(iProperty -> {
+                        BlockPropertyAccess.getProperty(iblockstate).ifPresent(iProperty -> {
                             iblockstate.getValue(iProperty).get(EntityComponentTypes.BLOCK_GROWING).ifPresent(component -> {
                                 BlockPos pos = new BlockPos(xPos + chunkX, yPos + storage.getYLocation(), zPos + chunkZ);
                                 IBlockState toState = iblockstate.withProperty(iProperty, iProperty.getFromString(component.getGrowTo()));

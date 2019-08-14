@@ -32,6 +32,8 @@ public class RenderAdjustmentsComponent implements RenderCallbackComponent {
         this.defaultScale[0] = compound.getFloat("sx");
         this.defaultScale[1] = compound.getFloat("sy");
         this.defaultScale[2] = compound.getFloat("sz");
+
+        this.resetScale();
     }
 
     @Override
@@ -46,6 +48,8 @@ public class RenderAdjustmentsComponent implements RenderCallbackComponent {
         this.defaultScale[0] = buf.readFloat();
         this.defaultScale[1] = buf.readFloat();
         this.defaultScale[2] = buf.readFloat();
+
+        this.resetScale();
     }
 
     private void resetScale() {

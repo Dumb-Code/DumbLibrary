@@ -15,7 +15,7 @@ public enum ItemDropSystem implements EntitySystem {
     INSTANCE;
 
     @Override
-    public void populateBuffers(EntityManager manager) {
+    public void populateEntityBuffers(EntityManager manager) {
         //NO OP
     }
 

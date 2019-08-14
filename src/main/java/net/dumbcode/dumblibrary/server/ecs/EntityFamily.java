@@ -2,18 +2,21 @@ package net.dumbcode.dumblibrary.server.ecs;
 
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentType;
-import net.minecraft.entity.Entity;
 
 import java.lang.reflect.Array;
+import java.util.function.Function;
 
-public class EntityFamily {
-    private final Entity[] matchedEntities;
+public class EntityFamily<E> {
+    private final E[] matchedEntities;
 
-    public EntityFamily(Entity[] matchedEntities) {
+    private final Function<E, ComponentAccess> typeToAccess;
+
+    public EntityFamily(E[] matchedEntities, Function<E, ComponentAccess> typeToAccess) {
         this.matchedEntities = matchedEntities;
+        this.typeToAccess = typeToAccess;
     }
 
-    public Entity[] getEntities() {
+    public E[] getEntities() {
         return this.matchedEntities;
     }
 
@@ -23,12 +26,11 @@ public class EntityFamily {
 
     @SuppressWarnings("unchecked")
     public <T extends EntityComponent> T[] populateBuffer(EntityComponentType<T, ?> type, T[] buffer) {
-        Entity[] matched = this.matchedEntities;
-        if (buffer == null || buffer.length != matched.length) {
-            buffer = (T[]) Array.newInstance(type.getType(), matched.length);
+        if (buffer == null || buffer.length != this.matchedEntities.length) {
+            buffer = (T[]) Array.newInstance(type.getType(), this.matchedEntities.length);
         }
         for (int i = 0; i < buffer.length; i++) {
-            buffer[i] = ((ComponentAccess) matched[i]).getOrNull(type);
+            buffer[i] = this.typeToAccess.apply(this.matchedEntities[i]).getOrNull(type);
         }
         return buffer;
     }

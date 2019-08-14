@@ -41,6 +41,8 @@ public class BlockstateComponentProperty implements IProperty<BlockstateComponen
                 this.stringToEntries.put(name, entry);
             });
         }
+
+        this.entries.sort(Comparator.comparing(Entry::getName));
     }
 
     @Override
@@ -70,6 +72,14 @@ public class BlockstateComponentProperty implements IProperty<BlockstateComponen
     @Override
     public String getName(Entry value) {
         return value.name;
+    }
+
+    public int toMeta(Entry value) {
+        return this.entries.indexOf(value);
+    }
+
+    public Entry toEntry(int meta) {
+        return this.entries.get(meta);
     }
 
 

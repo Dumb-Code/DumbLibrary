@@ -14,8 +14,8 @@ public enum MetabolismSystem implements EntitySystem {
     private Entity[] entities = new Entity[0];
 
     @Override
-    public void populateBuffers(EntityManager manager) {
-        EntityFamily family = manager.resolveFamily(EntityComponentTypes.METABOLISM);
+    public void populateEntityBuffers(EntityManager manager) {
+        EntityFamily<Entity> family = manager.resolveFamily(EntityComponentTypes.METABOLISM);
         this.metabolism = family.populateBuffer(EntityComponentTypes.METABOLISM, this.metabolism);
         this.entities = family.getEntities();
     }

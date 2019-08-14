@@ -31,6 +31,7 @@ public interface EntityManager extends ICapabilityProvider {
         MinecraftForge.EVENT_BUS.post(new RegisterSystemsEvent(event.getObject(), capability.systems));
         for (EntitySystem system : capability.systems) {
             MinecraftForge.EVENT_BUS.register(system);
+            system.populateBlockstateBuffers(BlockstateManager.INSTANCE);
         }
     }
 
@@ -51,9 +52,10 @@ public interface EntityManager extends ICapabilityProvider {
 
     void removeEntity(Entity entity);
 
-    EntityFamily resolveFamily(EntityComponentType<?, ?>... types);
+    EntityFamily<Entity> resolveFamily(EntityComponentType<?, ?>... types);
 
     class Impl implements EntityManager {
+//        private final
         private final List<Entity> managedEntities = new ArrayList<>();
         private final List<EntitySystem> systems = new ArrayList<>();
         private boolean systemsDirty = true;
@@ -63,7 +65,7 @@ public interface EntityManager extends ICapabilityProvider {
             if (this.systemsDirty) {
                 this.systemsDirty = false;
                 for (EntitySystem system : this.systems) {
-                    system.populateBuffers(this);
+                    system.populateEntityBuffers(this);
                 }
             }
             for (EntitySystem system : this.systems) {
@@ -88,14 +90,14 @@ public interface EntityManager extends ICapabilityProvider {
         }
 
         @Override
-        public EntityFamily resolveFamily(EntityComponentType<?, ?>... types) {
+        public  EntityFamily<Entity> resolveFamily(EntityComponentType<?, ?>... types) {
             List<Entity> entities = new ArrayList<>(this.managedEntities.size());
             for (Entity entity : this.managedEntities) {
                 if (((ComponentAccess) entity).matchesAll(types)) {
                     entities.add(entity);
                 }
             }
-            return new EntityFamily(entities.toArray(new Entity[0]));
+            return new EntityFamily<>(entities.toArray(new Entity[0]), entity -> (ComponentAccess) entity);
         }
 
         @Override

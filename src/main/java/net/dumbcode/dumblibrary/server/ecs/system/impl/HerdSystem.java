@@ -28,8 +28,8 @@ public enum HerdSystem implements EntitySystem {
     private HerdComponent[] herds = new HerdComponent[0];
 
     @Override
-    public void populateBuffers(EntityManager manager) {
-        EntityFamily family = manager.resolveFamily(EntityComponentTypes.HERD);
+    public void populateEntityBuffers(EntityManager manager) {
+        EntityFamily<Entity> family = manager.resolveFamily(EntityComponentTypes.HERD);
         this.herds = family.populateBuffer(EntityComponentTypes.HERD, this.herds);
         this.matchedEntities = family.getEntities();
     }

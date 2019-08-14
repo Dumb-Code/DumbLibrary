@@ -1,7 +1,11 @@
 package net.dumbcode.dumblibrary.server.ecs.component;
 
 import net.dumbcode.dumblibrary.DumbLibrary;
+import net.dumbcode.dumblibrary.server.ecs.blocks.components.BlockTouchEffectComponent;
 import net.dumbcode.dumblibrary.server.ecs.blocks.components.GrowingComponent;
+import net.dumbcode.dumblibrary.server.ecs.blocks.components.FlowerWorldgenComponent;
+import net.dumbcode.dumblibrary.server.ecs.blocks.systems.BlockTouchEffectSystem;
+import net.dumbcode.dumblibrary.server.ecs.blocks.systems.FlowerWorldgenSystem;
 import net.dumbcode.dumblibrary.server.ecs.blocks.systems.GrowingSystem;
 import net.dumbcode.dumblibrary.server.ecs.component.impl.*;
 import net.dumbcode.dumblibrary.server.ecs.system.RegisterSystemsEvent;
@@ -24,6 +28,8 @@ public class EntityComponentTypes {
     public static final EntityComponentType<SpeedTrackingComponent, ?> SPEED_TRACKING = InjectedUtils.injected();
 
     public static final EntityComponentType<GrowingComponent, GrowingComponent.Storage> BLOCK_GROWING = InjectedUtils.injected();
+    public static final EntityComponentType<FlowerWorldgenComponent, FlowerWorldgenComponent.Storage> FLOWER_WORLDGEN = InjectedUtils.injected();
+    public static final EntityComponentType<BlockTouchEffectComponent, BlockTouchEffectComponent.Storage> BLOCK_TOUCH_EFFECT = InjectedUtils.injected();
 
     @SubscribeEvent
     public static void onRegisterComponents(RegisterComponentsEvent event) {
@@ -64,6 +70,16 @@ public class EntityComponentTypes {
                         .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "block_growing"))
                         .withConstructor(GrowingComponent::new)
                         .withStorage(GrowingComponent.Storage::new)
+                        .build(),
+                SimpleComponentType.builder(FlowerWorldgenComponent.class, FlowerWorldgenComponent.Storage.class)
+                        .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "flower_worldgen"))
+                        .withConstructor(FlowerWorldgenComponent::new)
+                        .withStorage(FlowerWorldgenComponent.Storage::new)
+                        .build(),
+                SimpleComponentType.builder(BlockTouchEffectComponent.class, BlockTouchEffectComponent.Storage.class)
+                        .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "block_touch_effect"))
+                        .withConstructor(BlockTouchEffectComponent::new)
+                        .withStorage(BlockTouchEffectComponent.Storage::new)
                         .build()
         );
     }
@@ -77,5 +93,7 @@ public class EntityComponentTypes {
         event.registerSystem(SpeedTrackingSystem.INSTANCE);
 
         event.registerSystem(GrowingSystem.INSTANCE);
+        event.registerSystem(FlowerWorldgenSystem.INSTANCE);
+        event.registerSystem(BlockTouchEffectSystem.INSTANCE);
     }
 }

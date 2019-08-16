@@ -41,7 +41,7 @@ public enum GrowingSystem implements EntitySystem {
                         BlockPropertyAccess.getProperty(iblockstate).ifPresent(iProperty -> {
                             iblockstate.getValue(iProperty).get(EntityComponentTypes.BLOCK_GROWING).ifPresent(component -> {
                                 BlockPos pos = new BlockPos(xPos + chunkX, yPos + storage.getYLocation(), zPos + chunkZ);
-                                IBlockState toState = iblockstate.withProperty(iProperty, iProperty.getFromString(component.getGrowTo()));
+                                IBlockState toState = iblockstate.withProperty(iProperty, iProperty.getFromString(component.getGrowTo(world.rand)));
                                 world.setBlockState(pos, toState);
                             });
                         });

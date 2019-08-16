@@ -12,11 +12,16 @@ import net.dumbcode.dumblibrary.server.utils.IOCollectors;
 import net.minecraft.util.JsonUtils;
 
 import java.util.Arrays;
+import java.util.Random;
 import java.util.stream.StreamSupport;
 
 public class GrowingComponent implements EntityComponent {
 
-    @Getter private String[] growTo;
+    private String[] growTo;
+
+    public String getGrowTo(Random rand) {
+        return this.growTo[rand.nextInt(this.growTo.length)];
+    }
 
     @Getter
     public static class Storage implements EntityComponentStorage<GrowingComponent> {

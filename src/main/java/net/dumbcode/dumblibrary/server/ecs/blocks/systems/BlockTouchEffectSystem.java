@@ -10,7 +10,6 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
@@ -23,11 +22,6 @@ public enum BlockTouchEffectSystem implements EntitySystem {
 
     private final List<IBlockState> states = new LinkedList<>();
     private BlockTouchEffectComponent[] components = new BlockTouchEffectComponent[0];
-
-    @Override
-    public void update(World world) {
-        //NO-OP
-    }
 
     @Override
     public void populateBlockstateBuffers(BlockstateManager manager) {

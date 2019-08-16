@@ -13,5 +13,7 @@ public interface EntitySystem {
         //NO-OP
     }
 
-    void update(World world);
+    default void update(World world) {
+        //NO-OP
+    }
 }

@@ -1,13 +1,18 @@
 package net.dumbcode.dumblibrary.server.ecs.component;
 
 import net.dumbcode.dumblibrary.DumbLibrary;
+import net.dumbcode.dumblibrary.server.ecs.blocks.components.BlockDropsComponent;
 import net.dumbcode.dumblibrary.server.ecs.blocks.components.BlockTouchEffectComponent;
 import net.dumbcode.dumblibrary.server.ecs.blocks.components.GrowingComponent;
 import net.dumbcode.dumblibrary.server.ecs.blocks.components.FlowerWorldgenComponent;
+import net.dumbcode.dumblibrary.server.ecs.blocks.systems.BlockDropsSystem;
 import net.dumbcode.dumblibrary.server.ecs.blocks.systems.BlockTouchEffectSystem;
 import net.dumbcode.dumblibrary.server.ecs.blocks.systems.FlowerWorldgenSystem;
 import net.dumbcode.dumblibrary.server.ecs.blocks.systems.GrowingSystem;
 import net.dumbcode.dumblibrary.server.ecs.component.impl.*;
+import net.dumbcode.dumblibrary.server.ecs.item.components.ItemEatenComponent;
+import net.dumbcode.dumblibrary.server.ecs.item.components.ItemRenderModelComponent;
+import net.dumbcode.dumblibrary.server.ecs.item.systems.ItemEatenSystem;
 import net.dumbcode.dumblibrary.server.ecs.system.RegisterSystemsEvent;
 import net.dumbcode.dumblibrary.server.ecs.system.impl.*;
 import net.dumbcode.dumblibrary.server.utils.InjectedUtils;
@@ -30,6 +35,10 @@ public class EntityComponentTypes {
     public static final EntityComponentType<GrowingComponent, GrowingComponent.Storage> BLOCK_GROWING = InjectedUtils.injected();
     public static final EntityComponentType<FlowerWorldgenComponent, FlowerWorldgenComponent.Storage> FLOWER_WORLDGEN = InjectedUtils.injected();
     public static final EntityComponentType<BlockTouchEffectComponent, BlockTouchEffectComponent.Storage> BLOCK_TOUCH_EFFECT = InjectedUtils.injected();
+    public static final EntityComponentType<BlockDropsComponent, BlockDropsComponent.Storage> BLOCK_DROPS = InjectedUtils.injected();
+
+    public static final EntityComponentType<ItemRenderModelComponent, ItemRenderModelComponent.Storage> ITEM_RENDER = InjectedUtils.injected();
+    public static final EntityComponentType<ItemEatenComponent, ItemEatenComponent.Storage> ITEM_EATEN = InjectedUtils.injected();
 
     @SubscribeEvent
     public static void onRegisterComponents(RegisterComponentsEvent event) {
@@ -80,6 +89,22 @@ public class EntityComponentTypes {
                         .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "block_touch_effect"))
                         .withConstructor(BlockTouchEffectComponent::new)
                         .withStorage(BlockTouchEffectComponent.Storage::new)
+                        .build(),
+                SimpleComponentType.builder(BlockDropsComponent.class, BlockDropsComponent.Storage.class)
+                        .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "block_drops"))
+                        .withConstructor(BlockDropsComponent::new)
+                        .withStorage(BlockDropsComponent.Storage::new)
+                        .build(),
+
+                SimpleComponentType.builder(ItemRenderModelComponent.class, ItemRenderModelComponent.Storage.class)
+                        .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "item_render"))
+                        .withConstructor(ItemRenderModelComponent::new)
+                        .withStorage(ItemRenderModelComponent.Storage::new)
+                        .build(),
+                SimpleComponentType.builder(ItemEatenComponent.class, ItemEatenComponent.Storage.class)
+                        .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "item_eaten"))
+                        .withConstructor(ItemEatenComponent::new)
+                        .withStorage(ItemEatenComponent.Storage::new)
                         .build()
         );
     }
@@ -95,5 +120,9 @@ public class EntityComponentTypes {
         event.registerSystem(GrowingSystem.INSTANCE);
         event.registerSystem(FlowerWorldgenSystem.INSTANCE);
         event.registerSystem(BlockTouchEffectSystem.INSTANCE);
+        event.registerSystem(BlockDropsSystem.INSTANCE);
+
+        event.registerSystem(ItemEatenSystem.INSTANCE);
+
     }
 }

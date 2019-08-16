@@ -18,6 +18,7 @@ import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 @Getter
 public class EntityComponentAttacher {
@@ -49,9 +50,7 @@ public class EntityComponentAttacher {
                 }
                 obj.add("storage", storageObj);
             }
-
             jarr.add(obj);
-
         }
         return jarr;
     }
@@ -110,6 +109,12 @@ public class EntityComponentAttacher {
             }
         }
         throw new IllegalArgumentException("Requested storage on component " + type.getIdentifier() + " but component was not attached");
+    }
+
+    public static EntityComponentAttacher create(Consumer<EntityComponentAttacher> applier) {
+        EntityComponentAttacher attacher = new EntityComponentAttacher();
+        applier.accept(attacher);
+        return attacher;
     }
 
     @Wither

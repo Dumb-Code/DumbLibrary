@@ -31,12 +31,6 @@ public enum FlowerWorldgenSystem implements EntitySystem {
         MinecraftForge.TERRAIN_GEN_BUS.register(this);
     }
 
-
-    @Override
-    public void update(World world) {
-        //NO-OP
-    }
-
     @Override
     public void populateBlockstateBuffers(BlockstateManager manager) {
         EntityFamily<IBlockState> family = manager.resolveFamily(EntityComponentTypes.FLOWER_WORLDGEN);

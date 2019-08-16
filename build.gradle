@@ -171,7 +171,7 @@ task notifyIfError (group: "upload", description: "Checks to see if travis has e
             def url = System.getenv("TRAVIS_BUILD_WEB_URL")?: "???"
             def datetime = Instant.now().atZone(ZoneOffset.UTC).toString()
 
-            def form = new PostForm(dumblibrary_publish_url)
+            def form = new PostForm(System.getenv('WEBHOOK_URL'))
             form.addObject(new FieldObject("payload_json", "{ \"embeds\": [{ \"title\":\"Build $buildVersion has errored\", \"color\": 9306112,  \"url\": \"$url\", \"timestamp\":\"$datetime\"}] }"))
             def result = form.send()
 

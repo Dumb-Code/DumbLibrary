@@ -8,6 +8,7 @@ import lombok.experimental.Accessors;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
 import net.dumbcode.dumblibrary.server.utils.DumbJsonUtils;
+import net.dumbcode.dumblibrary.server.utils.IOCollectors;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.JsonUtils;
 
@@ -49,7 +50,7 @@ public class BlockTouchEffectComponent implements EntityComponent {
 
         @Override
         public void writeJson(JsonObject json) {
-            json.add("potions", this.potionEffectList.stream().map(DumbJsonUtils::writePotionEffect).collect(JsonArray::new, JsonArray::add, JsonArray::addAll));
+            json.add("potions", this.potionEffectList.stream().map(DumbJsonUtils::writePotionEffect).collect(IOCollectors.toJsonArray()));
 
         }
     }

@@ -7,6 +7,7 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
+import net.dumbcode.dumblibrary.server.utils.IOCollectors;
 import net.minecraft.util.JsonUtils;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.common.BiomeDictionary;
@@ -61,7 +62,7 @@ public class FlowerWorldgenComponent implements EntityComponent {
 
         @Override
         public void writeJson(JsonObject json) {
-            json.add("spawnable_biomes", this.biomeTypes.stream().collect(JsonArray::new, JsonArray::add, JsonArray::addAll));
+            json.add("spawnable_biomes", this.biomeTypes.stream().collect(IOCollectors.toJsonArrayString()));
             json.addProperty("plant_type", this.plantType.name());
             json.addProperty("chance_per_chunk", this.chancePerChunk);
             json.addProperty("group_spawn_size", this.groupSpawnSize);

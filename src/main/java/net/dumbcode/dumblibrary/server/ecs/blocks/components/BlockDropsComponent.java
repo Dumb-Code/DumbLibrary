@@ -10,6 +10,7 @@ import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
 import net.dumbcode.dumblibrary.server.ecs.item.ItemComponentAccessCreatable;
+import net.dumbcode.dumblibrary.server.utils.IOCollectors;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.ShapedRecipes;
 import net.minecraft.nbt.NBTTagCompound;
@@ -36,7 +37,7 @@ public class BlockDropsComponent implements EntityComponent {
 
     @Override
     public NBTTagCompound serialize(NBTTagCompound compound) {
-        compound.setTag("stacks", this.stackList.stream().map(Supplier::get).map(ItemStack::serializeNBT).collect(NBTTagList::new, NBTTagList::appendTag, (tag1, tag2) -> tag2.forEach(tag1::appendTag)));
+        compound.setTag("stacks", this.stackList.stream().map(Supplier::get).map(ItemStack::serializeNBT).collect(IOCollectors.toNBTTagList()));
         return compound;
     }
 
@@ -88,8 +89,8 @@ public class BlockDropsComponent implements EntityComponent {
 
         @Override
         public void writeJson(JsonObject json) {
-            json.add("stacks", this.stackList.stream().map(BlockDropsComponent::serializeItem).collect(JsonArray::new, JsonArray::add, JsonArray::addAll));
-            json.add("creatables", this.creatables.stream().map(creatable ->  creatable.serialize(new JsonObject())).collect(JsonArray::new, JsonArray::add, JsonArray::addAll));
+            json.add("stacks", this.stackList.stream().map(BlockDropsComponent::serializeItem).collect(IOCollectors.toJsonArray()));
+            json.add("creatables", this.creatables.stream().map(creatable ->  creatable.serialize(new JsonObject())).collect(IOCollectors.toJsonArray()));
         }
     }
 

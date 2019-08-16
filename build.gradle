@@ -172,7 +172,7 @@ task notifyIfError (group: "upload", description: "Checks to see if travis has e
             def datetime = Instant.now().atZone(ZoneOffset.UTC).toString()
 
             def form = new PostForm(System.getenv('WEBHOOK_URL'))
-            form.addObject(new FieldObject("payload_json", "{ \"embeds\": [{ \"title\":\"Build $buildVersion has errored\", \"color\": 9306112,  \"url\": \"$url\", \"timestamp\":\"$datetime\"}] }"))
+            form.addObject(new FieldObject("payload_json", "{ \"embeds\": [{ \"title\":\"Build $buildVersion has errored - ${System.getenv('TRAVIS_COMMIT_MESSAGE')}\", \"color\": 9306112,  \"url\": \"$url\", \"timestamp\":\"$datetime\"}] }"))
             def result = form.send()
 
             println "Webhook uploaded with response code $result.responseCode"

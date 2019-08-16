@@ -5,6 +5,7 @@ import net.dumbcode.dumblibrary.server.ecs.EntityFamily;
 import net.dumbcode.dumblibrary.server.ecs.blocks.components.FlowerWorldgenComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentTypes;
 import net.dumbcode.dumblibrary.server.ecs.system.EntitySystem;
+import net.dumbcode.dumblibrary.server.utils.PlantableDelegate;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
@@ -58,34 +59,13 @@ public enum FlowerWorldgenSystem implements EntitySystem {
                     for (int groupid = 0; groupid < component.getGroupSpawnSize(); groupid++) {
                         BlockPos pos = world.getTopSolidOrLiquidBlock(new BlockPos(startX + random.nextInt(24), 100, startZ + random.nextInt(24)));
                         IBlockState soil = world.getBlockState(pos.down());
-                        if(world.isAirBlock(pos) && soil.getBlock().canSustainPlant(soil, world, pos.down(), EnumFacing.UP, new DummyPlantable(state, component.getPlantType()))) {
+                        if(world.isAirBlock(pos) && soil.getBlock().canSustainPlant(soil, world, pos.down(), EnumFacing.UP, new PlantableDelegate(component.getPlantType(), state))) {
                             world.setBlockState(pos, state);
                         }
                     }
                 }
             }
 
-        }
-    }
-
-    private static class DummyPlantable implements IPlantable {
-
-        private final IBlockState state;
-        private final EnumPlantType plantType;
-
-        private DummyPlantable(IBlockState state, EnumPlantType plantType) {
-            this.state = state;
-            this.plantType = plantType;
-        }
-
-        @Override
-        public EnumPlantType getPlantType(IBlockAccess world, BlockPos pos) {
-            return this.plantType;
-        }
-
-        @Override
-        public IBlockState getPlant(IBlockAccess world, BlockPos pos) {
-            return this.state;
         }
     }
 

@@ -11,34 +11,29 @@ import java.util.*;
 
 /**
  * The blockstate property used to hold the {@link net.dumbcode.dumblibrary.server.ecs.ComponentAccess} for the ecs.
- * To call {@link net.minecraft.block.state.IBlockState#withProperty(IProperty, Comparable)} with this property, call
- * {@link #getFromString(String)} to get the entry from a string.
  * @author Wyn Price
  */
 public class BlockstateComponentProperty implements IProperty<BlockstateComponentProperty.Entry> {
 
+    private final String name;
     private final List<Entry> entries = new ArrayList<>();
     private final Map<String, Entry> stringToEntries = new HashMap<>();
 
-    public BlockstateComponentProperty(EntityComponentAttacher baseAttacher, Map<String, EntityComponentAttacher> stateOverrides) {
+    public BlockstateComponentProperty(String name, EntityComponentAttacher baseAttacher, Map<String, EntityComponentAttacher> stateOverrides) {
 
+        this.name = name;
         if(stateOverrides.isEmpty()) {
-            String name = "default";
-            EntityComponentMap map = new EntityComponentMap();
-            baseAttacher.getDefaultConfig().attachAll(map.getWriteable());
-
-            Entry entry = new Entry(name, map);
-            this.entries.add(entry);
-            this.stringToEntries.put(name, entry);
+            throw new IllegalArgumentException("Need to have at least one property for a state");
         } else {
-            stateOverrides.forEach((name, attacher) -> {
+            stateOverrides.forEach((componentName, attacher) -> {
                 EntityComponentMap map = new EntityComponentMap();
-                baseAttacher.getDefaultConfig().attachAll(map.getWriteable());
-                attacher.getDefaultConfig().attachAll(map.getWriteable());
+                Entry entry = new Entry(this, componentName, map);
 
-                Entry entry = new Entry(name, map);
+                baseAttacher.getDefaultConfig().attachAll(entry);
+                attacher.getDefaultConfig().attachAll(entry);
+
                 this.entries.add(entry);
-                this.stringToEntries.put(name, entry);
+                this.stringToEntries.put(componentName, entry);
             });
         }
 
@@ -47,7 +42,7 @@ public class BlockstateComponentProperty implements IProperty<BlockstateComponen
 
     @Override
     public String getName() {
-        return "components";
+        return this.name;
     }
 
     @Override
@@ -65,26 +60,15 @@ public class BlockstateComponentProperty implements IProperty<BlockstateComponen
         return Optional.fromNullable(this.stringToEntries.get(value));
     }
 
-    public Entry getFromString(String value) {
-        return this.parseValue(value).or(this.entries.get(0));
-    }
-
     @Override
     public String getName(Entry value) {
         return value.name;
     }
 
-    public int toMeta(Entry value) {
-        return this.entries.indexOf(value);
-    }
-
-    public Entry toEntry(int meta) {
-        return this.entries.get(meta);
-    }
-
 
     @Value
     public static class Entry implements ComponentMapWriteAccess, Comparable<Entry> {
+        private final BlockstateComponentProperty property;
         private final String name;
         private final EntityComponentMap componentMap;
 

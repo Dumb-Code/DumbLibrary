@@ -6,21 +6,33 @@ import com.google.gson.JsonPrimitive;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
+import net.dumbcode.dumblibrary.server.ecs.blocks.BlockstateComponentProperty;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
+import net.dumbcode.dumblibrary.server.ecs.component.FinalizableComponent;
 import net.dumbcode.dumblibrary.server.utils.IOCollectors;
+import net.minecraft.block.properties.IProperty;
 import net.minecraft.util.JsonUtils;
 
 import java.util.Arrays;
 import java.util.Random;
 import java.util.stream.StreamSupport;
 
-public class GrowingComponent implements EntityComponent {
+public class GrowingComponent implements EntityComponent, FinalizableComponent {
 
     private String[] growTo;
+    @Getter private IProperty<?> blockProperty;
 
     public String getGrowTo(Random rand) {
         return this.growTo[rand.nextInt(this.growTo.length)];
+    }
+
+    @Override
+    public void finalizeComponent(ComponentAccess entity) {
+        if(entity instanceof BlockstateComponentProperty.Entry) {
+            this.blockProperty = ((BlockstateComponentProperty.Entry) entity).getProperty();
+        }
     }
 
     @Getter

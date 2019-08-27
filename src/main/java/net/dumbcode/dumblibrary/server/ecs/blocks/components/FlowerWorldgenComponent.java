@@ -1,6 +1,5 @@
 package net.dumbcode.dumblibrary.server.ecs.blocks.components;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,7 +19,8 @@ import java.util.stream.StreamSupport;
 @Getter
 public class FlowerWorldgenComponent implements EntityComponent {
 
-    private List<Biome> biomeTypes = new ArrayList<>();
+    private final List<Biome> biomeTypes = new ArrayList<>();
+    private final List<String> randomizedProperties = new ArrayList<>();
     private EnumPlantType plantType;
     private float chancePerChunk = 0F;
     private int groupSpawnSize = 5;
@@ -31,8 +31,9 @@ public class FlowerWorldgenComponent implements EntityComponent {
     public static class Storage implements EntityComponentStorage<FlowerWorldgenComponent> {
 
         private List<String> biomeTypes = new ArrayList<>();
+        private List<String> randomizedProperties = new ArrayList<>();
         private EnumPlantType plantType;
-        private float chancePerChunk = 0F;
+        private float chancePerStatePerChunk = 0F;
         private int groupSpawnSize = 5;
 
         @Override
@@ -43,8 +44,9 @@ public class FlowerWorldgenComponent implements EntityComponent {
                 component.biomeTypes.addAll(BiomeDictionary.getBiomes(BiomeDictionary.Type.getType(biomeType)));
             }
 
+            component.randomizedProperties.addAll(this.randomizedProperties);
             component.plantType = this.plantType;
-            component.chancePerChunk = this.chancePerChunk;
+            component.chancePerChunk = this.chancePerStatePerChunk;
             component.groupSpawnSize = this.groupSpawnSize;
 
             return component;
@@ -55,16 +57,20 @@ public class FlowerWorldgenComponent implements EntityComponent {
             StreamSupport.stream(JsonUtils.getJsonArray(json, "spawnable_biomes").spliterator(), false)
                     .map(elem -> JsonUtils.getString(elem, "element"))
                     .forEach(this.biomeTypes::add);
+            StreamSupport.stream(JsonUtils.getJsonArray(json, "randomized_properties").spliterator(), false)
+                    .map(elem -> JsonUtils.getString(elem, "element"))
+                    .forEach(this.randomizedProperties::add);
             this.plantType = EnumPlantType.getPlantType(JsonUtils.getString(json, "plant_type"));
-            this.chancePerChunk = JsonUtils.getFloat(json, "chance_per_chunk");
+            this.chancePerStatePerChunk = JsonUtils.getFloat(json, "chance_per_chunk");
             this.groupSpawnSize = JsonUtils.getInt(json, "group_spawn_size");
         }
 
         @Override
         public void writeJson(JsonObject json) {
             json.add("spawnable_biomes", this.biomeTypes.stream().collect(IOCollectors.toJsonArrayString()));
+            json.add("randomized_properties", this.randomizedProperties.stream().collect(IOCollectors.toJsonArrayString()));
             json.addProperty("plant_type", this.plantType.name());
-            json.addProperty("chance_per_chunk", this.chancePerChunk);
+            json.addProperty("chance_per_chunk", this.chancePerStatePerChunk);
             json.addProperty("group_spawn_size", this.groupSpawnSize);
         }
     }

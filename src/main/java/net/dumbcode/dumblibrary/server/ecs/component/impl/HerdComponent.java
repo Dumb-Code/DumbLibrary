@@ -5,6 +5,7 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.ecs.HerdSavedData;
+import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
 import net.dumbcode.dumblibrary.server.ecs.component.FinalizableComponent;
 import net.minecraft.entity.Entity;
@@ -15,7 +16,7 @@ import net.minecraft.util.ResourceLocation;
 
 import java.util.UUID;
 
-public class HerdComponent implements FinalizableComponent {
+public class HerdComponent extends EntityComponent implements FinalizableComponent {
 
     public UUID herdUUID;
     public ResourceLocation herdTypeID;

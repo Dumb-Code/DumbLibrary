@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-public class BlockTouchEffectComponent implements EntityComponent {
+public class BlockTouchEffectComponent extends EntityComponent {
 
     private final List<PotionEffect> potionEffectList = new ArrayList<>();
 

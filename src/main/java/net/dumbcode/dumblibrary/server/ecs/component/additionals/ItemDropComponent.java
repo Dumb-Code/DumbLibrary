@@ -6,6 +6,6 @@ import net.minecraft.item.ItemStack;
 
 import java.util.function.Consumer;
 
-public interface ItemDropComponent extends EntityComponent {
+public interface ItemDropComponent {
     void collectItems(ComponentAccess access, Consumer<ItemStack> itemPlacer);
 }

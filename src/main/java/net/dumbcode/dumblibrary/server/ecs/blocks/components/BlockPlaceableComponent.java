@@ -9,7 +9,7 @@ import net.minecraft.world.World;
 
 @Getter
 @Setter
-public class BlockPlaceableComponent implements EntityComponent {
+public class BlockPlaceableComponent extends EntityComponent {
 
     private PlaceablePredicate predicate = (world, pos, state) -> true;
 

@@ -1,20 +1,22 @@
 package net.dumbcode.dumblibrary.server.ecs.component.impl;
 
 import io.netty.buffer.ByteBuf;
+import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLocationComponent;
 import net.minecraft.nbt.NBTTagCompound;
 
-public class GenderComponent implements RenderLocationComponent {
+public class GenderComponent extends EntityComponent implements RenderLocationComponent {
     public boolean male = false;
 
     @Override
     public NBTTagCompound serialize(NBTTagCompound compound) {
         compound.setBoolean("male", this.male);
-        return compound;
+        return super.serialize(compound);
     }
 
     @Override
     public void deserialize(NBTTagCompound compound) {
+        super.deserialize(compound);
         this.male = compound.getBoolean("male");
     }
 

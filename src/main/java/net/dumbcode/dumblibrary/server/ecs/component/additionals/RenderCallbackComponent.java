@@ -8,7 +8,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.List;
 
-public interface RenderCallbackComponent extends EntityComponent {
+public interface RenderCallbackComponent {
 
     @SideOnly(Side.CLIENT)
     void addCallbacks(List<SubCallback> preRenderCallbacks, List<MainCallback> renderCallbacks, List<SubCallback> postRenderCallback);

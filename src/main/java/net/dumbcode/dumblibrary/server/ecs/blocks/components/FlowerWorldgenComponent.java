@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.stream.StreamSupport;
 
 @Getter
-public class FlowerWorldgenComponent implements EntityComponent {
+public class FlowerWorldgenComponent extends EntityComponent {
 
     private final List<Biome> biomeTypes = new ArrayList<>();
     private final List<String> randomizedProperties = new ArrayList<>();

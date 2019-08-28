@@ -1,28 +1,27 @@
 package net.dumbcode.dumblibrary.server.ecs.component.impl;
 
 import com.google.common.collect.Lists;
-import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import net.dumbcode.dumblibrary.DumbLibrary;
-import net.dumbcode.dumblibrary.server.animation.AnimationContainer;
 import net.dumbcode.dumblibrary.client.model.tabula.TabulaModel;
+import net.dumbcode.dumblibrary.server.animation.AnimationContainer;
 import net.dumbcode.dumblibrary.server.animation.TabulaUtils;
 import net.dumbcode.dumblibrary.server.animation.objects.AnimationLayer;
 import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
+import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentTypes;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderCallbackComponent;
 import net.dumbcode.dumblibrary.server.network.S0SyncAnimation;
 import net.dumbcode.dumblibrary.server.utils.SidedExecutor;
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.entity.Entity;
-import net.minecraft.nbt.NBTTagCompound;
 
 import java.util.List;
 import java.util.Map;
 
-public class AnimationComponent<E extends Entity & ComponentAccess> implements RenderCallbackComponent {
+public class AnimationComponent<E extends Entity & ComponentAccess> extends EntityComponent implements RenderCallbackComponent {
 
     @Setter @Getter AnimationContainer animationContainer;
 
@@ -96,23 +95,6 @@ public class AnimationComponent<E extends Entity & ComponentAccess> implements R
      */
     public boolean isReadyForAnimations() {
         return this.animationLayer != null;
-    }
-
-    @Override
-    public NBTTagCompound serialize(NBTTagCompound compound) {
-        return compound; //TODO: serialize the animation ?
-    }
-
-    @Override
-    public void deserialize(NBTTagCompound compound) {
-    }
-
-    @Override
-    public void serialize(ByteBuf buf) {
-    }
-
-    @Override
-    public void deserialize(ByteBuf buf) {
     }
 
     public AnimationLayer getAnimationLayer(Entity e) {

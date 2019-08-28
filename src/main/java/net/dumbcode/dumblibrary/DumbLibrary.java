@@ -4,6 +4,7 @@ import net.dumbcode.dumblibrary.client.model.TransformTypeModelLoader;
 import net.dumbcode.dumblibrary.server.DumbGuiHandler;
 import net.dumbcode.dumblibrary.server.ecs.EntityManager;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentTypes;
+import net.dumbcode.dumblibrary.server.ecs.component.RegisterStoragesEvent;
 import net.dumbcode.dumblibrary.server.ecs.item.ItemCompoundAccess;
 import net.dumbcode.dumblibrary.server.ecs.item.components.ItemRenderModelComponent;
 import net.dumbcode.dumblibrary.server.network.S0SyncAnimation;
@@ -15,6 +16,7 @@ import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.fml.common.Mod;
@@ -24,6 +26,7 @@ import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.registries.ObjectHolderRegistry;
 import org.apache.logging.log4j.Logger;
 
 @Mod(modid = DumbLibrary.MODID, name = DumbLibrary.NAME, version = DumbLibrary.VERSION)
@@ -51,6 +54,9 @@ public class DumbLibrary {
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
+        ObjectHolderRegistry.INSTANCE.applyObjectHolders();
+        MinecraftForge.EVENT_BUS.post(new RegisterStoragesEvent());
+
         logger = event.getModLog();
         NetworkRegistry.INSTANCE.registerGuiHandler(this, new DumbGuiHandler());
 

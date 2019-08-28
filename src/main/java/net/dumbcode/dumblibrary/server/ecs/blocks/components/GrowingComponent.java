@@ -1,11 +1,8 @@
 package net.dumbcode.dumblibrary.server.ecs.blocks.components;
 
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import lombok.Getter;
-import lombok.Setter;
-import lombok.experimental.Accessors;
 import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.ecs.blocks.BlockstateComponentProperty;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
@@ -19,7 +16,7 @@ import java.util.Arrays;
 import java.util.Random;
 import java.util.stream.StreamSupport;
 
-public class GrowingComponent implements EntityComponent, FinalizableComponent {
+public class GrowingComponent extends EntityComponent implements FinalizableComponent {
 
     private String[] growTo;
     @Getter private IProperty<?> blockProperty;

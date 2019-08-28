@@ -176,7 +176,7 @@ public class EntityComponentAttacher {
         private final String storageId;
 
         public void attach(ComponentWriteAccess access) {
-            access.attachComponent(this.type, this.storage);
+            access.attachComponent(this.type, this.storage, this.storageId);
         }
     }
 }

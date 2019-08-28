@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 @Getter
-public class ItemEatenComponent implements EntityComponent {
+public class ItemEatenComponent extends EntityComponent {
 
     private final List<PotionEffect> potionEffectList = new ArrayList<>();
     private boolean ignoreHunger;
@@ -40,11 +40,12 @@ public class ItemEatenComponent implements EntityComponent {
         compound.setInteger("duration", this.duration);
         compound.setInteger("fill_amount", this.fillAmount);
         compound.setFloat("saturation", this.saturation);
-        return compound;
+        return super.serialize(compound);
     }
 
     @Override
     public void deserialize(NBTTagCompound compound) {
+        super.deserialize(compound);
         this.potionEffectList.clear();
         StreamSupport.stream(compound.getTagList("effects", Constants.NBT.TAG_COMPOUND).spliterator(), false).map(tag -> PotionEffect.readCustomPotionEffectFromNBT((NBTTagCompound) tag)).forEach(this.potionEffectList::add);
         this.ignoreHunger = compound.getBoolean("ignore_hunger");

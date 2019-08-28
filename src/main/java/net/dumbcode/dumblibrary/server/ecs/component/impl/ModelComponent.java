@@ -26,7 +26,7 @@ import java.util.List;
 
 //Client usage only
 @Getter
-public class ModelComponent implements RenderCallbackComponent, FinalizableComponent {
+public class ModelComponent extends EntityComponent implements RenderCallbackComponent, FinalizableComponent {
 
     private final ConfigurableLocation texture = new ConfigurableLocation(".png");
     private final ConfigurableLocation fileLocation = new ConfigurableLocation();
@@ -46,11 +46,12 @@ public class ModelComponent implements RenderCallbackComponent, FinalizableCompo
     @Override
     public NBTTagCompound serialize(NBTTagCompound compound) {
         compound.setFloat("ShadowSize", this.shadowsize);
-        return compound;
+        return super.serialize(compound);
     }
 
     @Override
     public void deserialize(NBTTagCompound compound) {
+        super.deserialize(compound);
         this.shadowsize = compound.getFloat("ShadowSize");
     }
 

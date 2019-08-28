@@ -5,6 +5,7 @@ import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderCallbackComponent;
 import net.minecraft.client.renderer.GlStateManager;
@@ -14,7 +15,7 @@ import net.minecraft.util.JsonUtils;
 import java.util.List;
 
 
-public class RenderAdjustmentsComponent implements RenderCallbackComponent {
+public class RenderAdjustmentsComponent extends EntityComponent implements RenderCallbackComponent {
 
     @Getter private final float[] scale = new float[3];
     private final float[] defaultScale = new float[3];
@@ -24,11 +25,12 @@ public class RenderAdjustmentsComponent implements RenderCallbackComponent {
         compound.setFloat("sx", this.defaultScale[0]);
         compound.setFloat("sy", this.defaultScale[1]);
         compound.setFloat("sz", this.defaultScale[2]);
-        return compound;
+        return super.serialize(compound);
     }
 
     @Override
     public void deserialize(NBTTagCompound compound) {
+        super.deserialize(compound);
         this.defaultScale[0] = compound.getFloat("sx");
         this.defaultScale[1] = compound.getFloat("sy");
         this.defaultScale[2] = compound.getFloat("sz");

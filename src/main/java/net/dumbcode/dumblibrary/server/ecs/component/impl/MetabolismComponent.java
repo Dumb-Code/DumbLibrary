@@ -6,13 +6,14 @@ import lombok.experimental.Accessors;
 import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.ecs.ai.DrinkingAI;
 import net.dumbcode.dumblibrary.server.ecs.ai.FeedingAI;
+import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
 import net.dumbcode.dumblibrary.server.ecs.component.FinalizableComponent;
 import net.dumbcode.dumblibrary.server.ecs.objects.FeedingDiet;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.nbt.NBTTagCompound;
 
-public class MetabolismComponent implements FinalizableComponent {
+public class MetabolismComponent extends EntityComponent implements FinalizableComponent {
     public int food;
     public int water;
 
@@ -22,18 +23,17 @@ public class MetabolismComponent implements FinalizableComponent {
     public FeedingDiet diet = new FeedingDiet();
     public int foodSmellDistance;
     @Override
-    public NBTTagCompound serialize(NBTTagCompound compound)
-    {
+    public NBTTagCompound serialize(NBTTagCompound compound) {
         compound.setInteger("food", this.food);
         compound.setInteger("water", this.water);
 
         compound.setTag("diet", this.diet.writeToNBT(new NBTTagCompound()));
-        return compound;
+        return super.serialize(compound);
     }
 
     @Override
-    public void deserialize(NBTTagCompound compound)
-    {
+    public void deserialize(NBTTagCompound compound) {
+        super.deserialize(compound);
         this.food = compound.getInteger("food");
         this.water = compound.getInteger("water");
 

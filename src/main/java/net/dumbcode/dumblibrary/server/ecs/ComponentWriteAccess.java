@@ -1,9 +1,8 @@
 package net.dumbcode.dumblibrary.server.ecs;
 
 
-import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
-import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
-import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentType;
+import net.dumbcode.dumblibrary.server.ecs.component.*;
+import scala.xml.Null;
 
 import javax.annotation.Nullable;
 
@@ -21,11 +20,13 @@ public interface ComponentWriteAccess extends ComponentAccess {
      * @param <T> the component entry type.
      * @param <S> the component storage type. Should be {@code ?} if no storage exists.
      */
-    default <T extends EntityComponent, S extends EntityComponentStorage<T>> void attachComponent(EntityComponentType<T, ?> type, @Nullable S storage) {
+    default <T extends EntityComponent, S extends EntityComponentStorage<T>> void attachComponent(EntityComponentType<T, ?> type, @Nullable S storage, @Nullable String storageID) {
         if(storage == null) {
             this.attachComponent(type);
         } else {
-            this.attachComponent(type, storage.construct());
+            T construct = storage.construct();
+            construct.onCreated(type, storage, storageID);
+            this.attachComponent(type, construct);
         }
     }
 

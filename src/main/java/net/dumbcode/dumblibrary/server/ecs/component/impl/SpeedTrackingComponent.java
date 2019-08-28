@@ -8,7 +8,7 @@ import net.minecraft.nbt.NBTTagCompound;
 @Getter
 @Setter
 //Tracks horizontal movement
-public class SpeedTrackingComponent implements EntityComponent {
+public class SpeedTrackingComponent extends EntityComponent {
     private double speed;
     private double previousSpeed;
 

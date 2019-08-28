@@ -14,7 +14,7 @@ import net.minecraft.util.ResourceLocation;
 
 @Getter
 @Setter
-public class ItemRenderModelComponent implements EntityComponent {
+public class ItemRenderModelComponent extends EntityComponent {
 
     private static final String MODEL_KEY = "model_location";
 
@@ -23,11 +23,12 @@ public class ItemRenderModelComponent implements EntityComponent {
     @Override
     public NBTTagCompound serialize(NBTTagCompound compound) {
         compound.setString(MODEL_KEY, this.location.toString());
-        return compound;
+        return super.serialize(compound);
     }
 
     @Override
     public void deserialize(NBTTagCompound compound) {
+        super.deserialize(compound);
         this.location = new ResourceLocation(compound.getString(MODEL_KEY));
     }
 

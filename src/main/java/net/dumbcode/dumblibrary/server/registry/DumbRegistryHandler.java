@@ -42,9 +42,6 @@ public class DumbRegistryHandler {
 
 
         MinecraftForge.EVENT_BUS.post(new RegisterComponentsEvent(registry));
-        ObjectHolderRegistry.INSTANCE.applyObjectHolders();
-        MinecraftForge.EVENT_BUS.post(new RegisterStoragesEvent());
-
     }
 
     @SubscribeEvent

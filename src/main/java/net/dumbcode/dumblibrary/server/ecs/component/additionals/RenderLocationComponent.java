@@ -9,7 +9,7 @@ import net.minecraft.util.ResourceLocation;
 import java.util.Comparator;
 import java.util.List;
 
-public interface RenderLocationComponent extends EntityComponent {
+public interface RenderLocationComponent {
     void editLocations(ConfigurableLocation texture, ConfigurableLocation fileLocation);
 
     class ConfigurableLocation {

@@ -3,6 +3,7 @@ package net.dumbcode.dumblibrary.server.ecs.component;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.server.ecs.blocks.components.BlockPlaceableComponent;
 import net.dumbcode.dumblibrary.server.ecs.blocks.storages.FlowerBlockPlaceableStorage;
+import net.dumbcode.dumblibrary.server.registry.DumbRegistries;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 

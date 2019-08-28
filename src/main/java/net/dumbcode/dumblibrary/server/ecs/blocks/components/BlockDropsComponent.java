@@ -25,7 +25,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.StreamSupport;
 
-public class BlockDropsComponent implements EntityComponent {
+public class BlockDropsComponent extends EntityComponent {
 
     private final List<Supplier<ItemStack>> stackList = new ArrayList<>();
 
@@ -38,11 +38,12 @@ public class BlockDropsComponent implements EntityComponent {
     @Override
     public NBTTagCompound serialize(NBTTagCompound compound) {
         compound.setTag("stacks", this.stackList.stream().map(Supplier::get).map(ItemStack::serializeNBT).collect(IOCollectors.toNBTTagList()));
-        return compound;
+        return super.serialize(compound);
     }
 
     @Override
     public void deserialize(NBTTagCompound compound) {
+        super.deserialize(compound);
         this.stackList.clear();
         StreamSupport.stream(compound.getTagList("stacks", Constants.NBT.TAG_COMPOUND).spliterator(), false).map(base -> new ItemStack((NBTTagCompound) base)).<Supplier<ItemStack>>map(stack -> () -> stack).forEach(this.stackList::add);
     }

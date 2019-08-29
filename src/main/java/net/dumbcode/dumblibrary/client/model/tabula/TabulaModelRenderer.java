@@ -81,6 +81,7 @@ public class TabulaModelRenderer extends ModelRenderer implements AnimationLayer
 
             GlStateManager.pushMatrix();
             this.applyTransformations(scale);
+            this.applyScale();
 
             if (!this.hideButShowChildren) {
                 GlStateManager.pushMatrix();
@@ -91,8 +92,7 @@ public class TabulaModelRenderer extends ModelRenderer implements AnimationLayer
             }
 
             if (!this.scaleChildren) {
-                GlStateManager.popMatrix();
-                GlStateManager.pushMatrix();
+                this.unApplyScale();
             }
 
             if (this.childModels != null) {
@@ -101,7 +101,6 @@ public class TabulaModelRenderer extends ModelRenderer implements AnimationLayer
                 }
             }
 
-            GlStateManager.popMatrix();
             GlStateManager.popMatrix();
         }
     }
@@ -136,13 +135,20 @@ public class TabulaModelRenderer extends ModelRenderer implements AnimationLayer
         if (this.rotateAngleX != 0.0F) {
             GlStateManager.rotate((float) Math.toDegrees(this.rotateAngleX), 1.0F, 0.0F, 0.0F);
         }
+    }
 
-        GlStateManager.pushMatrix();
+    private void applyScale() {
         if (this.scaleX != 1.0F || this.scaleY != 1.0F || this.scaleZ != 1.0F) {
             GlStateManager.scale(this.scaleX, this.scaleY, this.scaleZ);
         }
-
     }
+
+    private void unApplyScale() {
+        if (this.scaleX != 1.0F || this.scaleY != 1.0F || this.scaleZ != 1.0F) {
+            GlStateManager.scale(1F / this.scaleX, 1F / this.scaleY, 1F / this.scaleZ);
+        }
+    }
+
 
     @SideOnly(Side.CLIENT)
     private void compileTabulaDisplayList(float scale) {

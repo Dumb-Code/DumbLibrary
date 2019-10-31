@@ -3,6 +3,7 @@ package net.dumbcode.dumblibrary.server.registry;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.server.animation.objects.Animation;
 import net.dumbcode.dumblibrary.server.animation.objects.AnimationFactor;
+import net.dumbcode.dumblibrary.server.dna.GeneticType;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentType;
 import net.dumbcode.dumblibrary.server.ecs.component.RegisterComponentsEvent;
 import net.dumbcode.dumblibrary.server.ecs.component.RegisterStoragesEvent;
@@ -33,6 +34,11 @@ public class DumbRegistryHandler {
                 .setDefaultKey(new ResourceLocation(DumbLibrary.MODID, "default"))
                 .set((key, isNetwork) -> AnimationFactor.DEFAULT)
                 .create();
+
+        new RegistryBuilder<GeneticType>()
+            .setType(GeneticType.class)
+            .setName(new ResourceLocation(DumbLibrary.MODID, "genetic_type"))
+            .create();
 
         IForgeRegistry<EntityComponentType<?, ?>> registry = new RegistryBuilder<EntityComponentType<?, ?>>()
                 .setType(EntityComponentType.getWildcardType())

@@ -1,7 +1,7 @@
 package net.dumbcode.dumblibrary.server.ecs.component;
 
 import io.netty.buffer.ByteBuf;
-import lombok.NonNull;
+import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.registry.DumbRegistries;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
@@ -11,6 +11,7 @@ import javax.annotation.Nullable;
 
 public abstract class EntityComponent {
 
+    protected ComponentAccess access;
     protected EntityComponentType type;
     @Nullable private SaveableEntityStorage storage;
     @Nullable private String storageID;
@@ -57,7 +58,8 @@ public abstract class EntityComponent {
     public void deserialize(ByteBuf buf) {
     }
 
-    public void onCreated(EntityComponentType type, @Nullable EntityComponentStorage storage, @Nullable String storageID) {
+    public void onCreated(ComponentAccess access, EntityComponentType type, @Nullable EntityComponentStorage storage, @Nullable String storageID) {
+        this.access = access;
         this.type = type;
         if(storage instanceof SaveableEntityStorage) {
             this.storage = (SaveableEntityStorage) storage;

@@ -25,6 +25,7 @@ public class EntityComponentTypes {
     public static final EntityComponentType<ModelComponent, ?> MODEL = InjectedUtils.injected();
     public static final EntityComponentType<RenderAdjustmentsComponent, RenderAdjustmentsComponent.Storage> RENDER_ADJUSTMENTS = InjectedUtils.injected();
     public static final EntityComponentType<SpeedTrackingComponent, ?> SPEED_TRACKING = InjectedUtils.injected();
+    public static final EntityComponentType<GeneticComponent, GeneticComponent.Storage> GENETIC_COMPONENT = InjectedUtils.injected();
 
     public static final EntityComponentType<GrowingComponent, GrowingComponent.Storage> BLOCK_GROWING = InjectedUtils.injected();
     public static final EntityComponentType<FlowerWorldgenComponent, FlowerWorldgenComponent.Storage> FLOWER_WORLDGEN = InjectedUtils.injected();
@@ -34,6 +35,7 @@ public class EntityComponentTypes {
 
     public static final EntityComponentType<ItemRenderModelComponent, ItemRenderModelComponent.Storage> ITEM_RENDER = InjectedUtils.injected();
     public static final EntityComponentType<ItemEatenComponent, ItemEatenComponent.Storage> ITEM_EATEN = InjectedUtils.injected();
+
 
     @SubscribeEvent
     public static void onRegisterComponents(RegisterComponentsEvent event) {

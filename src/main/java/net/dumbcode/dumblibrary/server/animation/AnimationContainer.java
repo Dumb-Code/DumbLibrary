@@ -138,14 +138,21 @@ public class AnimationContainer {
             map.put(animation, Lists.newArrayList(new PoseData.FileResolvablePoseData(regName.getPath() + ".tbl", 10)));
             return;
         }
-        JsonObject parsed = new JsonParser().parse(new InputStreamReader(Files.newInputStream(root.resolve("animation.json")))).getAsJsonObject();
-
-        int time = JsonUtils.getInt(parsed, "base_time");
+        int time;
         Map<Integer, Integer> overrides = Maps.newHashMap();
-        for (JsonElement jsonElement : JsonUtils.getJsonArray(parsed, "overrides", new JsonArray())) {
-            JsonObject jobj = JsonUtils.getJsonObject(jsonElement, "overrides member");
-            overrides.put(JsonUtils.getInt(jobj, "index"), JsonUtils.getInt(jobj, "time"));
+
+        Path animationFile = root.resolve("animation.json");
+        if(Files.exists(animationFile)) {
+            JsonObject parsed = new JsonParser().parse(new InputStreamReader(Files.newInputStream(animationFile))).getAsJsonObject();
+            time = JsonUtils.getInt(parsed, "base_time");
+            for (JsonElement jsonElement : JsonUtils.getJsonArray(parsed, "overrides", new JsonArray())) {
+                JsonObject jobj = JsonUtils.getJsonObject(jsonElement, "overrides member");
+                overrides.put(JsonUtils.getInt(jobj, "index"), JsonUtils.getInt(jobj, "time"));
+            }
+        } else {
+            time = 5;
         }
+
         IntegerHolder index = new IntegerHolder();
         try (Stream<Path> stream = Files.walk(root)){
             map.put(animation,

@@ -9,6 +9,7 @@ import net.dumbcode.dumblibrary.server.ecs.item.ItemCompoundAccess;
 import net.dumbcode.dumblibrary.server.ecs.item.components.ItemRenderModelComponent;
 import net.dumbcode.dumblibrary.server.network.S0SyncAnimation;
 import net.dumbcode.dumblibrary.server.network.S1PlayItemCrackParticle;
+import net.dumbcode.dumblibrary.server.network.S2SyncComponent;
 import net.dumbcode.dumblibrary.server.utils.InjectedUtils;
 import net.dumbcode.dumblibrary.server.utils.SidedExecutor;
 import net.minecraft.client.Minecraft;
@@ -62,6 +63,7 @@ public class DumbLibrary {
 
         NETWORK.registerMessage(new S0SyncAnimation.Handler(), S0SyncAnimation.class, 0, Side.CLIENT);
         NETWORK.registerMessage(new S1PlayItemCrackParticle.Handler(), S1PlayItemCrackParticle.class, 1, Side.CLIENT);
+        NETWORK.registerMessage(new S2SyncComponent.Handler(), S2SyncComponent.class, 2, Side.CLIENT);
 
         SidedExecutor.runClient(() -> () -> ModelLoaderRegistry.registerLoader(TransformTypeModelLoader.INSTANCE));
     }

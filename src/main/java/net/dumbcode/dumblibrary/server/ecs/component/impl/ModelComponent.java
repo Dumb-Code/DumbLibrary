@@ -1,18 +1,24 @@
 package net.dumbcode.dumblibrary.server.ecs.component.impl;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import net.dumbcode.dumblibrary.client.component.RenderComponentContext;
 import net.dumbcode.dumblibrary.client.model.ModelMissing;
+import net.dumbcode.dumblibrary.client.model.tabula.TabulaModel;
+import net.dumbcode.dumblibrary.server.animation.TabulaUtils;
 import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.FinalizableComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderCallbackComponent;
-import net.dumbcode.dumblibrary.server.animation.TabulaUtils;
+import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLayerComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLocationComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLocationComponent.ConfigurableLocation;
+import net.dumbcode.dumblibrary.server.utils.SidedExecutor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.ModelBase;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.entity.RenderLivingBase;
+import net.minecraft.client.renderer.entity.layers.LayerRenderer;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.nbt.NBTTagCompound;
@@ -20,9 +26,11 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.commons.lang3.NotImplementedException;
+import org.lwjgl.opengl.GL11;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.function.Consumer;
 
 //Client usage only
 @Getter
@@ -32,27 +40,28 @@ public class ModelComponent extends EntityComponent implements RenderCallbackCom
     private final ConfigurableLocation fileLocation = new ConfigurableLocation();
 
     @SideOnly(Side.CLIENT)
-    private ModelBase modelCache = null;
+    private TabulaModel modelCache = null;
 
-    private float shadowsize;
+    private float shadowSize;
+
+    @SideOnly(Side.CLIENT)
+    private Render renderer;
 
     @Override
     public void addCallbacks(List<SubCallback> preRenderCallbacks, List<MainCallback> renderCallbacks, List<SubCallback> postRenderCallback) {
-        renderCallbacks.add(new Render());
+        renderCallbacks.add(this.renderer);
     }
-
-
 
     @Override
     public NBTTagCompound serialize(NBTTagCompound compound) {
-        compound.setFloat("ShadowSize", this.shadowsize);
+        compound.setFloat("ShadowSize", this.shadowSize);
         return super.serialize(compound);
     }
 
     @Override
     public void deserialize(NBTTagCompound compound) {
         super.deserialize(compound);
-        this.shadowsize = compound.getFloat("ShadowSize");
+        this.shadowSize = compound.getFloat("ShadowSize");
     }
 
     @SideOnly(Side.CLIENT)
@@ -61,7 +70,7 @@ public class ModelComponent extends EntityComponent implements RenderCallbackCom
     }
 
     @SideOnly(Side.CLIENT)
-    public ModelBase getModelCache() {
+    public TabulaModel getModelCache() {
         if(this.modelCache == null) {
             this.modelCache = TabulaUtils.getModel(this.fileLocation.getLocation());
         }
@@ -72,26 +81,57 @@ public class ModelComponent extends EntityComponent implements RenderCallbackCom
     public void finalizeComponent(ComponentAccess entity) {
         this.texture.reset();
         this.fileLocation.reset();
+
         for (EntityComponent component : entity.getAllComponents()) {
             if(component instanceof RenderLocationComponent) {
                 ((RenderLocationComponent) component).editLocations(this.texture, this.fileLocation);
             }
+        }
+
+        if(entity instanceof Entity && ((Entity) entity).world.isRemote) {
+            SidedExecutor.runClient(() -> () -> {
+                if(this.renderer == null) {
+                    this.renderer = new Render();
+                }
+                this.renderer.clearLayers();
+                for (EntityComponent component : entity.getAllComponents()) {
+                    if(component instanceof RenderLayerComponent) {
+                        ((RenderLayerComponent) component).gatherLayers(rc -> this.renderer.addLayer(new Layer(rc)));
+                    }
+                }
+            });
         }
     }
 
     //TODO: this class needs re-doing. It's very yucky at the moment
     @SideOnly(Side.CLIENT)
     private class Render extends RenderLivingBase<EntityLivingBase> implements MainCallback {
+
+        private final int renderID;
+
         public Render() {
-            super(Minecraft.getMinecraft().getRenderManager(), ModelMissing.INSTANCE, ModelComponent.this.shadowsize);
+            super(Minecraft.getMinecraft().getRenderManager(), ModelMissing.INSTANCE, ModelComponent.this.shadowSize);
+            this.renderID = GlStateManager.glGenLists(1);
+        }
+
+        private void clearLayers() {
+            this.layerRenderers.clear();
         }
 
         Runnable preCallbacks;
 
         @Override
         public void invoke(RenderComponentContext context, Entity entity, double x, double y, double z, float entityYaw, float partialTicks, List<SubCallback> preCallbacks, List<SubCallback> postCallbacks) {
-            this.shadowSize = ModelComponent.this.shadowsize;
-            this.mainModel = ModelComponent.this.getModelCache();
+            this.shadowSize = ModelComponent.this.shadowSize;
+            TabulaModel model = ModelComponent.this.getModelCache();
+            this.mainModel = model;
+
+            GlStateManager.pushMatrix();
+            GlStateManager.scale(0F, 0F, 0F);
+            if(!model.isRendered()) {
+                model.renderBoxes(1/16F);
+            }
+            GlStateManager.popMatrix();
 
             this.preCallbacks = () -> {
                 for (SubCallback callback : preCallbacks) {
@@ -99,6 +139,7 @@ public class ModelComponent extends EntityComponent implements RenderCallbackCom
                 }
             };
 
+            GlStateManager.enableBlend();
 
             //TODO: need to do default model rendering, without all the stuff that RenderLivingBase does (death rotation, ect)
             // have our own implimentation of the rendering, that just focus on the model itsself.
@@ -110,6 +151,7 @@ public class ModelComponent extends EntityComponent implements RenderCallbackCom
             // OR
             // An alternative to havin all these different components would be to have one component then have tuple
             // additions to allow/disallow certian modules. Other mods can just add their own component
+
             if(entity instanceof EntityLivingBase) {
                 this.doRender((EntityLivingBase) entity, x, y, z, entityYaw, partialTicks);
             } else {
@@ -122,15 +164,37 @@ public class ModelComponent extends EntityComponent implements RenderCallbackCom
         }
 
         @Override
+        protected void renderModel(EntityLivingBase entitylivingbaseIn, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scaleFactor) {
+            GlStateManager.glNewList(this.renderID, GL11.GL_COMPILE);
+            this.mainModel.render(entitylivingbaseIn, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scaleFactor);
+            GlStateManager.glEndList();
+        }
+
+        @Override
         protected void preRenderCallback(EntityLivingBase entitylivingbaseIn, float partialTickTime) {
             this.preCallbacks.run();
         }
-
 
         @Nullable
         @Override
         protected ResourceLocation getEntityTexture(EntityLivingBase entity) {
             return ModelComponent.this.texture.getLocation();
+        }
+    }
+
+    @RequiredArgsConstructor
+    private class Layer implements LayerRenderer {
+
+        private final Consumer<Runnable> callback;
+
+        @Override
+        public void doRenderLayer(EntityLivingBase entitylivingbaseIn, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch, float scale) {
+            this.callback.accept(() -> GlStateManager.callList(ModelComponent.this.renderer.renderID));
+        }
+
+        @Override
+        public boolean shouldCombineTextures() {
+            return true;
         }
     }
 }

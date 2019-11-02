@@ -6,6 +6,7 @@ import lombok.Value;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.minecraft.util.ResourceLocation;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -58,6 +59,15 @@ public interface RenderLocationComponent {
             return new ResourceLocation(this.modid, (this.folderNames.isEmpty() ? "" : joinedFolder) + joinedFile + this.suffix);
         }
 
+        public ConfigurableLocation copy() {
+            ConfigurableLocation location = new ConfigurableLocation(this.suffix);
+
+            location.modid = this.modid;
+            location.folderNames.addAll(this.folderNames);
+            location.fileNames.addAll(this.fileNames);
+
+            return location;
+        }
 
         public void reset() {
             this.modid = "";

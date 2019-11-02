@@ -19,7 +19,10 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
+//Utility class for input streams, and the java stream api.
 @UtilityClass
 public class StreamUtils {
     public static InputStream openStream(ResourceLocation location) throws IOException {
@@ -64,5 +67,9 @@ public class StreamUtils {
     @SideOnly(Side.CLIENT)
     private static InputStream openClientStream(ResourceLocation location) throws IOException {
         return Minecraft.getMinecraft().getResourceManager().getResource(location).getInputStream();
+    }
+
+    public static <T> Stream<T> stream(Iterable<T> iterable) {
+        return StreamSupport.stream(iterable.spliterator(), false);
     }
 }

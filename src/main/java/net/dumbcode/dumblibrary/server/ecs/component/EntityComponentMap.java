@@ -17,8 +17,6 @@ import java.util.Optional;
 
 public class EntityComponentMap extends LinkedHashMap<EntityComponentType<?, ?>, EntityComponent> {
 
-    @Getter private final transient Writeable writeable = new Writeable();
-
     @Nullable
     @SuppressWarnings("unchecked")
     public <T extends EntityComponent, S extends EntityComponentStorage<T>> T getNullable(EntityComponentType<T, S> type) {
@@ -82,11 +80,9 @@ public class EntityComponentMap extends LinkedHashMap<EntityComponentType<?, ?>,
         }
     }
 
-    private class Writeable implements ComponentMapWriteAccess {
+    @Override
+    public EntityComponent put(EntityComponentType<?, ?> key, EntityComponent value) {
 
-        @Override
-        public EntityComponentMap getComponentMap() {
-            return EntityComponentMap.this;
-        }
+        return super.put(key, value);
     }
 }

@@ -1,8 +1,11 @@
 package net.dumbcode.dumblibrary.server.ecs.component;
 
 import io.netty.buffer.ByteBuf;
+import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
+import net.dumbcode.dumblibrary.server.network.S2SyncComponent;
 import net.dumbcode.dumblibrary.server.registry.DumbRegistries;
+import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.util.Constants;
@@ -58,8 +61,17 @@ public abstract class EntityComponent {
     public void deserialize(ByteBuf buf) {
     }
 
-    public void onCreated(ComponentAccess access, EntityComponentType type, @Nullable EntityComponentStorage storage, @Nullable String storageID) {
+    public void syncToClient() {
+        if(this.access instanceof Entity && !((Entity) this.access).world.isRemote) {
+            DumbLibrary.NETWORK.sendToDimension(new S2SyncComponent(((Entity) this.access).getEntityId(), this.type, this), ((Entity) this.access).world.provider.getDimension());
+        }
+    }
+
+    public void setAccess(ComponentAccess access) {
         this.access = access;
+    }
+
+    public void onCreated(EntityComponentType type, @Nullable EntityComponentStorage storage, @Nullable String storageID) {
         this.type = type;
         if(storage instanceof SaveableEntityStorage) {
             this.storage = (SaveableEntityStorage) storage;

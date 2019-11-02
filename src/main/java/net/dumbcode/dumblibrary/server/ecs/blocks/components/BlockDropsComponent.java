@@ -11,6 +11,7 @@ import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
 import net.dumbcode.dumblibrary.server.ecs.item.ItemComponentAccessCreatable;
 import net.dumbcode.dumblibrary.server.utils.IOCollectors;
+import net.dumbcode.dumblibrary.server.utils.StreamUtils;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.ShapedRecipes;
 import net.minecraft.nbt.NBTTagCompound;
@@ -45,7 +46,7 @@ public class BlockDropsComponent extends EntityComponent {
     public void deserialize(NBTTagCompound compound) {
         super.deserialize(compound);
         this.stackList.clear();
-        StreamSupport.stream(compound.getTagList("stacks", Constants.NBT.TAG_COMPOUND).spliterator(), false).map(base -> new ItemStack((NBTTagCompound) base)).<Supplier<ItemStack>>map(stack -> () -> stack).forEach(this.stackList::add);
+        StreamUtils.stream(compound.getTagList("stacks", Constants.NBT.TAG_COMPOUND)).map(base -> new ItemStack((NBTTagCompound) base)).<Supplier<ItemStack>>map(stack -> () -> stack).forEach(this.stackList::add);
     }
 
     @Accessors(chain = true)
@@ -72,13 +73,13 @@ public class BlockDropsComponent extends EntityComponent {
         public void readJson(JsonObject json) {
             this.stackList.clear();
 
-            StreamSupport.stream(JsonUtils.getJsonArray(json, "stacks").spliterator(), false)
+            StreamUtils.stream(JsonUtils.getJsonArray(json, "stacks"))
                     .filter(JsonElement::isJsonObject)
                     .map(JsonElement::getAsJsonObject)
                     .map(BlockDropsComponent::deserializeItem)
                     .forEach(this.stackList::add);
 
-            StreamSupport.stream(JsonUtils.getJsonArray(json, "creatables").spliterator(), false)
+            StreamUtils.stream(JsonUtils.getJsonArray(json, "creatables"))
                     .filter(JsonElement::isJsonObject)
                     .map(elem -> {
                         ItemComponentAccessCreatable creatable = new ItemComponentAccessCreatable();

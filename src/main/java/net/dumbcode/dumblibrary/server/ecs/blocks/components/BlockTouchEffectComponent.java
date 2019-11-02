@@ -9,6 +9,7 @@ import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
 import net.dumbcode.dumblibrary.server.utils.DumbJsonUtils;
 import net.dumbcode.dumblibrary.server.utils.IOCollectors;
+import net.dumbcode.dumblibrary.server.utils.StreamUtils;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.JsonUtils;
 
@@ -42,7 +43,7 @@ public class BlockTouchEffectComponent extends EntityComponent {
 
         @Override
         public void readJson(JsonObject json) {
-            StreamSupport.stream(JsonUtils.getJsonArray(json, "potions").spliterator(), false)
+            StreamUtils.stream(JsonUtils.getJsonArray(json, "potions"))
                     .map(DumbJsonUtils::readPotionEffect)
                     .forEach(this.potionEffectList::add);
 

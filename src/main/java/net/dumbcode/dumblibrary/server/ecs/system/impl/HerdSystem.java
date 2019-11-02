@@ -109,13 +109,13 @@ public enum HerdSystem implements EntitySystem {
         if(entity instanceof ComponentAccess) {
             HerdComponent component = ((ComponentAccess) entity).getOrNull(EntityComponentTypes.HERD);
             if(component != null && component.herdData != null) {
-                component.removeMember(entity.getUniqueID(), component);
                 if(entity.getUniqueID().equals(component.herdData.leader)) {
                     List<UUID> herdMembers = component.herdData.getMembers();
                     if(!herdMembers.isEmpty()) {
                         WorldUtils.getEntityFromUUID(entity.world, herdMembers.get(0)).ifPresent(e -> component.herdData.leader = e.getUniqueID());
                     }
                 }
+                component.removeMember(entity.getUniqueID(), component);
             }
         }
     }

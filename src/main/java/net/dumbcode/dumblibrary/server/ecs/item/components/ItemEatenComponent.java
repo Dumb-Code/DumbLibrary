@@ -9,6 +9,7 @@ import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
 import net.dumbcode.dumblibrary.server.utils.DumbJsonUtils;
 import net.dumbcode.dumblibrary.server.utils.IOCollectors;
+import net.dumbcode.dumblibrary.server.utils.StreamUtils;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.potion.PotionEffect;
@@ -47,7 +48,7 @@ public class ItemEatenComponent extends EntityComponent {
     public void deserialize(NBTTagCompound compound) {
         super.deserialize(compound);
         this.potionEffectList.clear();
-        StreamSupport.stream(compound.getTagList("effects", Constants.NBT.TAG_COMPOUND).spliterator(), false).map(tag -> PotionEffect.readCustomPotionEffectFromNBT((NBTTagCompound) tag)).forEach(this.potionEffectList::add);
+        StreamUtils.stream(compound.getTagList("effects", Constants.NBT.TAG_COMPOUND)).map(tag -> PotionEffect.readCustomPotionEffectFromNBT((NBTTagCompound) tag)).forEach(this.potionEffectList::add);
         this.ignoreHunger = compound.getBoolean("ignore_hunger");
         this.duration = compound.getInteger("duration");
         this.fillAmount = compound.getInteger("fill_amount");
@@ -77,7 +78,7 @@ public class ItemEatenComponent extends EntityComponent {
 
         @Override
         public void readJson(JsonObject json) {
-            StreamSupport.stream(JsonUtils.getJsonArray(json, "effects").spliterator(), false)
+            StreamUtils.stream(JsonUtils.getJsonArray(json, "effects"))
                     .map(DumbJsonUtils::readPotionEffect)
                     .forEach(this.potionEffectList::add);
 

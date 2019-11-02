@@ -25,7 +25,8 @@ public class EntityComponentTypes {
     public static final EntityComponentType<ModelComponent, ?> MODEL = InjectedUtils.injected();
     public static final EntityComponentType<RenderAdjustmentsComponent, RenderAdjustmentsComponent.Storage> RENDER_ADJUSTMENTS = InjectedUtils.injected();
     public static final EntityComponentType<SpeedTrackingComponent, ?> SPEED_TRACKING = InjectedUtils.injected();
-    public static final EntityComponentType<GeneticComponent, GeneticComponent.Storage> GENETIC_COMPONENT = InjectedUtils.injected();
+    public static final EntityComponentType<GeneticComponent, GeneticComponent.Storage> GENETICS = InjectedUtils.injected();
+    public static final EntityComponentType<GeneticLayerComponent, GeneticLayerComponent.Storage> GENETIC_LAYER_COLORS = InjectedUtils.injected();
 
     public static final EntityComponentType<GrowingComponent, GrowingComponent.Storage> BLOCK_GROWING = InjectedUtils.injected();
     public static final EntityComponentType<FlowerWorldgenComponent, FlowerWorldgenComponent.Storage> FLOWER_WORLDGEN = InjectedUtils.injected();
@@ -40,73 +41,83 @@ public class EntityComponentTypes {
     @SubscribeEvent
     public static void onRegisterComponents(RegisterComponentsEvent event) {
         event.getRegistry().registerAll(
-                SimpleComponentType.builder(GenderComponent.class)
-                        .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "gender"))
-                        .withConstructor(GenderComponent::new)
-                        .build(),
-                SimpleComponentType.builder(HerdComponent.class, HerdComponent.Storage.class)
-                        .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "herd"))
-                        .withStorage(HerdComponent.Storage::new)
-                        .withConstructor(HerdComponent::new)
-                        .build(),
-                SimpleComponentType.builder(MetabolismComponent.class, MetabolismComponent.Storage.class)
-                        .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "metabolism"))
-                        .withStorage(MetabolismComponent.Storage::new)
-                        .withConstructor(MetabolismComponent::new)
-                        .build(),
-                SimpleComponentType.builder(AnimationComponent.class)
-                        .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "animation"))
-                        .withConstructor(AnimationComponent::new)
-                        .build(),
-                SimpleComponentType.builder(ModelComponent.class)
-                        .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "model"))
-                        .withConstructor(ModelComponent::new)
-                        .build(),
-                SimpleComponentType.builder(RenderAdjustmentsComponent.class, RenderAdjustmentsComponent.Storage.class)
-                        .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "render_adjustments"))
-                        .withConstructor(RenderAdjustmentsComponent::new)
-                        .withStorage(RenderAdjustmentsComponent.Storage::new)
-                        .build(),
-                SimpleComponentType.builder(SpeedTrackingComponent.class)
-                        .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "speed_tracking"))
-                        .withConstructor(SpeedTrackingComponent::new)
-                        .build(),
+            SimpleComponentType.builder(GenderComponent.class)
+                .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "gender"))
+                .withConstructor(GenderComponent::new)
+                .build(),
+            SimpleComponentType.builder(HerdComponent.class, HerdComponent.Storage.class)
+                .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "herd"))
+                .withStorage(HerdComponent.Storage::new)
+                .withConstructor(HerdComponent::new)
+                .build(),
+            SimpleComponentType.builder(MetabolismComponent.class, MetabolismComponent.Storage.class)
+                .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "metabolism"))
+                .withStorage(MetabolismComponent.Storage::new)
+                .withConstructor(MetabolismComponent::new)
+                .build(),
+            SimpleComponentType.builder(AnimationComponent.class)
+                .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "animation"))
+                .withConstructor(AnimationComponent::new)
+                .build(),
+            SimpleComponentType.builder(ModelComponent.class)
+                .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "model"))
+                .withConstructor(ModelComponent::new)
+                .build(),
+            SimpleComponentType.builder(RenderAdjustmentsComponent.class, RenderAdjustmentsComponent.Storage.class)
+                .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "render_adjustments"))
+                .withConstructor(RenderAdjustmentsComponent::new)
+                .withStorage(RenderAdjustmentsComponent.Storage::new)
+                .build(),
+            SimpleComponentType.builder(SpeedTrackingComponent.class)
+                .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "speed_tracking"))
+                .withConstructor(SpeedTrackingComponent::new)
+                .build(),
+            SimpleComponentType.builder(GeneticComponent.class, GeneticComponent.Storage.class)
+                .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "genetics"))
+                .withConstructor(GeneticComponent::new)
+                .withStorage(GeneticComponent.Storage::new)
+                .build(),
+            SimpleComponentType.builder(GeneticLayerComponent.class, GeneticLayerComponent.Storage.class)
+                .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "genetic_layer_colors"))
+                .withConstructor(GeneticLayerComponent::new)
+                .withStorage(GeneticLayerComponent.Storage::new)
+                .build(),
 
-                SimpleComponentType.builder(GrowingComponent.class, GrowingComponent.Storage.class)
-                        .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "block_growing"))
-                        .withConstructor(GrowingComponent::new)
-                        .withStorage(GrowingComponent.Storage::new)
-                        .build(),
-                SimpleComponentType.builder(FlowerWorldgenComponent.class, FlowerWorldgenComponent.Storage.class)
-                        .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "flower_worldgen"))
-                        .withConstructor(FlowerWorldgenComponent::new)
-                        .withStorage(FlowerWorldgenComponent.Storage::new)
-                        .build(),
-                SimpleComponentType.builder(BlockTouchEffectComponent.class, BlockTouchEffectComponent.Storage.class)
-                        .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "block_touch_effect"))
-                        .withConstructor(BlockTouchEffectComponent::new)
-                        .withStorage(BlockTouchEffectComponent.Storage::new)
-                        .build(),
-                SimpleComponentType.builder(BlockDropsComponent.class, BlockDropsComponent.Storage.class)
-                        .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "block_drops"))
-                        .withConstructor(BlockDropsComponent::new)
-                        .withStorage(BlockDropsComponent.Storage::new)
-                        .build(),
-                SimpleComponentType.builder(BlockPlaceableComponent.class)
-                        .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "block_placeable"))
-                        .withConstructor(BlockPlaceableComponent::new)
-                        .build(),
+            SimpleComponentType.builder(GrowingComponent.class, GrowingComponent.Storage.class)
+                .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "block_growing"))
+                .withConstructor(GrowingComponent::new)
+                .withStorage(GrowingComponent.Storage::new)
+                .build(),
+            SimpleComponentType.builder(FlowerWorldgenComponent.class, FlowerWorldgenComponent.Storage.class)
+                .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "flower_worldgen"))
+                .withConstructor(FlowerWorldgenComponent::new)
+                .withStorage(FlowerWorldgenComponent.Storage::new)
+                .build(),
+            SimpleComponentType.builder(BlockTouchEffectComponent.class, BlockTouchEffectComponent.Storage.class)
+                .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "block_touch_effect"))
+                .withConstructor(BlockTouchEffectComponent::new)
+                .withStorage(BlockTouchEffectComponent.Storage::new)
+                .build(),
+            SimpleComponentType.builder(BlockDropsComponent.class, BlockDropsComponent.Storage.class)
+                .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "block_drops"))
+                .withConstructor(BlockDropsComponent::new)
+                .withStorage(BlockDropsComponent.Storage::new)
+                .build(),
+            SimpleComponentType.builder(BlockPlaceableComponent.class)
+                .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "block_placeable"))
+                .withConstructor(BlockPlaceableComponent::new)
+                .build(),
 
-                SimpleComponentType.builder(ItemRenderModelComponent.class, ItemRenderModelComponent.Storage.class)
-                        .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "item_render"))
-                        .withConstructor(ItemRenderModelComponent::new)
-                        .withStorage(ItemRenderModelComponent.Storage::new)
-                        .build(),
-                SimpleComponentType.builder(ItemEatenComponent.class, ItemEatenComponent.Storage.class)
-                        .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "item_eaten"))
-                        .withConstructor(ItemEatenComponent::new)
-                        .withStorage(ItemEatenComponent.Storage::new)
-                        .build()
+            SimpleComponentType.builder(ItemRenderModelComponent.class, ItemRenderModelComponent.Storage.class)
+                .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "item_render"))
+                .withConstructor(ItemRenderModelComponent::new)
+                .withStorage(ItemRenderModelComponent.Storage::new)
+                .build(),
+            SimpleComponentType.builder(ItemEatenComponent.class, ItemEatenComponent.Storage.class)
+                .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "item_eaten"))
+                .withConstructor(ItemEatenComponent::new)
+                .withStorage(ItemEatenComponent.Storage::new)
+                .build()
         );
     }
 

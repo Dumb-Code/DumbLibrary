@@ -9,6 +9,7 @@ import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
 import net.dumbcode.dumblibrary.server.ecs.component.FinalizableComponent;
 import net.dumbcode.dumblibrary.server.utils.IOCollectors;
+import net.dumbcode.dumblibrary.server.utils.StreamUtils;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.util.JsonUtils;
 
@@ -46,7 +47,7 @@ public class GrowingComponent extends EntityComponent implements FinalizableComp
 
         @Override
         public void readJson(JsonObject json) {
-            this.growTo = StreamSupport.stream(JsonUtils.getJsonArray(json, "grow_to").spliterator(), false)
+            this.growTo = StreamUtils.stream(JsonUtils.getJsonArray(json, "grow_to"))
                     .filter(e -> e.isJsonPrimitive() && e.getAsJsonPrimitive().isString())
                     .map(e -> e.getAsJsonPrimitive().getAsString())
                     .toArray(String[]::new);

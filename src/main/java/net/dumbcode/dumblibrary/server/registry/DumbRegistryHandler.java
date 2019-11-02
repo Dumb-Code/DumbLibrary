@@ -6,14 +6,12 @@ import net.dumbcode.dumblibrary.server.animation.objects.AnimationFactor;
 import net.dumbcode.dumblibrary.server.dna.GeneticType;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentType;
 import net.dumbcode.dumblibrary.server.ecs.component.RegisterComponentsEvent;
-import net.dumbcode.dumblibrary.server.ecs.component.RegisterStoragesEvent;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.registries.IForgeRegistry;
-import net.minecraftforge.registries.ObjectHolderRegistry;
 import net.minecraftforge.registries.RegistryBuilder;
 
 @Mod.EventBusSubscriber(modid = DumbLibrary.MODID)
@@ -35,8 +33,8 @@ public class DumbRegistryHandler {
                 .set((key, isNetwork) -> AnimationFactor.DEFAULT)
                 .create();
 
-        new RegistryBuilder<GeneticType>()
-            .setType(GeneticType.class)
+        new RegistryBuilder<GeneticType<?>>()
+            .setType(GeneticType.getWildcardType())
             .setName(new ResourceLocation(DumbLibrary.MODID, "genetic_type"))
             .create();
 

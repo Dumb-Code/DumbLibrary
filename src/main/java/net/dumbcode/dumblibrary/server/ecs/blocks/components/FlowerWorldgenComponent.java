@@ -7,6 +7,7 @@ import lombok.experimental.Accessors;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
 import net.dumbcode.dumblibrary.server.utils.IOCollectors;
+import net.dumbcode.dumblibrary.server.utils.StreamUtils;
 import net.minecraft.util.JsonUtils;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.common.BiomeDictionary;
@@ -54,10 +55,10 @@ public class FlowerWorldgenComponent extends EntityComponent {
 
         @Override
         public void readJson(JsonObject json) {
-            StreamSupport.stream(JsonUtils.getJsonArray(json, "spawnable_biomes").spliterator(), false)
+            StreamUtils.stream(JsonUtils.getJsonArray(json, "spawnable_biomes"))
                     .map(elem -> JsonUtils.getString(elem, "element"))
                     .forEach(this.biomeTypes::add);
-            StreamSupport.stream(JsonUtils.getJsonArray(json, "randomized_properties").spliterator(), false)
+            StreamUtils.stream(JsonUtils.getJsonArray(json, "randomized_properties"))
                     .map(elem -> JsonUtils.getString(elem, "element"))
                     .forEach(this.randomizedProperties::add);
             this.plantType = EnumPlantType.getPlantType(JsonUtils.getString(json, "plant_type"));

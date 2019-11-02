@@ -32,6 +32,6 @@ public class GenderComponent extends EntityComponent implements RenderLocationCo
 
     @Override
     public void editLocations(ConfigurableLocation texture, ConfigurableLocation fileLocation) {
-        texture.addFileName(this.male ? "male" : "female", 10);
+        texture.addName(this.male ? "male" : "female", 30);
     }
 }

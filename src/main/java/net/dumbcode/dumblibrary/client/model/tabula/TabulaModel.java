@@ -2,6 +2,7 @@ package net.dumbcode.dumblibrary.client.model.tabula;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -23,6 +24,8 @@ import java.util.Map;
 @Setter
 @Accessors(chain = true)
 public class TabulaModel extends ModelBase {
+    @Setter(AccessLevel.NONE)
+    private boolean rendered = false;
     private final TabulaModelInformation information;
     private final List<TabulaModelRenderer> roots = Lists.newArrayList();
     @Getter
@@ -42,6 +45,7 @@ public class TabulaModel extends ModelBase {
     }
 
     public void renderBoxes(float scale) {
+        this.rendered = true;
         GlStateManager.pushMatrix();
         float[] scales = this.information.getScale();
         GlStateManager.scale(scales[0], scales[1], scales[2]);

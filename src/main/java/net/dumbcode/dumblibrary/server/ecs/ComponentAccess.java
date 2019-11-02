@@ -94,6 +94,9 @@ public interface ComponentAccess {
      */
     default void finalizeComponents() {
         for (EntityComponent component : this.getAllComponents()) {
+            component.setAccess(this);
+        }
+        for (EntityComponent component : this.getAllComponents()) {
             if (component instanceof FinalizableComponent) {
                 FinalizableComponent aiComponent = (FinalizableComponent) component;
                 aiComponent.finalizeComponent(this);

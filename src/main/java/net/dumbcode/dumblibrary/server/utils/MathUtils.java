@@ -23,6 +23,15 @@ public class MathUtils {
         return (int) Math.abs(RANDOM.nextGaussian() * sd + mean);
     }
 
+    public static float bounce(float min, float max, float value) {
+        float range = max - min;
+        return max - Math.abs(mod(value, 2*range) - range);
+    }
+
+    public static float mod(float x, float k) {
+        return ((x % k) + k) % k; //Respect the sign -> https://stackoverflow.com/a/4403631
+    }
+
     public static int floorToZero(double value) {
         return value > 0 ? MathHelper.floor(value) : MathHelper.ceil(value);
     }

@@ -82,7 +82,6 @@ public class EntityComponentMap extends LinkedHashMap<EntityComponentType<?, ?>,
 
     @Override
     public EntityComponent put(EntityComponentType<?, ?> key, EntityComponent value) {
-
         return super.put(key, value);
     }
 }

@@ -34,17 +34,20 @@ public interface RenderLocationComponent {
             this.suffix = suffix;
         }
 
-        public void addFolderName(String name, float index) {
+        public ConfigurableLocation addFolderName(String name, float index) {
             this.folderNames.add(new IndexedString(name, index));
+            return this;
         }
 
-        public void addFileName(String name, float index) {
+        public ConfigurableLocation addFileName(String name, float index) {
             this.fileNames.add(new IndexedString(name, index));
+            return this;
         }
 
-        public void addName(String name, float index) {
+        public ConfigurableLocation addName(String name, float index) {
             this.addFolderName(name, index);
             this.addFileName(name, index);
+            return this;
         }
 
         public ResourceLocation getLocation() {

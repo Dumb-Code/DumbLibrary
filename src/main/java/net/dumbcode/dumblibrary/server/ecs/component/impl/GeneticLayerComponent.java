@@ -6,6 +6,8 @@ import com.google.gson.JsonPrimitive;
 import io.netty.buffer.ByteBuf;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import net.dumbcode.dumblibrary.DumbLibrary;
+import net.dumbcode.dumblibrary.client.TextureUtils;
 import net.dumbcode.dumblibrary.server.dna.GeneticEntry;
 import net.dumbcode.dumblibrary.server.dna.GeneticTypes;
 import net.dumbcode.dumblibrary.server.dna.storages.GeneticTypeLayerColorStorage;
@@ -15,20 +17,25 @@ import net.dumbcode.dumblibrary.server.ecs.component.additionals.GatherGeneticsC
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLayerComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLocationComponent;
 import net.dumbcode.dumblibrary.server.utils.IOCollectors;
+import net.dumbcode.dumblibrary.server.utils.JavaUtils;
+import net.dumbcode.dumblibrary.server.utils.MathUtils;
 import net.dumbcode.dumblibrary.server.utils.StreamUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagString;
 import net.minecraft.util.JsonUtils;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.IntStream;
 
 public class GeneticLayerComponent extends EntityComponent implements RenderLayerComponent, FinalizableComponent, GatherGeneticsComponent {
 
@@ -43,10 +50,7 @@ public class GeneticLayerComponent extends EntityComponent implements RenderLaye
         for (GeneticLayerEntry entry : this.entries) {
             registry.accept(runnable -> {
                 if(this.baseLocation != null) {
-                    RenderLocationComponent.ConfigurableLocation copy = this.baseLocation.copy();
-                    copy.addFileName(entry.locationSuffix, Integer.MAX_VALUE);
-                    ResourceLocation location = copy.getLocation();
-                    RENDER_ENGINE.bindTexture(location);
+                    RENDER_ENGINE.bindTexture(entry.getTextureLocation(this.baseLocation));
                     GlStateManager.color(entry.colours[0], entry.colours[1], entry.colours[2], 1F);
                     runnable.run();
                     GlStateManager.color(1F, 1F, 1F, 1F);
@@ -55,15 +59,14 @@ public class GeneticLayerComponent extends EntityComponent implements RenderLaye
         }
     }
 
-    public void setLayerValues(String layer, int value) { //0 -> 256
-        float percentage = value / 255F;
+    public void setLayerValues(String layer, float value) {
+        int actValue = (int) (MathUtils.bounce(0, 1F, value) * 512F);
         for (GeneticLayerEntry entry : this.entries) {
             if(entry.getLayerName().equals(layer)) {
-                int[] range = entry.getColourRange();
                 entry.setColours(new float[] {
-                    (range[0] + (range[1] - range[0]) * percentage) / 255F,
-                    (range[2] + (range[3] - range[2]) * percentage) / 255F,
-                    (range[4] + (range[5] - range[4]) * percentage) / 255F
+                    ((actValue     ) & 7) / 7F, //7 -> 0b111
+                    ((actValue >> 3) & 7) / 7F,
+                    ((actValue >> 6) & 7) / 7F
                 });
             }
         }
@@ -120,8 +123,8 @@ public class GeneticLayerComponent extends EntityComponent implements RenderLaye
 
         private final List<GeneticLayerEntry> entries = new ArrayList<>();
 
-        public Storage addLayer(String layerName, String locationSuffix, int redStart, int redEnd, int blueStart, int blueEnd, int greenStart, int greenEnd) {
-            this.entries.add(new GeneticLayerEntry(layerName, locationSuffix, redStart, redEnd, blueStart, blueEnd, greenStart, greenEnd));
+        public Storage addLayer(String layerName, String... locationsSuffix) {
+            this.entries.add(new GeneticLayerEntry(layerName, locationsSuffix));
             return this;
         }
 
@@ -151,28 +154,35 @@ public class GeneticLayerComponent extends EntityComponent implements RenderLaye
     @Accessors(chain = true)
     private static class GeneticLayerEntry {
         private final String layerName;
-        private final String locationSuffix;
+        private final String[] locationSuffix;
 
-        private final int[] colourRange; //[redStart, redEnd, blueStart, blueEnd, greenStart, greenEnd]
+        private ResourceLocation textureLocationCache;
 
         private float[] colours = { 1, 1, 1 }; //Only used clientside.
 
-        private GeneticLayerEntry(String layerName, String locationSuffix, int[] colourRange) {
+        private GeneticLayerEntry(String layerName, String... locationsSuffix) {
             this.layerName = layerName;
-            this.locationSuffix = locationSuffix;
-            this.colourRange = colourRange;
+            this.locationSuffix = locationsSuffix;
         }
 
-        private GeneticLayerEntry(String layerName, String locationSuffix, int redStart, int redEnd, int blueStart, int blueEnd, int greenStart, int greenEnd) {
-            this(layerName, locationSuffix, new int[]{ redStart, redEnd, blueStart, blueEnd, greenStart, greenEnd });
+
+        public ResourceLocation getTextureLocation(RenderLocationComponent.ConfigurableLocation baseLocation) {
+            if(this.textureLocationCache == null) {
+                try {
+                    this.textureLocationCache = TextureUtils.generateMultipleTexture(this.layerName, Arrays.stream(this.locationSuffix).map(s -> baseLocation.copy().addFileName(s, Integer.MAX_VALUE).getLocation()).toArray(ResourceLocation[]::new));
+                } catch (IOException e) {
+                    DumbLibrary.getLogger().error("Unable to combine layers: " + Arrays.toString(this.locationSuffix), e);
+                    this.textureLocationCache = TextureManager.RESOURCE_LOCATION_EMPTY;
+                }
+            }
+            return this.textureLocationCache;
         }
 
         public static void serialize(GeneticLayerEntry entry, ByteBuf buf) {
             ByteBufUtils.writeUTF8String(buf, entry.layerName);
-            ByteBufUtils.writeUTF8String(buf, entry.locationSuffix);
-
-            for (int i : entry.colourRange) {
-                buf.writeShort(i);
+            buf.writeShort(entry.getLocationSuffix().length);
+            for (String suffix : entry.locationSuffix) {
+                ByteBufUtils.writeUTF8String(buf, suffix);
             }
 
             for (float colour : entry.colours) {
@@ -182,8 +192,7 @@ public class GeneticLayerComponent extends EntityComponent implements RenderLaye
 
         public static NBTTagCompound serialize(GeneticLayerEntry entry, NBTTagCompound tag) {
             tag.setString("layer", entry.layerName);
-            tag.setString("location", entry.locationSuffix);
-            tag.setIntArray("colour_range", entry.colourRange);
+            tag.setTag("locations", Arrays.stream(entry.locationSuffix).map(NBTTagString::new).collect(IOCollectors.toNBTTagList()));
 
             tag.setFloat("colour_r", entry.colours[0]);
             tag.setFloat("colour_g", entry.colours[1]);
@@ -193,32 +202,28 @@ public class GeneticLayerComponent extends EntityComponent implements RenderLaye
 
         public static JsonObject serialize(GeneticLayerEntry entry, JsonObject json) {
             json.addProperty("layer", entry.layerName);
-            json.addProperty("location", entry.locationSuffix);
-            json.add("colour_range", Arrays.stream(entry.colourRange).mapToObj(JsonPrimitive::new).collect(IOCollectors.toJsonArray()));
+            json.add("locations", Arrays.stream(entry.locationSuffix).map(JsonPrimitive::new).collect(IOCollectors.toJsonArray()));
             return json;
         }
 
         public static GeneticLayerEntry deserailize(NBTTagCompound nbt) {
             return new GeneticLayerEntry(
                 nbt.getString("layer"),
-                nbt.getString("location"),
-                nbt.getIntArray("colour_range")
+                StreamUtils.stream(nbt.getTagList("locations", Constants.NBT.TAG_STRING)).map(b -> ((NBTTagString)b).getString()).toArray(String[]::new)
             ).setColours(new float[]{ nbt.getFloat("colour_r"), nbt.getFloat("colour_g"), nbt.getFloat("colour_b") });
         }
 
         public static GeneticLayerEntry deserailize(JsonObject json) {
             return new GeneticLayerEntry(
                 JsonUtils.getString(json, "layer"),
-                JsonUtils.getString(json, "location"),
-                StreamUtils.stream(JsonUtils.getJsonArray(json, "colour_range")).mapToInt(JsonElement::getAsInt).toArray()
+                StreamUtils.stream(JsonUtils.getJsonArray(json, "locations")).map(JsonElement::getAsString).toArray(String[]::new)
             );
         }
 
         public static GeneticLayerEntry deserailize(ByteBuf buf) {
             return new GeneticLayerEntry(
                 ByteBufUtils.readUTF8String(buf),
-                ByteBufUtils.readUTF8String(buf),
-                new int[]{ buf.readShort(), buf.readShort(), buf.readShort(), buf.readShort(), buf.readShort(), buf.readShort() }
+                IntStream.range(0, buf.readShort()).mapToObj(i -> ByteBufUtils.readUTF8String(buf)).toArray(String[]::new)
             ).setColours(new float[]{ buf.readFloat(), buf.readFloat(), buf.readFloat() });
         }
 

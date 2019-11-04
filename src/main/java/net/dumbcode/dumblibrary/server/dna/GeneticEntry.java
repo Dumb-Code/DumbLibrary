@@ -21,7 +21,7 @@ public class GeneticEntry<T extends GeneticFactoryStorage> {
     @Nullable private final T storage;
     private final float baseValue;
     private final float modifierRange;
-    private int modifier = 128; //0 -> -1, 128 -> 0, 256 -> 1
+    private float modifier = 0; //Normal distribution with mean 1
 
     private GeneticEntry(GeneticEntry<T> schemaEntry) {
         this(schemaEntry.getType(), schemaEntry.getStorage(), schemaEntry.getBaseValue(), schemaEntry.getModifierRange());
@@ -39,7 +39,7 @@ public class GeneticEntry<T extends GeneticFactoryStorage> {
     }
 
     public GeneticEntry<T> setRandomModifier() {
-        this.modifier = new Random().nextInt(256);
+        this.modifier = (float) new Random().nextGaussian();
         return this;
     }
 
@@ -47,7 +47,7 @@ public class GeneticEntry<T extends GeneticFactoryStorage> {
         compound.setString("type", Objects.requireNonNull(this.type.getRegistryName()).toString());
         compound.setFloat("base_value", this.baseValue);
         compound.setFloat("modifier_range", this.modifierRange);
-        compound.setInteger("modifier", this.modifier);
+        compound.setFloat("modifier", this.modifier);
         JavaUtils.nullApply(this.storage, t -> compound.setTag("storage", t.serialize(new NBTTagCompound())));
         return compound;
     }
@@ -68,7 +68,7 @@ public class GeneticEntry<T extends GeneticFactoryStorage> {
             JavaUtils.nullApply(JavaUtils.nullOr(type.getStorage(), Supplier::get), t -> t.deserialize(compound.getCompoundTag("storage"))),
             compound.getFloat("base_value"),
             compound.getFloat("modifier_range")
-        ).setModifier(compound.getInteger("modifier"));
+        ).setModifier(compound.getFloat("modifier"));
     }
 
     public static <T extends GeneticFactoryStorage> GeneticEntry deserialize(JsonObject json) {
@@ -78,6 +78,6 @@ public class GeneticEntry<T extends GeneticFactoryStorage> {
             JavaUtils.nullApply(JavaUtils.nullOr(type.getStorage(), Supplier::get), t -> t.deserialize(JsonUtils.getJsonObject(json, "storage"))),
             JsonUtils.getFloat(json, "base_value"),
             JsonUtils.getFloat(json, "modifier_range")
-        ).setModifier(JsonUtils.getInt(json, "modifier"));
+        ).setModifier(JsonUtils.getFloat(json, "modifier"));
     }
 }

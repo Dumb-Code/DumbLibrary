@@ -11,7 +11,6 @@ import javax.annotation.Nullable;
 import java.util.function.Supplier;
 
 @Getter
-@Builder
 public class GeneticType<T extends GeneticFactoryStorage> extends IForgeRegistryEntry.Impl<GeneticType<?>> {
     private final GeneticValueApplier<T, ComponentAccess> onChange;
     @Nullable private final Supplier<T> storage;
@@ -33,6 +32,7 @@ public class GeneticType<T extends GeneticFactoryStorage> extends IForgeRegistry
     public static class GeneticTypeBuilder<T extends GeneticFactoryStorage> {
         private GeneticValueApplier<T, ComponentAccess> onChange;
         private Supplier<T> storageCreator;
+        private Supplier<T> storage;
 
         private GeneticTypeBuilder() { }
 
@@ -55,5 +55,8 @@ public class GeneticType<T extends GeneticFactoryStorage> extends IForgeRegistry
             return new GeneticType<>(this.onChange, this.storageCreator);
         }
 
+        public String toString() {
+            return "GeneticType.GeneticTypeBuilder(onChange=" + this.onChange + ", storageCreator=" + this.storageCreator + ", storage=" + this.storage + ")";
+        }
     }
 }

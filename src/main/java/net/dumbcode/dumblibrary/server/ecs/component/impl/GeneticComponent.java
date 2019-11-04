@@ -8,6 +8,7 @@ import net.dumbcode.dumblibrary.server.dna.GeneticType;
 import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
+import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentType;
 import net.dumbcode.dumblibrary.server.ecs.component.FinalizableComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.GatherGeneticsComponent;
 import net.dumbcode.dumblibrary.server.utils.IOCollectors;
@@ -18,6 +19,7 @@ import net.minecraft.util.JsonUtils;
 import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.common.util.Constants;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -26,13 +28,12 @@ import java.util.function.Supplier;
 public class GeneticComponent extends EntityComponent implements FinalizableComponent {
     @Getter
     private final List<GeneticEntry> genetics = new ArrayList<>();
-    private final List<GeneticEntry> serializableTypes = new ArrayList<>();
 
-    private <T extends GeneticFactoryStorage> void applyChange(GeneticEntry<T> entry, int modifier) {
-        modifier = MathHelper.clamp(modifier, 0, 255);
+    private boolean doneGatherGenetics = true;
 
+    private <T extends GeneticFactoryStorage> void applyChange(GeneticEntry<T> entry, float modifier) {
         entry.setModifier(modifier);
-        entry.getType().getOnChange().apply(entry.getBaseValue() + entry.getModifierRange() * (modifier - 127.5F) / 127.5F, modifier, this.access, entry.getStorage());
+        entry.getType().getOnChange().apply(entry.getBaseValue() + entry.getModifierRange() * modifier, modifier, this.access, entry.getStorage());
     }
 
     private void applyChangeToAll() {
@@ -43,7 +44,7 @@ public class GeneticComponent extends EntityComponent implements FinalizableComp
 
     @Override
     public NBTTagCompound serialize(NBTTagCompound compound) {
-        compound.setTag("genetics", this.serializableTypes.stream().map(e -> e.serialize(new NBTTagCompound())).collect(IOCollectors.toNBTTagList()));
+        compound.setTag("genetics", this.genetics.stream().map(e -> e.serialize(new NBTTagCompound())).collect(IOCollectors.toNBTTagList()));
         return super.serialize(compound);
     }
 
@@ -54,17 +55,25 @@ public class GeneticComponent extends EntityComponent implements FinalizableComp
             .map(b -> GeneticEntry.deserialize((NBTTagCompound) b))
             .forEach(this.genetics::add);
         super.deserialize(compound);
-        this.applyChangeToAll();
     }
 
     @Override
     public void finalizeComponent(ComponentAccess entity) {
-        for (EntityComponent component : entity.getAllComponents()) {
-            if(component instanceof GatherGeneticsComponent) {
-                ((GatherGeneticsComponent) component).gatherGenetics(this.genetics::add);
+        if(!this.doneGatherGenetics) {
+            this.doneGatherGenetics = true;
+            for (EntityComponent component : entity.getAllComponents()) {
+                if(component instanceof GatherGeneticsComponent) {
+                    ((GatherGeneticsComponent) component).gatherGenetics(this.genetics::add);
+                }
             }
         }
         this.applyChangeToAll();
+    }
+
+    @Override
+    public void onCreated(EntityComponentType type, @Nullable EntityComponentStorage storage, @Nullable String storageID) {
+        this.doneGatherGenetics = false;
+        super.onCreated(type, storage, storageID);
     }
 
     public static class Storage implements EntityComponentStorage<GeneticComponent> {
@@ -75,8 +84,8 @@ public class GeneticComponent extends EntityComponent implements FinalizableComp
             return this.addGeneticEntry(type, baseValue, modifierRange, t -> {});
         }
 
-        public <T extends GeneticFactoryStorage> Storage addGeneticEntry(GeneticType<T> type, float baseValue, float modifierRange, Consumer<T> storageInitilizer) {
-            this.baseEntries.add(new GeneticEntry<>(type, JavaUtils.nullApply(JavaUtils.nullOr(type.getStorage(), Supplier::get), storageInitilizer), baseValue, modifierRange));
+        public <T extends GeneticFactoryStorage> Storage addGeneticEntry(GeneticType<T> type, float baseValue, float modifierRange, Consumer<T> storageInitializer) {
+            this.baseEntries.add(new GeneticEntry<>(type, JavaUtils.nullApply(JavaUtils.nullOr(type.getStorage(), Supplier::get), storageInitializer), baseValue, modifierRange));
             return this;
         }
 
@@ -86,7 +95,6 @@ public class GeneticComponent extends EntityComponent implements FinalizableComp
             this.baseEntries.stream().map(GeneticEntry::copy).forEach(e -> {
                 e.setRandomModifier();
                 component.genetics.add(e);
-                component.serializableTypes.add(e);
             });
             return component;
         }

@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import lombok.Setter;
 import lombok.Value;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
+import net.dumbcode.dumblibrary.server.utils.IndexedObject;
 import net.minecraft.util.ResourceLocation;
 
 import java.util.ArrayList;
@@ -18,13 +19,14 @@ public interface RenderLocationComponent {
         //Suffix is used for the suffix for the file name. For example, could be a file extension
         private final String suffix;
 
-        @Setter private String modid;
+        @Setter
+        private String modid;
 
         //List of folder names. Sorted by index
-        private final List<IndexedString> folderNames = Lists.newArrayList();
+        private final List<IndexedObject<CharSequence>> folderNames = Lists.newArrayList();
 
         //List of file names. Sorted by index, then joined with '_'
-        private final List<IndexedString> fileNames = Lists.newArrayList();
+        private final List<IndexedObject<CharSequence>> fileNames = Lists.newArrayList();
 
         public ConfigurableLocation() {
             this("");
@@ -35,12 +37,12 @@ public interface RenderLocationComponent {
         }
 
         public ConfigurableLocation addFolderName(String name, float index) {
-            this.folderNames.add(new IndexedString(name, index));
+            this.folderNames.add(new IndexedObject<>(name, index));
             return this;
         }
 
         public ConfigurableLocation addFileName(String name, float index) {
-            this.fileNames.add(new IndexedString(name, index));
+            this.fileNames.add(new IndexedObject<>(name, index));
             return this;
         }
 
@@ -51,14 +53,8 @@ public interface RenderLocationComponent {
         }
 
         public ResourceLocation getLocation() {
-            String joinedFolder = String.join("/", () -> this.folderNames.stream()
-                    .sorted(Comparator.comparing(IndexedString::getIndex))
-                    .map(IndexedString::getStr)
-                    .iterator()) + "/";
-            String joinedFile = String.join("_", () -> this.fileNames.stream()
-                    .sorted(Comparator.comparing(IndexedString::getIndex))
-                    .map(IndexedString::getStr)
-                    .iterator());
+            String joinedFolder = String.join("/", IndexedObject.sortIndex(this.folderNames)) + "/";
+            String joinedFile = String.join("_", IndexedObject.sortIndex(this.fileNames));
             return new ResourceLocation(this.modid, (this.folderNames.isEmpty() ? "" : joinedFolder) + joinedFile + this.suffix);
         }
 
@@ -77,10 +73,5 @@ public interface RenderLocationComponent {
             this.folderNames.clear();
             this.fileNames.clear();
         }
-    }
-
-    @Value
-    class IndexedString {
-        CharSequence str; float index;
     }
 }

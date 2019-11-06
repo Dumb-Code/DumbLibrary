@@ -4,6 +4,7 @@ import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.server.ecs.blocks.components.*;
 import net.dumbcode.dumblibrary.server.ecs.blocks.systems.*;
 import net.dumbcode.dumblibrary.server.ecs.component.impl.*;
+import net.dumbcode.dumblibrary.server.ecs.component.impl.data.FlattenedLayerProperty;
 import net.dumbcode.dumblibrary.server.ecs.item.components.ItemEatenComponent;
 import net.dumbcode.dumblibrary.server.ecs.item.components.ItemRenderModelComponent;
 import net.dumbcode.dumblibrary.server.ecs.item.systems.ItemEatenSystem;
@@ -27,6 +28,8 @@ public class EntityComponentTypes {
     public static final EntityComponentType<SpeedTrackingComponent, ?> SPEED_TRACKING = InjectedUtils.injected();
     public static final EntityComponentType<GeneticComponent, GeneticComponent.Storage> GENETICS = InjectedUtils.injected();
     public static final EntityComponentType<GeneticLayerComponent, GeneticLayerComponent.Storage> GENETIC_LAYER_COLORS = InjectedUtils.injected();
+    public static final EntityComponentType<FlattenedLayerComponent, FlattenedLayerComponent.Storage> FLATTENED_LAYER = InjectedUtils.injected();
+    public static final EntityComponentType<BlinkingComponent, BlinkingComponent.Storage> BLINKING = InjectedUtils.injected();
 
     public static final EntityComponentType<GrowingComponent, GrowingComponent.Storage> BLOCK_GROWING = InjectedUtils.injected();
     public static final EntityComponentType<FlowerWorldgenComponent, FlowerWorldgenComponent.Storage> FLOWER_WORLDGEN = InjectedUtils.injected();
@@ -81,6 +84,16 @@ public class EntityComponentTypes {
                 .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "genetic_layer_colors"))
                 .withConstructor(GeneticLayerComponent::new)
                 .withStorage(GeneticLayerComponent.Storage::new)
+                .build(),
+            SimpleComponentType.builder(FlattenedLayerComponent.class, FlattenedLayerComponent.Storage.class)
+                .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "flattened_layer"))
+                .withConstructor(FlattenedLayerComponent::new)
+                .withStorage(FlattenedLayerComponent.Storage::new)
+                .build(),
+            SimpleComponentType.builder(BlinkingComponent.class, BlinkingComponent.Storage.class)
+                .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "blinking"))
+                .withConstructor(BlinkingComponent::new)
+                .withStorage(BlinkingComponent.Storage::new)
                 .build(),
 
             SimpleComponentType.builder(GrowingComponent.class, GrowingComponent.Storage.class)

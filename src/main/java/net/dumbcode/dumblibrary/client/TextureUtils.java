@@ -2,8 +2,10 @@ package net.dumbcode.dumblibrary.client;
 
 import com.sun.imageio.plugins.common.ImageUtil;
 import lombok.Cleanup;
+import net.dumbcode.dumblibrary.DumbLibrary;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.DynamicTexture;
+import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.renderer.texture.TextureUtil;
 import net.minecraft.client.resources.IResource;
 import net.minecraft.util.ResourceLocation;
@@ -20,59 +22,65 @@ public class TextureUtils {
 
     private static final Minecraft MC = Minecraft.getMinecraft();
 
-    public static ResourceLocation generateMultipleTexture(ResourceLocation... locations) throws IOException {
-        if(locations.length == 0) {
-            throw new IOException("Input locations should not be len 0");
-        }
-        if(locations.length == 1) {
-            return locations[0];
-        }
-
-        float ratio = -1;
-
-        BufferedImage[] images = new BufferedImage[locations.length];
-        for (int i = 0; i < locations.length; i++) {
-            @Cleanup IResource resource = MC.getResourceManager().getResource(locations[i]);
-            BufferedImage image = TextureUtil.readBufferedImage(resource.getInputStream());
-
-            int width = image.getWidth();
-            int height = image.getHeight();
-
-            float imageRatio = width / (float) height;
-
-            if(ratio == -1) {
-                ratio = imageRatio;
+    public static ResourceLocation generateMultipleTexture(ResourceLocation... locations) {
+        //TODO: CACHE VASTLY
+        try {
+            if(locations.length == 0) {
+                throw new IOException("Input locations should not be len 0");
             }
-            if(ratio != imageRatio) {
-                throw new IOException("Image at " + locations[i] + " was not the specified ratio '1:" + ratio + "'. Instead was: '" + width + " x " + height + "' (1:" + imageRatio + ")");
+            if(locations.length == 1) {
+                return locations[0];
             }
 
-            images[i] = image;
-        }
-        int width = Arrays.stream(images).mapToInt(BufferedImage::getWidth).max().orElseThrow(IOException::new);
-        int height = (int) (width / ratio);
+            float ratio = -1;
 
+            BufferedImage[] images = new BufferedImage[locations.length];
+            for (int i = 0; i < locations.length; i++) {
+                @Cleanup IResource resource = MC.getResourceManager().getResource(locations[i]);
+                BufferedImage image = TextureUtil.readBufferedImage(resource.getInputStream());
 
-        int[][] imageData = new int[locations.length][];
+                int width = image.getWidth();
+                int height = image.getHeight();
 
-        for (int i = 0; i < images.length; i++) {
-            imageData[i] = new int[width * height];
-            resize(images[i], width, height).getRGB(0, 0, width, height, imageData[i], 0, width);
-        }
+                float imageRatio = width / (float) height;
 
-        int imageLength = imageData[0].length;
+                if(ratio == -1) {
+                    ratio = imageRatio;
+                }
+                if(ratio != imageRatio) {
+                    throw new IOException("Image at " + locations[i] + " was not the specified ratio '1:" + ratio + "'. Instead was: '" + width + " x " + height + "' (1:" + imageRatio + ")");
+                }
 
-        DynamicTexture texture = new DynamicTexture(width, height);
-        int[] overlappedData = texture.getTextureData();
-        System.arraycopy(imageData[0], 0, overlappedData, 0, overlappedData.length);
-
-        for (int i = 1; i < imageData.length; i++) {
-            for (int d = 0; d < imageLength; d++) {
-                overlappedData[d] = blend(imageData[i][d], overlappedData[d]);
+                images[i] = image;
             }
+            int width = Arrays.stream(images).mapToInt(BufferedImage::getWidth).max().orElseThrow(IOException::new);
+            int height = (int) (width / ratio);
+
+
+            int[][] imageData = new int[locations.length][];
+
+            for (int i = 0; i < images.length; i++) {
+                imageData[i] = new int[width * height];
+                resize(images[i], width, height).getRGB(0, 0, width, height, imageData[i], 0, width);
+            }
+
+            int imageLength = imageData[0].length;
+
+            DynamicTexture texture = new DynamicTexture(width, height);
+            int[] overlappedData = texture.getTextureData();
+            System.arraycopy(imageData[0], 0, overlappedData, 0, overlappedData.length);
+
+            for (int i = 1; i < imageData.length; i++) {
+                for (int d = 0; d < imageLength; d++) {
+                    overlappedData[d] = blend(imageData[i][d], overlappedData[d]);
+                }
+            }
+            texture.updateDynamicTexture();
+            return Minecraft.getMinecraft().getTextureManager().getDynamicTextureLocation("dumblib_multitexture", texture);
+        } catch (IOException e) {
+            DumbLibrary.getLogger().error("Unable to combine layers: " + Arrays.toString(locations), e);
+            return TextureManager.RESOURCE_LOCATION_EMPTY;
         }
-        texture.updateDynamicTexture();
-        return Minecraft.getMinecraft().getTextureManager().getDynamicTextureLocation("dumblib_multitexture", texture);
     }
 
     private static int blend(int src, int dest) {

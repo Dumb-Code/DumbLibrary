@@ -168,12 +168,8 @@ public class GeneticLayerComponent extends EntityComponent implements RenderLaye
 
         public ResourceLocation getTextureLocation(RenderLocationComponent.ConfigurableLocation baseLocation) {
             if(this.textureLocationCache == null) {
-                try {
-                    this.textureLocationCache = TextureUtils.generateMultipleTexture(this.layerName, Arrays.stream(this.locationSuffix).map(s -> baseLocation.copy().addFileName(s, Integer.MAX_VALUE).getLocation()).toArray(ResourceLocation[]::new));
-                } catch (IOException e) {
-                    DumbLibrary.getLogger().error("Unable to combine layers: " + Arrays.toString(this.locationSuffix), e);
-                    this.textureLocationCache = TextureManager.RESOURCE_LOCATION_EMPTY;
-                }
+                this.textureLocationCache = TextureUtils.generateMultipleTexture(Arrays.stream(this.locationSuffix).map(s -> baseLocation.copy().addFileName(s, Integer.MAX_VALUE).getLocation()).toArray(ResourceLocation[]::new));
+
             }
             return this.textureLocationCache;
         }

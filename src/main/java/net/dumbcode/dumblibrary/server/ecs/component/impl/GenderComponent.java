@@ -5,8 +5,10 @@ import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLocationComponent;
 import net.minecraft.nbt.NBTTagCompound;
 
+import java.util.Random;
+
 public class GenderComponent extends EntityComponent implements RenderLocationComponent {
-    public boolean male = false;
+    public boolean male = new Random().nextBoolean();
 
     @Override
     public NBTTagCompound serialize(NBTTagCompound compound) {

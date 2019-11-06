@@ -34,7 +34,7 @@ public class IndexedObject<T> {
 
     public static <T> IndexedObject<T> deserializeNBT(NBTTagCompound tag, Function<NBTBase, T> deserailizer) {
         return new IndexedObject<>(
-            deserailizer.apply(tag.getCompoundTag("object")),
+            deserailizer.apply(tag.getTag("object")),
             tag.getFloat("index")
         );
     }

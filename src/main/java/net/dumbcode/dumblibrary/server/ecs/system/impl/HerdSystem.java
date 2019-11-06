@@ -86,7 +86,7 @@ public enum HerdSystem implements EntitySystem {
                             .filter(e -> e.getDistance(entity) > 30 && e instanceof ComponentAccess)
                             .map(e -> Pair.of(e, ((ComponentAccess)e).get(EntityComponentTypes.HERD)))
                             .ifPresent(pair -> {
-                                if(pair.getRight().isPresent()) {
+                                if(pair.getRight().isPresent() && pair.getRight().get().herdData != null) {
                                     ((EntityLiving) entity).getNavigator().tryMoveToEntityLiving(pair.getLeft(), 0.1F);
                                     pair.getRight().get().herdData.tryMoveCooldown = 120;
                                 }

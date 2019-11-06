@@ -1,5 +1,6 @@
 package net.dumbcode.dumblibrary.server.utils;
 
+import lombok.Cleanup;
 import lombok.experimental.UtilityClass;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
@@ -25,17 +26,20 @@ import java.util.stream.StreamSupport;
 //Utility class for input streams, and the java stream api.
 @UtilityClass
 public class StreamUtils {
-    public static InputStream openStream(ResourceLocation location) throws IOException {
+    public static <R> R openStream(ResourceLocation location, FunctionException<InputStream, R, IOException> consumer) throws IOException {
         if (FMLCommonHandler.instance().getSide() == Side.CLIENT) {
-            return openClientStream(location);
+            return consumer.accept(openClientStream(location));
         }
-        return Files.newInputStream(getPath(location));
+        return getPath(location, path -> {
+            @Cleanup InputStream stream = Files.newInputStream(path);
+            return consumer.accept(stream);
+        });
     }
-    public static Path getPath(ResourceLocation location) {
-        return getPath(location, true);
+    public static <R> R getPath(ResourceLocation location, FunctionException<Path, R, IOException> consumer) {
+         return getPath(location, true, consumer);
     }
 
-    public static Path getPath(ResourceLocation location, boolean mustExist) {
+    public static <R> R getPath(ResourceLocation location, boolean mustExist, FunctionException<Path, R, IOException> consumer) {
         ModContainer container = Loader.instance().getIndexedModList().get(location.getNamespace());
         if (container != null) {
             String base = "assets/" + container.getModId() + "/" + location.getPath();
@@ -51,7 +55,7 @@ public class StreamUtils {
                 }
 
                 if (!mustExist || (root != null && Files.exists(root))) {
-                    return root;
+                    return consumer.accept(root);
                 } else {
                     throw new FileNotFoundException("Could not find file " + root);
                 }

@@ -37,6 +37,7 @@ public class TextureUtils {
                 int width = largestImage.getWidth();
                 int height = largestImage.getHeight();
 
+                System.out.println(width + "x" + height);
 
                 int[][] imageData = new int[locations.length][];
 
@@ -49,6 +50,10 @@ public class TextureUtils {
 
                 DynamicTexture texture = new DynamicTexture(width, height);
                 int[] overlappedData = texture.getTextureData();
+
+                System.out.println(imageLength + " compared " + overlappedData.length);
+
+
                 System.arraycopy(imageData[0], 0, overlappedData, 0, overlappedData.length);
 
                 for (int i = 1; i < imageData.length; i++) {

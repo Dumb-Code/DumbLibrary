@@ -133,83 +133,86 @@ public class AnimationContainer {
         if(this.tryLoadAnimationFromFile(folderLoc, map.computeIfAbsent(animation, a -> Lists.newArrayList()))) {
             return;
         }
-        Path root = StreamUtils.getPath(folderLoc, false);
-        if(Files.notExists(root)) {
-            map.put(animation, Lists.newArrayList(new PoseData.FileResolvablePoseData(regName.getPath() + ".tbl", 10)));
-            return;
-        }
-        int time;
-        Map<Integer, Integer> overrides = Maps.newHashMap();
-
-        Path animationFile = root.resolve("animation.json");
-        if(Files.exists(animationFile)) {
-            JsonObject parsed = new JsonParser().parse(new InputStreamReader(Files.newInputStream(animationFile))).getAsJsonObject();
-            time = JsonUtils.getInt(parsed, "base_time");
-            for (JsonElement jsonElement : JsonUtils.getJsonArray(parsed, "overrides", new JsonArray())) {
-                JsonObject jobj = JsonUtils.getJsonObject(jsonElement, "overrides member");
-                overrides.put(JsonUtils.getInt(jobj, "index"), JsonUtils.getInt(jobj, "time"));
+        StreamUtils.getPath(folderLoc, false, root -> {
+            if(Files.notExists(root)) {
+                map.put(animation, Lists.newArrayList(new PoseData.FileResolvablePoseData(regName.getPath() + ".tbl", 10)));
+                return null;
             }
-        } else {
-            time = 5;
-        }
+            int time;
+            Map<Integer, Integer> overrides = Maps.newHashMap();
 
-        IntegerHolder index = new IntegerHolder();
-        try (Stream<Path> stream = Files.walk(root)){
-            map.put(animation,
+            Path animationFile = root.resolve("animation.json");
+            if(Files.exists(animationFile)) {
+                JsonObject parsed = new JsonParser().parse(new InputStreamReader(Files.newInputStream(animationFile))).getAsJsonObject();
+                time = JsonUtils.getInt(parsed, "base_time");
+                for (JsonElement jsonElement : JsonUtils.getJsonArray(parsed, "overrides", new JsonArray())) {
+                    JsonObject jobj = JsonUtils.getJsonObject(jsonElement, "overrides member");
+                    overrides.put(JsonUtils.getInt(jobj, "index"), JsonUtils.getInt(jobj, "time"));
+                }
+            } else {
+                time = 5;
+            }
+
+            IntegerHolder index = new IntegerHolder();
+            try (Stream<Path> stream = Files.walk(root)){
+                map.put(animation,
                     stream
-                            .filter(path -> path.getFileName().toString().endsWith(".tbl"))
-                            .map(path -> path.getParent().getFileName() + "/" + FilenameUtils.getBaseName(path.getFileName().toString()))
-                            .filter(Strings::isNotEmpty)
-                            .sorted()
-                            .map(modelname -> new PoseData.FileResolvablePoseData(modelname, overrides.getOrDefault(index.value++, time)))
-                            .collect(Lists::newLinkedList, List::add, LinkedList::addAll)
-            );
-            List<PoseData> poseData = map.get(animation);
-            if(poseData.isEmpty()) {
-                poseData.add(new PoseData.FileResolvablePoseData(regName.getPath() + ".tbl", 10));
+                        .filter(path -> path.getFileName().toString().endsWith(".tbl"))
+                        .map(path -> path.getParent().getFileName() + "/" + FilenameUtils.getBaseName(path.getFileName().toString()))
+                        .filter(Strings::isNotEmpty)
+                        .sorted()
+                        .map(modelname -> new PoseData.FileResolvablePoseData(modelname, overrides.getOrDefault(index.value++, time)))
+                        .collect(Lists::newLinkedList, List::add, LinkedList::addAll)
+                );
+                List<PoseData> poseData = map.get(animation);
+                if(poseData.isEmpty()) {
+                    poseData.add(new PoseData.FileResolvablePoseData(regName.getPath() + ".tbl", 10));
+                }
+            } catch (IOException e) {
+                DumbLibrary.getLogger().warn(e);
             }
-        } catch (IOException e) {
-            DumbLibrary.getLogger().warn(e);
-        }
+            return null;
+        });
     }
 
     private boolean tryLoadAnimationFromFile(ResourceLocation folder, List<PoseData> poseData) {
         poseData.clear();
 
-        Path path = StreamUtils.getPath(new ResourceLocation(folder.getNamespace(), folder.getPath() + ".dca"), false);
-        if(Files.notExists(path)) {
-            return false;
-        }
-        try(DataInputStream dis = new DataInputStream(Files.newInputStream(path))) {
-            float version = dis.readFloat(); //version
-            if(version < 1) {
-                throw new IOException("Need animation of at least version 1 to load. Please upload and re-download the animation"); //maybe have a method that instead of reading an unsigned short it should read a integer
+        return StreamUtils.getPath(new ResourceLocation(folder.getNamespace(), folder.getPath() + ".dca"), false, path -> {
+            if(Files.notExists(path)) {
+                return false;
             }
-
-            KeyframeCompiler compiler = KeyframeCompiler.create(this.mainModel, (int) version);
-
-            float length = dis.readFloat();
-            for (int i = 0; i < length; i++) {
-                KeyframeCompiler.Keyframe kf = compiler.addKeyframe(dis.readFloat(), dis.readFloat());
-
-                float rotSize = dis.readFloat();
-                for (int r = 0; r < rotSize; r++) {
-                    kf.getRotationMap().put(dis.readUTF(), new float[]{(float) Math.toRadians(dis.readFloat()), (float) Math.toRadians(dis.readFloat()), (float) Math.toRadians(dis.readFloat())});
+            try(DataInputStream dis = new DataInputStream(Files.newInputStream(path))) {
+                float version = dis.readFloat(); //version
+                if(version < 1) {
+                    throw new IOException("Need animation of at least version 1 to load. Please upload and re-download the animation"); //maybe have a method that instead of reading an unsigned short it should read a integer
                 }
 
-                float posSize = dis.readFloat();
-                for (int r = 0; r < posSize; r++) {
-                    kf.getRotationPointMap().put(dis.readUTF(), new float[]{dis.readFloat(), dis.readFloat(), dis.readFloat()});
+                KeyframeCompiler compiler = KeyframeCompiler.create(this.mainModel, (int) version);
+
+                float length = dis.readFloat();
+                for (int i = 0; i < length; i++) {
+                    KeyframeCompiler.Keyframe kf = compiler.addKeyframe(dis.readFloat(), dis.readFloat());
+
+                    float rotSize = dis.readFloat();
+                    for (int r = 0; r < rotSize; r++) {
+                        kf.getRotationMap().put(dis.readUTF(), new float[]{(float) Math.toRadians(dis.readFloat()), (float) Math.toRadians(dis.readFloat()), (float) Math.toRadians(dis.readFloat())});
+                    }
+
+                    float posSize = dis.readFloat();
+                    for (int r = 0; r < posSize; r++) {
+                        kf.getRotationPointMap().put(dis.readUTF(), new float[]{dis.readFloat(), dis.readFloat(), dis.readFloat()});
+                    }
                 }
+
+                poseData.addAll(compiler.compile());
+
+                return true;
+            } catch (IOException io) {
+                DumbLibrary.getLogger().error(io);
+                return false;
             }
-
-            poseData.addAll(compiler.compile());
-
-            return true;
-        } catch (IOException io) {
-            DumbLibrary.getLogger().error(io);
-            return false;
-        }
+        });
     }
 
     /**
@@ -290,10 +293,8 @@ public class AnimationContainer {
             if (!location.getPath().endsWith(JSON_EXTENSION)) {
                 location = new ResourceLocation(location.getNamespace(), location.getPath() + JSON_EXTENSION);
             }
-            //Get the json inputstream
-            @Cleanup InputStream stream = StreamUtils.openStream(location);
             //Create a Reader for the inputstream
-            @Cleanup InputStreamReader reader = new InputStreamReader(stream);
+            @Cleanup InputStreamReader reader = StreamUtils.openStream(location, InputStreamReader::new);
             //Read the inputstream as a json object
             JsonObject json = parser.parse(reader).getAsJsonObject();
             //Get the version of the json file

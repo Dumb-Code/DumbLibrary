@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
@@ -40,13 +41,8 @@ public class TabulaUtils {
         }
 
         Map<String, AnimationLayer.AnimatableCube> map = Maps.newHashMap();
-        try {
-            @Cleanup InputStream stream = Files.newInputStream(StreamUtils.getPath(location));
-            TabulaModelInformation modelInfo = TabulaJsonHandler.GSON.fromJson(new InputStreamReader(getModelJsonStream(stream)), TabulaModelInformation.class);
-            createCubeGroups(modelInfo.getGroups(), map);
-        } catch (IOException e) {
-            DumbLibrary.getLogger().warn("Unable to load serside cubes from model " + location, e);
-        }
+        TabulaModelInformation modelInfo = getModelInformation(location);
+        createCubeGroups(modelInfo.getGroups(), map);
         return map;
     }
 
@@ -83,8 +79,8 @@ public class TabulaUtils {
             location = new ResourceLocation(location.getNamespace(), location.getPath() + ".tbl");
         }
         try {
-            @Cleanup InputStream stream = StreamUtils.openStream(location);
-            return TabulaJsonHandler.GSON.fromJson(new InputStreamReader(getModelJsonStream(stream)), TabulaModelInformation.class);
+            @Cleanup InputStreamReader reader = StreamUtils.openStream(location, stream -> new InputStreamReader(getModelJsonStream(stream)));
+            return TabulaJsonHandler.GSON.fromJson(reader, TabulaModelInformation.class);
         } catch (IOException e) {
             DumbLibrary.getLogger().error("Unable to load model " + location, e);
             return TabulaModelInformation.MISSING;

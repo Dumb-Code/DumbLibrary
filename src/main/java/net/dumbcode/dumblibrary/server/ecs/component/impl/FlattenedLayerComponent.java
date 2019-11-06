@@ -36,6 +36,9 @@ public class FlattenedLayerComponent extends EntityComponent implements RenderLa
     @Override
     public void gatherLayers(Consumer<Consumer<Runnable>> registry) {
         List<IndexedObject<FlattenedLayerProperty>> layerEntries = new ArrayList<>();
+        for (IndexedObject<FlattenedLayerProperty.Static> layer : this.staticLayers) {
+            layerEntries.add(new IndexedObject<>(layer.getObject(), layer.getIndex()));
+        }
         Optional<RenderLocationComponent.ConfigurableLocation> location = this.access.get(EntityComponentTypes.MODEL).map(ModelComponent::getTexture);
 
         if(!location.isPresent()) {

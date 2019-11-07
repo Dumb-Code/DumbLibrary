@@ -28,8 +28,9 @@ apply plugin: "net.dumbcode.gradlehook"
 apply plugin: "org.sonarqube"
 
 
-//Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
+println("called from dumblib")
 
+//Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
 
 def curseforgeID = "298694"
 version = "1.12.2-" + getDirectVersion()

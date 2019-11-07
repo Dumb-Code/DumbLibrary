@@ -259,6 +259,4 @@ gradlehook {
     addField 'payload_json', '{ "embeds": [{ "title":"' + System.getenv('TRAVIS_COMMIT_MESSAGE') + " - " + System.getenv("COMMITTER_NAME") + '", "timestamp": "{{datetime}}" }] }'
     
     addArtifact jar
-
-    println(getUrlToken())
 }

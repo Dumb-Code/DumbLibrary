@@ -139,8 +139,6 @@ public class ModelComponent extends EntityComponent implements RenderCallbackCom
                 }
             };
 
-            GlStateManager.enableBlend();
-
             //TODO: need to do default model rendering, without all the stuff that RenderLivingBase does (death rotation, ect)
             // have our own implimentation of the rendering, that just focus on the model itsself.
             // we might not even have to set the model values
@@ -168,6 +166,16 @@ public class ModelComponent extends EntityComponent implements RenderCallbackCom
             GlStateManager.glNewList(this.renderID, GL11.GL_COMPILE);
             this.mainModel.render(entitylivingbaseIn, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scaleFactor);
             GlStateManager.glEndList();
+        }
+
+        @Override
+        protected void renderLayers(EntityLivingBase entitylivingbaseIn, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch, float scaleIn) {
+            GlStateManager.enableNormalize();
+            GlStateManager.enableBlend();
+            GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
+            super.renderLayers(entitylivingbaseIn, limbSwing, limbSwingAmount, partialTicks, ageInTicks, netHeadYaw, headPitch, scaleIn);
+            GlStateManager.disableBlend();
+            GlStateManager.disableNormalize();
         }
 
         @Override

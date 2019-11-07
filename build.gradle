@@ -27,9 +27,6 @@ apply plugin: "com.matthewprenger.cursegradle"
 apply plugin: "net.dumbcode.gradlehook"
 apply plugin: "org.sonarqube"
 
-
-println("called from dumblib")
-
 //Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
 
 def curseforgeID = "298694"

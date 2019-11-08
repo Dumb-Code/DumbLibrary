@@ -10,11 +10,14 @@ import net.dumbcode.dumblibrary.server.ecs.item.components.ItemRenderModelCompon
 import net.dumbcode.dumblibrary.server.network.S0SyncAnimation;
 import net.dumbcode.dumblibrary.server.network.S1PlayItemCrackParticle;
 import net.dumbcode.dumblibrary.server.network.S2SyncComponent;
+import net.dumbcode.dumblibrary.server.registry.DumbRegistries;
+import net.dumbcode.dumblibrary.server.registry.RegisterGeneticTypes;
 import net.dumbcode.dumblibrary.server.utils.InjectedUtils;
 import net.dumbcode.dumblibrary.server.utils.SidedExecutor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.client.MinecraftForgeClient;
 import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.common.MinecraftForge;
@@ -57,6 +60,8 @@ public class DumbLibrary {
     public void preInit(FMLPreInitializationEvent event) {
         ObjectHolderRegistry.INSTANCE.applyObjectHolders();
         MinecraftForge.EVENT_BUS.post(new RegisterStoragesEvent());
+        MinecraftForge.EVENT_BUS.post(new RegisterGeneticTypes(DumbRegistries.GENETIC_TYPE_REGISTRY));
+        ObjectHolderRegistry.INSTANCE.applyObjectHolders();
 
         logger = event.getModLog();
         NetworkRegistry.INSTANCE.registerGuiHandler(this, new DumbGuiHandler());

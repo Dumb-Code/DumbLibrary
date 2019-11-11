@@ -2,18 +2,20 @@ package net.dumbcode.dumblibrary.server.utils;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagList;
 
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.Set;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
+import java.util.stream.Stream;
 
 public class IOCollectors {
 
@@ -39,34 +41,27 @@ public class IOCollectors {
         );
     }
 
+    public static <T> Collector<T, List<T>, Stream<T>> shuffler(Random rand) {
+        return new CollectorImpl<T, List<T>, Stream<T>>(
+            ArrayList::new,
+            List::add,
+            (list1, list2) -> { list1.addAll(list2); return list1; }
+        ).finisher(ts -> { Collections.shuffle(ts, rand); return ts.stream();});
+    }
+
+    @Setter
+    @Getter
+    @Accessors(chain = true, fluent = true)
     @RequiredArgsConstructor
     private static class CollectorImpl<T, A, R> implements Collector<T, A, R> {
 
-        private static final Set<Collector.Characteristics> CHARACTERISTICS = Collections.unmodifiableSet(EnumSet.of(Collector.Characteristics.IDENTITY_FINISH));
+        private static final Set<Collector.Characteristics> CHARACTERISTICS = new HashSet<>();
 
         private final Supplier<A> supplier;
         private final BiConsumer<A, T> accumulator;
         private final BinaryOperator<A> combiner;
 
-        @Override
-        public Supplier<A> supplier() {
-            return this.supplier;
-        }
-
-        @Override
-        public BiConsumer<A, T> accumulator() {
-            return this.accumulator;
-        }
-
-        @Override
-        public BinaryOperator<A> combiner() {
-            return this.combiner;
-        }
-
-        @Override
-        public Function<A, R> finisher() {
-            return a -> (R) a;
-        }
+        private Function<A, R> finisher = a -> (R) a;
 
         @Override
         public Set<Characteristics> characteristics() {

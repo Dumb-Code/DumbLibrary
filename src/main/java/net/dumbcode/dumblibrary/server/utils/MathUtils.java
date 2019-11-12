@@ -7,6 +7,8 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
 import javax.vecmath.Vector3f;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -81,6 +83,10 @@ public class MathUtils {
             divationTotal += datum - mean;
         }
         return divationTotal / data.length;
+    }
+
+    public static double meanDeviation(Collection<? extends Number> list) {
+        return meanDeviation(list.stream().mapToDouble(Number::doubleValue).toArray());
     }
 
     private static final Map<TriVec, Vec3d> NORMAL_CACHE = Maps.newHashMap();

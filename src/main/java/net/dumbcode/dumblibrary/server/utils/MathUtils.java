@@ -80,7 +80,7 @@ public class MathUtils {
 
         double divationTotal = 0;
         for (double datum : data) {
-            divationTotal += datum - mean;
+            divationTotal += Math.abs(datum - mean);
         }
         return divationTotal / data.length;
     }

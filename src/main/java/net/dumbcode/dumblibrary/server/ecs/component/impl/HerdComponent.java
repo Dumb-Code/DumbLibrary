@@ -60,12 +60,6 @@ public class HerdComponent extends EntityComponent implements FinalizableCompone
 
     }
 
-    public void removeMember(UUID uniqueID, HerdComponent herd) {
-        this.herdData.removeMember(uniqueID);
-        herd.herdUUID = null;
-        herd.herdData = null;
-    }
-
     public void clearHerd() {
         this.herdData = null;
     }

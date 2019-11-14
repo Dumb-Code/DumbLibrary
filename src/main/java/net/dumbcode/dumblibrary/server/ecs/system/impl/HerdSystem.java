@@ -18,6 +18,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public enum HerdSystem implements EntitySystem {
@@ -40,14 +41,13 @@ public enum HerdSystem implements EntitySystem {
             Entity entity = this.matchedEntities[i];
             HerdComponent herd = this.herds[i];
 
-            if(herd.herdUUID == null) {
+            if(!herd.isInHerd()) {
                 this.tryJoinNewHeard(entity, herd);
 
-                if(herd.herdUUID == null) {
+                if(!herd.isInHerd()) {
                     this.createNewHerd(entity, herd);
                 }
             } else {
-                this.ensureHerdData(entity, herd);
                 this.moveAsHeard(entity, herd);
             }
         }
@@ -57,13 +57,10 @@ public enum HerdSystem implements EntitySystem {
     private void tryJoinNewHeard(Entity entity, HerdComponent herd) {
         for (Entity foundEntity : entity.world.getEntitiesInAABBexcluding(entity, new AxisAlignedBB(entity.getPosition()).grow(50, 50, 50), e -> e instanceof ComponentAccess
                 && ((ComponentAccess) e).get(EntityComponentTypes.HERD).map(c -> c.herdTypeID.equals(herd.herdTypeID)).orElse(false))) {
-
             ComponentAccess ca = (ComponentAccess) foundEntity;
-            HerdComponent foundHerd = ca.getOrNull(EntityComponentTypes.HERD);
-            if(foundHerd != null && foundHerd.herdData != null) {
-                foundHerd.addMember(entity.getUniqueID(), herd);
-                break;
-            }
+            Optional<HerdComponent> component = ca.get(EntityComponentTypes.HERD);
+
+            component.flatMap(HerdComponent::getHerdData).ifPresent(d -> d.addMember(entity.getUniqueID(), component.get()));
         }
     }
 
@@ -71,52 +68,41 @@ public enum HerdSystem implements EntitySystem {
         System.out.println("Created New Herd!");
 
         herd.herdUUID = UUID.randomUUID();
-        this.ensureHerdData(entity, herd);
 
-        herd.addMember(entity.getUniqueID(), herd);
-        herd.herdData.leader = entity.getUniqueID();
+        herd.getHerdData().ifPresent(d -> {
+            d.addMember(entity.getUniqueID(), herd);
+            d.leader = entity.getUniqueID();
+        });
     }
 
     //Currently, this moves all the entities 30 blocks away to where the leader is. This could maybe be changed.
     private void moveAsHeard(Entity entity, HerdComponent herd) {
-        if(herd.herdData != null && entity.getUniqueID().equals(herd.herdData.leader)) {
-            if(herd.herdData.tryMoveCooldown <= 0) {
-                for (UUID uuid : herd.herdData.getMembers()) {
+        herd.getHerdData().ifPresent(d -> {
+            if(d.leader.equals(entity.getUniqueID()) && d.tryMoveCooldown-- <= 0) {
+                for (UUID uuid : d.getMembers()) {
                     WorldUtils.getEntityFromUUID(entity.world, uuid)
-                            .filter(e -> e.getDistance(entity) > 30 && e instanceof ComponentAccess)
-                            .map(e -> Pair.of(e, ((ComponentAccess)e).get(EntityComponentTypes.HERD)))
-                            .ifPresent(pair -> {
-                                if(pair.getRight().isPresent() && pair.getRight().get().herdData != null) {
-                                    ((EntityLiving) entity).getNavigator().tryMoveToEntityLiving(pair.getLeft(), 0.1F);
-                                    pair.getRight().get().herdData.tryMoveCooldown = 120;
-                                }
-                            });
+                        .filter(e -> e.getDistance(entity) > 30 && e instanceof ComponentAccess)
+                        .map(e -> Pair.of(e, ((ComponentAccess)e).get(EntityComponentTypes.HERD)))
+                        .ifPresent(pair -> pair.getRight().ifPresent(h -> {
+                            ((EntityLiving) entity).getNavigator().tryMoveToEntityLiving(pair.getLeft(), 0.1F);
+                            h.getHerdData().ifPresent(hsd -> hsd.tryMoveCooldown = 120);
+                        }));
                 }
             }
-            herd.herdData.tryMoveCooldown--;
-        }
-    }
-
-    private void ensureHerdData(Entity entity, HerdComponent herd) {
-        if(herd.herdUUID != null && herd.herdData == null) {
-            herd.herdData = HerdSavedData.getData(entity.world, herd.herdUUID);
-        }
+        });
     }
 
     @SubscribeEvent
     public void onEntityDie(LivingDeathEvent event) {
         Entity entity = event.getEntity();
         if(entity instanceof ComponentAccess) {
-            HerdComponent component = ((ComponentAccess) entity).getOrNull(EntityComponentTypes.HERD);
-            if(component != null && component.herdData != null) {
-                if(entity.getUniqueID().equals(component.herdData.leader)) {
-                    List<UUID> herdMembers = component.herdData.getMembers();
-                    if(!herdMembers.isEmpty()) {
-                        WorldUtils.getEntityFromUUID(entity.world, herdMembers.get(0)).ifPresent(e -> component.herdData.leader = e.getUniqueID());
-                    }
+            Optional<HerdComponent> component = ((ComponentAccess) entity).get(EntityComponentTypes.HERD);
+            component.flatMap(HerdComponent::getHerdData).ifPresent(hsd -> {
+                if(entity.getUniqueID().equals(hsd.leader)) {
+                    hsd.pickNewLeader(entity.world);
                 }
-                component.removeMember(entity.getUniqueID(), component);
-            }
+                hsd.removeMember(entity.getUniqueID(), component.get());
+            });
         }
     }
 
@@ -125,12 +111,7 @@ public enum HerdSystem implements EntitySystem {
         Entity entity = event.getEntity();
         Entity source = event.getSource().getTrueSource();
         if(source !=  null && entity instanceof ComponentAccess) {
-            HerdComponent component = ((ComponentAccess) entity).getOrNull(EntityComponentTypes.HERD);
-            if(component != null && component.herdData != null) {
-                component.herdData.addEnemy(source.getUniqueID());
-            }
+            ((ComponentAccess) entity).get(EntityComponentTypes.HERD).flatMap(HerdComponent::getHerdData).ifPresent(d -> d.addEnemy(source.getUniqueID()));
         }
     }
-
-
 }

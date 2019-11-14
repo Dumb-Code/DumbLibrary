@@ -2,9 +2,12 @@ package net.dumbcode.dumblibrary.server.ecs;
 
 import com.google.common.collect.Lists;
 import lombok.Getter;
+import net.dumbcode.dumblibrary.server.ecs.component.impl.HerdComponent;
+import net.dumbcode.dumblibrary.server.utils.WorldUtils;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import net.minecraft.world.storage.WorldSavedData;
+import net.minecraftforge.common.DimensionManager;
 
 import java.io.File;
 import java.util.List;
@@ -13,6 +16,7 @@ import java.util.UUID;
 
 public class HerdSavedData extends WorldSavedData {
 
+    @Getter private UUID herdUUID;
     public UUID leader;
     @Getter private List<UUID> members = Lists.newArrayList();
     @Getter private List<UUID> enemies = Lists.newArrayList();
@@ -22,12 +26,16 @@ public class HerdSavedData extends WorldSavedData {
         super(name);
     }
 
-    public void addMember(UUID uuid) {
+    public void addMember(UUID uuid, HerdComponent herd) {
+        herd.herdUUID = this.herdUUID;
+        herd.setHerdData(this);
         this.members.add(uuid);
         this.markDirty();
     }
 
-    public void removeMember(UUID uuid) {
+    public void removeMember(UUID uuid, HerdComponent herd) {
+        herd.herdUUID = null;
+        herd.clearHerd();
         this.members.remove(uuid);
         this.markDirty();
     }
@@ -41,6 +49,12 @@ public class HerdSavedData extends WorldSavedData {
     public void removeEnemy(UUID uuid) {
         this.enemies.remove(uuid);
         this.markDirty();
+    }
+
+    public void pickNewLeader(World world) {
+        if(!this.members.isEmpty()) {
+            WorldUtils.getEntityFromUUID(world, this.members.get(0)).ifPresent(e -> this.leader = e.getUniqueID());
+        }
     }
 
     @Override
@@ -78,14 +92,17 @@ public class HerdSavedData extends WorldSavedData {
         }
     }
 
-    public static HerdSavedData getData(World world, UUID herdUUID) {
+    public static HerdSavedData getData(UUID herdUUID) {
+        World world = DimensionManager.getWorld(0);
         String identifier = "herd_data/" + herdUUID.toString().replaceAll("-", "");
         ensureHerdFolder(world, identifier);
+
         HerdSavedData data = (HerdSavedData) Objects.requireNonNull(world.getMapStorage()).getOrLoadData(HerdSavedData.class, identifier);
         if(data == null) {
             data = new HerdSavedData(identifier);
             world.getMapStorage().setData(identifier, data);
         }
+        data.herdUUID = herdUUID;
         return data;
     }
 

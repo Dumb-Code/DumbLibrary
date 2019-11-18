@@ -37,8 +37,6 @@ public class TextureUtils {
                 int width = largestImage.getWidth();
                 int height = largestImage.getHeight();
 
-                System.out.println(width + "x" + height);
-
                 int[][] imageData = new int[locations.length][];
 
                 for (int i = 0; i < images.length; i++) {
@@ -48,19 +46,13 @@ public class TextureUtils {
 
                 int imageLength = imageData[0].length;
 
-                DynamicTexture texture = new DynamicTexture(width, height);
-                int[] overlappedData = texture.getTextureData();
-
-                System.out.println(imageLength + " compared " + overlappedData.length);
-
-
-                System.arraycopy(imageData[0], 0, overlappedData, 0, overlappedData.length);
-
-                for (int i = 1; i < imageData.length; i++) {
+                int[] overlappedData = new int[width * height];
+                for (int[] imageDatum : imageData) {
                     for (int d = 0; d < imageLength; d++) {
-                        overlappedData[d] = blend(imageData[i][d], overlappedData[d]);
+                        overlappedData[d] = blend(imageDatum[d], overlappedData[d]);
                     }
                 }
+                DynamicTexture texture = createImage(width, height, overlappedData);
                 texture.updateDynamicTexture();
 
                 ResourceLocation location = Minecraft.getMinecraft().getTextureManager().getDynamicTextureLocation("dumblib_multitexture", texture);
@@ -71,6 +63,12 @@ public class TextureUtils {
                 return TextureManager.RESOURCE_LOCATION_EMPTY;
             }
         });
+    }
+
+    private static DynamicTexture createImage(int width, int height, int[] data) {
+        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        image.setRGB(0, 0, width, height, data, 0, width);
+        return new DynamicTexture(image);
     }
 
     private static BufferedImage[] loadImages(ResourceLocation[] locations) throws IOException {

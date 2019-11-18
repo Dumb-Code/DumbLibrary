@@ -9,7 +9,9 @@ import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.ecs.HerdSavedData;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
+import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentTypes;
 import net.dumbcode.dumblibrary.server.ecs.component.FinalizableComponent;
+import net.dumbcode.dumblibrary.server.ecs.component.additionals.CanBreedComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
@@ -18,10 +20,11 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 
 import javax.swing.text.html.Option;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
-public class HerdComponent extends EntityComponent implements FinalizableComponent {
+public class HerdComponent extends EntityComponent implements FinalizableComponent, CanBreedComponent {
 
     public UUID herdUUID;
     public ResourceLocation herdTypeID;
@@ -78,6 +81,11 @@ public class HerdComponent extends EntityComponent implements FinalizableCompone
             this.herdData = HerdSavedData.getData(this.herdUUID);
         }
         return Optional.ofNullable(this.herdData);
+    }
+
+    @Override
+    public boolean canBreedWith(ComponentAccess otherEntity) {
+        return otherEntity.get(EntityComponentTypes.HERD).map(h -> Objects.equals(this.herdUUID, h.herdUUID)).orElse(true);
     }
 
     @Accessors(chain = true)

@@ -1,24 +1,23 @@
 package net.dumbcode.dumblibrary.server.dna;
 
-import lombok.Builder;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentType;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 
-import javax.annotation.Nullable;
+import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
 
 @Getter
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class GeneticType<T extends GeneticFactoryStorage> extends IForgeRegistryEntry.Impl<GeneticType<?>> {
     private final GeneticValueApplier<T, ComponentAccess> onChange;
-    @Nullable private final Supplier<T> storage;
-
-    GeneticType(GeneticValueApplier<T, ComponentAccess> onChange, Supplier<T> storage) {
-        this.onChange = onChange;
-        this.storage = storage;
-    }
+    private final BinaryOperator<Float> combiner;
+    private final Supplier<T> storage;
 
     @SuppressWarnings("unchecked")
     public static Class<GeneticType<?>> getWildcardType() {
@@ -30,8 +29,9 @@ public class GeneticType<T extends GeneticFactoryStorage> extends IForgeRegistry
     }
 
     public static class GeneticTypeBuilder<T extends GeneticFactoryStorage> {
-        private GeneticValueApplier<T, ComponentAccess> onChange;
-        private Supplier<T> storageCreator;
+        private GeneticValueApplier<T, ComponentAccess> onChange = (value, rawValue, type, storage1) -> {};
+        private BinaryOperator<Float> combiner = (a, b) -> (a + b) / 2;
+        private Supplier<T> storageCreator = () -> null;
 
         private GeneticTypeBuilder() { }
 
@@ -50,8 +50,15 @@ public class GeneticType<T extends GeneticFactoryStorage> extends IForgeRegistry
             return this;
         }
 
-        public GeneticType<T> build() {
-            return new GeneticType<>(this.onChange, this.storageCreator);
+        public GeneticTypeBuilder<T> onCombined(BinaryOperator<Float> combiner) {
+            this.combiner = combiner;
+            return this;
+        }
+
+        public GeneticType<T> build(String registryName) {
+            GeneticType<T> type = new GeneticType<>(this.onChange, this.combiner, this.storageCreator);
+            type.setRegistryName(registryName);
+            return type;
         }
     }
 }

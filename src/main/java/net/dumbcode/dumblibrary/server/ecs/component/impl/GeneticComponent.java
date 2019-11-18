@@ -22,18 +22,23 @@ import net.minecraftforge.common.util.Constants;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class GeneticComponent extends EntityComponent implements FinalizableComponent {
     @Getter
-    private final List<GeneticEntry> genetics = new ArrayList<>();
+    private final List<GeneticEntry<?>> genetics = new ArrayList<>();
 
     private boolean doneGatherGenetics = true;
 
     private <T extends GeneticFactoryStorage> void applyChange(GeneticEntry<T> entry, float modifier) {
         entry.setModifier(modifier);
         entry.getType().getOnChange().apply(entry.getBaseValue() + entry.getModifierRange() * modifier, modifier, this.access, entry.getStorage());
+    }
+
+    public Optional<GeneticEntry<?>> findEntry(String identifier) {
+        return this.getGenetics().stream().filter(g -> g.getIdentifier().equals(identifier)).findFirst();
     }
 
     private void applyChangeToAll() {
@@ -80,12 +85,12 @@ public class GeneticComponent extends EntityComponent implements FinalizableComp
 
         private final List<GeneticEntry> baseEntries = new ArrayList<>();
 
-        public <T extends GeneticFactoryStorage> Storage addGeneticEntry(GeneticType<T> type, float baseValue, float modifierRange) {
-            return this.addGeneticEntry(type, baseValue, modifierRange, t -> {});
+        public <T extends GeneticFactoryStorage> Storage addGeneticEntry(GeneticType<T> type, String identifier,  float baseValue, float modifierRange) {
+            return this.addGeneticEntry(type, identifier, baseValue, modifierRange, t -> {});
         }
 
-        public <T extends GeneticFactoryStorage> Storage addGeneticEntry(GeneticType<T> type, float baseValue, float modifierRange, Consumer<T> storageInitializer) {
-            this.baseEntries.add(new GeneticEntry<>(type, JavaUtils.nullApply(JavaUtils.nullOr(type.getStorage(), Supplier::get), storageInitializer), baseValue, modifierRange));
+        public <T extends GeneticFactoryStorage> Storage addGeneticEntry(GeneticType<T> type, String identifier, float baseValue, float modifierRange, Consumer<T> storageInitializer) {
+            this.baseEntries.add(new GeneticEntry<>(type, identifier, JavaUtils.nullApply(type.getStorage().get(), storageInitializer), baseValue, modifierRange));
             return this;
         }
 

@@ -60,7 +60,7 @@ public enum HerdSystem implements EntitySystem {
             ComponentAccess ca = (ComponentAccess) foundEntity;
             Optional<HerdComponent> component = ca.get(EntityComponentTypes.HERD);
 
-            component.flatMap(HerdComponent::getHerdData).ifPresent(d -> d.addMember(entity.getUniqueID(), component.get()));
+            component.flatMap(HerdComponent::getHerdData).ifPresent(d -> d.addMember(entity.getUniqueID(), herd));
         }
     }
 

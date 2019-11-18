@@ -8,12 +8,14 @@ import net.dumbcode.dumblibrary.server.ecs.ai.DrinkingAI;
 import net.dumbcode.dumblibrary.server.ecs.ai.FeedingAI;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
+import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentTypes;
 import net.dumbcode.dumblibrary.server.ecs.component.FinalizableComponent;
+import net.dumbcode.dumblibrary.server.ecs.component.additionals.CanBreedComponent;
 import net.dumbcode.dumblibrary.server.ecs.objects.FeedingDiet;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.nbt.NBTTagCompound;
 
-public class MetabolismComponent extends EntityComponent implements FinalizableComponent {
+public class MetabolismComponent extends EntityComponent implements FinalizableComponent, CanBreedComponent {
     public int food;
     public int water;
 
@@ -47,6 +49,11 @@ public class MetabolismComponent extends EntityComponent implements FinalizableC
             living.tasks.addTask(2, new FeedingAI((EntityLiving) entity, this));
             living.tasks.addTask(2, new DrinkingAI((EntityLiving) entity, this));
         }
+    }
+
+    @Override
+    public boolean canBreedWith(ComponentAccess otherEntity) {
+        return this.food > 10 && this.water > 5 && otherEntity.get(EntityComponentTypes.METABOLISM).map(m -> m.food > 10 && m.water > 5).orElse(true);
     }
 
     @Accessors(chain = true)

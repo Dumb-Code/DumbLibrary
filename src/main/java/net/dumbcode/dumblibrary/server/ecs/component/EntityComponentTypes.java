@@ -30,6 +30,8 @@ public class EntityComponentTypes {
     public static final EntityComponentType<GeneticLayerComponent, GeneticLayerComponent.Storage> GENETIC_LAYER_COLORS = InjectedUtils.injected();
     public static final EntityComponentType<FlattenedLayerComponent, FlattenedLayerComponent.Storage> FLATTENED_LAYER = InjectedUtils.injected();
     public static final EntityComponentType<BlinkingComponent, BlinkingComponent.Storage> BLINKING = InjectedUtils.injected();
+    public static final EntityComponentType<FamilyComponent, FamilyComponent.Storage> FAMILY = InjectedUtils.injected();
+    public static final EntityComponentType<BreedingComponent, BreedingComponent.Storage> BREEDING = InjectedUtils.injected();
 
     public static final EntityComponentType<GrowingComponent, GrowingComponent.Storage> BLOCK_GROWING = InjectedUtils.injected();
     public static final EntityComponentType<FlowerWorldgenComponent, FlowerWorldgenComponent.Storage> FLOWER_WORLDGEN = InjectedUtils.injected();
@@ -95,6 +97,16 @@ public class EntityComponentTypes {
                 .withConstructor(BlinkingComponent::new)
                 .withStorage(BlinkingComponent.Storage::new)
                 .build(),
+            SimpleComponentType.builder(FamilyComponent.class, FamilyComponent.Storage.class)
+                .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "family"))
+                .withConstructor(FamilyComponent::new)
+                .withStorage(FamilyComponent.Storage::new)
+                .build(),
+            SimpleComponentType.builder(BreedingComponent.class, BreedingComponent.Storage.class)
+                .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "breeding"))
+                .withConstructor(BreedingComponent::new)
+                .withStorage(BreedingComponent.Storage::new)
+                .build(),
 
             SimpleComponentType.builder(GrowingComponent.class, GrowingComponent.Storage.class)
                 .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "block_growing"))
@@ -141,6 +153,8 @@ public class EntityComponentTypes {
         event.registerSystem(AnimationSystem.INSTANCE);
         event.registerSystem(ItemDropSystem.INSTANCE);
         event.registerSystem(SpeedTrackingSystem.INSTANCE);
+        event.registerSystem(FamilySystem.INSTANCE);
+        event.registerSystem(BreedingSystem.INSTANCE);
 
         event.registerSystem(GrowingSystem.INSTANCE);
         event.registerSystem(FlowerWorldgenSystem.INSTANCE);

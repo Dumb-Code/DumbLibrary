@@ -59,15 +59,10 @@ public class GeneticLayerComponent extends EntityComponent implements RenderLaye
         }
     }
 
-    public void setLayerValues(String layer, float value) {
-        int actValue = (int) (MathUtils.bounce(0, 1F, value) * 512F);
+    public void setLayerValues(String layer, float[] rgb) {
         for (GeneticLayerEntry entry : this.entries) {
             if(entry.getLayerName().equals(layer)) {
-                entry.setColours(new float[] {
-                    ((actValue     ) & 7) / 7F, //7 -> 0b111
-                    ((actValue >> 3) & 7) / 7F,
-                    ((actValue >> 6) & 7) / 7F
-                });
+                entry.setColours(rgb);
             }
         }
         this.syncToClient();
@@ -116,7 +111,7 @@ public class GeneticLayerComponent extends EntityComponent implements RenderLaye
     public void gatherGenetics(Consumer<GeneticEntry> registry) {
         this.entries.stream()
             .map(GeneticLayerEntry::getLayerName)
-            .forEach(n -> registry.accept(new GeneticEntry<>(GeneticTypes.LAYER_COLORS, new GeneticTypeLayerColorStorage().setLayerName(n), 128, 128).setRandomModifier()));
+            .forEach(n -> registry.accept(new GeneticEntry<>(GeneticTypes.LAYER_COLORS, "genetic_layer_" + n, new GeneticTypeLayerColorStorage().setLayerName(n), 128, 128).setRandomModifier()));
     }
 
     public static class Storage implements EntityComponentStorage<GeneticLayerComponent> {

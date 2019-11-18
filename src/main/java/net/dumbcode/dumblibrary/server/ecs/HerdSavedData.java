@@ -76,7 +76,7 @@ public class HerdSavedData extends WorldSavedData {
     }
 
 
-    private NBTTagCompound saveList(List<UUID> list) {
+    public static NBTTagCompound saveList(List<UUID> list) {
         NBTTagCompound nbt = new NBTTagCompound();
         nbt.setInteger("size", list.size());
         for (int i = 0; i < list.size(); i++) {
@@ -85,7 +85,7 @@ public class HerdSavedData extends WorldSavedData {
         return nbt;
     }
 
-    private static void loadList(NBTTagCompound nbt, List<UUID> list) {
+    public static void loadList(NBTTagCompound nbt, List<UUID> list) {
         list.clear();
         for (int i = 0; i < nbt.getInteger("size"); i++) {
             list.add(nbt.getUniqueId(String.valueOf(i)));

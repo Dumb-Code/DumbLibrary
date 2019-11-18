@@ -1,13 +1,18 @@
 package net.dumbcode.dumblibrary.server.ecs.component.impl;
 
+import com.google.gson.JsonObject;
+import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 import net.dumbcode.dumblibrary.client.component.RenderComponentContext;
 import net.dumbcode.dumblibrary.client.model.ModelMissing;
 import net.dumbcode.dumblibrary.client.model.tabula.TabulaModel;
 import net.dumbcode.dumblibrary.server.animation.TabulaUtils;
 import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
+import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
 import net.dumbcode.dumblibrary.server.ecs.component.FinalizableComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderCallbackComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLayerComponent;
@@ -22,6 +27,7 @@ import net.minecraft.client.renderer.entity.layers.LayerRenderer;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.JsonUtils;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -59,9 +65,19 @@ public class ModelComponent extends EntityComponent implements RenderCallbackCom
     }
 
     @Override
+    public void serialize(ByteBuf buf) {
+        buf.writeFloat(this.shadowSize);
+    }
+
+    @Override
     public void deserialize(NBTTagCompound compound) {
         super.deserialize(compound);
         this.shadowSize = compound.getFloat("ShadowSize");
+    }
+
+    @Override
+    public void deserialize(ByteBuf buf) {
+        this.shadowSize = buf.readFloat();
     }
 
     @SideOnly(Side.CLIENT)
@@ -121,8 +137,15 @@ public class ModelComponent extends EntityComponent implements RenderCallbackCom
         Runnable preCallbacks;
 
         @Override
+        public void doRenderShadowAndFire(Entity entityIn, double x, double y, double z, float yaw, float partialTicks) {
+            super.doRenderShadowAndFire(entityIn, x, y, z, yaw, partialTicks);
+        }
+
+        @Override
         public void invoke(RenderComponentContext context, Entity entity, double x, double y, double z, float entityYaw, float partialTicks, List<SubCallback> preCallbacks, List<SubCallback> postCallbacks) {
             this.shadowSize = ModelComponent.this.shadowSize;
+
+//            this.doRenderShadowAndFire(entity, x, y, z, entityYaw, partialTicks);
             TabulaModel model = ModelComponent.this.getModelCache();
             this.mainModel = model;
 
@@ -203,6 +226,31 @@ public class ModelComponent extends EntityComponent implements RenderCallbackCom
         @Override
         public boolean shouldCombineTextures() {
             return true;
+        }
+    }
+
+    @Getter
+    @Setter
+    @Accessors(chain = true)
+    public static class Storage implements EntityComponentStorage<ModelComponent> {
+
+        private float shadowSize;
+
+        @Override
+        public ModelComponent construct() {
+            ModelComponent component = new ModelComponent();
+            component.shadowSize = this.shadowSize;
+            return component;
+        }
+
+        @Override
+        public void writeJson(JsonObject json) {
+            json.addProperty("shadow_size", this.shadowSize);
+        }
+
+        @Override
+        public void readJson(JsonObject json) {
+            this.shadowSize = JsonUtils.getFloat(json, "shadow_size");
         }
     }
 }

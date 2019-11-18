@@ -23,7 +23,7 @@ public class EntityComponentTypes {
     public static final EntityComponentType<HerdComponent, HerdComponent.Storage> HERD = InjectedUtils.injected();
     public static final EntityComponentType<MetabolismComponent, MetabolismComponent.Storage> METABOLISM = InjectedUtils.injected();
     public static final EntityComponentType<AnimationComponent,?> ANIMATION = InjectedUtils.injected();
-    public static final EntityComponentType<ModelComponent, ?> MODEL = InjectedUtils.injected();
+    public static final EntityComponentType<ModelComponent, ModelComponent.Storage> MODEL = InjectedUtils.injected();
     public static final EntityComponentType<RenderAdjustmentsComponent, RenderAdjustmentsComponent.Storage> RENDER_ADJUSTMENTS = InjectedUtils.injected();
     public static final EntityComponentType<SpeedTrackingComponent, ?> SPEED_TRACKING = InjectedUtils.injected();
     public static final EntityComponentType<GeneticComponent, GeneticComponent.Storage> GENETICS = InjectedUtils.injected();
@@ -64,9 +64,10 @@ public class EntityComponentTypes {
                 .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "animation"))
                 .withConstructor(AnimationComponent::new)
                 .build(),
-            SimpleComponentType.builder(ModelComponent.class)
+            SimpleComponentType.builder(ModelComponent.class, ModelComponent.Storage.class)
                 .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "model"))
                 .withConstructor(ModelComponent::new)
+                .withStorage(ModelComponent.Storage::new)
                 .build(),
             SimpleComponentType.builder(RenderAdjustmentsComponent.class, RenderAdjustmentsComponent.Storage.class)
                 .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "render_adjustments"))

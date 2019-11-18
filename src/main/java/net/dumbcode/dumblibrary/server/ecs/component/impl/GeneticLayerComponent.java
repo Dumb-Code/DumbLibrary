@@ -6,19 +6,20 @@ import com.google.gson.JsonPrimitive;
 import io.netty.buffer.ByteBuf;
 import lombok.Data;
 import lombok.experimental.Accessors;
-import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.client.TextureUtils;
 import net.dumbcode.dumblibrary.server.dna.GeneticEntry;
 import net.dumbcode.dumblibrary.server.dna.GeneticTypes;
 import net.dumbcode.dumblibrary.server.dna.storages.GeneticTypeLayerColorStorage;
 import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
-import net.dumbcode.dumblibrary.server.ecs.component.*;
+import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
+import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
+import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentTypes;
+import net.dumbcode.dumblibrary.server.ecs.component.FinalizableComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.GatherGeneticsComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLayerComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLocationComponent;
+import net.dumbcode.dumblibrary.server.utils.GeneticUtils;
 import net.dumbcode.dumblibrary.server.utils.IOCollectors;
-import net.dumbcode.dumblibrary.server.utils.JavaUtils;
-import net.dumbcode.dumblibrary.server.utils.MathUtils;
 import net.dumbcode.dumblibrary.server.utils.StreamUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
@@ -30,10 +31,10 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
 
@@ -44,6 +45,8 @@ public class GeneticLayerComponent extends EntityComponent implements RenderLaye
     private static final TextureManager RENDER_ENGINE = Minecraft.getMinecraft().renderEngine;
 
     private RenderLocationComponent.ConfigurableLocation baseLocation = null;
+
+    private static final Random RAND = new Random();
 
     @Override
     public void gatherLayers(Consumer<Consumer<Runnable>> registry) {
@@ -111,7 +114,11 @@ public class GeneticLayerComponent extends EntityComponent implements RenderLaye
     public void gatherGenetics(Consumer<GeneticEntry> registry) {
         this.entries.stream()
             .map(GeneticLayerEntry::getLayerName)
-            .forEach(n -> registry.accept(new GeneticEntry<>(GeneticTypes.LAYER_COLORS, "genetic_layer_" + n, new GeneticTypeLayerColorStorage().setLayerName(n), 128, 128).setRandomModifier()));
+            .forEach(n -> {
+                GeneticEntry<?> entry = new GeneticEntry<>(GeneticTypes.LAYER_COLORS, "genetic_layer_" + n, new GeneticTypeLayerColorStorage().setLayerName(n), 128, 128);
+                entry.setModifier(GeneticUtils.encode3BitColor(0.6F + RAND.nextFloat() * 0.4F, 0.6F + RAND.nextFloat() * 0.4F, 0.6F + RAND.nextFloat() * 0.4F));
+                registry.accept(entry);
+            });
     }
 
     public static class Storage implements EntityComponentStorage<GeneticLayerComponent> {

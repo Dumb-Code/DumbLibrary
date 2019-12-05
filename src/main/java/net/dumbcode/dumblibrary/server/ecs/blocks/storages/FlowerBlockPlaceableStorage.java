@@ -20,8 +20,7 @@ public class FlowerBlockPlaceableStorage implements EntityComponentStorage<Block
     private EnumPlantType plantType;
 
     @Override
-    public BlockPlaceableComponent construct() {
-        BlockPlaceableComponent component = new BlockPlaceableComponent();
+    public BlockPlaceableComponent constructTo(BlockPlaceableComponent component) {
         component.setPredicate((world, pos, state) -> {//worldIn.getBlockState(pos).getBlock().isReplaceable(worldIn, pos)
             IBlockState soil = world.getBlockState(pos.down());
             return world.getBlockState(pos).getBlock().isReplaceable(world, pos) && soil.getBlock().canSustainPlant(soil, world, pos.down(), EnumFacing.UP, new PlantableDelegate(this.plantType, state));

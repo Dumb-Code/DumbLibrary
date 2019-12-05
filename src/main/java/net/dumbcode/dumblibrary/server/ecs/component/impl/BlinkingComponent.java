@@ -87,8 +87,7 @@ public class BlinkingComponent extends EntityComponent implements RenderFlattene
         private int tickTimeClose;
 
         @Override
-        public BlinkingComponent construct() {
-            BlinkingComponent component = new BlinkingComponent();
+        public BlinkingComponent constructTo(BlinkingComponent component) {
             component.eyesOnTexture = this.eyesOnTexture;
             component.eyesOffTexture = this.eyesOffTexture;
 

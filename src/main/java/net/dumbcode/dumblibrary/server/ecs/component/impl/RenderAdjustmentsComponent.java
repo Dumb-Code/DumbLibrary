@@ -97,8 +97,7 @@ public class RenderAdjustmentsComponent extends EntityComponent implements Rende
         private float scaleZ = 1F;
 
         @Override
-        public RenderAdjustmentsComponent construct() {
-            RenderAdjustmentsComponent component = new RenderAdjustmentsComponent();
+        public RenderAdjustmentsComponent constructTo(RenderAdjustmentsComponent component) {
             component.defaultScale[0] = this.scaleX;
             component.defaultScale[1] = this.scaleY;
             component.defaultScale[2] = this.scaleZ;

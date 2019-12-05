@@ -67,8 +67,7 @@ public class ItemEatenComponent extends EntityComponent {
         private float saturation;
 
         @Override
-        public ItemEatenComponent construct() {
-            ItemEatenComponent component = new ItemEatenComponent();
+        public ItemEatenComponent constructTo(ItemEatenComponent component) {
             component.potionEffectList.addAll(this.potionEffectList);
             component.duration = this.duration;
             component.fillAmount = this.fillAmount;

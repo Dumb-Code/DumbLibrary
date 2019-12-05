@@ -23,8 +23,8 @@ public class BreedingComponent extends EntityComponent implements CanBreedCompon
     public static class Storage implements EntityComponentStorage<BreedingComponent> {
 
         @Override
-        public BreedingComponent construct() {
-            return new BreedingComponent();
+        public BreedingComponent constructTo(BreedingComponent component) {
+            return component;
         }
 
         @Override

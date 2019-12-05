@@ -58,8 +58,7 @@ public class BlockDropsComponent extends EntityComponent {
         private List<ItemComponentAccessCreatable> creatables = new ArrayList<>();
 
         @Override
-        public BlockDropsComponent construct() {
-            BlockDropsComponent component = new BlockDropsComponent();
+        public BlockDropsComponent constructTo(BlockDropsComponent component) {
             for (ItemStack stack : this.stackList) {
                 component.stackList.add(() -> stack);
             }

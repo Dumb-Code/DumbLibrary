@@ -72,8 +72,7 @@ public class MetabolismComponent extends EntityComponent implements FinalizableC
         private FeedingDiet diet = new FeedingDiet(); //todo serialize
 
         @Override
-        public MetabolismComponent construct() {
-            MetabolismComponent component = new MetabolismComponent();
+        public MetabolismComponent constructTo(MetabolismComponent component) {
             component.food = this.maxFood;
             component.water = this.maxWater;
             component.waterRate = this.waterRate;

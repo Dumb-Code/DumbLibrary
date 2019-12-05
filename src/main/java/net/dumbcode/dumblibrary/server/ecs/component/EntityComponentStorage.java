@@ -4,7 +4,7 @@ import com.google.gson.JsonObject;
 
 public interface EntityComponentStorage<T extends EntityComponent> {
 
-    T construct();
+    T constructTo(T component);
 
     default void writeJson(JsonObject json){
 

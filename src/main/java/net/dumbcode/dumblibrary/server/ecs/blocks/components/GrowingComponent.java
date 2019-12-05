@@ -39,8 +39,7 @@ public class GrowingComponent extends EntityComponent implements FinalizableComp
         private String[] growTo;
 
         @Override
-        public GrowingComponent construct() {
-            GrowingComponent component = new GrowingComponent();
+        public GrowingComponent constructTo(GrowingComponent component) {
             component.growTo = this.growTo;
             return component;
         }

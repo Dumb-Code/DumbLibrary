@@ -4,8 +4,6 @@ import net.minecraft.nbt.NBTTagCompound;
 
 public interface SaveableEntityStorage<T extends EntityComponent> extends EntityComponentStorage<T> {
 
-    T constructTo(T component);
-
     default void readNBT(NBTTagCompound nbt) {
 
     }

@@ -8,6 +8,7 @@ import net.dumbcode.dumblibrary.server.registry.DumbRegistries;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.util.Constants;
 
 import javax.annotation.Nullable;
@@ -63,7 +64,10 @@ public abstract class EntityComponent {
 
     public void syncToClient() {
         if(this.access instanceof Entity && !((Entity) this.access).world.isRemote) {
-            DumbLibrary.NETWORK.sendToDimension(new S2SyncComponent(((Entity) this.access).getEntityId(), this.type, this), ((Entity) this.access).world.provider.getDimension());
+            //schedule, as the client may not be setup yet. New thread to have it scheduled next tick
+            new Thread(() -> ((WorldServer)((Entity) this.access).world).addScheduledTask(() ->
+                DumbLibrary.NETWORK.sendToDimension(new S2SyncComponent(((Entity) this.access).getEntityId(), this.type, this), ((Entity) this.access).world.provider.getDimension())
+            )).start();
         }
     }
 

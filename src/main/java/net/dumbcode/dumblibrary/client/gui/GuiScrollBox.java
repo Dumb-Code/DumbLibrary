@@ -3,6 +3,7 @@ package net.dumbcode.dumblibrary.client.gui;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import net.dumbcode.dumblibrary.client.RenderUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiScreen;
@@ -84,7 +85,7 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> {
         }
 
         GL11.glEnable(GL11.GL_STENCIL_TEST);
-        this.renderStencil(height);
+        RenderUtils.renderSquareStencil(this.xPos, this.yPos, this.xPos + this.width, this.yPos + height, true);
 
         int borderSize = 1;
         MC.renderEngine.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
@@ -100,7 +101,7 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> {
         GL11.glDisable(GL11.GL_STENCIL_TEST);
 
         GlStateManager.disableDepth();
-        this.drawBorder(height, borderSize);
+        RenderUtils.renderBorder(this.xPos, this.yPos, this.xPos + this.width, this.yPos + height, borderSize, this.borderColor);
         GlStateManager.enableDepth();
     }
 
@@ -125,28 +126,6 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> {
                 }
             }
         }
-    }
-
-    /**
-     * Renders the stencil of the dropdown box.
-     * @param height The height of which to render the box. Should be the total height of the box
-     */
-    private void renderStencil(int height) {
-        GL11.glColorMask(false, false, false, false);
-        GL11.glDepthMask(false);
-        GL11.glStencilFunc(GL11.GL_NEVER, 1, 0xFF);
-        GL11.glStencilOp(GL11.GL_REPLACE, GL11.GL_KEEP, GL11.GL_KEEP);
-
-        GL11.glStencilMask(0xFF);
-        GL11.glClear(GL11.GL_STENCIL_BUFFER_BIT);
-
-        Gui.drawRect(this.xPos, this.yPos, this.xPos + this.width, this.yPos + height, -1);
-
-        GL11.glColorMask(true, true, true, true);
-        GL11.glDepthMask(true);
-        GL11.glStencilMask(0x00);
-
-        GL11.glStencilFunc(GL11.GL_EQUAL, 1, 0xFF);
     }
 
     /**
@@ -258,21 +237,6 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> {
      */
     public int getTotalSize() {
         return Math.min(this.listSupplier.get().size(), this.cellMax) * this.cellHeight;
-    }
-
-    /**
-     * Draws the border around the object.
-     *
-     * @param height     The height of the object. Should be the total height of this box
-     * @param borderSize The size of the border
-     */
-    private void drawBorder(int height, int borderSize) {
-        //Draw border
-        Gui.drawRect(this.xPos, this.yPos, this.xPos + this.width, this.yPos + borderSize, this.borderColor);
-        Gui.drawRect(this.xPos, this.yPos + height, this.xPos + this.width, this.yPos + height - borderSize, this.borderColor);
-        Gui.drawRect(this.xPos, this.yPos, this.xPos + borderSize, this.yPos + height, this.borderColor);
-        Gui.drawRect(this.xPos + this.width, this.yPos, this.xPos + this.width - borderSize, this.yPos + height, this.borderColor);
-
     }
 
     /**

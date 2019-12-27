@@ -186,17 +186,17 @@ public class RenderUtils {
         Gui.drawRect(right, top, right - borderSize, bottom, borderColor);
     }
 
-    public static void renderSquareStencil(int left, int top, int right, int bottom, boolean stencilInside) {
-        renderStencil(() -> Gui.drawRect(left, top, right, bottom, -1), stencilInside);
+    public static void renderSquareStencil(int left, int top, int right, int bottom, boolean stencilInside, int ref, int function) {
+        renderStencil(() -> Gui.drawRect(left, top, right, bottom, -1), stencilInside, ref, function);
     }
 
-    public static void renderStencil(Runnable renderCallback, boolean stencilInside) {
+    public static void renderStencil(Runnable renderCallback, boolean stencilInside, int ref, int function) {
         if(!Minecraft.getMinecraft().getFramebuffer().isStencilEnabled()) {
             Minecraft.getMinecraft().getFramebuffer().enableStencil();
         }
         GL11.glColorMask(false, false, false, false);
         GL11.glDepthMask(false);
-        GL11.glStencilFunc(GL11.GL_NEVER, 1, 0xFF);
+        GL11.glStencilFunc(GL11.GL_NEVER, ref, 0xFF);
         GL11.glStencilOp(GL11.GL_REPLACE, GL11.GL_KEEP, GL11.GL_KEEP);
 
         GL11.glStencilMask(0xFF);
@@ -208,7 +208,7 @@ public class RenderUtils {
         GL11.glDepthMask(true);
         GL11.glStencilMask(0x00);
 
-        GL11.glStencilFunc(stencilInside ? GL11.GL_EQUAL : GL11.GL_NOTEQUAL, 1, 0xFF);
+        GL11.glStencilFunc(function, ref, 0xFF);
     }
 
     public static void drawTexturedQuad(float left, float top, float right, float bottom, float minU, float minV, float maxU, float maxV, float zLevel) {

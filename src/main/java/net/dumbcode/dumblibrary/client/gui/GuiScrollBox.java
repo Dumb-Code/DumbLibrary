@@ -39,6 +39,7 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> {
     private int insideColor = 0xFF000000;
     private int highlightColor = 0x2299bbff;
     private int cellHighlightColor = 0xFF303030;
+    private int cellSelectedColor = 0xFFA0A0A0;
     private int borderColor = 0xFFFFFFFF;
 
     private float scroll;
@@ -85,7 +86,7 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> {
         }
 
         GL11.glEnable(GL11.GL_STENCIL_TEST);
-        RenderUtils.renderSquareStencil(this.xPos, this.yPos, this.xPos + this.width, this.yPos + height, true);
+        RenderUtils.renderSquareStencil(this.xPos, this.yPos, this.xPos + this.width, this.yPos + height, true, 2, GL11.GL_LEQUAL);
 
         int borderSize = 1;
         MC.renderEngine.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
@@ -145,7 +146,7 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> {
             int yStart = (int) (this.yPos + this.cellHeight * i - this.scroll * this.cellHeight);
             //Usually it would be yStart + cellHeight, however because the ystart is offsetted (due to the active selection box), it cancels out
             if (yStart + this.cellHeight >= this.yPos && yStart <= this.yPos + height) {
-                Gui.drawRect(this.xPos, yStart, this.xPos + this.width, yStart + this.cellHeight, this.cellHighlightColor);
+                Gui.drawRect(this.xPos, yStart, this.xPos + this.width, yStart + this.cellHeight, entries.get(i) == this.selectedElement ? this.cellSelectedColor : this.cellHighlightColor);
                 Gui.drawRect(this.xPos, yStart, this.xPos + this.width, yStart + borderSize, this.borderColor);
                 entries.get(i).draw(this.xPos, yStart, mouseX, mouseY);
             }
@@ -289,7 +290,7 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> {
      * Should be called from {@link GuiScreen#handleMouseInput()}
      */
     public void handleMouseInput() {
-        int mouseInput = Mouse.getEventDWheel();
+        int mouseInput = Mouse.getDWheel();
         if (mouseInput != 0) {
             this.scroll((mouseInput < 0 ? -1 : 1) * SCROLL_AMOUNT);
         }

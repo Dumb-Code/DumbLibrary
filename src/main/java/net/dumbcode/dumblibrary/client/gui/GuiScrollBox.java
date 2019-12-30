@@ -149,11 +149,13 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> {
                 Gui.drawRect(this.xPos, yStart, this.xPos + this.width, yStart + this.cellHeight, entries.get(i) == this.selectedElement ? this.cellSelectedColor : this.cellHighlightColor);
                 Gui.drawRect(this.xPos, yStart, this.xPos + this.width, yStart + borderSize, this.borderColor);
                 entries.get(i).draw(this.xPos, yStart, mouseX, mouseY);
-            }
 
-            //Draw highlighted section of the cell (if mouse is over)
-            if (!this.mouseOverScrollBar(mouseX, mouseY, height, scrollBar) && mouseOver && mouseY >= yStart && mouseY < yStart + this.cellHeight) {
-                Gui.drawRect(this.xPos, yStart, this.xPos + this.width, yStart + this.cellHeight, this.highlightColor);
+                //Draw highlighted section of the cell (if mouse is over)
+                if (!this.mouseOverScrollBar(mouseX, mouseY, height, scrollBar) && mouseOver && mouseY >= yStart && mouseY < yStart + this.cellHeight) {
+                    Gui.drawRect(this.xPos, yStart, this.xPos + this.width, yStart + this.cellHeight, this.highlightColor);
+                }
+
+                entries.get(i).postDraw(this.xPos, yStart, mouseX, mouseY);
             }
         }
     }

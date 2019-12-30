@@ -12,6 +12,17 @@ public interface GuiScrollboxEntry {
     void draw(int x, int y, int mouseX, int mouseY);
 
     /**
+     * Draws the element
+     *
+     * @param x the elements x position
+     * @param y the elements y position
+     * @param mouseX the mouse X position
+     * @param mouseY the mouse Y position
+     */
+    default void postDraw(int x, int y, int mouseX, int mouseY) {
+    }
+
+    /**
      * Called when the entry is clicked
      *
      * @param relMouseX the relative mouse's x position for this entry

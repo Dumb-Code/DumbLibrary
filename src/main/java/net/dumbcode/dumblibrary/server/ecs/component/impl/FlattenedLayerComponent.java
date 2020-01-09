@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import io.netty.buffer.ByteBuf;
 import net.dumbcode.dumblibrary.client.TextureUtils;
+import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentTypes;
@@ -34,20 +35,20 @@ public class FlattenedLayerComponent extends EntityComponent implements RenderLa
     private static final TextureManager RENDER_ENGINE = Minecraft.getMinecraft().renderEngine;
 
     @Override
-    public void gatherLayers(Consumer<Consumer<Runnable>> registry) {
+    public void gatherLayers(ComponentAccess entity, Consumer<Consumer<Runnable>> registry) {
         List<IndexedObject<FlattenedLayerProperty>> layerEntries = new ArrayList<>();
         for (IndexedObject<FlattenedLayerProperty.Static> layer : this.staticLayers) {
             layerEntries.add(new IndexedObject<>(layer.getObject(), layer.getIndex()));
         }
-        Optional<RenderLocationComponent.ConfigurableLocation> location = this.access.get(EntityComponentTypes.MODEL).map(ModelComponent::getTexture);
+        Optional<RenderLocationComponent.ConfigurableLocation> location = entity.get(EntityComponentTypes.MODEL).map(ModelComponent::getTexture);
 
         if(!location.isPresent()) {
             return;
         }
 
-        for (EntityComponent component : this.access.getAllComponents()) {
+        for (EntityComponent component : entity.getAllComponents()) {
             if(component instanceof RenderFlattenedLayerComponent) {
-                ((RenderFlattenedLayerComponent) component).gatherComponents(layerEntries::add);
+                ((RenderFlattenedLayerComponent) component).gatherComponents(entity, layerEntries::add);
             }
         }
 

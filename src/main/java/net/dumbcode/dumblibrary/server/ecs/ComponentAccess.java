@@ -94,7 +94,7 @@ public interface ComponentAccess {
      */
     default void finalizeComponents() {
         for (EntityComponent component : this.getAllComponents()) {
-            component.setAccess(this);
+            component.setResync(this);
         }
         for (EntityComponent component : this.getAllComponents()) {
             if (component instanceof FinalizableComponent) {

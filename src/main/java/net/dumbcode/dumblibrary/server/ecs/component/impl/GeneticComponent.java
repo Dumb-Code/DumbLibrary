@@ -32,18 +32,18 @@ public class GeneticComponent extends EntityComponent implements FinalizableComp
 
     private boolean doneGatherGenetics = true;
 
-    private <T extends GeneticFactoryStorage> void applyChange(GeneticEntry<T> entry, float modifier) {
+    private <T extends GeneticFactoryStorage> void applyChange(ComponentAccess entity, GeneticEntry<T> entry, float modifier) {
         entry.setModifier(modifier);
-        entry.getType().getOnChange().apply(entry.getBaseValue() + entry.getModifierRange() * modifier, modifier, this.access, entry.getStorage());
+        entry.getType().getOnChange().apply(entry.getBaseValue() + entry.getModifierRange() * modifier, modifier, entity, entry.getStorage());
     }
 
     public Optional<GeneticEntry<?>> findEntry(String identifier) {
         return this.getGenetics().stream().filter(g -> g.getIdentifier().equals(identifier)).findFirst();
     }
 
-    private void applyChangeToAll() {
+    private void applyChangeToAll(ComponentAccess entity) {
         for (GeneticEntry<?> value : this.genetics) {
-            this.applyChange(value, value.getModifier());
+            this.applyChange(entity, value, value.getModifier());
         }
     }
 
@@ -68,11 +68,11 @@ public class GeneticComponent extends EntityComponent implements FinalizableComp
             this.doneGatherGenetics = true;
             for (EntityComponent component : entity.getAllComponents()) {
                 if(component instanceof GatherGeneticsComponent) {
-                    ((GatherGeneticsComponent) component).gatherGenetics(this.genetics::add);
+                    ((GatherGeneticsComponent) component).gatherGenetics(entity, this.genetics::add);
                 }
             }
         }
-        this.applyChangeToAll();
+        this.applyChangeToAll(entity);
     }
 
     @Override

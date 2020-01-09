@@ -59,12 +59,12 @@ public enum BreedingSystem implements EntitySystem {
 
                     for (EntityComponent component : mate.getAllComponents()) {
                         if(component instanceof BreedingResultComponent) {
-                            ((BreedingResultComponent) component).onBreed((ComponentAccess) entity);
+                            ((BreedingResultComponent) component).onBreed(mate, (ComponentAccess) entity);
                         }
                     }
                     for (EntityComponent component : ((ComponentAccess) entity).getAllComponents()) {
                         if(component instanceof BreedingResultComponent) {
-                            ((BreedingResultComponent) component).onBreed(mate);
+                            ((BreedingResultComponent) component).onBreed((ComponentAccess) entity, mate);
                         }
                     }
                 }

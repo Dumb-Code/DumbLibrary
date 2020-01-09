@@ -112,7 +112,7 @@ public class ModelComponent extends EntityComponent implements RenderCallbackCom
                 this.renderer.clearLayers();
                 for (EntityComponent component : entity.getAllComponents()) {
                     if(component instanceof RenderLayerComponent) {
-                        ((RenderLayerComponent) component).gatherLayers(rc -> this.renderer.addLayer(new Layer(rc)));
+                        ((RenderLayerComponent) component).gatherLayers(entity, rc -> this.renderer.addLayer(new Layer(rc)));
                     }
                 }
             });

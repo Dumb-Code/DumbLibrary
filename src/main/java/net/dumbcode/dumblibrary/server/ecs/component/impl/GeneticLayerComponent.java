@@ -49,7 +49,7 @@ public class GeneticLayerComponent extends EntityComponent implements RenderLaye
     private static final Random RAND = new Random();
 
     @Override
-    public void gatherLayers(Consumer<Consumer<Runnable>> registry) {
+    public void gatherLayers(ComponentAccess entity, Consumer<Consumer<Runnable>> registry) {
         for (GeneticLayerEntry entry : this.entries) {
             registry.accept(runnable -> {
                 if(this.baseLocation != null) {
@@ -111,7 +111,7 @@ public class GeneticLayerComponent extends EntityComponent implements RenderLaye
     }
 
     @Override
-    public void gatherGenetics(Consumer<GeneticEntry> registry) {
+    public void gatherGenetics(ComponentAccess entity, Consumer<GeneticEntry> registry) {
         this.entries.stream()
             .map(GeneticLayerEntry::getLayerName)
             .forEach(n -> {

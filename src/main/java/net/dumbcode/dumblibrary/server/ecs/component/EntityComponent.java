@@ -15,7 +15,7 @@ import javax.annotation.Nullable;
 
 public abstract class EntityComponent {
 
-    protected ComponentAccess access;
+    private Runnable syncer;
     protected EntityComponentType type;
     @Nullable private SaveableEntityStorage storage;
     @Nullable private String storageID;
@@ -63,16 +63,18 @@ public abstract class EntityComponent {
     }
 
     public void syncToClient() {
-        if(this.access instanceof Entity && !((Entity) this.access).world.isRemote) {
-            //schedule, as the client may not be setup yet. New thread to have it scheduled next tick
-            new Thread(() -> ((WorldServer)((Entity) this.access).world).addScheduledTask(() ->
-                DumbLibrary.NETWORK.sendToDimension(new S2SyncComponent(((Entity) this.access).getEntityId(), this.type, this), ((Entity) this.access).world.provider.getDimension())
-            )).start();
-        }
+        this.syncer.run();
     }
 
-    public void setAccess(ComponentAccess access) {
-        this.access = access;
+    public void setResync(ComponentAccess access) {
+        this.syncer = () -> {
+            if(access instanceof Entity && !((Entity) access).world.isRemote) {
+                //schedule, as the client may not be setup yet. New thread to have it scheduled next tick
+                new Thread(() -> ((WorldServer)((Entity) access).world).addScheduledTask(() ->
+                    DumbLibrary.NETWORK.sendToDimension(new S2SyncComponent(((Entity) access).getEntityId(), this.type, this), ((Entity) access).world.provider.getDimension())
+                )).start();
+            }
+        };
     }
 
     public void onCreated(EntityComponentType type, @Nullable EntityComponentStorage storage, @Nullable String storageID) {

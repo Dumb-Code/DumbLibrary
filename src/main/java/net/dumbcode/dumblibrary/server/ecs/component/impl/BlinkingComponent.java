@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import io.netty.buffer.ByteBuf;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderFlattenedLayerComponent;
@@ -24,10 +25,10 @@ public class BlinkingComponent extends EntityComponent implements RenderFlattene
     private int tickTimeClose;
 
     @Override
-    public void gatherComponents(Consumer<IndexedObject<FlattenedLayerProperty>> registry) {
+    public void gatherComponents(ComponentAccess entity, Consumer<IndexedObject<FlattenedLayerProperty>> registry) {
         registry.accept(new IndexedObject<>(new FlattenedLayerProperty(() -> {
-            if(this.access instanceof Entity) {
-                int ticksExisted = ((Entity) this.access).ticksExisted;
+            if(entity instanceof Entity) {
+                int ticksExisted = ((Entity) entity).ticksExisted;
                 if(ticksExisted % (this.tickTimeOpen + this.tickTimeClose) <= this.tickTimeOpen) {
                     return this.eyesOnTexture;
                 }

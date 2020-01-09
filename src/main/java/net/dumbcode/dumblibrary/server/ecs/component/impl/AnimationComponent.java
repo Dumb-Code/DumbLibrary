@@ -81,6 +81,14 @@ public class AnimationComponent<E extends Entity & ComponentAccess> extends Enti
         }
     }
 
+    public void stopAnimation(int channel) {
+        AnimationLayer.AnimationWrap wrap = this.layersActive[channel];
+        if(wrap != null) {
+            this.animationLayer.removeAnimation(wrap);
+            this.layersActive[channel] = null;
+        }
+    }
+
     public void stopAll() {
         for (int i = 0; i < this.layersActive.length; i++) {
             this.layersActive[i] =  null;

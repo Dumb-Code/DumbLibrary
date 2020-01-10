@@ -38,6 +38,10 @@ public class MathUtils {
         return value > 0 ? MathHelper.floor(value) : MathHelper.ceil(value);
     }
 
+    public static int ceilAwayZero(double value) {
+        return value > 0 ? MathHelper.ceil(value) : MathHelper.floor(value);
+    }
+
     public static int[] binChoose(int n) {
         n += 1;
         int[][] cache = new int[n + 1][n];

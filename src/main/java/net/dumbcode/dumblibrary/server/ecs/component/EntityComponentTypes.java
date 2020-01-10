@@ -4,7 +4,6 @@ import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.server.ecs.blocks.components.*;
 import net.dumbcode.dumblibrary.server.ecs.blocks.systems.*;
 import net.dumbcode.dumblibrary.server.ecs.component.impl.*;
-import net.dumbcode.dumblibrary.server.ecs.component.impl.data.FlattenedLayerProperty;
 import net.dumbcode.dumblibrary.server.ecs.item.components.ItemEatenComponent;
 import net.dumbcode.dumblibrary.server.ecs.item.components.ItemRenderModelComponent;
 import net.dumbcode.dumblibrary.server.ecs.item.systems.ItemEatenSystem;
@@ -21,7 +20,6 @@ import net.minecraftforge.fml.common.registry.GameRegistry;
 public class EntityComponentTypes {
     public static final EntityComponentType<GenderComponent,?> GENDER = InjectedUtils.injected();
     public static final EntityComponentType<HerdComponent, HerdComponent.Storage> HERD = InjectedUtils.injected();
-    public static final EntityComponentType<MetabolismComponent, MetabolismComponent.Storage> METABOLISM = InjectedUtils.injected();
     public static final EntityComponentType<AnimationComponent,?> ANIMATION = InjectedUtils.injected();
     public static final EntityComponentType<ModelComponent, ModelComponent.Storage> MODEL = InjectedUtils.injected();
     public static final EntityComponentType<RenderAdjustmentsComponent, RenderAdjustmentsComponent.Storage> RENDER_ADJUSTMENTS = InjectedUtils.injected();
@@ -54,11 +52,6 @@ public class EntityComponentTypes {
                 .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "herd"))
                 .withStorage(HerdComponent.Storage::new)
                 .withConstructor(HerdComponent::new)
-                .build(),
-            SimpleComponentType.builder(MetabolismComponent.class, MetabolismComponent.Storage.class)
-                .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "metabolism"))
-                .withStorage(MetabolismComponent.Storage::new)
-                .withConstructor(MetabolismComponent::new)
                 .build(),
             SimpleComponentType.builder(AnimationComponent.class)
                 .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "animation"))
@@ -149,7 +142,6 @@ public class EntityComponentTypes {
 
     @SubscribeEvent
     public static void register(RegisterSystemsEvent event) {
-        event.registerSystem(MetabolismSystem.INSTANCE);
         event.registerSystem(HerdSystem.INSTANCE);
         event.registerSystem(AnimationSystem.INSTANCE);
         event.registerSystem(ItemDropSystem.INSTANCE);

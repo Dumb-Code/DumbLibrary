@@ -3,6 +3,7 @@ package net.dumbcode.dumblibrary.server.utils;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.ChunkCache;
+import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
 import java.util.ArrayDeque;
@@ -55,10 +56,14 @@ public class BlockStateWorker {
         }
     }
 
-    public Future<List<BlockPos>> runTask(World world, BlockPos center, int radius, BiPredicate<IBlockState, BlockPos> predicate) {
+    public Future<List<BlockPos>> runTask(World world, BlockPos center, int radii, BiPredicate<IBlockAccess, BlockPos> predicate) {
+        return this.runTask(world, center, radii, radii, radii, predicate);
+    }
+
+    public Future<List<BlockPos>> runTask(World world, BlockPos center, int xRadii, int yRadii, int zRadii, BiPredicate<IBlockAccess, BlockPos> predicate) {
         CompletableFuture<List<BlockPos>> future = new CompletableFuture<>();
         synchronized (this.newTasks) {
-            this.newTasks.add(new Task(world, center, radius, predicate, future));
+            this.newTasks.add(new Task(world, center, xRadii, yRadii, zRadii, predicate, future));
         }
         return future;
     }
@@ -66,7 +71,7 @@ public class BlockStateWorker {
 
     private static class Task {
         private final ChunkCache world;
-        private final BiPredicate<IBlockState, BlockPos> predicate;
+        private final BiPredicate<IBlockAccess, BlockPos> predicate;
         private final CompletableFuture<List<BlockPos>> completableFuture;
         private final BlockPos min;
         private final BlockPos max;
@@ -77,14 +82,14 @@ public class BlockStateWorker {
         private int y;
         private int z;
 
-        private Task(World world, BlockPos center, int radii, BiPredicate<IBlockState, BlockPos> predicate, CompletableFuture<List<BlockPos>> completableFuture) {
+        private Task(World world, BlockPos center, int xRadii, int yRadii, int zRadii, BiPredicate<IBlockAccess, BlockPos> predicate, CompletableFuture<List<BlockPos>> completableFuture) {
             this.predicate = predicate;
             this.completableFuture = completableFuture;
 
-            this.min = center.add(-radii, -radii, -radii);
-            this.max = center.add(radii, radii, radii);
+            this.min = center.add(-xRadii, -yRadii, -zRadii);
+            this.max = center.add(xRadii, yRadii, zRadii);
 
-            this.world = new ChunkCache(world, this.min, this.max, 0);
+            this.world = new ChunkCache(world, this.min, this.max, 1);
 
             this.x = this.min.getX();
             this.y = this.min.getY();
@@ -94,8 +99,7 @@ public class BlockStateWorker {
         private void runTask(int iterations) {
             for (int i = 0; i < iterations; i++) {
                 BlockPos pos = new BlockPos(this.x, this.y, this.z);
-                IBlockState state = this.world.getBlockState(pos);
-                if(this.predicate.test(state, pos)) {
+                if(this.predicate.test(this.world, pos)) {
                     this.result.add(pos);
                 }
                 if(this.increment()) {

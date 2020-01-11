@@ -7,6 +7,7 @@ import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.renderer.texture.TextureUtil;
 import net.minecraft.client.resources.IResource;
+import net.minecraft.util.HttpUtil;
 import net.minecraft.util.ResourceLocation;
 
 import java.awt.*;
@@ -36,27 +37,42 @@ public class TextureUtils {
                 BufferedImage largestImage = Arrays.stream(images).max(Comparator.comparing(BufferedImage::getWidth)).orElseThrow(IOException::new);
                 int width = largestImage.getWidth();
                 int height = largestImage.getHeight();
-
                 int[][] imageData = new int[locations.length][];
 
-                for (int i = 0; i < images.length; i++) {
-                    imageData[i] = new int[width * height];
-                    resize(images[i], width, height).getRGB(0, 0, width, height, imageData[i], 0, width);
-                }
+                DynamicTexture outTexture = new DynamicTexture(width, height);
+                ResourceLocation location = Minecraft.getMinecraft().getTextureManager().getDynamicTextureLocation("dumblib_multitexture", outTexture);
 
-                int imageLength = imageData[0].length;
-
-                int[] overlappedData = new int[width * height];
-                for (int[] imageDatum : imageData) {
-                    for (int d = 0; d < imageLength; d++) {
-                        overlappedData[d] = blend(imageDatum[d], overlappedData[d]);
+                HttpUtil.DOWNLOADER_EXECUTOR.execute(() -> {
+                    for (int i = 0; i < images.length; i++) {
+                        imageData[i] = new int[width * height];
+                        resize(images[i], width, height).getRGB(0, 0, width, height, imageData[i], 0, width);
                     }
-                }
-                DynamicTexture texture = createImage(width, height, overlappedData);
-                texture.updateDynamicTexture();
 
-                ResourceLocation location = Minecraft.getMinecraft().getTextureManager().getDynamicTextureLocation("dumblib_multitexture", texture);
-                DumbLibrary.getLogger().info("Combined layers: {} to texture(id={}, name={})", Arrays.toString(locations), texture.getGlTextureId(), location);
+                    int imageLength = imageData[0].length;
+
+                    int[] overlappedData = new int[width * height];
+                    for (int[] imageDatum : imageData) {
+                        for (int d = 0; d < imageLength; d++) {
+                            overlappedData[d] = blend(imageDatum[d], overlappedData[d]);
+                        }
+                    }
+
+                    DumbLibrary.getLogger().info("Combined layers: {} to texture(id={}, name={})",
+                        Arrays.toString(Arrays.stream(locations).map(r -> {
+                            String path = r.getPath();
+                            String[] split = path.split("/");
+                            return split[split.length - 1];
+                        }).toArray()),
+                        outTexture.getGlTextureId(), location
+                    );
+
+                    //Optifine does something weird with the int[] data, so it's easier to make a dummy texture and transfer the pixels over
+                    Minecraft.getMinecraft().addScheduledTask(() -> {
+                        int[] pixels = createImage(width, height, overlappedData).getTextureData();
+                        System.arraycopy(pixels, 0, outTexture.getTextureData(), 0, pixels.length);
+                        outTexture.updateDynamicTexture();
+                    });
+                });
                 return location;
             } catch (IOException e) {
                 DumbLibrary.getLogger().error("Unable to combine layers: " + Arrays.toString(locations), e);
@@ -127,11 +143,14 @@ public class TextureUtils {
     }
 
     private static BufferedImage resize(BufferedImage img, int width, int height) {
-        Image tmp = img.getScaledInstance(width, height, Image.SCALE_DEFAULT);
-        BufferedImage resized = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g2d = resized.createGraphics();
-        g2d.drawImage(tmp, 0, 0, null);
-        g2d.dispose();
-        return resized;
+        if(img.getWidth() != width || img.getHeight() != height) {
+            Image tmp = img.getScaledInstance(width, height, Image.SCALE_DEFAULT);
+            BufferedImage resized = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g2d = resized.createGraphics();
+            g2d.drawImage(tmp, 0, 0, null);
+            g2d.dispose();
+            return resized;
+        }
+        return img;
     }
 }

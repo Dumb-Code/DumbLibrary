@@ -59,6 +59,10 @@ public class MathUtils {
         return cache[n];
     }
 
+    public static boolean inBetween(double test, double min, double max) {
+        return test >= min && test <= max;
+    }
+
     public static double binomialExp(double a, double b, int pow) {
         return binomialExp(a, b, binChoose(pow));
     }

@@ -7,6 +7,7 @@ import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.client.renderer.vertex.VertexFormatElement;
@@ -174,6 +175,32 @@ public class RenderUtils {
         tessellator.draw();
     }
 
+    //Coped from GuiSCreen
+    public static void draw256Texture(double x, double y, double textureX, double textureY, double width, double height) {
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder bufferbuilder = tessellator.getBuffer();
+        bufferbuilder.begin(7, DefaultVertexFormats.POSITION_TEX);
+        bufferbuilder.pos((x), (y + height), 0).tex((textureX * 0.00390625F), ((textureY + height) * 0.00390625F)).endVertex();
+        bufferbuilder.pos((x + width), (y + height), 0).tex(((textureX + width) * 0.00390625F), ((textureY + height) * 0.00390625F)).endVertex();
+        bufferbuilder.pos((x + width), (y), 0).tex(((textureX + width) * 0.00390625F), (textureY * 0.00390625F)).endVertex();
+        bufferbuilder.pos((x), (y), 0).tex((textureX * 0.00390625F), (textureY * 0.00390625F)).endVertex();
+        tessellator.draw();
+    }
+
+    public static void drawTextureAtlasSprite(double x, double y, TextureAtlasSprite sprite, double width, double height) {
+        drawTextureAtlasSprite(x, y, sprite, width, height, 0F, 0F, 16F, 16F);
+    }
+
+    public static void drawTextureAtlasSprite(double x, double y, TextureAtlasSprite sprite, double width, double height, double minU, double minV, double maxU, double maxV) {
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder bufferbuilder = tessellator.getBuffer();
+        bufferbuilder.begin(7, DefaultVertexFormats.POSITION_TEX);
+        bufferbuilder.pos(x, y + height, 0).tex(sprite.getInterpolatedU(minU), sprite.getInterpolatedV(maxV)).endVertex();
+        bufferbuilder.pos(x + width, y + height, 0).tex(sprite.getInterpolatedU(maxU), sprite.getInterpolatedV(maxV)).endVertex();
+        bufferbuilder.pos(x + width, y, 0).tex(sprite.getInterpolatedU(maxU), sprite.getInterpolatedV(minV)).endVertex();
+        bufferbuilder.pos(x, y, 0).tex(sprite.getInterpolatedU(minU), sprite.getInterpolatedV(minV)).endVertex();
+        tessellator.draw();
+    }
 
     public static void renderBorderExclusive(int left, int top, int right, int bottom, int borderSize, int borderColor) {
         renderBorder(left - borderSize, top - borderSize, right + borderSize, bottom + borderSize, borderSize, borderColor);

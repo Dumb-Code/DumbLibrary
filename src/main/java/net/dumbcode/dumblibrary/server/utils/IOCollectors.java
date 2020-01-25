@@ -8,6 +8,7 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.NBTTagString;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -38,6 +39,14 @@ public class IOCollectors {
                 NBTTagList::new,
                 NBTTagList::appendTag,
                 (list1, list2) -> {list2.forEach(list1::appendTag); return list1; }
+        );
+    }
+
+    public static <T> Collector<T, NBTTagList, NBTTagList> toNBTList(Function<T, ? extends NBTBase> func) {
+        return new CollectorImpl<>(
+            NBTTagList::new,
+            (nbtBases, s) -> nbtBases.appendTag(func.apply(s)),
+            (list1, list2) -> {list2.forEach(list1::appendTag); return list1; }
         );
     }
 

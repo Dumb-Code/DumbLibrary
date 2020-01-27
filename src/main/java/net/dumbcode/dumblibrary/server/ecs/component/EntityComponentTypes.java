@@ -27,6 +27,7 @@ public class EntityComponentTypes {
     public static final EntityComponentType<GeneticComponent, GeneticComponent.Storage> GENETICS = InjectedUtils.injected();
     public static final EntityComponentType<GeneticLayerComponent, GeneticLayerComponent.Storage> GENETIC_LAYER_COLORS = InjectedUtils.injected();
     public static final EntityComponentType<FlattenedLayerComponent, FlattenedLayerComponent.Storage> FLATTENED_LAYER = InjectedUtils.injected();
+    public static final EntityComponentType<EyesClosedComponent, EyesClosedComponent.Storage> EYES_CLOSED = InjectedUtils.injected();
     public static final EntityComponentType<BlinkingComponent, BlinkingComponent.Storage> BLINKING = InjectedUtils.injected();
     public static final EntityComponentType<FamilyComponent, FamilyComponent.Storage> FAMILY = InjectedUtils.injected();
     public static final EntityComponentType<BreedingComponent, BreedingComponent.Storage> BREEDING = InjectedUtils.injected();
@@ -85,6 +86,11 @@ public class EntityComponentTypes {
                 .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "flattened_layer"))
                 .withConstructor(FlattenedLayerComponent::new)
                 .withStorage(FlattenedLayerComponent.Storage::new)
+                .build(),
+            SimpleComponentType.builder(EyesClosedComponent.class, EyesClosedComponent.Storage.class)
+                .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "eyes_closed"))
+                .withConstructor(EyesClosedComponent::new)
+                .withStorage(EyesClosedComponent.Storage::new)
                 .build(),
             SimpleComponentType.builder(BlinkingComponent.class, BlinkingComponent.Storage.class)
                 .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "blinking"))
@@ -148,6 +154,8 @@ public class EntityComponentTypes {
         event.registerSystem(SpeedTrackingSystem.INSTANCE);
         event.registerSystem(FamilySystem.INSTANCE);
         event.registerSystem(BreedingSystem.INSTANCE);
+        event.registerSystem(BlinkingSystem.INSTANCE);
+        event.registerSystem(EyesClosedSystem.INSTANCE);
 
         event.registerSystem(GrowingSystem.INSTANCE);
         event.registerSystem(FlowerWorldgenSystem.INSTANCE);

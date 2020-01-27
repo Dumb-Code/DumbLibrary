@@ -59,7 +59,15 @@ public abstract class EntityComponent {
     public void serialize(ByteBuf buf) {
     }
 
+    public void serializeSync(ByteBuf buf) {
+        this.serialize(buf);
+    }
+
     public void deserialize(ByteBuf buf) {
+    }
+
+    public void deserializeSync(ByteBuf buf) {
+        this.deserialize(buf);
     }
 
     public void syncToClient() {

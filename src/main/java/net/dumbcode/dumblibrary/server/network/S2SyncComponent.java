@@ -25,7 +25,7 @@ public class S2SyncComponent implements IMessage {
 
     public S2SyncComponent(int entityid, EntityComponentType type, EntityComponent component) {
         ByteBuf buffer = Unpooled.buffer();
-        component.serialize(buffer);
+        component.serializeSync(buffer);
         this.entityid = entityid;
         this.type = type;
         this.data = buffer.array();
@@ -53,7 +53,7 @@ public class S2SyncComponent implements IMessage {
         protected void handleMessage(S2SyncComponent message, MessageContext ctx, World world, EntityPlayer player) {
             Entity entity = world.getEntityByID(message.entityid);
             if (entity instanceof ComponentAccess) {
-                ((ComponentAccess) entity).get(message.type).ifPresent(c -> c.deserialize(Unpooled.wrappedBuffer(message.data)));
+                ((ComponentAccess) entity).get(message.type).ifPresent(c -> c.deserializeSync(Unpooled.wrappedBuffer(message.data)));
             }
         }
     }

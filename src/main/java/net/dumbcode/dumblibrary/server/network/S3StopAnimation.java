@@ -10,18 +10,16 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
-public class S0SyncAnimation implements IMessage {
+public class S3StopAnimation implements IMessage {
 
     private int entityid;
-    private AnimationLayer.AnimationEntry entry;
     private int channel;
 
-    public S0SyncAnimation() {
+    public S3StopAnimation() {
     }
 
-    public <E extends Entity> S0SyncAnimation(E entity, AnimationLayer.AnimationEntry entry, int channel) {
+    public S3StopAnimation(Entity entity, int channel) {
         this.entityid = entity.getEntityId();
-        this.entry = entry;
         this.channel = channel;
     }
 
@@ -29,29 +27,23 @@ public class S0SyncAnimation implements IMessage {
     @Override
     public void fromBytes(ByteBuf buf) {
         this.entityid = buf.readInt();
-        this.entry = AnimationLayer.AnimationEntry.deserialize(buf);
         this.channel = buf.readInt();
     }
 
     @Override
     public void toBytes(ByteBuf buf) {
         buf.writeInt(this.entityid);
-        this.entry.serialize(buf);
         buf.writeInt(this.channel);
     }
 
-    public static class Handler extends WorldModificationsMessageHandler<S0SyncAnimation, S0SyncAnimation> {
+    public static class Handler extends WorldModificationsMessageHandler<S3StopAnimation, S3StopAnimation> {
 
         @Override
-        protected void handleMessage(S0SyncAnimation message, MessageContext ctx, World world, EntityPlayer player) {
+        protected void handleMessage(S3StopAnimation message, MessageContext ctx, World world, EntityPlayer player) {
             Entity entity = world.getEntityByID(message.entityid);
             if (entity instanceof ComponentAccess) {
                 ((ComponentAccess) entity).get(EntityComponentTypes.ANIMATION).ifPresent(c -> {
-                    if(c.isReadyForAnimations()) {
-                        c.playAnimation((ComponentAccess) entity, message.entry, message.channel);
-                    } else {
-                        c.proposeAnimation((ComponentAccess) entity, message.entry, message.channel, 10);
-                    }
+                    c.stopAnimation(entity, message.channel);
                 });
             }
         }

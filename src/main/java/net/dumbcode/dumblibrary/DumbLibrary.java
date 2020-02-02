@@ -10,6 +10,7 @@ import net.dumbcode.dumblibrary.server.ecs.item.components.ItemRenderModelCompon
 import net.dumbcode.dumblibrary.server.network.S0SyncAnimation;
 import net.dumbcode.dumblibrary.server.network.S1PlayItemCrackParticle;
 import net.dumbcode.dumblibrary.server.network.S2SyncComponent;
+import net.dumbcode.dumblibrary.server.network.S3StopAnimation;
 import net.dumbcode.dumblibrary.server.registry.DumbRegistries;
 import net.dumbcode.dumblibrary.server.registry.RegisterGeneticTypes;
 import net.dumbcode.dumblibrary.server.utils.InjectedUtils;
@@ -69,6 +70,7 @@ public class DumbLibrary {
         NETWORK.registerMessage(new S0SyncAnimation.Handler(), S0SyncAnimation.class, 0, Side.CLIENT);
         NETWORK.registerMessage(new S1PlayItemCrackParticle.Handler(), S1PlayItemCrackParticle.class, 1, Side.CLIENT);
         NETWORK.registerMessage(new S2SyncComponent.Handler(), S2SyncComponent.class, 2, Side.CLIENT);
+        NETWORK.registerMessage(new S3StopAnimation.Handler(), S3StopAnimation.class, 3, Side.CLIENT);
 
         SidedExecutor.runClient(() -> () -> ModelLoaderRegistry.registerLoader(TransformTypeModelLoader.INSTANCE));
     }

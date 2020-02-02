@@ -1,6 +1,7 @@
 package net.dumbcode.dumblibrary.server.ecs.component.impl;
 
 import com.google.common.collect.Lists;
+import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -8,18 +9,21 @@ import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.client.model.tabula.TabulaModel;
 import net.dumbcode.dumblibrary.server.animation.AnimationContainer;
 import net.dumbcode.dumblibrary.server.animation.TabulaUtils;
+import net.dumbcode.dumblibrary.server.animation.objects.Animation;
 import net.dumbcode.dumblibrary.server.animation.objects.AnimationLayer;
 import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentTypes;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderCallbackComponent;
 import net.dumbcode.dumblibrary.server.network.S0SyncAnimation;
+import net.dumbcode.dumblibrary.server.network.S3StopAnimation;
 import net.dumbcode.dumblibrary.server.utils.SidedExecutor;
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.entity.Entity;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.IntStream;
 
 public class AnimationComponent<E extends Entity & ComponentAccess> extends EntityComponent implements RenderCallbackComponent {
 
@@ -43,6 +47,28 @@ public class AnimationComponent<E extends Entity & ComponentAccess> extends Enti
     public void proposeAnimation(ComponentAccess entity, AnimationLayer.AnimationEntry entry, int channel, int delay) {
         this.futureAnimations.add(new FutureAnimation(entity, entry, channel, delay));
     }
+
+    /**
+     * Returns whether a channel is active.
+     * @param channel the channel to check
+     * @return true if an animation is being played, false otherwise.
+     */
+    public boolean isChannelActive(int channel) {
+        return this.layersActive[channel] != null;
+    }
+
+    /**
+     * Plays the animation on a certain channel
+     * @param entity the ecs
+     * @param animation the animation
+     * @param channel if another animation at another channel is playing then that animation will be stopped. <br>
+     *              If this is less than 0, then no animation will be stopped <br>
+     *              The maximum channel is
+     */
+    public void playAnimation(ComponentAccess entity, Animation animation, int channel) {
+        this.playAnimation(entity, this.animationLayer.create(new AnimationLayer.AnimationEntry(animation)), channel);
+    }
+
     /**
      * Plays the animation on a certain channel
      * @param entity the ecs
@@ -52,6 +78,10 @@ public class AnimationComponent<E extends Entity & ComponentAccess> extends Enti
      *              The maximum channel is
      */
     public void playAnimation(ComponentAccess entity, AnimationLayer.AnimationEntry entry, int channel) {
+        if(!this.isReadyForAnimations()) {
+            this.proposeAnimation(entity, entry, channel, 10);
+            return;
+        }
         this.playAnimation(entity, this.animationLayer.create(entry), channel);
     }
 
@@ -77,15 +107,18 @@ public class AnimationComponent<E extends Entity & ComponentAccess> extends Enti
         }
         Entity e = (Entity) entity;
         if(!e.world.isRemote) {
-            DumbLibrary.NETWORK.sendToDimension(new S0SyncAnimation(0, (E) entity, newWrap.getEntry(), channel), e.world.provider.getDimension());
+            DumbLibrary.NETWORK.sendToDimension(new S0SyncAnimation((E) entity, newWrap.getEntry(), channel), e.world.provider.getDimension());
         }
     }
 
-    public void stopAnimation(int channel) {
+    public void stopAnimation(Entity entity, int channel) {
         AnimationLayer.AnimationWrap wrap = this.layersActive[channel];
         if(wrap != null) {
             this.animationLayer.removeAnimation(wrap);
             this.layersActive[channel] = null;
+        }
+        if(!entity.world.isRemote) {
+            DumbLibrary.NETWORK.sendToDimension(new S3StopAnimation(entity, channel), entity.world.provider.getDimension());
         }
     }
 

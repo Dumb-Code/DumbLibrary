@@ -15,7 +15,7 @@ import javax.annotation.Nullable;
 
 public abstract class EntityComponent {
 
-    private Runnable syncer;
+    protected Runnable syncer;
     protected EntityComponentType type;
     @Nullable private SaveableEntityStorage storage;
     @Nullable private String storageID;

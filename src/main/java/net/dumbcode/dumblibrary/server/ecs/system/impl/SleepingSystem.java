@@ -48,12 +48,11 @@ public enum SleepingSystem implements EntitySystem {
                 }
             } else {
                 component.setTiredness(component.getTiredness() + 1);
-                if(animationComponent != null) {
+                if(animationComponent != null && animationComponent.isChannelActive(SLEEPING_CHANNEL)) {
                     animationComponent.stopAnimation(this.entities[i], SLEEPING_CHANNEL);
                 }
 
-                double chanceToSleep = Math.pow(2D, component.getTiredness() / component.getTirednessChanceConstant().getValue()) - 1;
-                if(this.entities[i].world.rand.nextFloat() < chanceToSleep / 100F) { //10 means 10 times the chance constant, which should be the limit
+                if(this.entities[i].world.rand.nextFloat() < component.calculateChanceToSleep()) {
                     //To go sleep
                     component.setSleepingTicksLeft((int) (component.getTiredness() / component.getTirednessLossPerTickSleeping().getValue()));
                 }

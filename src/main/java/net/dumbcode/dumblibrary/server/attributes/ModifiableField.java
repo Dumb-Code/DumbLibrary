@@ -37,8 +37,11 @@ public class ModifiableField {
     }
 
     public void addModifier(ModifiableFieldModifier modifier) {
+        ModifiableFieldModifier old = this.operations.get(modifier.getUuid());
         this.operations.put(modifier.getUuid(), modifier);
-        this.needsUpdate = true;
+        if(!modifier.equals(old)) {
+            this.needsUpdate = true;
+        }
     }
 
     private double computeValue() {

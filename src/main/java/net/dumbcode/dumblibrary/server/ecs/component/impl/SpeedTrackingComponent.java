@@ -11,14 +11,4 @@ import net.minecraft.nbt.NBTTagCompound;
 public class SpeedTrackingComponent extends EntityComponent {
     private double speed;
     private double previousSpeed;
-
-    @Override
-    public NBTTagCompound serialize(NBTTagCompound compound) {
-        return compound;
-    }
-
-    @Override
-    public void deserialize(NBTTagCompound compound) {
-
-    }
 }

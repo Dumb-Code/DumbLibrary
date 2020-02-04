@@ -105,13 +105,13 @@ public class SimpleComponentType<T extends EntityComponent, S extends EntityComp
         public EntityComponentType<T, S> build() {
             Preconditions.checkNotNull(this.identifier, "Component identifier must be set");
             if(this.constructor == null) {
-                DumbLibrary.getLogger().warn("No constructor set, trying to set to empty constructor of type " + this.type.getName());
-                Constructor<T> constructor = ReflectionHelper.findConstructor(this.type);
+                DumbLibrary.getLogger().warn("No constructor set, trying to set to empty constructor of type {}", this.type.getName());
+                Constructor<T> cons = ReflectionHelper.findConstructor(this.type);
                 this.constructor = () -> {
                     try {
-                        return constructor.newInstance();
+                        return cons.newInstance();
                     } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-                        throw new IllegalStateException("Unable to constructEmpty component of class " + this.type.getName() + ", with component type " + this.identifier, e);
+                        throw new IllegalStateException("Unable to construct component of class " + this.type.getName() + ", with component type " + this.identifier, e);
                     }
                 };
             }

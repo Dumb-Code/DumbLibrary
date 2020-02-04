@@ -116,9 +116,9 @@ public class AnimationComponent<E extends Entity & ComponentAccess> extends Enti
         if(wrap != null) {
             this.animationLayer.removeAnimation(wrap);
             this.layersActive[channel] = null;
-        }
-        if(!entity.world.isRemote) {
-            DumbLibrary.NETWORK.sendToDimension(new S3StopAnimation(entity, channel), entity.world.provider.getDimension());
+            if(!entity.world.isRemote) {
+                DumbLibrary.NETWORK.sendToDimension(new S3StopAnimation(entity, channel), entity.world.provider.getDimension());
+            }
         }
     }
 

@@ -21,12 +21,17 @@ public class SleepingComponent extends EntityComponent {
 
     private Animation sleepingAnimation;
 
-    private double tiredness; //2^(x / k). x = tiredness, k = tireness it take to double change of being asleep
+    private double tiredness; //2^(x / k) - 1. x = tiredness, k = tireness it take to double change of being asleep
     private final ModifiableField tirednessLossPerTickSleeping = new ModifiableField(); //rename var?
 
-    private final ModifiableField tirednessChanceConstant = new ModifiableField(); //The amount of tiredness it takes to double the chance of being to sleep
+    // The lower this is the bigger chance that the dino goes to sleep
+    private final ModifiableField tirednessChanceConstant = new ModifiableField(); //The amount of tiredness it takes to double the chance of being to sleep.
 
     private int sleepingTicksLeft;
+
+    public double calculateChanceToSleep() {
+        return (Math.pow(2D, this.tiredness / this.tirednessChanceConstant.getValue()) - 1) / 10000F;
+    }
 
     @Override
     public NBTTagCompound serialize(NBTTagCompound compound) {

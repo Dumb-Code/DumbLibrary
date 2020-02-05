@@ -53,13 +53,9 @@ public enum LightSleepSystem implements EntitySystem {
         }
     }
 
-    //https://www.desmos.com/calculator/5htrryvcqf
+    //https://www.desmos.com/calculator/wx1cd2styk
     private double calculateSkylightModifier(long time) {
-        return 1D - Math.max(exponentialCurve(time), exponentialCurve(time + 24000));
-    }
-
-    private double exponentialCurve(long time) {
-        double expValue = (time - 18000D)/6000D;
-        return Math.exp(-expValue*expValue*expValue*expValue);
+        double expValue = (time + time < 5000 ? 6000 : -18000D) / 3000D; //6000 = 24000 - 18000
+        return 1D - Math.exp(-expValue*expValue);
     }
 }

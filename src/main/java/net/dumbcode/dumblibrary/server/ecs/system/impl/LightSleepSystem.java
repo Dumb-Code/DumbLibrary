@@ -47,15 +47,14 @@ public enum LightSleepSystem implements EntitySystem {
 
             ModifiableField constant = this.sleepingComponents[i].getTirednessChanceConstant();
 
-            constant.addModifer(SKYLIGHT_UUID, ModOp.MULTIPLY_BASE_THEN_ADD, -(skylightValue - 0.5F) * 0.5F);
-            constant.addModifer(BLOCKLIGHT_UUID, ModOp.MULTIPLY_BASE_THEN_ADD, -(blocklightValue - 0.5F) * 0.125F);
-
+            constant.addModifer(SKYLIGHT_UUID, ModOp.MULTIPLY_BASE_THEN_ADD, -(skylightValue - 0.5F) * 0.75F);
+            constant.addModifer(BLOCKLIGHT_UUID, ModOp.MULTIPLY_BASE_THEN_ADD, -(blocklightValue - 0.5F) * 0.25F);
         }
     }
 
-    //https://www.desmos.com/calculator/wx1cd2styk
+    //https://www.desmos.com/calculator/2g9glbrvec
     private double calculateSkylightModifier(long time) {
-        double expValue = (time + time < 5000 ? 6000 : -18000D) / 3000D; //6000 = 24000 - 18000
+        double expValue = (time + time < 5000 ? 6000 : -18000D) / 3000D;
         return 1D - Math.exp(-expValue*expValue);
     }
 }

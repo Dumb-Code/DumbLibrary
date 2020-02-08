@@ -16,8 +16,7 @@ import net.minecraft.world.World;
 
 import java.util.UUID;
 
-public enum LightSleepSystem implements EntitySystem {
-    INSTANCE;
+public class LightSleepSystem implements EntitySystem {
 
     private static final UUID SKYLIGHT_UUID = UUID.fromString("8f558d6c-d809-4382-9fc6-2c8895a1a0e0");
     private static final UUID BLOCKLIGHT_UUID = UUID.fromString("a66cc461-2472-47c6-9bea-63307d23588c");

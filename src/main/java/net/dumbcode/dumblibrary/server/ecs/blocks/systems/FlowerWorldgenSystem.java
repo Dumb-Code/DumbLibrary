@@ -25,14 +25,12 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 
-public enum FlowerWorldgenSystem implements EntitySystem {
-    INSTANCE;
-
+public class FlowerWorldgenSystem implements EntitySystem {
 
     private IBlockState[] blockstates = new IBlockState[0];
     private FlowerWorldgenComponent[] flowerGenComponents = new FlowerWorldgenComponent[0];
 
-    FlowerWorldgenSystem() {
+    public FlowerWorldgenSystem() {
         MinecraftForge.TERRAIN_GEN_BUS.register(this);
     }
 

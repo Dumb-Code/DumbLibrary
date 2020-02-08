@@ -21,9 +21,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public enum HerdSystem implements EntitySystem {
-
-    INSTANCE;
+public class HerdSystem implements EntitySystem {
 
     private Entity[] matchedEntities = new Entity[0];
     private HerdComponent[] herds = new HerdComponent[0];

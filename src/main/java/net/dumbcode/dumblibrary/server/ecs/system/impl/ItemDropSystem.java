@@ -11,8 +11,7 @@ import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 //TODO: remove this, it's not really needed
-public enum ItemDropSystem implements EntitySystem {
-    INSTANCE;
+public class ItemDropSystem implements EntitySystem {
 
     @Override
     public void populateEntityBuffers(EntityManager manager) {

@@ -6,8 +6,7 @@ import net.dumbcode.dumblibrary.server.ecs.component.impl.EyesClosedComponent;
 import net.dumbcode.dumblibrary.server.ecs.system.EntitySystem;
 import net.minecraft.world.World;
 
-public enum EyesClosedSystem implements EntitySystem {
-    INSTANCE;
+public class EyesClosedSystem implements EntitySystem {
 
     private EyesClosedComponent[] components = new EyesClosedComponent[0];
 

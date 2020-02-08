@@ -10,8 +10,7 @@ import net.minecraft.util.EnumActionResult;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
-public enum BlockPlacementSystem implements EntitySystem {
-    INSTANCE;
+public class BlockPlacementSystem implements EntitySystem {
 
     @SubscribeEvent
     public void onRightClick(PlayerInteractEvent.RightClickBlock event) {

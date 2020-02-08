@@ -9,8 +9,7 @@ import net.dumbcode.dumblibrary.server.ecs.system.EntitySystem;
 import net.minecraft.entity.Entity;
 import net.minecraft.world.World;
 
-public enum BlinkingSystem implements EntitySystem {
-    INSTANCE;
+public class BlinkingSystem implements EntitySystem {
 
     private Entity[] entities = new Entity[0];
     private EyesClosedComponent[] eyesClosed = new EyesClosedComponent[0];

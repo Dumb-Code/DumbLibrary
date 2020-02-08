@@ -16,8 +16,7 @@ import net.minecraft.world.World;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public enum BreedingSystem implements EntitySystem {
-    INSTANCE;
+public class BreedingSystem implements EntitySystem {
 
     private Entity[] entities = new Entity[0];
     private BreedingComponent[] breeding = new BreedingComponent[0];

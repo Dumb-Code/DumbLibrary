@@ -17,9 +17,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 import java.util.Random;
 
-public enum GrowingSystem implements EntitySystem {
-    INSTANCE;
-
+public class GrowingSystem implements EntitySystem {
     int updateLCG = new Random().nextInt();
 
     @Override

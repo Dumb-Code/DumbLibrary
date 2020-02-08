@@ -160,24 +160,24 @@ public class EntityComponentTypes {
 
     @SubscribeEvent
     public static void register(RegisterSystemsEvent event) {
-        event.registerSystem(HerdSystem.INSTANCE);
-        event.registerSystem(AnimationSystem.INSTANCE);
-        event.registerSystem(ItemDropSystem.INSTANCE);
-        event.registerSystem(SpeedTrackingSystem.INSTANCE);
-        event.registerSystem(FamilySystem.INSTANCE);
-        event.registerSystem(BreedingSystem.INSTANCE);
-        event.registerSystem(BlinkingSystem.INSTANCE);
-        event.registerSystem(EyesClosedSystem.INSTANCE);
-        event.registerSystem(SleepingSystem.INSTANCE);
-        event.registerSystem(LightSleepSystem.INSTANCE);
+        event.registerSystem(new HerdSystem());
+        event.registerSystem(new AnimationSystem());
+        event.registerSystem(new ItemDropSystem());
+        event.registerSystem(new SpeedTrackingSystem());
+        event.registerSystem(new FamilySystem());
+        event.registerSystem(new BreedingSystem());
+        event.registerSystem(new BlinkingSystem());
+        event.registerSystem(new EyesClosedSystem());
+        event.registerSystem(new SleepingSystem());
+        event.registerSystem(new LightSleepSystem());
 
-        event.registerSystem(GrowingSystem.INSTANCE);
-        event.registerSystem(FlowerWorldgenSystem.INSTANCE);
-        event.registerSystem(BlockTouchEffectSystem.INSTANCE);
-        event.registerSystem(BlockDropsSystem.INSTANCE);
-        event.registerSystem(BlockPlacementSystem.INSTANCE);
+        event.registerSystem(new GrowingSystem());
+        event.registerSystem(new FlowerWorldgenSystem());
+        event.registerSystem(new BlockTouchEffectSystem());
+        event.registerSystem(new BlockDropsSystem());
+        event.registerSystem(new BlockPlacementSystem());
 
-        event.registerSystem(ItemEatenSystem.INSTANCE);
+        event.registerSystem(new ItemEatenSystem());
 
     }
 }

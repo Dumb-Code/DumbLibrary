@@ -12,8 +12,7 @@ import net.dumbcode.dumblibrary.server.ecs.system.EntitySystem;
 import net.minecraft.entity.Entity;
 import net.minecraft.world.World;
 
-public enum SleepingSystem implements EntitySystem {
-    INSTANCE;
+public class SleepingSystem implements EntitySystem {
 
     public static final int SLEEPING_CHANNEL = 62;
 

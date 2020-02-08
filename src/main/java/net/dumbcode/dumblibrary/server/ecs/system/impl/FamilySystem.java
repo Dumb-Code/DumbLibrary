@@ -5,8 +5,7 @@ import net.dumbcode.dumblibrary.server.ecs.system.EntitySystem;
 import net.minecraft.entity.Entity;
 import net.minecraft.world.World;
 
-public enum FamilySystem implements EntitySystem {
-    INSTANCE;
+public class FamilySystem implements EntitySystem {
 
     private Entity[] breedingEntities;
 

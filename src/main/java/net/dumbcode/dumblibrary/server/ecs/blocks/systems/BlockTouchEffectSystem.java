@@ -17,8 +17,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-public enum BlockTouchEffectSystem implements EntitySystem {
-    INSTANCE;
+public class BlockTouchEffectSystem implements EntitySystem {
 
     private final List<IBlockState> states = new LinkedList<>();
     private BlockTouchEffectComponent[] components = new BlockTouchEffectComponent[0];

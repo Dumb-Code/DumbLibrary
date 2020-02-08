@@ -16,8 +16,7 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
-public enum ItemEatenSystem implements EntitySystem {
-    INSTANCE;
+public class ItemEatenSystem implements EntitySystem {
 
     @SubscribeEvent
     public void onItemDuration(UseItemEvent.Duration event) {

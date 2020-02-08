@@ -15,8 +15,7 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public enum SpeedTrackingSystem implements EntitySystem {
-    INSTANCE;
+public class SpeedTrackingSystem implements EntitySystem {
 
     private Entity[] entities;
     private SpeedTrackingComponent[] speedComponents;

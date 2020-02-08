@@ -13,8 +13,7 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public enum AnimationSystem implements EntitySystem {
-    INSTANCE;
+public class AnimationSystem implements EntitySystem {
 
     private AnimationComponent<?>[] components = null;
 

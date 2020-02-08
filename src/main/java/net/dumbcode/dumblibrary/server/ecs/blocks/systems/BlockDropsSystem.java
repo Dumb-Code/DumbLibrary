@@ -6,8 +6,7 @@ import net.dumbcode.dumblibrary.server.ecs.system.EntitySystem;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
-public enum BlockDropsSystem implements EntitySystem {
-    INSTANCE;
+public class BlockDropsSystem implements EntitySystem {
 
     @SubscribeEvent
     public void onBlockDrop(BlockEvent.HarvestDropsEvent event) {

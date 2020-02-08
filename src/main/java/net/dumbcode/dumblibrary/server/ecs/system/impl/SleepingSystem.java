@@ -16,10 +16,16 @@ public class SleepingSystem implements EntitySystem {
 
     public static final int SLEEPING_CHANNEL = 62;
 
+    private long previousWorldTime;
+
     private Entity[] entities = new Entity[0];
     private SleepingComponent[] sleepingComponents = new SleepingComponent[0];
     private EyesClosedComponent[] eyesClosedComponents = new EyesClosedComponent[0];
     private AnimationComponent[] animationComponents = new AnimationComponent[0];
+
+    public SleepingSystem(long worldTime) {
+        this.previousWorldTime = worldTime;
+    }
 
     @Override
     public void populateEntityBuffers(EntityManager manager) {
@@ -32,13 +38,14 @@ public class SleepingSystem implements EntitySystem {
 
     @Override
     public void update(World world) {
+        int timeDiff = (int) Math.max(world.getWorldTime() - this.previousWorldTime, 1); //the `/time` command can reset world time, so worldTime - previousWorldTime would be negative. We can't have this.
         for (int i = 0; i < this.entities.length; i++) {
             SleepingComponent component = this.sleepingComponents[i];
             AnimationComponent animationComponent = this.animationComponents[i];
 
             if (component.getSleepingTicksLeft() > 0) { //Sleeping
-                component.setSleepingTicksLeft(component.getSleepingTicksLeft() - 1);
-                component.setTiredness(component.getTiredness() - component.getTirednessLossPerTickSleeping().getValue());
+                component.setSleepingTicksLeft(component.getSleepingTicksLeft() - timeDiff);
+                component.setTiredness(component.getTiredness() - component.getTirednessLossPerTickSleeping().getValue() * timeDiff);
                 if(animationComponent != null && !animationComponent.isChannelActive(SLEEPING_CHANNEL)) {
                     animationComponent.playAnimation((ComponentAccess) this.entities[i], new AnimationLayer.AnimationEntry(component.getSleepingAnimation()).withHold(true), SLEEPING_CHANNEL);
                 }
@@ -46,7 +53,7 @@ public class SleepingSystem implements EntitySystem {
                     this.eyesClosedComponents[i].blink(5);
                 }
             } else {
-                component.setTiredness(component.getTiredness() + 1);
+                component.setTiredness(component.getTiredness() + timeDiff);
                 if(animationComponent != null && animationComponent.isChannelActive(SLEEPING_CHANNEL)) {
                     animationComponent.stopAnimation(this.entities[i], SLEEPING_CHANNEL);
                 }
@@ -57,5 +64,6 @@ public class SleepingSystem implements EntitySystem {
                 }
             }
         }
+        this.previousWorldTime = world.getWorldTime();
     }
 }

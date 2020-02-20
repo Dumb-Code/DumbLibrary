@@ -5,8 +5,10 @@ import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.network.S2SyncComponent;
 import net.dumbcode.dumblibrary.server.registry.DumbRegistries;
+import net.dumbcode.dumblibrary.server.utils.TaskScheduler;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.HttpUtil;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.util.Constants;
@@ -19,7 +21,6 @@ public abstract class EntityComponent {
     protected EntityComponentType type;
     @Nullable private SaveableEntityStorage storage;
     @Nullable private String storageID;
-
 
     public NBTTagCompound serialize(NBTTagCompound compound) {
         if(this.storage != null) {
@@ -71,16 +72,13 @@ public abstract class EntityComponent {
     }
 
     public void syncToClient() {
-        this.syncer.run();
+        TaskScheduler.INSTANCE.addTask(() -> this.syncer.run(), 3);
     }
 
     public void setResync(ComponentAccess access) {
         this.syncer = () -> {
             if(access instanceof Entity && !((Entity) access).world.isRemote) {
-                //schedule, as the client may not be setup yet. New thread to have it scheduled next tick
-                new Thread(() -> ((WorldServer)((Entity) access).world).addScheduledTask(() ->
-                    DumbLibrary.NETWORK.sendToDimension(new S2SyncComponent(((Entity) access).getEntityId(), this.type, this), ((Entity) access).world.provider.getDimension())
-                )).start();
+                DumbLibrary.NETWORK.sendToDimension(new S2SyncComponent(((Entity) access).getEntityId(), this.type, this), ((Entity) access).world.provider.getDimension());
             }
         };
     }

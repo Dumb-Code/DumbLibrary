@@ -21,35 +21,26 @@ public class SleepingComponent extends EntityComponent {
 
     private Animation sleepingAnimation;
 
-    private double tiredness; //2^(x / k) - 1. x = tiredness, k = tireness it take to double change of being asleep
-    private final ModifiableField tirednessLossPerTickSleeping = new ModifiableField(); //rename var?
+    private final ModifiableField sleepTime = new ModifiableField();
+    private final ModifiableField wakeupTime = new ModifiableField();
 
-    // The lower this is the bigger chance that the dino goes to sleep
-    private final ModifiableField tirednessChanceConstant = new ModifiableField(); //The amount of tiredness it takes to double the chance of being to sleep.
-
-    private int sleepingTicksLeft;
-
-    public double calculateChanceToSleep() {
-        return (Math.pow(2D, this.tiredness / this.tirednessChanceConstant.getValue()) - 1) / 10000F;
-    }
+    private boolean isSleeping;
 
     @Override
     public NBTTagCompound serialize(NBTTagCompound compound) {
         compound.setString("animation", Objects.requireNonNull(this.sleepingAnimation.getRegistryName()).toString());
-        compound.setDouble("tiredness", this.tiredness);
-        compound.setTag("tiredness_loss_per_tick_sleeping", this.tirednessLossPerTickSleeping.writeToNBT());
-        compound.setTag("tiredness_chance_constant", this.tirednessChanceConstant.writeToNBT());
-        compound.setInteger("sleeping_ticks_left", this.sleepingTicksLeft);
+        compound.setTag("sleep_time", this.sleepTime.writeToNBT());
+        compound.setTag("wakeup_time", this.wakeupTime.writeToNBT());
+        compound.setBoolean("is_sleeping", this.isSleeping);
         return super.serialize(compound);
     }
 
     @Override
     public void deserialize(NBTTagCompound compound) {
         this.sleepingAnimation = DumbRegistries.ANIMATION_REGISTRY.getValue(new ResourceLocation(compound.getString("animation")));
-        this.tiredness = compound.getDouble("tiredness");
-        this.tirednessLossPerTickSleeping.readFromNBT(compound.getCompoundTag("tiredness_loss_per_tick_sleeping"));
-        this.tirednessChanceConstant.readFromNBT(compound.getCompoundTag("tiredness_chance_constant"));
-        this.sleepingTicksLeft = compound.getInteger("sleeping_ticks_left");
+        this.sleepTime.readFromNBT(compound.getCompoundTag("sleep_time"));
+        this.wakeupTime.readFromNBT(compound.getCompoundTag("wakeup_time"));
+        this.isSleeping = compound.getBoolean("is_sleeping");
         super.deserialize(compound);
     }
 
@@ -59,29 +50,29 @@ public class SleepingComponent extends EntityComponent {
     public static class Storage implements EntityComponentStorage<SleepingComponent> {
 
         private ResourceLocation sleepingAnimation;
-        private double tirednessLossPerTickSleeping;
-        private double tirednessChanceConstant; //The amount of tiredness it takes to double the chance of being to sleep
+        private double sleepTime;
+        private double wakeupTime;
 
         @Override
         public SleepingComponent constructTo(SleepingComponent component) {
             component.sleepingAnimation = DumbRegistries.ANIMATION_REGISTRY.getValue(this.sleepingAnimation);
-            component.tirednessLossPerTickSleeping.setBaseValue(this.tirednessLossPerTickSleeping);
-            component.tirednessChanceConstant.setBaseValue(this.tirednessChanceConstant);
+            component.sleepTime.setBaseValue(this.sleepTime);
+            component.wakeupTime.setBaseValue(this.wakeupTime);
             return component;
         }
 
         @Override
         public void writeJson(JsonObject json) {
             json.addProperty("animation", this.sleepingAnimation.toString());
-            json.addProperty("tiredness_loss_per_tick_sleeping", this.tirednessLossPerTickSleeping);
-            json.addProperty("tiredness_chance_constant", this.tirednessChanceConstant);
+            json.addProperty("sleep_time", this.sleepTime);
+            json.addProperty("wakeup_time", this.wakeupTime);
         }
 
         @Override
         public void readJson(JsonObject json) {
             this.sleepingAnimation = new ResourceLocation(JsonUtils.getString(json, "animation"));
-            this.tirednessLossPerTickSleeping = JsonUtils.getFloat(json, "tiredness_loss_per_tick_sleeping");
-            this.tirednessChanceConstant = JsonUtils.getFloat(json, "tiredness_chance_constant");
+            this.sleepTime = JsonUtils.getFloat(json, "sleep_time");
+            this.wakeupTime = JsonUtils.getFloat(json, "wakeup_time");
         }
     }
 

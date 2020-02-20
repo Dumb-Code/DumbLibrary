@@ -16,16 +16,12 @@ public class SleepingSystem implements EntitySystem {
 
     public static final int SLEEPING_CHANNEL = 62;
 
-    private long previousWorldTime;
+    private static final int RUNUPTO_TICKS = 1000;
 
     private Entity[] entities = new Entity[0];
     private SleepingComponent[] sleepingComponents = new SleepingComponent[0];
     private EyesClosedComponent[] eyesClosedComponents = new EyesClosedComponent[0];
     private AnimationComponent[] animationComponents = new AnimationComponent[0];
-
-    public SleepingSystem(long worldTime) {
-        this.previousWorldTime = worldTime;
-    }
 
     @Override
     public void populateEntityBuffers(EntityManager manager) {
@@ -38,32 +34,33 @@ public class SleepingSystem implements EntitySystem {
 
     @Override
     public void update(World world) {
-        int timeDiff = (int) Math.max(world.getWorldTime() - this.previousWorldTime, 1); //the `/time` command can reset world time, so worldTime - previousWorldTime would be negative. We can't have this.
+        long time = world.getWorldTime() % 24000;
         for (int i = 0; i < this.entities.length; i++) {
             SleepingComponent component = this.sleepingComponents[i];
             AnimationComponent animationComponent = this.animationComponents[i];
+            EyesClosedComponent eyesClosedComponent = this.eyesClosedComponents[i];
 
-            if (component.getSleepingTicksLeft() > 0) { //Sleeping
-                component.setSleepingTicksLeft(component.getSleepingTicksLeft() - timeDiff);
-                component.setTiredness(component.getTiredness() - component.getTirednessLossPerTickSleeping().getValue() * timeDiff);
+            //https://www.desmos.com/calculator/i7bpf2hi5w
+
+            boolean shouldWake = time > component.getWakeupTime().getValue() && time < component.getSleepTime().getValue();
+            if(component.isSleeping()) {
+                 if(shouldWake) {
+                     component.setSleeping(false);
+                 }
+                 if(eyesClosedComponent != null && eyesClosedComponent.getBlinkTicksLeft() <= 1) {
+                     eyesClosedComponent.blink(20);
+                 }
                 if(animationComponent != null && !animationComponent.isChannelActive(SLEEPING_CHANNEL)) {
                     animationComponent.playAnimation((ComponentAccess) this.entities[i], new AnimationLayer.AnimationEntry(component.getSleepingAnimation()).withHold(true), SLEEPING_CHANNEL);
                 }
-                if (this.eyesClosedComponents[i] != null) {
-                    this.eyesClosedComponents[i].blink(5);
-                }
             } else {
-                component.setTiredness(component.getTiredness() + timeDiff);
+                if(!shouldWake) {
+                    component.setSleeping(true);
+                }
                 if(animationComponent != null && animationComponent.isChannelActive(SLEEPING_CHANNEL)) {
                     animationComponent.stopAnimation(this.entities[i], SLEEPING_CHANNEL);
                 }
-
-                if(this.entities[i].world.rand.nextFloat() < component.calculateChanceToSleep()) {
-                    //To go sleep
-                    component.setSleepingTicksLeft((int) (component.getTiredness() / component.getTirednessLossPerTickSleeping().getValue()));
-                }
             }
         }
-        this.previousWorldTime = world.getWorldTime();
     }
 }

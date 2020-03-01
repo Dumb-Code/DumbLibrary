@@ -142,7 +142,7 @@ public class TextureUtils {
                 (int) (outB * 255);
     }
 
-    private static BufferedImage resize(BufferedImage img, int width, int height) {
+    public static BufferedImage resize(BufferedImage img, int width, int height) {
         if(img.getWidth() != width || img.getHeight() != height) {
             Image tmp = img.getScaledInstance(width, height, Image.SCALE_DEFAULT);
             BufferedImage resized = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);

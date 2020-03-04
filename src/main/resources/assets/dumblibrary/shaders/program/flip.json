@@ -1,0 +1,7 @@
+{
+  "vertex": "dumblibrary:flip",
+  "fragment": "dumblibrary:flip",
+  "samplers": [
+    { "name": "sampler" }
+  ]
+}

@@ -20,6 +20,7 @@ public class GlslSandboxShader {
     public static final String SHADER_NAME = "glsl_shader";
 
     private static final Pattern PATTERN = Pattern.compile("https?://glslsandbox\\.com/e#(\\d+.?\\d*)");
+
     private static final VertexFormat RENDER_FORMAT = new VertexFormat().addElement(DefaultVertexFormats.POSITION_3F);
     private static ShaderManager FLIP_SHADER;
 
@@ -94,6 +95,11 @@ public class GlslSandboxShader {
             FLIP_SHADER.endShader();
         }
         this.framebuffer.unbindFramebufferTexture();
+    }
+
+    public void dispose() {
+        this.shaderManager.deleteShader();
+        this.framebuffer.deleteFramebuffer();
     }
 
     public static GlslSandboxShader createShader(String url) {

@@ -2,7 +2,6 @@ package net.dumbcode.dumblibrary.client.shader;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import lombok.SneakyThrows;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.IResource;
@@ -22,11 +21,17 @@ import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class DummyGLSLResourceManager implements IResourceManager {
 
     private static final String DUMMY_PACK_NAME = "dumblibrary_glsl_dummy_pack";
     private static final String DUMMY_VERTEX_SHADER = "attribute vec3 position; attribute vec2 surfacePosAttrib; varying vec2 surfacePosition; void main() { surfacePosition = surfacePosAttrib; gl_Position = vec4( position, 1.0 ); }";
+
+    private static final Pattern PRECISION_PATTERN = Pattern.compile("(precision .+ .+;)");
 
     private static final ResourceLocation FAKE_JSON_LOCATION = new ResourceLocation(DumbLibrary.MODID, "shaders/glslshader.json");
 
@@ -67,6 +72,19 @@ public class DummyGLSLResourceManager implements IResourceManager {
             JsonParser parser = new JsonParser();
             JsonObject root = parser.parse(new InputStreamReader((InputStream) connection.getContent())).getAsJsonObject();
             String code = JsonUtils.getString(root, "code");
+
+            //Ensure the precision stuff has a ifdef GL_ES statement
+            Matcher matcher = PRECISION_PATTERN.matcher(code);
+            StringBuilder joined = new StringBuilder();
+            while (matcher.find()) {
+                joined.append(matcher.group(0));
+                joined.append('\n');
+            }
+
+            if(joined.length() > 0) {
+                code = "#ifdef GL_ES\n" + joined + "#endif\n" + matcher.replaceAll("").replaceAll("#ifdef GL_ES\\s+#endif", "");
+            }
+
             return new SimpleResource(DUMMY_PACK_NAME, location, new ByteArrayInputStream(code.getBytes()), null, null);
         }
         throw new IllegalStateException("Unable to get " + location + " on dummb glsl resource manager");

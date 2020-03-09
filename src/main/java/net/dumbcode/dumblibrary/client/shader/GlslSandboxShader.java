@@ -54,7 +54,7 @@ public class GlslSandboxShader {
         this.shaderManager.getShaderUniformOrDefault("time").set((System.currentTimeMillis() - this.timeStarted) / 1000F);
         this.shaderManager.getShaderUniformOrDefault("mouse").set((float)relativeMouseX / this.screenWidth, 1F - (float)relativeMouseY / this.screenHeight);
         this.shaderManager.getShaderUniformOrDefault("resolution").set(this.screenWidth, this.screenHeight);
-        this.shaderManager.getShaderUniformOrDefault("surfaceSize").set(1, (float) this.screenWidth / this.screenHeight);
+        this.shaderManager.getShaderUniformOrDefault("surfaceSize").set((float) this.screenWidth / this.screenHeight, 1);
 
         this.shaderManager.useShader();
         this.framebuffer.bindFramebuffer(true);

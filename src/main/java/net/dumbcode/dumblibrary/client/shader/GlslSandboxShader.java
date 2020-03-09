@@ -1,8 +1,10 @@
 package net.dumbcode.dumblibrary.client.shader;
 
+import lombok.Getter;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.renderer.vertex.VertexFormat;
@@ -15,6 +17,7 @@ import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@Getter
 public class GlslSandboxShader {
 
     public static final String SHADER_NAME = "glsl_shader";
@@ -32,7 +35,6 @@ public class GlslSandboxShader {
     private int screenWidth = 1;
     private int screenHeight = 1;
 
-
     private GlslSandboxShader(IResourceManager resourceManager, String programName) throws IOException {
         this.shaderManager = new ShaderManager(resourceManager, programName);
         this.framebuffer = new Framebuffer(1, 2, false);
@@ -45,18 +47,20 @@ public class GlslSandboxShader {
         this.framebuffer.createBindFramebuffer(screenWidth, screenHeight);
     }
 
-
     public void render(int relativeMouseX, int relativeMouseY) {
         if(this.timeStarted == -1) {
             this.timeStarted = System.currentTimeMillis();
         }
         this.shaderManager.getShaderUniformOrDefault("time").set((System.currentTimeMillis() - this.timeStarted) / 1000F);
-        this.shaderManager.getShaderUniformOrDefault("mouse").set((float)relativeMouseX / this.screenWidth, (float)relativeMouseY / this.screenHeight);
+        this.shaderManager.getShaderUniformOrDefault("mouse").set((float)relativeMouseX / this.screenWidth, 1F - (float)relativeMouseY / this.screenHeight);
         this.shaderManager.getShaderUniformOrDefault("resolution").set(this.screenWidth, this.screenHeight);
         this.shaderManager.getShaderUniformOrDefault("surfaceSize").set(1, (float) this.screenWidth / this.screenHeight);
 
         this.shaderManager.useShader();
         this.framebuffer.bindFramebuffer(true);
+
+        GlStateManager.clearColor(0, 0, 0, 0);
+        GlStateManager.clear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 
         BufferBuilder buffer = Tessellator.getInstance().getBuffer();
 

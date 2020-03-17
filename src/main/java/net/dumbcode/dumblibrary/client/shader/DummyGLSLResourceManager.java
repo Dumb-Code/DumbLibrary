@@ -1,8 +1,12 @@
 package net.dumbcode.dumblibrary.client.shader;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
 import net.dumbcode.dumblibrary.DumbLibrary;
+import net.dumbcode.dumblibrary.server.utils.IOCollectors;
+import net.dumbcode.dumblibrary.server.utils.StreamUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.IResource;
 import net.minecraft.client.resources.IResourceManager;
@@ -20,20 +24,21 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiPredicate;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class DummyGLSLResourceManager implements IResourceManager {
 
     private static final String DUMMY_PACK_NAME = "dumblibrary_glsl_dummy_pack";
-    private static final String DUMMY_VERTEX_SHADER = "attribute vec3 position; attribute vec2 surfacePosAttrib; varying vec2 surfacePosition; void main() { surfacePosition = surfacePosAttrib; gl_Position = vec4( position, 1.0 ); }";
 
     private static final Pattern PRECISION_PATTERN = Pattern.compile("(precision .+ .+;)");
 
-    private static final ResourceLocation FAKE_JSON_LOCATION = new ResourceLocation(DumbLibrary.MODID, "shaders/glslshader.json");
+    private static final ResourceLocation FAKE_GLSL_FRAGMENT = new ResourceLocation(DumbLibrary.MODID, "shaders/glslshader.fsh");
 
     private final ResourceLocation jsonLocation;
     private final ResourceLocation fragmentLocation;
@@ -42,6 +47,8 @@ public class DummyGLSLResourceManager implements IResourceManager {
     private final String shaderName;
 
     private final URL shaderApiUrl;
+
+    private String codeCache;
 
     public DummyGLSLResourceManager(String shaderName, String shaderApiUrl) throws MalformedURLException {
         this.jsonLocation = new ResourceLocation(DumbLibrary.MODID, "shaders/program/" + shaderName + ".json");
@@ -61,11 +68,21 @@ public class DummyGLSLResourceManager implements IResourceManager {
     @Override
     public IResource getResource(ResourceLocation location) throws IOException {
         if(location.equals(this.jsonLocation)) {
-            String string = IOUtils.toString(Minecraft.getMinecraft().getResourceManager().getResource(FAKE_JSON_LOCATION).getInputStream(), StandardCharsets.UTF_8);
+            String code = this.getOrDownloadCode();
+            //The following is to only include uniforms that are actually used by the shader. Declaring it as `uniform float x` doesn't count.
+            //Note, yes this does mean that commands aren't excluded, but considering this is only to prevent minor log spam it's okay
+            String string = this.createShaderJson((name, type) -> Pattern.compile("(?<!uniform " + type + " )" + name).matcher(code).find());
             return new SimpleResource(DUMMY_PACK_NAME, location, new ByteArrayInputStream(string.replaceAll("\\Q$$shadername\\E", this.shaderName).getBytes()), null, null);
         } else if (location.equals(this.vertexLocation)) {
-            return new SimpleResource(DUMMY_PACK_NAME, location, new ByteArrayInputStream(DUMMY_VERTEX_SHADER.getBytes()), null, null);
+            return Minecraft.getMinecraft().getResourceManager().getResource(FAKE_GLSL_FRAGMENT);
         } else if(location.equals(this.fragmentLocation)) {
+            return new SimpleResource(DUMMY_PACK_NAME, location, new ByteArrayInputStream(this.getOrDownloadCode().getBytes()), null, null);
+        }
+        throw new IllegalStateException("Unable to get " + location + " on dummb glsl resource manager");
+    }
+
+    private String getOrDownloadCode() throws IOException {
+        if(this.codeCache == null) {
             URLConnection connection = this.shaderApiUrl.openConnection();
             connection.connect();
 
@@ -84,10 +101,53 @@ public class DummyGLSLResourceManager implements IResourceManager {
             if(joined.length() > 0) {
                 code = "#ifdef GL_ES\n" + joined + "#endif\n" + matcher.replaceAll("").replaceAll("#ifdef GL_ES\\s+#endif", "");
             }
-
-            return new SimpleResource(DUMMY_PACK_NAME, location, new ByteArrayInputStream(code.getBytes()), null, null);
+            this.codeCache = code;
         }
-        throw new IllegalStateException("Unable to get " + location + " on dummb glsl resource manager");
+        return this.codeCache;
+    }
+
+    private String createShaderJson(BiPredicate<String, String> uniformPredicate) {
+        JsonObject object = new JsonObject();
+
+        object.addProperty("vertex", "dumblibrary:" + this.shaderName);
+        object.addProperty("fragment", "dumblibrary:" + this.shaderName);
+
+        JsonArray attributes = new JsonArray();
+        attributes.add("position");
+        object.add("attributes", attributes);
+
+        JsonArray uniforms = new JsonArray();
+
+        this.createUniform("time", 1, uniformPredicate, uniforms);
+        this.createUniform("mouse", 2, uniformPredicate, uniforms);
+        this.createUniform("resolution", 2, uniformPredicate, uniforms);
+        this.createUniform("backbuffer", 1, uniformPredicate, uniforms);
+        this.createUniform("surfaceSize", 2, (s, s2) -> true, uniforms);
+
+        object.add("uniforms", uniforms);
+
+        return object.toString();
+    }
+
+    private void createUniform(String uniform, int count, BiPredicate<String, String> uniformPredicate, JsonArray uniforms) {
+        if(!uniformPredicate.test(uniform, count == 1 ? "float" : "vec2")) {
+            return;
+        }
+
+        JsonObject json = new JsonObject();
+
+        json.addProperty("name", uniform);
+        json.addProperty("type", "float");
+        json.addProperty("count", count);
+
+        JsonArray arr = new JsonArray();
+        for (int i = 0; i < count; i++) {
+            arr.add(0);
+        }
+
+        json.add("values", arr);
+
+        uniforms.add(json);
     }
 
     @Override

@@ -52,6 +52,10 @@ public interface RenderLocationComponent {
             return this;
         }
 
+        public boolean removeFolder(float index) {
+            return this.folderNames.removeIf(i -> i.getIndex() == index);
+        }
+
         public ResourceLocation getLocation() {
             String joinedFolder = String.join("/", IndexedObject.sortIndex(this.folderNames)) + "/";
             String joinedFile = String.join("_", IndexedObject.sortIndex(this.fileNames));

@@ -117,6 +117,10 @@ public class EntityComponentAttacher {
         return attacher;
     }
 
+    public ConstructConfiguration emptyConfiguration() {
+        return new ConstructConfiguration();
+    }
+
     @Wither
     public class ConstructConfiguration {
         private final boolean defaultTypes;
@@ -133,15 +137,15 @@ public class EntityComponentAttacher {
             this.removedTypes = removedTypes;
         }
 
-        public ConstructConfiguration withType(EntityComponentType type) {
+        public ConstructConfiguration withType(EntityComponentType... types) {
             List<EntityComponentType> temp = Lists.newArrayList(this.addedTypes);
-            temp.add(type);
+            Collections.addAll(temp, types);
             return new ConstructConfiguration(this.defaultTypes, Collections.unmodifiableList(temp), this.removedTypes);
         }
 
-        public ConstructConfiguration withoutType(EntityComponentType type) {
+        public ConstructConfiguration withoutType(EntityComponentType... types) {
             List<EntityComponentType> temp = Lists.newArrayList(this.removedTypes);
-            temp.remove(type);
+            Collections.addAll(temp, types);
             return new ConstructConfiguration(this.defaultTypes, this.addedTypes, Collections.unmodifiableList(temp));
         }
 

@@ -26,7 +26,6 @@ public interface EntityComponentType<T extends EntityComponent, S extends Entity
     @Nonnull
     Class<? extends T> getType();
 
-    @Nonnull
     boolean defaultAttach();
 
     @Override

@@ -7,10 +7,7 @@ import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentTypes;
 import net.dumbcode.dumblibrary.server.ecs.component.RegisterStoragesEvent;
 import net.dumbcode.dumblibrary.server.ecs.item.ItemCompoundAccess;
 import net.dumbcode.dumblibrary.server.ecs.item.components.ItemRenderModelComponent;
-import net.dumbcode.dumblibrary.server.network.S0SyncAnimation;
-import net.dumbcode.dumblibrary.server.network.S1PlayItemCrackParticle;
-import net.dumbcode.dumblibrary.server.network.S2SyncComponent;
-import net.dumbcode.dumblibrary.server.network.S3StopAnimation;
+import net.dumbcode.dumblibrary.server.network.*;
 import net.dumbcode.dumblibrary.server.registry.DumbRegistries;
 import net.dumbcode.dumblibrary.server.registry.RegisterGeneticTypes;
 import net.dumbcode.dumblibrary.server.utils.InjectedUtils;
@@ -71,6 +68,15 @@ public class DumbLibrary {
         NETWORK.registerMessage(new S1PlayItemCrackParticle.Handler(), S1PlayItemCrackParticle.class, 1, Side.CLIENT);
         NETWORK.registerMessage(new S2SyncComponent.Handler(), S2SyncComponent.class, 2, Side.CLIENT);
         NETWORK.registerMessage(new S3StopAnimation.Handler(), S3StopAnimation.class, 3, Side.CLIENT);
+
+        NETWORK.registerMessage(new C4MoveSelectedSkeletalPart.Handler(), C4MoveSelectedSkeletalPart.class, 4, Side.SERVER);
+        NETWORK.registerMessage(new S5UpdateSkeletalBuilder.Handler(), S5UpdateSkeletalBuilder.class, 5, Side.CLIENT);
+        NETWORK.registerMessage(new C6SkeletalMovement.Handler(), C6SkeletalMovement.class, 6, Side.SERVER);
+        NETWORK.registerMessage(new S7HistoryRecord.Handler(), S7HistoryRecord.class, 7, Side.CLIENT);
+        NETWORK.registerMessage(new C8MoveInHistory.Handler(), C8MoveInHistory.class, 8, Side.SERVER);
+        NETWORK.registerMessage(new S9UpdateHistoryIndex.Handler(), S9UpdateHistoryIndex.class, 9, Side.CLIENT);
+        NETWORK.registerMessage(new S11FullPoseChange.Handler(), S11FullPoseChange.class, 11, Side.CLIENT);
+        NETWORK.registerMessage(new C12FullPoseChange.Handler(), C12FullPoseChange.class, 12, Side.SERVER);
 
         SidedExecutor.runClient(() -> () -> ModelLoaderRegistry.registerLoader(TransformTypeModelLoader.INSTANCE));
     }

@@ -1,10 +1,8 @@
 package net.dumbcode.dumblibrary.server.ecs;
 
 
-import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
-import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
-import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentType;
-import net.dumbcode.dumblibrary.server.ecs.component.FinalizableComponent;
+import com.google.common.collect.Lists;
+import net.dumbcode.dumblibrary.server.ecs.component.*;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -95,6 +93,11 @@ public interface ComponentAccess {
     default void finalizeComponents() {
         for (EntityComponent component : this.getAllComponents()) {
             component.setResync(this);
+        }
+        for (EntityComponent component : Lists.newArrayList(this.getAllComponents())) {
+            if(component instanceof FinalizableAdditiveComponent) {
+                ((FinalizableAdditiveComponent) component).finalizeAdditiveComponent(this);
+            }
         }
         for (EntityComponent component : this.getAllComponents()) {
             if (component instanceof FinalizableComponent) {

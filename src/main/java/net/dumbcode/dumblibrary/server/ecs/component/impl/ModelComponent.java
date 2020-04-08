@@ -20,7 +20,6 @@ import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLocationC
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLocationComponent.ConfigurableLocation;
 import net.dumbcode.dumblibrary.server.utils.SidedExecutor;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.entity.RenderLivingBase;
 import net.minecraft.client.renderer.entity.layers.LayerRenderer;
@@ -104,7 +103,7 @@ public class ModelComponent extends EntityComponent implements RenderCallbackCom
             }
         }
 
-        if(entity instanceof Entity && ((Entity) entity).world.isRemote) {
+        if(entity instanceof Entity && ((Entity) entity).world != null && ((Entity) entity).world.isRemote) {
             SidedExecutor.runClient(() -> () -> {
                 if(this.renderer == null) {
                     this.renderer = new Render();

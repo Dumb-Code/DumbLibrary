@@ -1,13 +1,14 @@
 package net.dumbcode.dumblibrary.server.tabula;
 
 import com.google.gson.*;
+import net.dumbcode.dumblibrary.server.utils.IOCollectors;
 import net.minecraft.util.JsonUtils;
 
 import java.lang.reflect.Type;
 
 import static net.minecraft.util.JsonUtils.*;
 
-public enum TabulaJsonHandler implements JsonDeserializer<TabulaModelInformation> {
+public enum TabulaJsonHandler implements JsonDeserializer<TabulaModelInformation>, JsonSerializer<TabulaModelInformation> {
     INSTANCE;
 
     public static final Gson GSON = new GsonBuilder().registerTypeAdapter(TabulaModelInformation.class, INSTANCE).create();
@@ -103,4 +104,86 @@ public enum TabulaJsonHandler implements JsonDeserializer<TabulaModelInformation
         return afloat;
     }
 
+    @Override
+    public JsonElement serialize(TabulaModelInformation src, Type typeOfSrc, JsonSerializationContext context) {
+        JsonObject obj = new JsonObject();
+
+        obj.addProperty("modelName", src.getModelName());
+        obj.addProperty("authorName", src.getAuthorName());
+        obj.addProperty("projVersion", src.getProjectVersion());
+        obj.add("metadata", toArr(src.getMetadata()));
+        obj.addProperty("textureWidth", src.getTexWidth());
+        obj.addProperty("textureHeight", src.getTexHeight());
+        obj.add("scale", toArr(src.getScale()));
+        obj.addProperty("cubeCount", src.getCubeCount());
+
+        JsonArray groups = new JsonArray();
+        obj.add("cubeGroups", groups);
+
+        for (TabulaModelInformation.CubeGroup group : src.getGroups()) {
+            if(group.getName().equals("@@ROOT@@") && group.getIdentifier().equals("~~root~~")) {
+                obj.add("cubes", group.getCubeList().stream().map(this::jsonifyCube).collect(IOCollectors.toJsonArray()));
+            } else {
+                groups.add(this.jsonifyGroup(group));
+            }
+        }
+
+        return obj;
+    }
+
+    private JsonObject jsonifyCube(TabulaModelInformation.Cube cube) {
+        JsonObject json = new JsonObject();
+
+        json.addProperty("name", cube.getName());
+        json.add("dimensions", toArr(cube.getDimension()));
+        json.add("position", toArr(cube.getRotationPoint()));
+        json.add("offset", toArr(cube.getOffset()));
+        json.add("rotation", toArr(cube.getRotation()));
+        json.add("scale", toArr(cube.getScale()));
+        json.add("txOffset", toArr(cube.getTexOffset()));
+        json.addProperty("txMirror", cube.isTextureMirror());
+        json.addProperty("mcScale", cube.getMcScale());
+        json.addProperty("opacity", cube.getOpacity());
+        json.addProperty("hidden", cube.isHidden());
+        json.add("metadata", toArr(cube.getMetadata()));
+        if(cube.getParent() != null) {
+            json.addProperty("parentIdentifier", cube.getParentIdentifier());
+        }
+        json.addProperty("identifier", cube.getIdentifier());
+
+        json.add("children", cube.getChildren().stream().map(this::jsonifyCube).collect(IOCollectors.toJsonArray()));
+
+        return json;
+    }
+
+    private JsonObject jsonifyGroup(TabulaModelInformation.CubeGroup group) {
+        JsonObject json = new JsonObject();
+
+        json.addProperty("name", group.getName());
+        json.addProperty("txMirror", group.isTextureMirror());
+        json.addProperty("hidden", group.isHidden());
+        json.add("metadata", toArr(group.getMetadata()));
+        json.addProperty("identifier", group.getIdentifier());
+
+        json.add("cubes", group.getCubeList().stream().map(this::jsonifyCube).collect(IOCollectors.toJsonArray()));
+        json.add("cubeGroups", group.getChildGroups().stream().map(this::jsonifyGroup).collect(IOCollectors.toJsonArray()));
+
+        return json;
+    }
+
+    private JsonArray toArr(float... arr) {
+        JsonArray array = new JsonArray();
+        for (float v : arr) {
+            array.add(v);
+        }
+        return array;
+    }
+
+    private JsonArray toArr(String... arr) {
+        JsonArray array = new JsonArray();
+        for (String v : arr) {
+            array.add(v);
+        }
+        return array;
+    }
 }

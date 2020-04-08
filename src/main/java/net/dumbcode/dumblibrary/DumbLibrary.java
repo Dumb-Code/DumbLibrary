@@ -12,6 +12,7 @@ import net.dumbcode.dumblibrary.server.registry.DumbRegistries;
 import net.dumbcode.dumblibrary.server.registry.RegisterGeneticTypes;
 import net.dumbcode.dumblibrary.server.utils.InjectedUtils;
 import net.dumbcode.dumblibrary.server.utils.SidedExecutor;
+import net.dumbcode.dumblibrary.server.utils.VoidStorage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
@@ -21,6 +22,7 @@ import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
+import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
@@ -78,7 +80,14 @@ public class DumbLibrary {
         NETWORK.registerMessage(new S11FullPoseChange.Handler(), S11FullPoseChange.class, 11, Side.CLIENT);
         NETWORK.registerMessage(new C12FullPoseChange.Handler(), C12FullPoseChange.class, 12, Side.SERVER);
 
+        NETWORK.registerMessage(new B13SplitNetworkPacket.Handler(), B13SplitNetworkPacket.class, 13, Side.CLIENT);
+        NETWORK.registerMessage(new B13SplitNetworkPacket.Handler(), B13SplitNetworkPacket.class, 14, Side.SERVER);
+        NETWORK.registerMessage(new B14ReleaseCollection.Handler(), B14ReleaseCollection.class, 15, Side.CLIENT);
+        NETWORK.registerMessage(new B14ReleaseCollection.Handler(), B14ReleaseCollection.class, 16, Side.SERVER);
+
         SidedExecutor.runClient(() -> () -> ModelLoaderRegistry.registerLoader(TransformTypeModelLoader.INSTANCE));
+
+        CapabilityManager.INSTANCE.register(EntityManager.class, new VoidStorage<>(), EntityManager.Impl::new);
     }
 
     @Mod.EventHandler

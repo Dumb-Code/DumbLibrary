@@ -14,18 +14,18 @@ import net.dumbcode.dumblibrary.server.tabula.TabulaModelInformation;
 import net.dumbcode.dumblibrary.server.utils.StreamUtils;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.Vec3d;
+import org.apache.commons.io.IOUtils;
 
 import javax.annotation.Nullable;
 import javax.vecmath.*;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 /**
  * Utility class, mainly used to get Tabula models
@@ -79,12 +79,17 @@ public class TabulaUtils {
             location = new ResourceLocation(location.getNamespace(), location.getPath() + ".tbl");
         }
         try {
-            @Cleanup InputStreamReader reader = StreamUtils.openStream(location, stream -> new InputStreamReader(getModelJsonStream(stream)));
-            return TabulaJsonHandler.GSON.fromJson(reader, TabulaModelInformation.class);
+            return StreamUtils.openStream(location, TabulaUtils::getModelInformation);
         } catch (IOException e) {
             DumbLibrary.getLogger().error("Unable to load model " + location, e);
             return TabulaModelInformation.MISSING;
         }
+    }
+
+    public static TabulaModelInformation getModelInformation(InputStream stream) throws IOException {
+//        System.out.println(IOUtils.toString(getModelJsonStream(stream)));
+        @Cleanup InputStreamReader reader = new InputStreamReader(getModelJsonStream(stream));
+        return TabulaJsonHandler.GSON.fromJson(reader, TabulaModelInformation.class);
     }
 
     private static InputStream getModelJsonStream(InputStream file) throws IOException {
@@ -98,6 +103,16 @@ public class TabulaUtils {
         }
 
         throw new IOException("No model.json present");
+    }
+
+    public static void writeToStream(TabulaModelInformation model, OutputStream stream) throws IOException {
+        ZipOutputStream zip = new ZipOutputStream(stream);
+        zip.setLevel(9);
+        zip.putNextEntry(new ZipEntry("model.json"));
+        byte[] data = TabulaJsonHandler.GSON.toJson(model, TabulaModelInformation.class).getBytes();
+        zip.write(data, 0, data.length);
+        zip.closeEntry();
+        zip.close();
     }
 
     public static Vec3d getModelPosAlpha(AnimationLayer.AnimatableCube cube, float xalpha, float yalpha, float zalpha) {

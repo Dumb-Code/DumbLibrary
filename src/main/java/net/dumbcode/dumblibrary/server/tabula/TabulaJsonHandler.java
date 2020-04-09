@@ -60,7 +60,7 @@ public enum TabulaJsonHandler implements JsonDeserializer<TabulaModelInformation
                 getArr(json, "dimensions"),
                 getArr(json, "position"),
                 getArr(json, "offset"),
-                getArr(json, "rotation"),
+                getArrAngles(json, "rotation"),
                 getArr(json, "scale"),
                 getArr(json, "txOffset"),
                 getBoolean(json, "txMirror"),
@@ -104,6 +104,14 @@ public enum TabulaJsonHandler implements JsonDeserializer<TabulaModelInformation
         return afloat;
     }
 
+    private float[] getArrAngles(JsonObject json, String str) {
+        float[] arr = getArr(json, str);
+        for (int i = 0; i < arr.length; i++) {
+            arr[i] = (float) Math.toRadians(arr[i]);
+        }
+        return arr;
+    }
+
     @Override
     public JsonElement serialize(TabulaModelInformation src, Type typeOfSrc, JsonSerializationContext context) {
         JsonObject obj = new JsonObject();
@@ -138,7 +146,7 @@ public enum TabulaJsonHandler implements JsonDeserializer<TabulaModelInformation
         json.add("dimensions", toArr(cube.getDimension()));
         json.add("position", toArr(cube.getRotationPoint()));
         json.add("offset", toArr(cube.getOffset()));
-        json.add("rotation", toArr(cube.getRotation()));
+        json.add("rotation", toArrAngles(cube.getRotation()));
         json.add("scale", toArr(cube.getScale()));
         json.add("txOffset", toArr(cube.getTexOffset()));
         json.addProperty("txMirror", cube.isTextureMirror());
@@ -177,6 +185,13 @@ public enum TabulaJsonHandler implements JsonDeserializer<TabulaModelInformation
             array.add(v);
         }
         return array;
+    }
+
+    private JsonArray toArrAngles(float... arr) {
+        for (int i = 0; i < arr.length; i++) {
+            arr[i] = (float) Math.toDegrees(arr[i]);
+        }
+        return toArr(arr);
     }
 
     private JsonArray toArr(String... arr) {

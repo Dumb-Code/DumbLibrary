@@ -58,11 +58,6 @@ public class TabulaModelInformation {
                      float[] rotation, float[] scale, float[] texOffset, boolean textureMirror,
                      float mcScale, float opacity, boolean hidden, String[] metadata,
                      String parentIdentifier, String identifier) {
-
-        rotation[0] = (float) Math.toRadians(rotation[0]);
-        rotation[1] = (float) Math.toRadians(rotation[1]);
-        rotation[2] = (float) Math.toRadians(rotation[2]);
-
         return new Cube(name, dimensions, postion, offset, rotation, scale, texOffset, textureMirror, mcScale, opacity, hidden, metadata, parentIdentifier, identifier);
     }
 

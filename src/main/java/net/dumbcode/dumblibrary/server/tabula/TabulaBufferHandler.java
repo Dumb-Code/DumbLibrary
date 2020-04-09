@@ -51,7 +51,7 @@ public enum TabulaBufferHandler {
             getArr(buf), //dimensions
             getArr(buf), //position
             getArr(buf), //offset
-            getArr(buf), //rotation
+            getArrAngles(buf), //rotation
             getArr(buf), //scale
             getArr(buf), //txOffset
             buf.readBoolean(), //txMirror
@@ -83,6 +83,14 @@ public enum TabulaBufferHandler {
         float[] aFloat = new float[buf.readByte()];
         for (int i = 0; i < aFloat.length; i++) {
             aFloat[i] = buf.readFloat();
+        }
+        return aFloat;
+    }
+
+    private float[] getArrAngles(ByteBuf buf) {
+        float[] aFloat = new float[buf.readByte()];
+        for (int i = 0; i < aFloat.length; i++) {
+            aFloat[i] = (float) Math.toRadians(buf.readFloat());
         }
         return aFloat;
     }
@@ -125,7 +133,7 @@ public enum TabulaBufferHandler {
         toArr(buf, cube.getDimension());
         toArr(buf, cube.getRotationPoint());
         toArr(buf, cube.getOffset());
-        toArr(buf, cube.getRotation());
+        toArrAngles(buf, cube.getRotation());
         toArr(buf, cube.getScale());
         toArr(buf, cube.getTexOffset());
         buf.writeBoolean(cube.isTextureMirror());
@@ -169,6 +177,13 @@ public enum TabulaBufferHandler {
         buf.writeByte(arr.length);
         for (float v : arr) {
             buf.writeFloat(v);
+        }
+    }
+
+    private void toArrAngles(ByteBuf buf, float... arr) {
+        buf.writeByte(arr.length);
+        for (float v : arr) {
+            buf.writeFloat((float) Math.toDegrees(v));
         }
     }
 

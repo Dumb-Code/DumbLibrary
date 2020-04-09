@@ -13,7 +13,7 @@ import org.lwjgl.input.Keyboard;
 import java.util.List;
 import java.util.function.Supplier;
 
-public class GuiDropdownBox<T extends GuiDropdownBox.SelectListEntry> {
+public class GuiDropdownBox<T extends SelectListEntry> {
 
     private static final Minecraft MC = Minecraft.getMinecraft();
 
@@ -105,7 +105,7 @@ public class GuiDropdownBox<T extends GuiDropdownBox.SelectListEntry> {
      */
     public void mouseClicked(int mouseX, int mouseY, int mouseButton) {
         if(this.open && this.scrollBox.isMouseOver(mouseX, mouseY, this.scrollBox.getTotalSize())) {
-            GuiDropdownBox.SelectListEntry active = this.getActive();
+            SelectListEntry active = this.getActive();
             this.scrollBox.mouseClicked(mouseX, mouseY, mouseButton);
             if(active != this.getActive()) {
                 this.open = !this.open;
@@ -185,19 +185,4 @@ public class GuiDropdownBox<T extends GuiDropdownBox.SelectListEntry> {
         return list;
     }
 
-
-    /**
-     * The entry for the list
-     */
-    public interface SelectListEntry extends GuiScrollboxEntry {
-        /**
-         * Gets the search string used for searching. <br>
-         * Searching is done by checking if this term contains the searched term.
-         * {@code selectListEntry.getSearch().contains("foo")} will mean any search terms with "foo" inside them at any point will be added to the found list
-         *
-         * @return the search term.
-         */
-        String getSearch();
-
-    }
 }

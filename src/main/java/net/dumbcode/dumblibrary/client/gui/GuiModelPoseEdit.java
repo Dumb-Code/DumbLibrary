@@ -88,8 +88,8 @@ public abstract class GuiModelPoseEdit extends GuiScreen {
     private double prevYSlider;
     private double prevZSlider;
 
-    private static final String PREFIX_KEY = DumbLibrary.MODID + ".gui.model_pose_edit.rotation_slider.prefix";
-    private static final String SUFFIX_KEY = DumbLibrary.MODID + ".gui.model_pose_edit.rotation_slider.prefix";
+    public static final String PREFIX_KEY = DumbLibrary.MODID + ".gui.model_pose_edit.rotation_slider.prefix";
+    public static final String SUFFIX_KEY = DumbLibrary.MODID + ".gui.model_pose_edit.rotation_slider.suffix";
 
     private GuiSlider xRotationSlider = new GuiSlider(5, 0, 0, 200, 20,
             new TextComponentTranslation(PREFIX_KEY, "X").getUnformattedText(),
@@ -660,9 +660,7 @@ public abstract class GuiModelPoseEdit extends GuiScreen {
     private void hidePart(TabulaModelRenderer part) {
         if(part == null)
             return;
-        part.setScaleX(0f);
-        part.setScaleY(0f);
-        part.setScaleZ(0f);
+        part.setHideButShowChildren(true);
     }
 
     /**
@@ -685,9 +683,7 @@ public abstract class GuiModelPoseEdit extends GuiScreen {
         for(ModelRenderer renderer : model.boxList) {
             if(renderer instanceof TabulaModelRenderer) {
                 TabulaModelRenderer part = (TabulaModelRenderer)renderer;
-                part.setScaleX(1f);
-                part.setScaleY(1f);
-                part.setScaleZ(1f);
+                part.setHideButShowChildren(false);
             }
         }
     }

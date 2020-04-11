@@ -45,7 +45,7 @@ public class SplitNetworkHandler {
         }
         int collectionID = getNextCollection();
         for (int i = 0; i < total; i++) {
-            byte[] outData = new byte[i+1 == total ? data.length%30000 : data.length];
+            byte[] outData = new byte[i+1 == total ? data.length%30000 : 30000];
             System.arraycopy(data, 30000*i, outData, 0, outData.length);
             messageSender.accept(DumbLibrary.NETWORK, new B13SplitNetworkPacket(packetDesc, (short) collectionID, (byte) i, (byte) total, outData));
         }

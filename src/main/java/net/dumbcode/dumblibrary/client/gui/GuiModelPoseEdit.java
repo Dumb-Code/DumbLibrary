@@ -80,9 +80,9 @@ public abstract class GuiModelPoseEdit extends GuiScreen {
     private TextComponentTranslation selectModelPartText = new TextComponentTranslation(DumbLibrary.MODID+".gui.model_pose_edit.controls.select_part");
     private TextComponentTranslation rotateCameraText = new TextComponentTranslation(DumbLibrary.MODID+".gui.model_pose_edit.controls.rotate_camera");
 
-    private DialogBox dialogBox = new DialogBox()
-            .root(new File(Minecraft.getMinecraft().gameDir, "dinosaur_poses"))
-            .extension("ProjectNublar Dinosaur Pose (.dpose)", true, "*.dpose");
+//    private DialogBox dialogBox = new DialogBox()
+//            .root(new File(Minecraft.getMinecraft().gameDir, "dinosaur_poses"))
+//            .extension("ProjectNublar Dinosaur Pose (.dpose)", true, "*.dpose");
 
     private double prevXSlider;
     private double prevYSlider;
@@ -215,9 +215,9 @@ public abstract class GuiModelPoseEdit extends GuiScreen {
 
     @Override
     public void updateScreen() {
-        if(this.dialogBox.isOpen()) {
-            return;
-        }
+//        if(this.dialogBox.isOpen()) {
+//            return;
+//        }
         super.updateScreen();
         int scrollDirection = (int) Math.signum(Mouse.getDWheel());
         final double zoomSpeed = 0.1;
@@ -260,9 +260,9 @@ public abstract class GuiModelPoseEdit extends GuiScreen {
 
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-        if(this.dialogBox.isOpen()) {
-            mouseX = mouseY = -1;
-        }
+//        if(this.dialogBox.isOpen()) {
+//            mouseX = mouseY = -1;
+//        }
 
         drawBackground(0);
 
@@ -368,9 +368,9 @@ public abstract class GuiModelPoseEdit extends GuiScreen {
     private int getColorUnderMouse() {
         int x = Mouse.getX();
         int y = Mouse.getY();
-        if(this.dialogBox.isOpen()) {
-            x = y = 0;
-        }
+//        if(this.dialogBox.isOpen()) {
+//            x = y = 0;
+//        }
         colorBuffer.rewind();
         GL11.glReadPixels(x, y, 1, 1, GL12.GL_BGRA, GL12.GL_UNSIGNED_INT_8_8_8_8_REV, colorBuffer);
         return colorBuffer.get(0);
@@ -583,9 +583,9 @@ public abstract class GuiModelPoseEdit extends GuiScreen {
 
     @Override
     public void handleKeyboardInput() throws IOException {
-        if(this.dialogBox.isOpen()) {
-            return;
-        }
+//        if(this.dialogBox.isOpen()) {
+//            return;
+//        }
         super.handleKeyboardInput();
         GameSettings settings = mc.gameSettings;
         final float cameraSpeed = 10f;
@@ -605,9 +605,9 @@ public abstract class GuiModelPoseEdit extends GuiScreen {
 
     @Override
     public void handleMouseInput() throws IOException {
-        if(this.dialogBox.isOpen()) {
-            return;
-        }
+//        if(this.dialogBox.isOpen()) {
+//            return;
+//        }
         super.handleMouseInput();
     }
 

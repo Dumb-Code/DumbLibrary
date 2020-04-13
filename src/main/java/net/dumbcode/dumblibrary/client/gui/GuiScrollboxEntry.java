@@ -29,8 +29,9 @@ public interface GuiScrollboxEntry {
      * @param relMouseY the relative mouse's y position for this entry
      * @param mouseX the actual mouse's x position
      * @param mouseY the actual mouse's y position
+     * @return true if this element should be set as the selected, false otherwise
      */
-    default void onClicked(int relMouseX, int relMouseY, int mouseX, int mouseY) {
-
+    default boolean onClicked(int relMouseX, int relMouseY, int mouseX, int mouseY) {
+        return false;
     }
 }

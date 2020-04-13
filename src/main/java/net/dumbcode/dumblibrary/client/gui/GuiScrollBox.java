@@ -280,8 +280,9 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> {
         for (int i = 0; i < entries.size(); i++) {
             int yStart = (int) (this.yPos + this.cellHeight * i - this.scroll * this.cellHeight);
             if (mouseY - this.yPos <= this.cellHeight * (i + 1) - this.scroll * this.cellHeight) {
-                entries.get(i).onClicked(mouseX - this.xPos, mouseY - yStart, mouseX, mouseY);
-                this.selectedElement = entries.get(i);
+                if (entries.get(i).onClicked(mouseX - this.xPos, mouseY - yStart, mouseX, mouseY)) {
+                    this.selectedElement = entries.get(i);
+                }
                 break;
             }
         }

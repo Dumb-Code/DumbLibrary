@@ -526,20 +526,26 @@ public abstract class GuiModelPoseEdit extends GuiScreen {
         float rotAmount = Math.signum(moment.dot(currentSelectedRing.getAxis()))*0.1f; // only get the sign to have total control on the speed (and avoid unit conversion)
 
         float previousAngle;
+        GuiSlider slider;
         switch (currentSelectedRing) {
             case X_AXIS:
                 previousAngle = selectedPart.rotateAngleX;
+                slider = xRotationSlider;
                 break;
             case Y_AXIS:
                 previousAngle = selectedPart.rotateAngleY;
+                slider = yRotationSlider;
                 break;
             case Z_AXIS:
                 previousAngle = selectedPart.rotateAngleZ;
+                slider = zRotationSlider;
                 break;
             default:
                 return;
         }
-        actualizeRotation(selectedPart, currentSelectedRing, previousAngle+rotAmount);
+        float angle = previousAngle+rotAmount;
+        slider.setValue(Math.toDegrees(angle));
+        actualizeRotation(selectedPart, currentSelectedRing, angle);
     }
 
     private Vector3f computeTranslationVector(TabulaModelRenderer part) {
@@ -572,11 +578,12 @@ public abstract class GuiModelPoseEdit extends GuiScreen {
     @Override
     protected void mouseReleased(int mouseX, int mouseY, int button) {
         super.mouseReleased(mouseX, mouseY, button);
-        if(button == 0 && movedPart) {
-            movedPart = false;
-            if(selectedPart != null)
-                actualizeEdit(selectedPart);
-        } else if(button == 0) {
+        if(button == 0) {
+            if(movedPart) {
+                movedPart = false;
+                if(selectedPart != null)
+                    actualizeEdit(selectedPart);
+            }
             currentSelectedRing = RotationAxis.NONE;
         }
     }

@@ -10,10 +10,12 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-public enum ImageBufHandler {
+public enum ImageBufHandler implements BiConsumer<ByteBuf, BufferedImage>, Function<ByteBuf, BufferedImage> {
     INSTANCE;
 
     public void serialize(ByteBuf buf, BufferedImage image) {
@@ -45,4 +47,13 @@ public enum ImageBufHandler {
         return image;
     }
 
+    @Override
+    public void accept(ByteBuf buf, BufferedImage image) {
+        this.serialize(buf, image);
+    }
+
+    @Override
+    public BufferedImage apply(ByteBuf buf) {
+        return this.deserialize(buf);
+    }
 }

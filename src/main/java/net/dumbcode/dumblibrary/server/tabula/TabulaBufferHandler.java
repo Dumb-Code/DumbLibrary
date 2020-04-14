@@ -3,10 +3,13 @@ package net.dumbcode.dumblibrary.server.tabula;
 import io.netty.buffer.ByteBuf;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 
+import java.awt.image.BufferedImage;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
 
-public enum TabulaBufferHandler {
+public enum TabulaBufferHandler implements BiConsumer<ByteBuf, TabulaModelInformation>, Function<ByteBuf, TabulaModelInformation> {
     INSTANCE;
 
     public TabulaModelInformation deserialize(ByteBuf buf) {
@@ -194,4 +197,13 @@ public enum TabulaBufferHandler {
         }
     }
 
+    @Override
+    public void accept(ByteBuf buf, TabulaModelInformation modelInformation) {
+        this.serialize(buf, modelInformation);
+    }
+
+    @Override
+    public TabulaModelInformation apply(ByteBuf buf) {
+        return this.deserialize(buf);
+    }
 }

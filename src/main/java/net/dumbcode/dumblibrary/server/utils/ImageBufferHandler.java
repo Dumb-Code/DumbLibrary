@@ -15,7 +15,7 @@ import java.util.function.Function;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-public enum ImageBufHandler implements BiConsumer<ByteBuf, BufferedImage>, Function<ByteBuf, BufferedImage> {
+public enum ImageBufferHandler implements BiConsumer<ByteBuf, BufferedImage>, Function<ByteBuf, BufferedImage> {
     INSTANCE;
 
     public void serialize(ByteBuf buf, BufferedImage image) {

@@ -4,11 +4,14 @@ import com.google.common.collect.Lists;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import net.dumbcode.dumblibrary.client.RenderUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.ChatAllowedCharacters;
 import org.lwjgl.input.Keyboard;
+import org.lwjgl.opengl.GL11;
 
 import java.util.List;
 import java.util.function.Supplier;
@@ -81,18 +84,23 @@ public class GuiDropdownBox<T extends SelectListEntry> {
      */
     private void renderMainCell(int mouseX, int mouseY) {
         //Draw the main background
-        Gui.drawRect(this.xPos, this.yPos, this.xPos + this.width, this.yPos + this.cellHeight, this.scrollBox.getInsideColor());
+        Gui.drawRect(this.xPos, this.yPos, this.xPos + this.width, this.yPos + this.cellHeight, this.scrollBox.getBorderColor());
+        Gui.drawRect(this.xPos+1, this.yPos+1, this.xPos + this.width-1, this.yPos + this.cellHeight-1, this.scrollBox.getInsideColor());
 
+        GL11.glEnable(GL11.GL_STENCIL_TEST);
+        RenderUtils.renderSquareStencil(this.xPos, this.yPos, this.xPos + this.width, this.yPos + this.cellHeight, true, 2, GL11.GL_LEQUAL);
         if (!this.search.isEmpty()) {
             MC.fontRenderer.drawString(this.search, this.xPos + 5, this.yPos + this.cellHeight / 2 - MC.fontRenderer.FONT_HEIGHT / 2, -1);
         } else if (this.getActive() != null) {
             this.getActive().draw(this.xPos, this.yPos, mouseX, mouseY);
         }
+        GL11.glDisable(GL11.GL_STENCIL_TEST);
 
         //Draw the highlighted section of the main part, if the mouse is over
         if (mouseX - this.xPos > 0 && mouseX - this.xPos <= this.width && mouseY >= this.yPos && mouseY < this.yPos + this.cellHeight) {
             Gui.drawRect(this.xPos, this.yPos, this.xPos + this.width, this.yPos + this.cellHeight, this.scrollBox.getHighlightColor());
         }
+
 
     }
 

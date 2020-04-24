@@ -21,7 +21,7 @@ public class MathUtils {
         return 1 / (1 + Math.exp(-x));
     }
 
-    public static int getWeightedResult(double sd, double mean) {
+    public static int getWeightedResult(double mean, double sd) {
         return (int) Math.abs(RANDOM.nextGaussian() * sd + mean);
     }
 

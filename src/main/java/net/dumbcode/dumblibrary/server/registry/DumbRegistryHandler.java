@@ -19,13 +19,6 @@ public class DumbRegistryHandler {
 
     @SubscribeEvent
     public static void onRegisteryRegister(RegistryEvent.NewRegistry event) {
-        new RegistryBuilder<Animation>()
-                .setType(Animation.class)
-                .setName(new ResourceLocation(DumbLibrary.MODID, "animation"))
-                .setDefaultKey(new ResourceLocation(DumbLibrary.MODID, "none"))
-                .set((key, isNetwork) -> Animation.NONE)
-                .create();
-
         new RegistryBuilder<AnimationFactor>()
                 .setType(AnimationFactor.class)
                 .setName(new ResourceLocation(DumbLibrary.MODID, "animation_factor"))
@@ -46,11 +39,6 @@ public class DumbRegistryHandler {
 
 
         MinecraftForge.EVENT_BUS.post(new RegisterComponentsEvent(registry));
-    }
-
-    @SubscribeEvent
-    public static void onAnimationRegister(RegistryEvent.Register<Animation> event) {
-        event.getRegistry().register(new Animation().setRegistryName("none"));
     }
 
     @SubscribeEvent

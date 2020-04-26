@@ -28,7 +28,7 @@ public class SleepingComponent extends EntityComponent {
 
     @Override
     public NBTTagCompound serialize(NBTTagCompound compound) {
-        compound.setString("animation", Objects.requireNonNull(this.sleepingAnimation.getRegistryName()).toString());
+        compound.setString("animation", Objects.requireNonNull(this.sleepingAnimation.getKey()).toString());
         compound.setTag("sleep_time", this.sleepTime.writeToNBT());
         compound.setTag("wakeup_time", this.wakeupTime.writeToNBT());
         compound.setBoolean("is_sleeping", this.isSleeping);
@@ -37,7 +37,7 @@ public class SleepingComponent extends EntityComponent {
 
     @Override
     public void deserialize(NBTTagCompound compound) {
-        this.sleepingAnimation = DumbRegistries.ANIMATION_REGISTRY.getValue(new ResourceLocation(compound.getString("animation")));
+        this.sleepingAnimation = new Animation(new ResourceLocation(compound.getString("animation")));
         this.sleepTime.readFromNBT(compound.getCompoundTag("sleep_time"));
         this.wakeupTime.readFromNBT(compound.getCompoundTag("wakeup_time"));
         this.isSleeping = compound.getBoolean("is_sleeping");
@@ -55,7 +55,7 @@ public class SleepingComponent extends EntityComponent {
 
         @Override
         public SleepingComponent constructTo(SleepingComponent component) {
-            component.sleepingAnimation = DumbRegistries.ANIMATION_REGISTRY.getValue(this.sleepingAnimation);
+            component.sleepingAnimation = new Animation(this.sleepingAnimation);
             component.sleepTime.setBaseValue(this.sleepTime);
             component.wakeupTime.setBaseValue(this.wakeupTime);
             return component;

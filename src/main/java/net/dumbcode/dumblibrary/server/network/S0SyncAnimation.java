@@ -1,6 +1,7 @@
 package net.dumbcode.dumblibrary.server.network;
 
 import io.netty.buffer.ByteBuf;
+import net.dumbcode.dumblibrary.server.animation.objects.AnimationEntry;
 import net.dumbcode.dumblibrary.server.animation.objects.AnimationLayer;
 import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentTypes;
@@ -13,13 +14,13 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 public class S0SyncAnimation implements IMessage {
 
     private int entityid;
-    private AnimationLayer.AnimationEntry entry;
+    private AnimationEntry entry;
     private int channel;
 
     public S0SyncAnimation() {
     }
 
-    public <E extends Entity> S0SyncAnimation(E entity, AnimationLayer.AnimationEntry entry, int channel) {
+    public <E extends Entity> S0SyncAnimation(E entity, AnimationEntry entry, int channel) {
         this.entityid = entity.getEntityId();
         this.entry = entry;
         this.channel = channel;
@@ -29,7 +30,7 @@ public class S0SyncAnimation implements IMessage {
     @Override
     public void fromBytes(ByteBuf buf) {
         this.entityid = buf.readInt();
-        this.entry = AnimationLayer.AnimationEntry.deserialize(buf);
+        this.entry = AnimationEntry.deserialize(buf);
         this.channel = buf.readInt();
     }
 

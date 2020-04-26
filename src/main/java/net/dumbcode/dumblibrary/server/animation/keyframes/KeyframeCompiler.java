@@ -6,6 +6,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.dumbcode.dumblibrary.server.animation.TabulaUtils;
+import net.dumbcode.dumblibrary.server.animation.objects.AnimatableCube;
 import net.dumbcode.dumblibrary.server.animation.objects.AnimationLayer;
 import net.dumbcode.dumblibrary.server.animation.objects.CubeReference;
 import net.dumbcode.dumblibrary.server.animation.objects.PoseData;
@@ -18,7 +19,7 @@ import java.util.Map;
 
 public class KeyframeCompiler {
 
-    private final Map<String, AnimationLayer.AnimatableCube> map = Maps.newHashMap();
+    private final Map<String, AnimatableCube> map = Maps.newHashMap();
     private final int version;
 
     private final List<Keyframe> keyframes = Lists.newArrayList();
@@ -40,7 +41,7 @@ public class KeyframeCompiler {
 
     public List<PoseData> compile() {
         //Reset everything
-        this.map.values().forEach(AnimationLayer.AnimatableCube::reset);
+        this.map.values().forEach(AnimatableCube::reset);
 
         //Load the event map and put the first reference in
         Map<Float, List<Pair<String, CubeReference>>> eventMap = Maps.newHashMap();

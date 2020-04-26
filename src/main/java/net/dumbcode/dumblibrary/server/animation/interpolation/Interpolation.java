@@ -1,6 +1,7 @@
 package net.dumbcode.dumblibrary.server.animation.interpolation;
 
 import net.dumbcode.dumblibrary.server.animation.objects.AnimationLayer;
+import net.dumbcode.dumblibrary.server.animation.objects.CubeWrapper;
 
 /**
  * An interface that allows for custom
@@ -14,7 +15,7 @@ public interface Interpolation {
      * @param currentInterp how far the animation is in the current pose.
      * @return updated values for each position (x,y,z)
      */
-    float[] getInterpPos(AnimationLayer.CubeWrapper cube, float currentInterp);
+    float[] getInterpPos(CubeWrapper cube, float currentInterp);
 
     /**
      * Interpolation for the cube rotation.
@@ -22,5 +23,5 @@ public interface Interpolation {
      * @param currentInterp how far the animation is in the current pose.
      * @return updated values for each position (x,y,z)
      */
-    float[] getInterpRot(AnimationLayer.CubeWrapper cube, float currentInterp);
+    float[] getInterpRot(CubeWrapper cube, float currentInterp);
 }

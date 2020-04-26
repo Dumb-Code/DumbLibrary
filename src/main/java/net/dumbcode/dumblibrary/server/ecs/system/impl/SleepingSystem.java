@@ -1,5 +1,6 @@
 package net.dumbcode.dumblibrary.server.ecs.system.impl;
 
+import net.dumbcode.dumblibrary.server.animation.objects.AnimationEntry;
 import net.dumbcode.dumblibrary.server.animation.objects.AnimationLayer;
 import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.ecs.EntityFamily;
@@ -51,7 +52,7 @@ public class SleepingSystem implements EntitySystem {
                      eyesClosedComponent.blink(20);
                  }
                 if(animationComponent != null && !animationComponent.isChannelActive(SLEEPING_CHANNEL)) {
-                    animationComponent.playAnimation((ComponentAccess) this.entities[i], new AnimationLayer.AnimationEntry(component.getSleepingAnimation()).withHold(true), SLEEPING_CHANNEL);
+                    animationComponent.playAnimation((ComponentAccess) this.entities[i], new AnimationEntry(component.getSleepingAnimation()).withHold(true), SLEEPING_CHANNEL);
                 }
             } else {
                 if(!shouldWake) {

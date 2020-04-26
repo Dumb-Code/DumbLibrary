@@ -5,7 +5,6 @@ import com.google.common.collect.Maps;
 import com.google.gson.*;
 import io.netty.util.internal.IntegerHolder;
 import lombok.AllArgsConstructor;
-import lombok.Cleanup;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import net.dumbcode.dumblibrary.DumbLibrary;
@@ -18,20 +17,16 @@ import net.dumbcode.dumblibrary.server.tabula.TabulaModelInformation;
 import net.dumbcode.dumblibrary.server.utils.StreamUtils;
 import net.minecraft.util.JsonUtils;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.MathHelper;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.util.Strings;
 
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 /**
@@ -58,6 +53,10 @@ public class AnimationContainer {
         this.loadAnimations(regname, baseLoc);
     }
 
+    public Function<Animation, List<PoseData>> createDataGetter() {
+        return animation -> this.animations.getOrDefault(animation, Collections.emptyList());
+    }
+
 
     /**
      * Iterate through all the all the raw animations and puts the pose data into the animation. Also loads the main model with all the animation data.
@@ -68,31 +67,17 @@ public class AnimationContainer {
      */
     private void loadAnimations(ResourceLocation regname, String baseLoc) {
         try {
-            Map<String, List<PoseData>> rawAnimations = this.loadRawAnimations(regname, baseLoc);
-
+            this.loadRawAnimations(regname, baseLoc);
 
             List<PoseData> modelResources = Lists.newArrayList();
             //Iterate through all the lists poses in the rawData
-            for (List<PoseData> poses : rawAnimations.values()) {
+            for (List<PoseData> poses : this.animations.values()) {
                 modelResources.addAll(poses);
             }
 
-            //Iterate through the list of poses defined in the json file
-            for (Map.Entry<String, List<PoseData>> entry : rawAnimations.entrySet()) {
-                //Use the animationGetter to get the Animation from the string
-                Animation animation = DumbRegistries.ANIMATION_REGISTRY.getValue(new ResourceLocation(entry.getKey()));
-                List<PoseData> poseData = Lists.newLinkedList(entry.getValue());
-
-                this.animations.put(animation, poseData);
-            }
-            //loadAnimationFromElement the animation info
-            if(!this.animations.containsKey(Animation.NONE) || this.animations.get(Animation.NONE).isEmpty()) {
-                DumbLibrary.getLogger().error("Default animation (dumblibrary:none) had no models defined for {}", regname);
-                return;
-            }
             this.loadModelInformation(regname.getNamespace(), baseLoc, modelResources);
         } catch (Exception e) {
-            DumbLibrary.getLogger().error("Unable to loadRawAnimations poses for " + regname, e);
+            DumbLibrary.getLogger().error("Unable to load animation for " + regname, e);
         }
     }
 
@@ -103,116 +88,115 @@ public class AnimationContainer {
      * @param baseLoc   The base folder, derived from regname
      * @return the map of (animation, List(Posedata))
      */
-    private Map<String, List<PoseData>> loadRawAnimations(ResourceLocation regname, String baseLoc) {
-        Map<String, List<PoseData>> map = Maps.newHashMap();
-        try {
-            //Iterate through all the animation names
-            for (ResourceLocation key : DumbRegistries.ANIMATION_REGISTRY.getKeys()) {
-                //If the registry name is the same as the animation, then ignore the namespace of the key
-                String animation = regname.getNamespace().equals(key.getNamespace()) ? key.getPath() : key.toString().replace(':', '/');
-                //Loads the animation from the directory name
-                this.loadAnimationFromDirectory(animation.toLowerCase(), key.toString(), regname, baseLoc, map);
-            }
-        } catch (IOException e) {
-            throw new IllegalArgumentException("Could not main json loadRawAnimations input stream for " + regname, e);
-        }
-        return map;
-    }
-
-    /**
-     * Loads the animation from a directory
-     * @param folder        The inner folder name to use
-     * @param animation     The animation name
-     * @param regName       The registry name for this
-     * @param baseFolder    The base folder for the directory. Derived from regName
-     * @param map           The map to add the animations too
-     * @throws IOException if an I/O error occurs
-     */
-    private void loadAnimationFromDirectory(String folder, String animation, ResourceLocation regName, String baseFolder, Map<String, List<PoseData>> map) throws IOException {
-        ResourceLocation folderLoc = new ResourceLocation(regName.getNamespace(), baseFolder + folder);
-        if(this.tryLoadAnimationFromFile(folderLoc, map.computeIfAbsent(animation, a -> Lists.newArrayList()))) {
-            return;
-        }
-        StreamUtils.getPath(folderLoc, false, root -> {
-            if(Files.notExists(root)) {
-                map.put(animation, Lists.newArrayList(new PoseData.FileResolvablePoseData(regName.getPath() + ".tbl", 10)));
-                return null;
-            }
-            int time;
-            Map<Integer, Integer> overrides = Maps.newHashMap();
-
-            Path animationFile = root.resolve("animation.json");
-            if(Files.exists(animationFile)) {
-                JsonObject parsed = new JsonParser().parse(new InputStreamReader(Files.newInputStream(animationFile))).getAsJsonObject();
-                time = JsonUtils.getInt(parsed, "base_time");
-                for (JsonElement jsonElement : JsonUtils.getJsonArray(parsed, "overrides", new JsonArray())) {
-                    JsonObject jobj = JsonUtils.getJsonObject(jsonElement, "overrides member");
-                    overrides.put(JsonUtils.getInt(jobj, "index"), JsonUtils.getInt(jobj, "time"));
+    private void loadRawAnimations(ResourceLocation regname, String baseLoc) throws IOException {
+        StreamUtils.getPath(new ResourceLocation(regname.getNamespace(), baseLoc), false, path -> {
+            for (Path p : StreamUtils.listPaths(path)) {
+                if (Files.isDirectory(p)) {
+                    boolean tblFiles = false;
+                    for (Path innerP : StreamUtils.listPaths(p)) {
+                        String name = this.lastFolder(p);
+                        if(Files.isDirectory(innerP)) {
+                            //Folder > Folder, therefore is a list of .tbl files from a foreign domain
+                            String pathName = this.lastFolder(innerP);
+                            this.animations.put(new Animation(name, pathName), this.loadAnimationFromDirectory(innerP));
+                        } else {
+                            //Folder > Files, therefore CAN be a list of dca files from a foriegn domain.
+                            if(FilenameUtils.getExtension(innerP.toString()).equals("dca")) {
+                                String pathName = FilenameUtils.getBaseName(innerP.toString());
+                                this.animations.put(new Animation(name, pathName), this.loadAnimationFromDCAFile(innerP));
+                            }
+                            if(FilenameUtils.getExtension(innerP.toString()).equals("tbl")) {
+                                tblFiles = true;
+                            }
+                        }
+                    }
+                    //If tbl files are present then load the .tbl files from the active domain
+                    if(tblFiles) {
+                        this.animations.put(new Animation(regname.getNamespace(), this.lastFolder(p)), this.loadAnimationFromDirectory(p));
+                    }
+                } else if(FilenameUtils.getExtension(p.toString()).equals("dca")) {
+                    //Load the .dca file with the active domain
+                    String pathName = FilenameUtils.getBaseName(p.toString());
+                    this.animations.put(new Animation(regname.getNamespace(), pathName), this.loadAnimationFromDCAFile(p));
                 }
-            } else {
-                time = 5;
-            }
-
-            IntegerHolder index = new IntegerHolder();
-            try (Stream<Path> stream = Files.walk(root)){
-                map.put(animation,
-                    stream
-                        .filter(path -> path.getFileName().toString().endsWith(".tbl"))
-                        .map(path -> path.getParent().getFileName() + "/" + FilenameUtils.getBaseName(path.getFileName().toString()))
-                        .filter(Strings::isNotEmpty)
-                        .sorted()
-                        .map(modelname -> new PoseData.FileResolvablePoseData(modelname, overrides.getOrDefault(index.value++, time)))
-                        .collect(Lists::newLinkedList, List::add, LinkedList::addAll)
-                );
-                List<PoseData> poseData = map.get(animation);
-                if(poseData.isEmpty()) {
-                    poseData.add(new PoseData.FileResolvablePoseData(regName.getPath() + ".tbl", 10));
-                }
-            } catch (IOException e) {
-                DumbLibrary.getLogger().warn(e);
             }
             return null;
         });
     }
 
-    private boolean tryLoadAnimationFromFile(ResourceLocation folder, List<PoseData> poseData) {
-        poseData.clear();
+    private String lastFolder(Path path) {
+        String[] split = path.toString().split("/");
+        return split[split.length - 1];
+    }
 
-        return StreamUtils.getPath(new ResourceLocation(folder.getNamespace(), folder.getPath() + ".dca"), false, path -> {
-            if(Files.notExists(path)) {
-                return false;
+    /**
+     * Loads the animation from a directory
+     * @param root the path folder root to load from
+     * @throws IOException if an I/O error occurs
+     */
+    private List<PoseData> loadAnimationFromDirectory(Path root) throws IOException {
+        int time;
+        Map<Integer, Integer> overrides = Maps.newHashMap();
+
+        Path animationFile = root.resolve("animation.json");
+        if(Files.exists(animationFile)) {
+            JsonObject parsed = new JsonParser().parse(new InputStreamReader(Files.newInputStream(animationFile))).getAsJsonObject();
+            time = JsonUtils.getInt(parsed, "base_time");
+            for (JsonElement jsonElement : JsonUtils.getJsonArray(parsed, "overrides", new JsonArray())) {
+                JsonObject jobj = JsonUtils.getJsonObject(jsonElement, "overrides member");
+                overrides.put(JsonUtils.getInt(jobj, "index"), JsonUtils.getInt(jobj, "time"));
             }
-            try(DataInputStream dis = new DataInputStream(Files.newInputStream(path))) {
-                float version = dis.readFloat(); //version
-                if(version < 1) {
-                    throw new IOException("Need animation of at least version 1 to load. Please upload and re-download the animation"); //maybe have a method that instead of reading an unsigned short it should read a integer
+        } else {
+            time = 5;
+        }
+
+        IntegerHolder index = new IntegerHolder();
+        try (Stream<Path> stream = Files.walk(root)) {
+            return stream
+                .filter(path -> path.getFileName().toString().endsWith(".tbl"))
+                .map(path -> path.getParent().getFileName() + "/" + FilenameUtils.getBaseName(path.getFileName().toString()))
+                .filter(Strings::isNotEmpty)
+                .sorted()
+                .map(modelname -> new PoseData.FileResolvablePoseData(modelname, overrides.getOrDefault(index.value++, time)))
+                .collect(Lists::newLinkedList, List::add, LinkedList::addAll);
+        }
+    }
+
+    private List<PoseData> loadAnimationFromDCAFile(Path path) throws IOException {
+        try(DataInputStream dis = new DataInputStream(Files.newInputStream(path))) {
+            float version = dis.readFloat(); //version
+            if(version < 1) {
+                throw new IOException("Need animation of at least version 1 to load. Please upload and re-download the animation"); //maybe have a method that instead of reading an unsigned short it should read a integer
+            }
+
+            KeyframeCompiler compiler = KeyframeCompiler.create(this.mainModel, (int) version);
+
+            float length = dis.readFloat();
+            for (int i = 0; i < length; i++) {
+                KeyframeCompiler.Keyframe kf = compiler.addKeyframe(dis.readFloat(), dis.readFloat());
+
+                float rotSize = dis.readFloat();
+                for (int r = 0; r < rotSize; r++) {
+                    kf.getRotationMap().put(dis.readUTF(), new float[]{(float) Math.toRadians(dis.readFloat()), (float) Math.toRadians(dis.readFloat()), (float) Math.toRadians(dis.readFloat())});
                 }
 
-                KeyframeCompiler compiler = KeyframeCompiler.create(this.mainModel, (int) version);
-
-                float length = dis.readFloat();
-                for (int i = 0; i < length; i++) {
-                    KeyframeCompiler.Keyframe kf = compiler.addKeyframe(dis.readFloat(), dis.readFloat());
-
-                    float rotSize = dis.readFloat();
-                    for (int r = 0; r < rotSize; r++) {
-                        kf.getRotationMap().put(dis.readUTF(), new float[]{(float) Math.toRadians(dis.readFloat()), (float) Math.toRadians(dis.readFloat()), (float) Math.toRadians(dis.readFloat())});
-                    }
-
-                    float posSize = dis.readFloat();
-                    for (int r = 0; r < posSize; r++) {
-                        kf.getRotationPointMap().put(dis.readUTF(), new float[]{dis.readFloat(), dis.readFloat(), dis.readFloat()});
-                    }
+                float posSize = dis.readFloat();
+                for (int r = 0; r < posSize; r++) {
+                    kf.getRotationPointMap().put(dis.readUTF(), new float[]{dis.readFloat() / 16F, dis.readFloat() / 16F, dis.readFloat() / 16F});
                 }
 
-                poseData.addAll(compiler.compile());
-
-                return true;
-            } catch (IOException io) {
-                DumbLibrary.getLogger().error(io);
-                return false;
+                if(version >= 2) {
+                    //TODO: progression points
+                    float ppSize = dis.readFloat(); //Progression points size
+                    for (int p = 0; p < ppSize; p++) {
+                        dis.readFloat();//x
+                        dis.readFloat();//y
+                    }
+                }
             }
-        });
+
+            return compiler.compile();
+        }
     }
 
     /**
@@ -239,11 +223,8 @@ public class AnimationContainer {
                 //Get the location of the model that represents the pose, and that we're going to generate the data for
                 ResourceLocation location = new ResourceLocation(namespace, baseLoc + ppd.getModelName());
 
-                if (ppd.getModelName().endsWith(JSON_EXTENSION)) {
-                    this.loadJsonPose(location, this.mainModel, innerMap);
-                } else {
-                    this.loadTabulaPose(location, this.mainModel, innerMap);
-                }
+                this.loadTabulaPose(location, this.mainModel, innerMap);
+
                 data.getCubes().putAll(innerMap);
             }
         }
@@ -276,82 +257,6 @@ public class AnimationContainer {
             //Create a CubeReference (data about the cubes position/rotation) and put it in the innerMap, with the key being the cube name
             innerMap.put(cubeName, CubeReference.fromCube(cube));
         }
-    }
-
-    /**
-     * Loads a pose from a json file
-     *
-     * @param location  The location of the json model
-     * @param mainModel The main model, of which to compare and take cubes from when they don't exist in the given model
-     * @param innerMap  The inner map of which to add the data too.
-     */
-    private void loadJsonPose(ResourceLocation location, TabulaModelInformation mainModel, Map<String, CubeReference> innerMap) {
-        try {
-            //Create a new JsonParser
-            JsonParser parser = new JsonParser();
-            //If the location dosen't end with .json, then add it
-            if (!location.getPath().endsWith(JSON_EXTENSION)) {
-                location = new ResourceLocation(location.getNamespace(), location.getPath() + JSON_EXTENSION);
-            }
-            //Create a Reader for the inputstream
-            @Cleanup InputStreamReader reader = StreamUtils.openStream(location, InputStreamReader::new);
-            //Read the inputstream as a json object
-            JsonObject json = parser.parse(reader).getAsJsonObject();
-            //Get the version of the json file
-            int version = JsonUtils.getInt(json, "version");
-            //Get a list of all the main model cubes. Used for determining which cubes are not overriden
-            List<String> cubeNames = Lists.newArrayList(mainModel.getAllCubeNames());
-            //Go through the list of overrides in the json.
-            for (JsonElement jsonElement : JsonUtils.getJsonArray(json, "overrides")) {
-                //Get the element as a json object
-                JsonObject obj = jsonElement.getAsJsonObject();
-                //Get the field inside the json object called "cube_name"
-                String cubeName = JsonUtils.getString(obj, "cube_name");
-                //get the cube with the same name that's in the mainModel
-                TabulaModelInformation.Cube mainCube = mainModel.getCube(cubeName);
-                //If the cube is already processed continue
-                if (!cubeNames.contains(cubeName) || mainCube == null) {
-                    continue;
-                } else {
-                    cubeNames.remove(cubeName);
-                }
-                //switch the version defined in the json
-                if (version == 0) {
-                    innerMap.put(cubeName, this.loadVersion0JsonCube(obj, mainCube));
-                } else {
-                    throw new IllegalArgumentException("Dont know how to handle version " + version);
-                }
-            }
-            //Go through all the unedited cubes, and add a cube reference from the main model
-            for (String cubeName : cubeNames) {
-                innerMap.put(cubeName, CubeReference.fromCube(Objects.requireNonNull(mainModel.getCube(cubeName))));
-            }
-        } catch (IOException e) {
-            throw new IllegalArgumentException(e);
-        }
-    }
-
-    /**
-     * Loads a cube reference from a json object. Version 0
-     *
-     * @param obj      the json object
-     * @param mainCube the main cube
-     * @return The cube reference loaded from the given json object
-     */
-    private CubeReference loadVersion0JsonCube(JsonObject obj, TabulaModelInformation.Cube mainCube) {
-        //place the new CubeReference in the innerMap. Values are dematerialized from the json object
-
-        float[] rotation = mainCube.getRotation();
-        float[] rotationPoint = mainCube.getRotationPoint();
-
-        return new CubeReference(
-                JsonUtils.hasField(obj, "rotation_x") ? JsonUtils.getFloat(obj, "rotation_x") : rotation[0],
-                JsonUtils.hasField(obj, "rotation_y") ? JsonUtils.getFloat(obj, "rotation_y") : rotation[1],
-                JsonUtils.hasField(obj, "rotation_z") ? JsonUtils.getFloat(obj, "rotation_z") : rotation[2],
-                JsonUtils.hasField(obj, "position_x") ? JsonUtils.getFloat(obj, "position_x") : rotationPoint[0],
-                JsonUtils.hasField(obj, "position_y") ? JsonUtils.getFloat(obj, "position_y") : rotationPoint[1],
-                JsonUtils.hasField(obj, "position_z") ? JsonUtils.getFloat(obj, "position_z") : rotationPoint[2]
-        );
     }
 
     /**

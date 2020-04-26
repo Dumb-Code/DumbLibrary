@@ -20,6 +20,8 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collection;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -35,11 +37,11 @@ public class StreamUtils {
             return consumer.accept(stream);
         });
     }
-    public static <R> R getPath(ResourceLocation location, FunctionException<Path, R, IOException> consumer) {
+    public static <R> R getPath(ResourceLocation location, FunctionException<Path, R, IOException> consumer) throws IOException{
          return getPath(location, true, consumer);
     }
 
-    public static <R> R getPath(ResourceLocation location, boolean mustExist, FunctionException<Path, R, IOException> consumer) {
+    public static <R> R getPath(ResourceLocation location, boolean mustExist, FunctionException<Path, R, IOException> consumer) throws IOException {
         ModContainer container = Loader.instance().getIndexedModList().get(location.getNamespace());
         if (container != null) {
             String base = "assets/" + container.getModId() + "/" + location.getPath();
@@ -59,13 +61,17 @@ public class StreamUtils {
                 } else {
                     throw new FileNotFoundException("Could not find file " + root);
                 }
-            } catch (IOException e) {
-                FMLLog.log.error("Error loading FileSystem: ", e);
             } finally {
                 IOUtils.closeQuietly(fs);
             }
         }
         throw new IllegalArgumentException("Invalid mod container: " + location.getNamespace());
+    }
+
+    public Collection<Path> listPaths(Path path) throws IOException {
+        try(Stream<Path> stream = Files.walk(path, 1)) {
+            return stream.filter(p -> p != path).collect(Collectors.toList());
+        }
     }
 
     @SideOnly(Side.CLIENT)

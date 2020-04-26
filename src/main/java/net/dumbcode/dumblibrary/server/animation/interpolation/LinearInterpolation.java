@@ -1,13 +1,14 @@
 package net.dumbcode.dumblibrary.server.animation.interpolation;
 
 import net.dumbcode.dumblibrary.server.animation.objects.AnimationLayer;
+import net.dumbcode.dumblibrary.server.animation.objects.CubeWrapper;
 
 import javax.vecmath.Vector3f;
 
 public class LinearInterpolation implements Interpolation {
 
     @Override
-    public float[] getInterpPos(AnimationLayer.CubeWrapper cube, float currentInterp) {
+    public float[] getInterpPos(CubeWrapper cube, float currentInterp) {
         Vector3f np = cube.getRotationPoint();
         Vector3f pp = cube.getPrevRotationPoint();
 
@@ -19,7 +20,7 @@ public class LinearInterpolation implements Interpolation {
     }
 
     @Override
-    public float[] getInterpRot(AnimationLayer.CubeWrapper cube, float currentInterp) {
+    public float[] getInterpRot(CubeWrapper cube, float currentInterp) {
         Vector3f cr = cube.getRotation();
         Vector3f pr = cube.getPrevRotation();
 

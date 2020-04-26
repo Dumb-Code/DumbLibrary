@@ -1,12 +1,13 @@
 package net.dumbcode.dumblibrary.server.info;
 
+import net.dumbcode.dumblibrary.server.animation.objects.AnimatableCube;
 import net.dumbcode.dumblibrary.server.animation.objects.AnimationLayer;
 import net.dumbcode.dumblibrary.server.tabula.TabulaModelInformation;
 
 import javax.annotation.Nullable;
 import javax.vecmath.Vector3f;
 
-public class ServerAnimatableCube implements AnimationLayer.AnimatableCube {
+public class ServerAnimatableCube implements AnimatableCube {
 
     private final ServerAnimatableCube parent;
 
@@ -86,7 +87,7 @@ public class ServerAnimatableCube implements AnimationLayer.AnimatableCube {
 
     @Nullable
     @Override
-    public AnimationLayer.AnimatableCube getParent() {
+    public AnimatableCube getParent() {
         return this.parent;
     }
 }

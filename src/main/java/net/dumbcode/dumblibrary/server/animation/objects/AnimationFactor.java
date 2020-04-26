@@ -3,6 +3,7 @@ package net.dumbcode.dumblibrary.server.animation.objects;
 import lombok.AllArgsConstructor;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
+import net.minecraft.entity.Entity;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 
@@ -18,12 +19,12 @@ public class AnimationFactor extends IForgeRegistryEntry.Impl<AnimationFactor> {
     public static final AnimationFactor DEFAULT = new AnimationFactor((access, type, partialTicks) -> 1F).setRegistryName("default");
     private final FactorFunction function;
 
-    public float getDegree(ComponentAccess access, Type type, float partialTicks) {
-        return this.function.getDegree(access, type, partialTicks);
+    public float getDegree(Entity entity, Type type, float partialTicks) {
+        return this.function.getDegree(entity, type, partialTicks);
     }
 
     public interface FactorFunction {
-        float getDegree(ComponentAccess access, Type type, float partialTicks);
+        float getDegree(Entity entity, Type type, float partialTicks);
     }
 
     public enum Type {

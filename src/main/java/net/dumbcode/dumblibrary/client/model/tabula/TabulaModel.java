@@ -6,6 +6,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import net.dumbcode.dumblibrary.server.animation.EntityWithAnimation;
 import net.dumbcode.dumblibrary.server.tabula.TabulaModelInformation;
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.renderer.GlStateManager;
@@ -42,6 +43,21 @@ public class TabulaModel extends ModelBase {
     public void render(Entity entityIn, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scale) {
         this.setRotationAngles(limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scale, entityIn);
         this.renderBoxes(scale);
+    }
+
+    @Override
+    public void setRotationAngles(float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scaleFactor, Entity entityIn) {
+        if(entityIn instanceof EntityWithAnimation) {
+            this.resetAnimations();
+            ((EntityWithAnimation) entityIn).getEntityContainer().applyAnimations(ageInTicks, this);
+        }
+    }
+
+    public void resetAnimations() {
+        for (TabulaModelRenderer cube : this.getAllCubes()) {
+            cube.resetRotations();
+            cube.resetRotationPoint();
+        }
     }
 
     public void renderBoxes(float scale) {

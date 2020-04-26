@@ -9,8 +9,7 @@ import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.client.model.tabula.TabulaModel;
 import net.dumbcode.dumblibrary.server.animation.AnimationContainer;
 import net.dumbcode.dumblibrary.server.animation.TabulaUtils;
-import net.dumbcode.dumblibrary.server.animation.objects.Animation;
-import net.dumbcode.dumblibrary.server.animation.objects.AnimationLayer;
+import net.dumbcode.dumblibrary.server.animation.objects.*;
 import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentTypes;
@@ -21,6 +20,7 @@ import net.dumbcode.dumblibrary.server.utils.SidedExecutor;
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.entity.Entity;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
@@ -33,7 +33,7 @@ public class AnimationComponent<E extends Entity & ComponentAccess> extends Enti
 
     private AnimationLayer animationLayer;
 
-    private AnimationLayer.AnimationWrap[] layersActive = new AnimationLayer.AnimationWrap[Byte.MAX_VALUE];
+    private AnimationWrap[] layersActive = new AnimationWrap[Byte.MAX_VALUE];
 
     /**
      * Plays the animation on a certain channel, after a series of time
@@ -44,7 +44,7 @@ public class AnimationComponent<E extends Entity & ComponentAccess> extends Enti
      *              The maximum channel is
      * @param delay the delay, in ticks, until this animation should be played.
      */
-    public void proposeAnimation(ComponentAccess entity, AnimationLayer.AnimationEntry entry, int channel, int delay) {
+    public void proposeAnimation(ComponentAccess entity, AnimationEntry entry, int channel, int delay) {
         this.futureAnimations.add(new FutureAnimation(entity, entry, channel, delay));
     }
 
@@ -66,7 +66,7 @@ public class AnimationComponent<E extends Entity & ComponentAccess> extends Enti
      *              The maximum channel is
      */
     public void playAnimation(ComponentAccess entity, Animation animation, int channel) {
-        this.playAnimation(entity, this.animationLayer.create(new AnimationLayer.AnimationEntry(animation)), channel);
+        this.playAnimation(entity, this.animationLayer.create(new AnimationEntry(animation)), channel);
     }
 
     /**
@@ -77,7 +77,7 @@ public class AnimationComponent<E extends Entity & ComponentAccess> extends Enti
      *              If this is less than 0, then no animation will be stopped <br>
      *              The maximum channel is
      */
-    public void playAnimation(ComponentAccess entity, AnimationLayer.AnimationEntry entry, int channel) {
+    public void playAnimation(ComponentAccess entity, AnimationEntry entry, int channel) {
         if(!this.isReadyForAnimations()) {
             this.proposeAnimation(entity, entry, channel, 10);
             return;
@@ -94,9 +94,9 @@ public class AnimationComponent<E extends Entity & ComponentAccess> extends Enti
      *              The maximum channel is
      */
     @SuppressWarnings("unchecked")
-    public void playAnimation(ComponentAccess entity, AnimationLayer.AnimationWrap newWrap, int channel) {
+    public void playAnimation(ComponentAccess entity, AnimationWrap newWrap, int channel) {
         if(channel >= 0) {
-            AnimationLayer.AnimationWrap current = this.layersActive[channel];
+            AnimationWrap current = this.layersActive[channel];
             if(current != null) {
                 this.animationLayer.removeAnimation(current);
             }
@@ -112,7 +112,7 @@ public class AnimationComponent<E extends Entity & ComponentAccess> extends Enti
     }
 
     public void stopAnimation(Entity entity, int channel) {
-        AnimationLayer.AnimationWrap wrap = this.layersActive[channel];
+        AnimationWrap wrap = this.layersActive[channel];
         if(wrap != null) {
             this.animationLayer.removeAnimation(wrap);
             this.layersActive[channel] = null;
@@ -123,16 +123,14 @@ public class AnimationComponent<E extends Entity & ComponentAccess> extends Enti
     }
 
     public void stopAll() {
-        for (int i = 0; i < this.layersActive.length; i++) {
-            this.layersActive[i] =  null;
-        }
+        Arrays.fill(this.layersActive, null);
         this.animationLayer.removeAll();
     }
 
     /**
      * Is the animation component ready for playing animations
-     * @return true if {@link #playAnimation(ComponentAccess, AnimationLayer.AnimationEntry, int)} can be called.
-     * If it cannot be called, you should use {@link #proposeAnimation(ComponentAccess, AnimationLayer.AnimationEntry, int, int)}
+     * @return true if {@link #playAnimation(ComponentAccess, AnimationEntry, int)} can be called.
+     * If it cannot be called, you should use {@link #proposeAnimation(ComponentAccess, AnimationEntry, int, int)}
      */
     public boolean isReadyForAnimations() {
         return this.animationLayer != null;
@@ -147,17 +145,17 @@ public class AnimationComponent<E extends Entity & ComponentAccess> extends Enti
                     ModelBase model = component.getModelCache();
                     if(model instanceof TabulaModel) {
                         TabulaModel tm = (TabulaModel) model;
-                        return new AnimationLayer(e, tm.getAllCubesNames(), tm::getCube, this.animationContainer.getAnimations()::get);
+                        return new AnimationLayer(e, tm.getAllCubesNames(), tm::getCube, this.animationContainer.createDataGetter());
                     } else {
                         //todo: make an implementation for non tabula models?
-                        return new AnimationLayer(e, Lists.newArrayList(), s -> AnimationLayer.AnimatableCubeEmpty.INSTANCE, this.animationContainer.getAnimations()::get);
+                        return new AnimationLayer(e, Lists.newArrayList(), s -> AnimatableCubeEmpty.INSTANCE, this.animationContainer.createDataGetter());
 
                     }
                 }, null);
 
             } else {
-                Map<String, AnimationLayer.AnimatableCube> cubes = TabulaUtils.getServersideCubes(entity.get(EntityComponentTypes.MODEL).map(com -> com.getFileLocation().getLocation()).orElse(TabulaUtils.MISSING));
-                this.animationLayer = new AnimationLayer(e, cubes.keySet(), cubes::get, this.animationContainer.getAnimations()::get);//this.animationContainer.apply(ecs).getAnimations()::get
+                Map<String, AnimatableCube> cubes = TabulaUtils.getServersideCubes(entity.get(EntityComponentTypes.MODEL).map(com -> com.getFileLocation().getLocation()).orElse(TabulaUtils.MISSING));
+                this.animationLayer = new AnimationLayer(e, cubes.keySet(), cubes::get, this.animationContainer.createDataGetter());//this.animationContainer.apply(ecs).getAnimations()::get
             }
         }
         return animationLayer;
@@ -181,7 +179,7 @@ public class AnimationComponent<E extends Entity & ComponentAccess> extends Enti
     @AllArgsConstructor
     public class FutureAnimation {
         private final ComponentAccess entity;
-        private final AnimationLayer.AnimationEntry entry;
+        private final AnimationEntry entry;
         private final int channel;
 
         private int ticksLeft;

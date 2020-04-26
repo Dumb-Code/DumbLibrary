@@ -23,4 +23,8 @@ public class Animation  {
     public Animation(String namespace, String path) {
         this(new ResourceLocation(namespace, path));
     }
+
+    public AnimationEntry createEntry() {
+        return new AnimationEntry(this);
+    }
 }

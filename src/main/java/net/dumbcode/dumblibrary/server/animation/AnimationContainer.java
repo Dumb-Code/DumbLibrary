@@ -141,7 +141,7 @@ public class AnimationContainer {
         Path animationFile = root.resolve("animation.json");
         if(Files.exists(animationFile)) {
             JsonObject parsed = new JsonParser().parse(new InputStreamReader(Files.newInputStream(animationFile))).getAsJsonObject();
-            time = JsonUtils.getInt(parsed, "base_time");
+            time = JsonUtils.getInt(parsed, "base_time", 5);
             for (JsonElement jsonElement : JsonUtils.getJsonArray(parsed, "overrides", new JsonArray())) {
                 JsonObject jobj = JsonUtils.getJsonObject(jsonElement, "overrides member");
                 overrides.put(JsonUtils.getInt(jobj, "index"), JsonUtils.getInt(jobj, "time"));

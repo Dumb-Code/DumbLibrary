@@ -118,7 +118,7 @@ task publishMod (group: "upload", description: "Publish the mod to curseforge an
 
         println "Artifact uploaded with id $id"
 
-        def url = "https://minecraft.curseforge.com/projects/dumb-library/files/$id"
+        def url = "https://www.curseforge.com/minecraft/mc-mods/dumb-library/files/$id"
         def datetime = Instant.now().atZone(ZoneOffset.UTC).toString()
         def form = new PostForm(dumblibrary_publish_url) //In the ~/.gradle/gradle.properties file
         form.addObject new FieldObject('payload_json', "{ \"embeds\": [{ \"title\": \"New Version $project.version !\", \"color\": 6842472, \"url\": \"$url\" , \"timestamp\": \"$datetime\"}]}")

@@ -52,8 +52,13 @@ public class ChannelEntityAnimationContainer extends EntityAnimationContainer {
     }
 
     public void stopAll() {
+        for (AnimationWrap wrap : this.channels) {
+            if(wrap != null) {
+                this.animationLayer.removeAnimation(wrap);
+            }
+        }
         Arrays.fill(this.channels, null);
-        this.animationLayer.removeAll();
+
     }
 
 }

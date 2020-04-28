@@ -1,23 +1,18 @@
 package net.dumbcode.dumblibrary.server.animation.container;
 
-import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.server.animation.AnimationContainer;
 import net.dumbcode.dumblibrary.server.animation.objects.Animation;
 import net.dumbcode.dumblibrary.server.animation.objects.AnimationEntry;
 import net.dumbcode.dumblibrary.server.animation.objects.AnimationWrap;
-import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
-import net.dumbcode.dumblibrary.server.network.S0SyncAnimation;
-import net.dumbcode.dumblibrary.server.network.S3StopAnimation;
-import net.minecraft.entity.Entity;
 
 import java.util.Arrays;
 
-public class ChannelEntityAnimationContainer extends EntityAnimationContainer {
+public class ChannelAnimationContainerEntry extends AnimationContainerEntry {
 
     private final AnimationWrap[] channels;
 
-    public ChannelEntityAnimationContainer(AnimationContainer container, Entity entity, int channels) {
-        super(container, entity);
+    public ChannelAnimationContainerEntry(AnimationContainer container, Object source, int channels) {
+        super(container, source);
         this.channels = new AnimationWrap[channels];
     }
 

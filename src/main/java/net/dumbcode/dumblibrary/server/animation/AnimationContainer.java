@@ -182,7 +182,7 @@ public class AnimationContainer {
 
                 float posSize = dis.readFloat();
                 for (int r = 0; r < posSize; r++) {
-                    kf.getRotationPointMap().put(dis.readUTF(), new float[]{dis.readFloat() / 16F, dis.readFloat() / 16F, dis.readFloat() / 16F});
+                    kf.getRotationPointMap().put(dis.readUTF(), new float[]{dis.readFloat(), dis.readFloat(), dis.readFloat()});
                 }
 
                 if(version >= 2) {

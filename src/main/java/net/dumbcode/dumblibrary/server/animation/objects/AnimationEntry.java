@@ -6,7 +6,6 @@ import lombok.NonNull;
 import lombok.experimental.Wither;
 import net.dumbcode.dumblibrary.server.animation.interpolation.Interpolation;
 import net.dumbcode.dumblibrary.server.animation.interpolation.LinearInterpolation;
-import net.dumbcode.dumblibrary.server.registry.DumbRegistries;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 
 import javax.annotation.Nullable;
@@ -19,16 +18,16 @@ public class AnimationEntry {
     private final Animation animation;
     private final int time; //-2 = loop, -1 = run until finished, x > 0 run for x amount of ticks
     private final boolean hold;
-    private final AnimationFactor speedFactor;
-    private final AnimationFactor degreeFactor;
+    private final AnimationFactor<?> speedFactor;
+    private final AnimationFactor<?> degreeFactor;
     private final AnimationEntry exitAnimation;
     private final Interpolation interpolation;
 
     public AnimationEntry(Animation animation) {
-        this(animation, -1, false, AnimationFactor.DEFAULT, AnimationFactor.DEFAULT, null, new LinearInterpolation());
+        this(animation, -1, false, AnimationFactor.getDefault(), AnimationFactor.getDefault(), null, new LinearInterpolation());
     }
 
-    public AnimationEntry(Animation animation, int time, boolean hold, AnimationFactor speedFactor, AnimationFactor degreeFactor, @Nullable AnimationEntry andThen, @Nullable Interpolation interpolation) {
+    public AnimationEntry(Animation animation, int time, boolean hold, AnimationFactor<?> speedFactor, AnimationFactor<?> degreeFactor, @Nullable AnimationEntry andThen, @Nullable Interpolation interpolation) {
         this.animation = animation;
         this.time = time;
         this.hold = hold;
@@ -51,8 +50,8 @@ public class AnimationEntry {
         ByteBufUtils.writeUTF8String(buf, this.animation.getKey().getPath());
         buf.writeInt(this.time);
         buf.writeBoolean(this.hold);
-        ByteBufUtils.writeRegistryEntry(buf, this.speedFactor);
-        ByteBufUtils.writeRegistryEntry(buf, this.degreeFactor);
+        ByteBufUtils.writeUTF8String(buf, this.speedFactor.getName());
+        ByteBufUtils.writeUTF8String(buf, this.degreeFactor.getName());
         buf.writeBoolean(this.exitAnimation != null);
         if(this.exitAnimation != null) {
             this.exitAnimation.serialize(buf);
@@ -64,8 +63,8 @@ public class AnimationEntry {
             new Animation(ByteBufUtils.readUTF8String(buf), ByteBufUtils.readUTF8String(buf)),
             buf.readInt(),
             buf.readBoolean(),
-            ByteBufUtils.readRegistryEntry(buf, DumbRegistries.FLOAT_SUPPLIER_REGISTRY),
-            ByteBufUtils.readRegistryEntry(buf, DumbRegistries.FLOAT_SUPPLIER_REGISTRY),
+            AnimationFactor.getFactor(ByteBufUtils.readUTF8String(buf)),
+            AnimationFactor.getFactor(ByteBufUtils.readUTF8String(buf)),
             buf.readBoolean() ? deserialize(buf) : null,
             null // TODO: Serialize
         );

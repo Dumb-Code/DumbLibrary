@@ -145,17 +145,17 @@ public class AnimationComponent<E extends Entity & ComponentAccess> extends Enti
                     ModelBase model = component.getModelCache();
                     if(model instanceof TabulaModel) {
                         TabulaModel tm = (TabulaModel) model;
-                        return new AnimationLayer(e, tm.getAllCubesNames(), tm::getCube, this.animationContainer.createDataGetter());
+                        return new AnimationLayer(tm.getAllCubesNames(), tm::getCube, this.animationContainer.createDataGetter(), e);
                     } else {
                         //todo: make an implementation for non tabula models?
-                        return new AnimationLayer(e, Lists.newArrayList(), s -> AnimatableCubeEmpty.INSTANCE, this.animationContainer.createDataGetter());
+                        return new AnimationLayer(Lists.newArrayList(), s -> AnimatableCubeEmpty.INSTANCE, this.animationContainer.createDataGetter(), e);
 
                     }
                 }, null);
 
             } else {
                 Map<String, AnimatableCube> cubes = TabulaUtils.getServersideCubes(entity.get(EntityComponentTypes.MODEL).map(com -> com.getFileLocation().getLocation()).orElse(TabulaUtils.MISSING));
-                this.animationLayer = new AnimationLayer(e, cubes.keySet(), cubes::get, this.animationContainer.createDataGetter());//this.animationContainer.apply(ecs).getAnimations()::get
+                this.animationLayer = new AnimationLayer(cubes.keySet(), cubes::get, this.animationContainer.createDataGetter(), e);//this.animationContainer.apply(ecs).getAnimations()::get
             }
         }
         return animationLayer;

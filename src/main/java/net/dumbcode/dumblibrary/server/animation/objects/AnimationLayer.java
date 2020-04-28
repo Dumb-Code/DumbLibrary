@@ -2,25 +2,15 @@ package net.dumbcode.dumblibrary.server.animation.objects;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.Setter;
-import lombok.experimental.Wither;
 import net.dumbcode.dumblibrary.client.model.tabula.TabulaModel;
-import net.dumbcode.dumblibrary.server.animation.interpolation.Interpolation;
-import net.dumbcode.dumblibrary.server.animation.interpolation.LinearInterpolation;
-import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
-import net.dumbcode.dumblibrary.server.registry.DumbRegistries;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.math.MathHelper;
-import net.minecraftforge.fml.common.network.ByteBufUtils;
+import net.minecraft.client.Minecraft;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-import javax.annotation.Nullable;
-import javax.vecmath.Vector3f;
 import java.util.*;
 import java.util.function.Function;
 
@@ -31,29 +21,29 @@ public class AnimationLayer {
     public static final int LOOP = -2;
     public static final int RUN_TILL_COMPLETE = -1;
 
-    private final Entity entity;
     //todo: now that we don't need to abstract this as much, maybe cut back on the amount of functions needed
     private final Function<Animation, List<PoseData>> animationDataGetter;
     private Function<String, AnimatableCube> anicubeRef;
     private Collection<String> cubeNames;
+    private final Object object;
 
     private final List<AnimationWrap> animations = Lists.newArrayList();
     private final Map<String, List<GhostAnimationData>> ghostWraps = Maps.newHashMap();
 
-    public AnimationLayer(Entity entity, Collection<String> cubeNames, Function<String, AnimatableCube> anicubeRef, Function<Animation, List<PoseData>> animationDataGetter) {
-        this.entity = entity;
+    public AnimationLayer(Collection<String> cubeNames, Function<String, AnimatableCube> anicubeRef, Function<Animation, List<PoseData>> animationDataGetter, Object object) {
         this.animationDataGetter = animationDataGetter;
         this.anicubeRef = anicubeRef;
         this.cubeNames = cubeNames;
+        this.object = object;
     }
 
-    public void animate(float ticks) {
+    public void animate(float partialTicks) {
         this.checkInvalidations();
 
-        this.adjustForGhostWraps(ticks);
+        this.adjustForGhostWraps(partialTicks);
 
         for (AnimationWrap wrap : this.animations) {
-            wrap.tick(ticks);
+            wrap.tick(partialTicks);
         }
     }
 
@@ -70,7 +60,7 @@ public class AnimationLayer {
                 for (String name : wrap.getCubeNames()) {
                     CubeWrapper cube = wrap.getCuberef().apply(name);
                     this.ghostWraps.computeIfAbsent(name, s -> Lists.newArrayList()).add(
-                            new GhostAnimationData(wrap.getInterpolation().getInterpPos(cube, wrap.getCi()), wrap.getInterpolation().getInterpRot(cube, wrap.getCi()), 1F, animation.getEntityAge()));
+                            new GhostAnimationData(wrap.getInterpolation().getInterpPos(cube, wrap.getCi()), wrap.getInterpolation().getInterpRot(cube, wrap.getCi()), 1F, animation.getAnimationTicks() + animation.getAnimationPartialTicks()));
                 }
                 wrap.onFinish();
                 if(wrap.getEntry().getExitAnimation() != null) {
@@ -98,12 +88,14 @@ public class AnimationLayer {
         }
     }
 
-    private void adjustForGhostWraps(float ticks) {
+    private void adjustForGhostWraps(float partialTicks) {
+        float age = FMLCommonHandler.instance().getMinecraftServerInstance().getTickCounter() + partialTicks;
         for (String cubeName : this.getCubeNames()) {
             AnimatableCube cube = this.anicubeRef.apply(cubeName);
             List<GhostAnimationData> ghosts = this.ghostWraps.getOrDefault(cubeName, Lists.newArrayList());
             for (GhostAnimationData data : ghosts) {
-                data.ci = 1 - ((ticks - data.minAge) / 7.5F); //Takes 7.5 ticks to go back.
+                data.ci = 1 - ((age-data.animationAge) / 7.5F); //Takes 7.5 ticks to go back.
+
 
                 //TODO: make sure interpolation wraps around, ie an angle at 350 degrees shouldn't interpolate to 0, it should interpolate to 360
                 float[] rotation = cube.getDefaultRotation();
@@ -151,7 +143,7 @@ public class AnimationLayer {
         //Do we really need this as a cached map?
         //yes
         Map<String, CubeWrapper> cacheMap = new HashMap<>();
-        return new AnimationWrap(entry, this.animationDataGetter, s -> cacheMap.computeIfAbsent(s, o -> new CubeWrapper(this.anicubeRef.apply(o))), this.anicubeRef, this.cubeNames, this.entity);
+        return new AnimationWrap(entry, this.animationDataGetter, s -> cacheMap.computeIfAbsent(s, o -> new CubeWrapper(this.anicubeRef.apply(o))), this.anicubeRef, this.cubeNames, this.object);
     }
 
 
@@ -160,6 +152,6 @@ public class AnimationLayer {
         float[] positions;
         float[] rotations;
         float ci;
-        float minAge;
+        float animationAge;
     }
 }

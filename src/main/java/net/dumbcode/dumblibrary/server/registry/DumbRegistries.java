@@ -9,7 +9,6 @@ import net.minecraftforge.registries.IForgeRegistry;
 
 public class DumbRegistries {
     public static final IForgeRegistry<EntityComponentType<?, ?>> COMPONENT_REGISTRY = GameRegistry.findRegistry(EntityComponentType.getWildcardType());
-    public static final IForgeRegistry<AnimationFactor> FLOAT_SUPPLIER_REGISTRY = GameRegistry.findRegistry(AnimationFactor.class);
 
     public static final IForgeRegistry<GeneticType<?>> GENETIC_TYPE_REGISTRY = GameRegistry.findRegistry(GeneticType.getWildcardType());
 

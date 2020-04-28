@@ -1,11 +1,11 @@
 package net.dumbcode.dumblibrary.server.animation.objects;
 
-import lombok.AllArgsConstructor;
+import lombok.Getter;
 import net.dumbcode.dumblibrary.DumbLibrary;
-import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
-import net.minecraft.entity.Entity;
 import net.minecraftforge.fml.common.registry.GameRegistry;
-import net.minecraftforge.registries.IForgeRegistryEntry;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Float suppliers are currently only used in 2 context. To control the speed of the animation, and to control the
@@ -13,18 +13,39 @@ import net.minecraftforge.registries.IForgeRegistryEntry;
  * <br>
  * A use case for this is for walking animations, whereas the the speed and degree of the animations is determined by the speed of the ecs.
  */
-@AllArgsConstructor
-@GameRegistry.ObjectHolder(DumbLibrary.MODID)
-public class AnimationFactor extends IForgeRegistryEntry.Impl<AnimationFactor> {
-    public static final AnimationFactor DEFAULT = new AnimationFactor((access, type, partialTicks) -> 1F).setRegistryName("default");
-    private final FactorFunction function;
+@Getter
+public class AnimationFactor<T> {
+    public static final AnimationFactor<?> DEFAULT = new AnimationFactor<>("default", Void.class, (access, type, partialTicks) -> 1F);
 
-    public float getDegree(Entity entity, Type type, float partialTicks) {
-        return this.function.getDegree(entity, type, partialTicks);
+    public static Map<String, AnimationFactor<?>> REGISTRY = new HashMap<>();
+
+    public AnimationFactor(String name, Class<T> baseClass, FactorFunction<T> function) {
+        this.name = name;
+        this.baseClass = baseClass;
+        this.function = function;
     }
 
-    public interface FactorFunction {
-        float getDegree(Entity entity, Type type, float partialTicks);
+    public static <T> AnimationFactor<T> getDefault() {
+        return (AnimationFactor<T>) DEFAULT;
+    }
+
+    private final String name;
+    private final Class<T> baseClass;
+    private final FactorFunction<T> function;
+
+    public float tryApply(Object o, Type type, float partialTicks) {
+        if(this.baseClass.isInstance(o)) {
+            return this.function.getDegree(this.baseClass.cast(o), type, partialTicks);
+        }
+        return 1F;
+    }
+
+    public static AnimationFactor<?> getFactor(String name) {
+        return REGISTRY.getOrDefault(name, DEFAULT);
+    }
+
+    public interface FactorFunction<T> {
+        float getDegree(T entity, Type type, float partialTicks);
     }
 
     public enum Type {

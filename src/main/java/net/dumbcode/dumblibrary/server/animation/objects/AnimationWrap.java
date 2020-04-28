@@ -1,12 +1,13 @@
 package net.dumbcode.dumblibrary.server.animation.objects;
 
 import lombok.Getter;
-import lombok.Setter;
 import net.dumbcode.dumblibrary.client.model.tabula.TabulaModel;
 import net.dumbcode.dumblibrary.server.animation.interpolation.Interpolation;
-import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
-import net.minecraft.entity.Entity;
+import net.minecraft.client.Minecraft;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.MathHelper;
+import net.minecraftforge.common.ForgeHooks;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -28,9 +29,11 @@ public class AnimationWrap {
     private final Deque<PoseData> poseStack = new ArrayDeque<>();
 
     private final float totalPoseTime;
-    private final Entity entity;
 
-    private float entityAge;
+    private final Object object;
+
+    private float animationTicks;
+    private float animationPartialTicks;
 
     private float maxTicks;
     private float tick;
@@ -41,13 +44,14 @@ public class AnimationWrap {
     public AnimationWrap (
         AnimationEntry animation, Function<Animation, List<PoseData>> animationDataGetter,
         Function<String, CubeWrapper> cuberef, Function<String, AnimatableCube> anicubeRef,
-        Collection<String> cubeNames, Entity entity) {
+        Collection<String> cubeNames, Object object) {
         this.animationDataGetter = animationDataGetter;
         this.cuberef = cuberef;
         this.anicubeRef = anicubeRef;
         this.cubeNames = cubeNames;
-        this.entityAge = entity.ticksExisted;
+        this.animationTicks = FMLCommonHandler.instance().getMinecraftServerInstance().getTickCounter();
         this.entry = animation;
+        this.object = object;
         this.poseStack.addAll(this.animationDataGetter.apply(animation.getAnimation()));
         if(this.poseStack.isEmpty()) {
             this.invalidated = true;
@@ -55,7 +59,6 @@ public class AnimationWrap {
             this.maxTicks = this.getData().getTime();
         }
         this.interpolation = animation.getInterpolation();
-        this.entity = entity;
 
         float tpt = 0;
         for (PoseData poseData : this.poseStack) {
@@ -66,7 +69,7 @@ public class AnimationWrap {
         this.incrementVecs(false);
     }
 
-    public void tick(float age) {
+    public void tick(float partialTicks) {
         if (this.invalidated) { // && !this.entry.hold
             return;
         }
@@ -85,7 +88,7 @@ public class AnimationWrap {
             float[] interpolatedPosition = this.interpolation.getInterpPos(cubeWrapper, ci);
 
             float[] rotation = cube.getDefaultRotation();
-            float factor = this.entry.getDegreeFactor().getDegree(this.entity, AnimationFactor.Type.ANGLE, age % 1F);
+            float factor = this.entry.getDegreeFactor().tryApply(object, AnimationFactor.Type.ANGLE, partialTicks);
             cube.addRotation(
                 (interpolatedRotation[0] - rotation[0]) * factor,
                 (interpolatedRotation[1] - rotation[1]) * factor,
@@ -106,9 +109,10 @@ public class AnimationWrap {
             timeModifier = this.entry.getTime() / this.totalPoseTime;
         }
 
-        timeModifier /= this.entry.getSpeedFactor().getDegree(this.entity, AnimationFactor.Type.SPEED, age % 1F);
+        timeModifier /= this.entry.getSpeedFactor().tryApply(object, AnimationFactor.Type.SPEED, partialTicks);
 
-        this.tick += (age - this.entityAge) / timeModifier;//todo: Check that looping and holding work
+        float ticks = FMLCommonHandler.instance().getMinecraftServerInstance().getTickCounter();
+        this.tick += (ticks-this.animationTicks+partialTicks-this.animationPartialTicks) / timeModifier;//todo: Check that looping and holding work
 
         //Make sure to catchup to correct render
         while (!this.invalidated && this.tick >= this.maxTicks && (!this.entry.isHold() || this.poseStack.size() > 1)) {
@@ -126,7 +130,8 @@ public class AnimationWrap {
                 this.incrementVecs(true);
             }
         }
-        this.entityAge = age;
+        this.animationTicks = ticks;
+        this.animationPartialTicks = partialTicks;
     }
 
     @SideOnly(Side.CLIENT)

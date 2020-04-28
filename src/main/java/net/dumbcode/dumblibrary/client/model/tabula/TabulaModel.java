@@ -11,6 +11,7 @@ import net.dumbcode.dumblibrary.server.tabula.TabulaModelInformation;
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
 
 import java.util.Collection;
 import java.util.List;
@@ -41,16 +42,15 @@ public class TabulaModel extends ModelBase {
 
     @Override
     public void render(Entity entityIn, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scale) {
-        this.setRotationAngles(limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scale, entityIn);
         this.renderBoxes(scale);
     }
 
     @Override
-    public void setRotationAngles(float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scaleFactor, Entity entityIn) {
+    public void setLivingAnimations(EntityLivingBase entityIn, float limbSwing, float limbSwingAmount, float partialTickTime) {
         if(entityIn instanceof EntityWithAnimation) {
-            this.resetAnimations();
-            ((EntityWithAnimation) entityIn).getEntityContainer().applyAnimations(ageInTicks, this);
+            ((EntityWithAnimation) entityIn).getAnimationEntry().applyAnimations(partialTickTime, this);
         }
+        super.setLivingAnimations(entityIn, limbSwing, limbSwingAmount, partialTickTime);
     }
 
     public void resetAnimations() {

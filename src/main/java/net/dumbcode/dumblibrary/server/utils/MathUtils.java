@@ -33,6 +33,19 @@ public class MathUtils {
     public static float mod(float x, float k) {
         return ((x % k) + k) % k; //Respect the sign -> https://stackoverflow.com/a/4403631
     }
+    public static String ensureTrailingZeros(float num, int dp) {
+        StringBuilder number = new StringBuilder(String.valueOf(num));
+        int point = number.lastIndexOf(".");
+        int zeros = point != -1 ? dp - (number.length()-point) : dp;
+        if(point == -1) {
+            number.append(".");
+        }
+        for (int i = 0; i < zeros; i++) {
+            number.append("0");
+        }
+        return number.toString();
+
+    }
 
     public static int floorToZero(double value) {
         return value > 0 ? MathHelper.floor(value) : MathHelper.ceil(value);

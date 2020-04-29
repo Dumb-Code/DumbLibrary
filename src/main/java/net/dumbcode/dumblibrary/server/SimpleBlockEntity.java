@@ -1,6 +1,8 @@
 package net.dumbcode.dumblibrary.server;
 
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
@@ -34,8 +36,12 @@ public class SimpleBlockEntity extends TileEntity {
 
     public void syncToClient() {
         if(!this.world.isRemote) {
-            IBlockState state = this.world.getBlockState(this.pos);
-            this.world.notifyBlockUpdate(this.pos, state, state, 3);
+            for (EntityPlayer entity : this.world.playerEntities) {
+                SPacketUpdateTileEntity packet = this.getUpdatePacket();
+                if(packet != null) {
+                    ((EntityPlayerMP)entity).connection.sendPacket(packet);
+                }
+            }
         }
     }
 

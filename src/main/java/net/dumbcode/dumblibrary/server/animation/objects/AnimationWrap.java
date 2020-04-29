@@ -66,7 +66,9 @@ public class AnimationWrap {
         }
         this.totalPoseTime = tpt;
 
-        this.incrementVecs(false);
+        if(!this.invalidated) {
+            this.incrementVecs(false);
+        }
     }
 
     public void tick(float partialTicks) {
@@ -80,6 +82,8 @@ public class AnimationWrap {
 
         this.ci = MathHelper.clamp(perc, 0, 1);
 
+        float factor = this.entry.getDegreeFactor().tryApply(object, AnimationFactor.Type.ANGLE, partialTicks);
+
         for (String partName : this.cubeNames) {
             CubeWrapper cubeWrapper = Objects.requireNonNull(this.cuberef.apply(partName));
             AnimatableCube cube = this.anicubeRef.apply(partName);
@@ -88,7 +92,6 @@ public class AnimationWrap {
             float[] interpolatedPosition = this.interpolation.getInterpPos(cubeWrapper, ci);
 
             float[] rotation = cube.getDefaultRotation();
-            float factor = this.entry.getDegreeFactor().tryApply(object, AnimationFactor.Type.ANGLE, partialTicks);
             cube.addRotation(
                 (interpolatedRotation[0] - rotation[0]) * factor,
                 (interpolatedRotation[1] - rotation[1]) * factor,
@@ -112,7 +115,7 @@ public class AnimationWrap {
         timeModifier /= this.entry.getSpeedFactor().tryApply(object, AnimationFactor.Type.SPEED, partialTicks);
 
         float ticks = FMLCommonHandler.instance().getMinecraftServerInstance().getTickCounter();
-        this.tick += (ticks-this.animationTicks+partialTicks-this.animationPartialTicks) / timeModifier;//todo: Check that looping and holding work
+        this.tick += ((ticks-this.animationTicks) + (partialTicks-this.animationPartialTicks)) / timeModifier;//todo: Check that looping and holding work
 
         //Make sure to catchup to correct render
         while (!this.invalidated && this.tick >= this.maxTicks && (!this.entry.isHold() || this.poseStack.size() > 1)) {

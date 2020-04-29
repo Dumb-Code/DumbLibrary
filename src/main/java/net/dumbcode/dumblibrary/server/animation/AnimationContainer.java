@@ -125,8 +125,7 @@ public class AnimationContainer {
     }
 
     private String lastFolder(Path path) {
-        String[] split = path.toString().split("/");
-        return split[split.length - 1];
+        return path.getFileName().toString();
     }
 
     /**

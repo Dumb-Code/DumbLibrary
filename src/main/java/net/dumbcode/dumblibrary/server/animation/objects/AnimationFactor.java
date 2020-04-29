@@ -15,9 +15,8 @@ import java.util.Map;
  */
 @Getter
 public class AnimationFactor<T> {
-    public static final AnimationFactor<?> DEFAULT = new AnimationFactor<>("default", Void.class, (access, type, partialTicks) -> 1F);
-
     public static Map<String, AnimationFactor<?>> REGISTRY = new HashMap<>();
+    public static final AnimationFactor<?> DEFAULT = new AnimationFactor<>("default", Void.class, (access, type, partialTicks) -> 1F).register();
 
     public AnimationFactor(String name, Class<T> baseClass, FactorFunction<T> function) {
         this.name = name;
@@ -38,6 +37,11 @@ public class AnimationFactor<T> {
             return this.function.getDegree(this.baseClass.cast(o), type, partialTicks);
         }
         return 1F;
+    }
+
+    public AnimationFactor<T> register() {
+        REGISTRY.put(this.name, this);
+        return this;
     }
 
     public static AnimationFactor<?> getFactor(String name) {

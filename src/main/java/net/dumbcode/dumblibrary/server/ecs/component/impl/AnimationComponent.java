@@ -169,8 +169,7 @@ public class AnimationComponent<E extends Entity & ComponentAccess> extends Enti
                 for (String cubeName : this.animationLayer.getCubeNames()) {
                     this.animationLayer.getAnicubeRef().apply(cubeName).reset();
                 }
-
-                this.animationLayer.animate(entity.ticksExisted + partialTicks);
+                this.animationLayer.animate(partialTicks);
             }
 
         });

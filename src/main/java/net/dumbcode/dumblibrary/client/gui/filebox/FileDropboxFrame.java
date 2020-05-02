@@ -102,9 +102,8 @@ public class FileDropboxFrame extends Frame {
             public void mouseClicked(MouseEvent e) {
                 FileDialog dialog = new FileDialog(FileDropboxFrame.this);
                 dialog.setVisible(true);
-                dialog.setFilenameFilter(filter);
                 File[] files = dialog.getFiles();
-                if(files.length == 1) {
+                if(files.length == 1 && (filter == null || filter.accept(files[0].getParentFile(), files[0].getName()))) {
                     onFile.accept(files[0]);
                     dispose();
                 }

@@ -2,6 +2,7 @@ package net.dumbcode.dumblibrary;
 
 import net.dumbcode.dumblibrary.client.model.TransformTypeModelLoader;
 import net.dumbcode.dumblibrary.server.DumbGuiHandler;
+import net.dumbcode.dumblibrary.server.ItemComponent;
 import net.dumbcode.dumblibrary.server.ecs.EntityManager;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentTypes;
 import net.dumbcode.dumblibrary.server.ecs.component.RegisterStoragesEvent;
@@ -23,9 +24,11 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.common.capabilities.CapabilityManager;
+import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.common.registry.GameRegistry;
@@ -38,7 +41,7 @@ import org.apache.logging.log4j.Logger;
 public class DumbLibrary {
     public static final String MODID = "dumblibrary";
     public static final String NAME = "Dumb Library";
-    public static final String VERSION = "0.5.1";
+    public static final String VERSION = "0.5.2";
 
     private static Logger logger;
 
@@ -85,25 +88,31 @@ public class DumbLibrary {
         NETWORK.registerMessage(new B14ReleaseCollection.Handler(), B14ReleaseCollection.class, 15, Side.CLIENT);
         NETWORK.registerMessage(new B14ReleaseCollection.Handler(), B14ReleaseCollection.class, 16, Side.SERVER);
 
-        SidedExecutor.runClient(() -> () -> ModelLoaderRegistry.registerLoader(TransformTypeModelLoader.INSTANCE));
-
         CapabilityManager.INSTANCE.register(EntityManager.class, new VoidStorage<>(), EntityManager.Impl::new);
     }
 
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
-        SidedExecutor.runClient(() -> () ->
-                Minecraft.getMinecraft().getRenderItem().getItemModelMesher()
-                        .register(COMPONENT_ITEM, stack -> ModelLoader.getInventoryVariant(
-                                ItemCompoundAccess.getAccess(stack)
-                                        .flatMap(EntityComponentTypes.ITEM_RENDER)
-                                        .map(ItemRenderModelComponent::getLocation)
-                                        .orElse(MODEL_MISSING)
-                                        .toString()
-                                )
-                        ));
+        SidedExecutor.runClient(() -> () -> {
+            Minecraft.getMinecraft().getRenderItem().getItemModelMesher()
+                .register(COMPONENT_ITEM, stack -> ModelLoader.getInventoryVariant(
+                    ItemCompoundAccess.getAccess(stack)
+                        .flatMap(EntityComponentTypes.ITEM_RENDER)
+                        .map(ItemRenderModelComponent::getLocation)
+                        .orElse(MODEL_MISSING)
+                        .toString()
+                    )
+                );
+
+        });
     }
 
+    @SubscribeEvent
+    public static void onItemRegister(RegistryEvent.Register<Item> event) {
+        event.getRegistry().registerAll(
+            new ItemComponent().setRegistryName("component_item").setTranslationKey("component_item")
+        );
+    }
 
     public static Logger getLogger() {
         return logger;

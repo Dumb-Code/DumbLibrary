@@ -16,18 +16,12 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
+import net.minecraftforge.fml.relauncher.Side;
 
 import java.util.ArrayDeque;
 
-@Mod.EventBusSubscriber(modid = DumbLibrary.MODID)
+@Mod.EventBusSubscriber(value = Side.CLIENT, modid = DumbLibrary.MODID)
 public class ItemComponentHandler {
-
-    @SubscribeEvent
-    public static void onItemRegister(RegistryEvent.Register<Item> event) {
-        event.getRegistry().registerAll(
-                new ItemComponent().setRegistryName("component_item").setTranslationKey("component_item")
-        );
-    }
 
     //Everything from this point is to replace the eating particles.
     @SubscribeEvent

@@ -18,5 +18,6 @@ public class ModelHandler {
     public static void onModelReady(ModelRegistryEvent event) {
         ModelLoaderRegistry.registerLoader(TabulaModelHandler.INSTANCE);
         ModelLoaderRegistry.registerLoader(ModelCommandLoader.INSTANCE);
+        ModelLoaderRegistry.registerLoader(TransformTypeModelLoader.INSTANCE);
     }
 }

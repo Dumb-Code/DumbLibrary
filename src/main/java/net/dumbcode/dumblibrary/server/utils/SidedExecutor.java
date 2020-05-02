@@ -9,7 +9,7 @@ public class SidedExecutor {
     private SidedExecutor() {
     }
 
-    private static final boolean CLIENT = FMLLaunchHandler.side().isClient();
+    public static final boolean CLIENT = FMLLaunchHandler.side().isClient();
 
     public static void runClient(Supplier<Runnable> clientRun) {
         runSided(clientRun, () -> () -> {});

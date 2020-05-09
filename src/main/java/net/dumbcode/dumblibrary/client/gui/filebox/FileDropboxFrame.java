@@ -14,7 +14,6 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 //TODO: convert to swing

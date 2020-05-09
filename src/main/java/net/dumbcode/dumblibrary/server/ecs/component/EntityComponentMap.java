@@ -1,9 +1,7 @@
 package net.dumbcode.dumblibrary.server.ecs.component;
 
 import io.netty.buffer.ByteBuf;
-import lombok.Getter;
 import net.dumbcode.dumblibrary.DumbLibrary;
-import net.dumbcode.dumblibrary.server.ecs.ComponentMapWriteAccess;
 import net.dumbcode.dumblibrary.server.registry.DumbRegistries;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;

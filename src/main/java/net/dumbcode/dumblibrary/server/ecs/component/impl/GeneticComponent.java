@@ -16,7 +16,6 @@ import net.dumbcode.dumblibrary.server.utils.JavaUtils;
 import net.dumbcode.dumblibrary.server.utils.StreamUtils;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.JsonUtils;
-import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.common.util.Constants;
 
 import javax.annotation.Nullable;
@@ -24,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 public class GeneticComponent extends EntityComponent implements FinalizableComponent {
     @Getter

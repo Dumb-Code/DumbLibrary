@@ -8,7 +8,6 @@ import net.dumbcode.dumblibrary.server.animation.objects.Animation;
 import net.dumbcode.dumblibrary.server.attributes.ModifiableField;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
-import net.dumbcode.dumblibrary.server.registry.DumbRegistries;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.JsonUtils;
 import net.minecraft.util.ResourceLocation;

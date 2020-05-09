@@ -1,7 +1,6 @@
 package net.dumbcode.dumblibrary.server.ecs.system.impl;
 
 import net.dumbcode.dumblibrary.server.animation.objects.AnimationEntry;
-import net.dumbcode.dumblibrary.server.animation.objects.AnimationLayer;
 import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.ecs.EntityFamily;
 import net.dumbcode.dumblibrary.server.ecs.EntityManager;

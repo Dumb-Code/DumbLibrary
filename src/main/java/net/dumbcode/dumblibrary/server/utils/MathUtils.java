@@ -8,7 +8,6 @@ import net.minecraft.util.math.Vec3d;
 
 import javax.vecmath.Vector3f;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
 

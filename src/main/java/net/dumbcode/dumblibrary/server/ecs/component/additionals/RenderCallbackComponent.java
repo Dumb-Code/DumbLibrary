@@ -1,7 +1,6 @@
 package net.dumbcode.dumblibrary.server.ecs.component.additionals;
 
 import net.dumbcode.dumblibrary.client.component.RenderComponentContext;
-import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.minecraft.entity.Entity;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;

@@ -15,7 +15,6 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.Vec3d;
 import net.minecraftforge.fml.common.FMLLog;
 import org.lwjgl.opengl.GL11;
-import scala.tools.nsc.backend.icode.Primitives;
 
 import javax.vecmath.Vector3d;
 import javax.vecmath.Vector3f;

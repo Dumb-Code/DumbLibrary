@@ -5,7 +5,6 @@ import net.dumbcode.dumblibrary.client.model.ModelMissing;
 import net.dumbcode.dumblibrary.client.model.tabula.TabulaModel;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderCallbackComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLocationComponent;
-import net.dumbcode.dumblibrary.server.ecs.component.impl.ModelComponent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.entity.RenderLivingBase;

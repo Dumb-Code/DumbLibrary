@@ -3,7 +3,6 @@ package net.dumbcode.dumblibrary.server.ecs.item;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.ecs.ComponentMapWriteAccess;
-import net.dumbcode.dumblibrary.server.ecs.ComponentWriteAccess;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentMap;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentType;
 import net.minecraft.item.ItemStack;

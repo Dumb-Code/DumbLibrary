@@ -2,13 +2,9 @@ package net.dumbcode.dumblibrary.server.ecs.component.additionals;
 
 import com.google.common.collect.Lists;
 import lombok.Setter;
-import lombok.Value;
-import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.utils.IndexedObject;
 import net.minecraft.util.ResourceLocation;
 
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 public interface RenderLocationComponent {

@@ -1,6 +1,5 @@
 package net.dumbcode.dumblibrary;
 
-import net.dumbcode.dumblibrary.client.model.TransformTypeModelLoader;
 import net.dumbcode.dumblibrary.server.DumbGuiHandler;
 import net.dumbcode.dumblibrary.server.ItemComponent;
 import net.dumbcode.dumblibrary.server.ecs.EntityManager;
@@ -17,9 +16,7 @@ import net.dumbcode.dumblibrary.server.utils.VoidStorage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.client.MinecraftForgeClient;
 import net.minecraftforge.client.model.ModelLoader;
-import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;

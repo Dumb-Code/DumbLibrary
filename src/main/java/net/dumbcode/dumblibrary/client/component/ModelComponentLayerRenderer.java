@@ -1,7 +1,6 @@
 package net.dumbcode.dumblibrary.client.component;
 
 import lombok.RequiredArgsConstructor;
-import net.dumbcode.dumblibrary.server.ecs.component.impl.ModelComponent;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.entity.layers.LayerRenderer;
 import net.minecraft.entity.EntityLivingBase;

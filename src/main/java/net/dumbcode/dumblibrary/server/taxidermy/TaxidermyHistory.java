@@ -3,7 +3,6 @@ package net.dumbcode.dumblibrary.server.taxidermy;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.Value;
 import net.dumbcode.dumblibrary.server.utils.HistoryList;
 import net.dumbcode.dumblibrary.server.utils.RotationAxis;
@@ -13,7 +12,9 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraftforge.common.util.Constants;
 
 import javax.vecmath.Vector3f;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class TaxidermyHistory {
 

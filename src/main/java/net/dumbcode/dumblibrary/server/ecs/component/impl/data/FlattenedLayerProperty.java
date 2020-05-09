@@ -2,7 +2,6 @@ package net.dumbcode.dumblibrary.server.ecs.component.impl.data;
 
 import com.google.common.collect.Sets;
 import lombok.Getter;
-import net.minecraft.nbt.NBTTagCompound;
 
 import java.util.Set;
 import java.util.function.Supplier;

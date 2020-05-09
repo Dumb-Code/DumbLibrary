@@ -1,7 +1,6 @@
 package net.dumbcode.dumblibrary.server.network;
 
 import io.netty.buffer.ByteBuf;
-import net.dumbcode.dumblibrary.server.animation.objects.AnimationLayer;
 import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentTypes;
 import net.minecraft.entity.Entity;

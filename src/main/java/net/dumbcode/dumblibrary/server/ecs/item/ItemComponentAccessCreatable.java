@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.dumbcode.dumblibrary.DumbLibrary;
-import net.dumbcode.dumblibrary.server.ecs.ComponentWriteAccess;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentAttacher;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;

@@ -7,7 +7,10 @@ import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class GroupedComponentAccess implements ComponentAccess {

@@ -7,7 +7,6 @@ import io.netty.buffer.ByteBuf;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import net.dumbcode.dumblibrary.client.TextureUtils;
 import net.dumbcode.dumblibrary.server.dna.GeneticEntry;

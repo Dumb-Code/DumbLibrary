@@ -15,7 +15,6 @@ import net.minecraft.util.JsonUtils;
 
 import java.util.Arrays;
 import java.util.Random;
-import java.util.stream.StreamSupport;
 
 public class GrowingComponent extends EntityComponent implements FinalizableComponent {
 

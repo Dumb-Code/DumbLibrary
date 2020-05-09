@@ -1,7 +1,6 @@
 package net.dumbcode.dumblibrary.server.ecs.component.impl;
 
 import com.google.gson.JsonObject;
-import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;

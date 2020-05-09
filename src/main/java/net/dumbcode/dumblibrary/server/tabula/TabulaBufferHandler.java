@@ -3,7 +3,6 @@ package net.dumbcode.dumblibrary.server.tabula;
 import io.netty.buffer.ByteBuf;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 
-import java.awt.image.BufferedImage;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Predicate;

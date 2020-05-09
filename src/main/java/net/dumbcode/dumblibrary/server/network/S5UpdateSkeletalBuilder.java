@@ -2,7 +2,6 @@ package net.dumbcode.dumblibrary.server.network;
 
 import io.netty.buffer.ByteBuf;
 import net.dumbcode.dumblibrary.server.taxidermy.TaxidermyBlockEntity;
-import net.dumbcode.dumblibrary.server.taxidermy.TaxidermyHistory;
 import net.dumbcode.dumblibrary.server.utils.RotationAxis;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;

@@ -3,7 +3,6 @@ package net.dumbcode.dumblibrary.server.ecs.system.impl;
 import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.ecs.EntityFamily;
 import net.dumbcode.dumblibrary.server.ecs.EntityManager;
-import net.dumbcode.dumblibrary.server.ecs.HerdSavedData;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentTypes;
 import net.dumbcode.dumblibrary.server.ecs.component.impl.HerdComponent;
 import net.dumbcode.dumblibrary.server.ecs.system.EntitySystem;
@@ -17,7 +16,6 @@ import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 

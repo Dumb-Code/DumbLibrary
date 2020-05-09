@@ -4,7 +4,6 @@ import com.google.gson.JsonObject;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import lombok.experimental.NonFinal;
 import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.ecs.HerdSavedData;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
@@ -17,9 +16,7 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.World;
 
-import javax.swing.text.html.Option;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;

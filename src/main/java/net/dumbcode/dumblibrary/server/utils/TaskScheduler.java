@@ -6,8 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.minecraft.client.Minecraft;
-import net.minecraft.server.dedicated.DedicatedServer;
-import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.util.Util;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.Mod;

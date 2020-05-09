@@ -15,7 +15,6 @@ import net.minecraftforge.common.EnumPlantType;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.StreamSupport;
 
 @Getter
 public class FlowerWorldgenComponent extends EntityComponent {

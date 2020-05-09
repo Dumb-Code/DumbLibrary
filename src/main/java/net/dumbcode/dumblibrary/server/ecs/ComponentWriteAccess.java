@@ -1,8 +1,9 @@
 package net.dumbcode.dumblibrary.server.ecs;
 
 
-import net.dumbcode.dumblibrary.server.ecs.component.*;
-import scala.xml.Null;
+import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
+import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
+import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentType;
 
 import javax.annotation.Nullable;
 

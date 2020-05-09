@@ -8,9 +8,7 @@ import net.dumbcode.dumblibrary.server.registry.DumbRegistries;
 import net.dumbcode.dumblibrary.server.utils.TaskScheduler;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.HttpUtil;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.util.Constants;
 
 import javax.annotation.Nullable;

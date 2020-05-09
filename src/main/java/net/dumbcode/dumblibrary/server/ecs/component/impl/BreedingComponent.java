@@ -46,9 +46,8 @@ public class BreedingComponent extends EntityComponent implements CanBreedCompon
         private int minTicksBetweenBreeding = 2000;
 
         @Override
-        public BreedingComponent constructTo(BreedingComponent component) {
+        public void constructTo(BreedingComponent component) {
             component.minTicksBetweenBreeding = component.ticksSinceLastBreed = this.minTicksBetweenBreeding;
-            return component;
         }
 
         @Override

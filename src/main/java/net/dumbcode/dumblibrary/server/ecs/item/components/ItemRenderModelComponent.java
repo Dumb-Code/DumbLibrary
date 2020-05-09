@@ -40,9 +40,8 @@ public class ItemRenderModelComponent extends EntityComponent {
         private ResourceLocation location = DumbLibrary.MODEL_MISSING;
 
         @Override
-        public ItemRenderModelComponent constructTo(ItemRenderModelComponent component) {
+        public void constructTo(ItemRenderModelComponent component) {
             component.location = this.location;
-            return component;
         }
 
         @Override

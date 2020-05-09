@@ -24,7 +24,8 @@ public interface ComponentWriteAccess extends ComponentAccess {
         if(storage == null) {
             this.attachComponent(type);
         } else {
-            T construct = storage.constructTo(type.constructEmpty());
+            T construct = type.constructEmpty();
+            storage.constructTo(construct);
             construct.onCreated(type, storage, storageID);
             this.attachComponent(type, construct);
         }

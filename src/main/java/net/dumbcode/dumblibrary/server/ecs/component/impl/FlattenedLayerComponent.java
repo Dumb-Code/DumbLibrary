@@ -177,9 +177,8 @@ public class FlattenedLayerComponent extends EntityComponent implements RenderLa
         }
 
         @Override
-        public FlattenedLayerComponent constructTo(FlattenedLayerComponent component) {
+        public void constructTo(FlattenedLayerComponent component) {
             component.staticLayers.addAll(this.staticLayers);
-            return component;
         }
 
         @Override

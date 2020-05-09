@@ -38,7 +38,7 @@ public class FlowerWorldgenComponent extends EntityComponent {
         private int groupSpawnSize = 5;
 
         @Override
-        public FlowerWorldgenComponent constructTo(FlowerWorldgenComponent component) {
+        public void constructTo(FlowerWorldgenComponent component) {
 
             for (String biomeType : this.biomeTypes) {
                 component.biomeTypes.addAll(BiomeDictionary.getBiomes(BiomeDictionary.Type.getType(biomeType)));
@@ -48,8 +48,6 @@ public class FlowerWorldgenComponent extends EntityComponent {
             component.plantType = this.plantType;
             component.chancePerChunk = this.chancePerStatePerChunk;
             component.groupSpawnSize = this.groupSpawnSize;
-
-            return component;
         }
 
         @Override

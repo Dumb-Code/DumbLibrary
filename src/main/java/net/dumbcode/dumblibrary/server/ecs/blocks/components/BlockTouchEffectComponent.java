@@ -35,9 +35,8 @@ public class BlockTouchEffectComponent extends EntityComponent {
         private List<PotionEffect> potionEffectList = new ArrayList<>();
 
         @Override
-        public BlockTouchEffectComponent constructTo(BlockTouchEffectComponent component) {
+        public void constructTo(BlockTouchEffectComponent component) {
             component.potionEffectList.addAll(this.potionEffectList);
-            return component;
         }
 
         @Override

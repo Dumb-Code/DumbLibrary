@@ -96,7 +96,12 @@ public class ModifiableField {
             UUID uuid = compound.getUniqueId("uuid");
             this.operations.put(uuid, new ModifiableFieldModifier(uuid, ModOp.values()[compound.getInteger("modifier")], compound.getDouble("value")));
         }
+    }
 
+    public static ModifiableField createField(double baseValue) {
+        ModifiableField field = new ModifiableField();
+        field.setBaseValue(baseValue);
+        return field;
     }
 
 }

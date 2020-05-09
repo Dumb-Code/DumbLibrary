@@ -3,25 +3,40 @@ package net.dumbcode.dumblibrary.server.dna;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import net.dumbcode.dumblibrary.server.attributes.ModOp;
+import net.dumbcode.dumblibrary.server.attributes.ModifiableField;
+import net.dumbcode.dumblibrary.server.dna.datahandlers.FloatGeneticDataHandler;
+import net.dumbcode.dumblibrary.server.dna.datahandlers.GeneticDataHandler;
 import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentType;
-import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 
-import java.util.function.BinaryOperator;
+import java.util.UUID;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 @Getter
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class GeneticType<T extends GeneticFactoryStorage> extends IForgeRegistryEntry.Impl<GeneticType<?>> {
     private final GeneticValueApplier<T, ComponentAccess> onChange;
-    private final BinaryOperator<Float> combiner;
+    private final GeneticDataHandler dataHandler;
     private final Supplier<T> storage;
 
     @SuppressWarnings("unchecked")
     public static Class<GeneticType<?>> getWildcardType() {
         return (Class<GeneticType<?>>) (Class<?>) GeneticType.class;
+    }
+
+    public static <E extends EntityComponent> GeneticType<?> simpleFieldModifierType(String uuid, EntityComponentType<E, ?> componentType, Function<E, ModifiableField> func, String name) {
+        return simpleFieldModifierType(uuid, componentType, func, ModOp.MULTIPLY_BASE_THEN_ADD, name);
+    }
+
+    public static <E extends EntityComponent> GeneticType<?> simpleFieldModifierType(String uuid, EntityComponentType<E, ?> componentType, Function<E, ModifiableField> func, ModOp op, String name) {
+        UUID u = UUID.fromString(uuid);
+        return GeneticType.builder()
+            .onChange(componentType, func, (value, rawValue, type, storage) -> type.addModifer(u, op, value))
+            .build(name);
     }
 
     public static <T extends GeneticFactoryStorage> GeneticTypeBuilder<T> builder() {
@@ -30,7 +45,7 @@ public class GeneticType<T extends GeneticFactoryStorage> extends IForgeRegistry
 
     public static class GeneticTypeBuilder<T extends GeneticFactoryStorage> {
         private GeneticValueApplier<T, ComponentAccess> onChange = (value, rawValue, type, storage1) -> {};
-        private BinaryOperator<Float> combiner = (a, b) -> (a + b) / 2;
+        private GeneticDataHandler dataHandler = FloatGeneticDataHandler.INSTANCE;
         private Supplier<T> storageCreator = () -> null;
 
         private GeneticTypeBuilder() { }
@@ -45,18 +60,23 @@ public class GeneticType<T extends GeneticFactoryStorage> extends IForgeRegistry
             return this;
         }
 
+        public <E extends EntityComponent> GeneticTypeBuilder<T> onChange(EntityComponentType<E, ?> type, Function<E, ModifiableField> func, GeneticValueApplier<T, ModifiableField> onChange) {
+            this.onChange = (value, rawValue, access, storage) -> access.get(type).map(func).ifPresent(c -> onChange.apply(value, rawValue, c, storage));
+            return this;
+        }
+
         public GeneticTypeBuilder<T> storage(Supplier<T> storageCreator) {
             this.storageCreator = storageCreator;
             return this;
         }
 
-        public GeneticTypeBuilder<T> onCombined(BinaryOperator<Float> combiner) {
-            this.combiner = combiner;
+        public GeneticTypeBuilder<T> dataHandler(GeneticDataHandler dataHandler) {
+            this.dataHandler = dataHandler;
             return this;
         }
 
         public GeneticType<T> build(String registryName) {
-            GeneticType<T> type = new GeneticType<>(this.onChange, this.combiner, this.storageCreator);
+            GeneticType<T> type = new GeneticType<>(this.onChange, this.dataHandler, this.storageCreator);
             type.setRegistryName(registryName);
             return type;
         }

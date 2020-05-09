@@ -95,12 +95,11 @@ public class GeneticComponent extends EntityComponent implements FinalizableComp
         }
 
         @Override
-        public GeneticComponent constructTo(GeneticComponent component) {
+        public void constructTo(GeneticComponent component) {
             this.baseEntries.stream().map(GeneticEntry::copy).forEach(e -> {
                 e.setRandomModifier();
                 component.genetics.add(e);
             });
-            return component;
         }
 
         @Override

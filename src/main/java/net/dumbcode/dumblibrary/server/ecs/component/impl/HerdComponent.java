@@ -95,9 +95,8 @@ public class HerdComponent extends EntityComponent implements FinalizableCompone
         private ResourceLocation herdTypeID; //Used to check if entities are compatible with other herds ect.
 
         @Override
-        public HerdComponent constructTo(HerdComponent component) {
+        public void constructTo(HerdComponent component) {
             component.herdTypeID = this.herdTypeID;
-            return component;
         }
 
         @Override

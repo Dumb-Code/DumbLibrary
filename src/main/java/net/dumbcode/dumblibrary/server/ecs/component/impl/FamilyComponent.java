@@ -67,9 +67,8 @@ public class FamilyComponent extends EntityComponent implements CanBreedComponen
         private ResourceLocation familyType;
 
         @Override
-        public FamilyComponent constructTo(FamilyComponent component) {
+        public void constructTo(FamilyComponent component) {
             component.familyTypeId = this.familyType;
-            return component;
         }
 
         @Override

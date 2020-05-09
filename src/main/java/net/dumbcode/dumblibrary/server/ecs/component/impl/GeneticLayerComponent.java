@@ -4,7 +4,10 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import io.netty.buffer.ByteBuf;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import net.dumbcode.dumblibrary.client.TextureUtils;
 import net.dumbcode.dumblibrary.server.dna.GeneticEntry;
@@ -152,6 +155,7 @@ public class GeneticLayerComponent extends EntityComponent implements RenderLaye
 
     //todo:move to own class
     @Data
+    @AllArgsConstructor(access = AccessLevel.NONE)
     @Accessors(chain = true)
     private static class GeneticLayerEntry {
         private final String layerName;

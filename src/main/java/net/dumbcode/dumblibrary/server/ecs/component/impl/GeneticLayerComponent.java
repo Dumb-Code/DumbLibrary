@@ -134,9 +134,8 @@ public class GeneticLayerComponent extends EntityComponent implements RenderLaye
         }
 
         @Override
-        public GeneticLayerComponent constructTo(GeneticLayerComponent component) {
+        public void constructTo(GeneticLayerComponent component) {
             component.entries.addAll(this.entries);
-            return component;
         }
 
         @Override

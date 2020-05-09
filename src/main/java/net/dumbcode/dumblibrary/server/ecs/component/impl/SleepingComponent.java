@@ -67,12 +67,11 @@ public class SleepingComponent extends EntityComponent {
         private double wakeupTime;
 
         @Override
-        public SleepingComponent constructTo(SleepingComponent component) {
+        public void constructTo(SleepingComponent component) {
             component.sleepingAnimation = new Animation(this.sleepingAnimation);
             component.sleepTime.setBaseValue(this.sleepTime);
             component.wakeupTime.setBaseValue(this.wakeupTime);
             component.nocturnalChance.setBaseValue(0D);
-            return component;
         }
 
         @Override

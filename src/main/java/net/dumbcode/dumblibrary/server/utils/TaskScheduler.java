@@ -25,8 +25,6 @@ import java.util.concurrent.FutureTask;
 
 @Mod.EventBusSubscriber(modid = DumbLibrary.MODID)
 public class TaskScheduler {
-    public static final TaskScheduler INSTANCE = new TaskScheduler();
-
     private static final Queue<Scheduled> tasksToAdd = new ArrayDeque<>();
     private static final List<Scheduled> scheduledTasks = new ArrayList<>();
 
@@ -68,7 +66,7 @@ public class TaskScheduler {
         }
     }
 
-    public static ListenableFuture addTask(Runnable task, int ticks) {
+    public static ListenableFuture<?> addTask(Runnable task, int ticks) {
         Validate.notNull(task);
         return addTask(Executors.callable(task), ticks);
     }

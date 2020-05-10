@@ -6,6 +6,7 @@ import net.dumbcode.dumblibrary.server.dna.datahandlers.ColouredGeneticDataHandl
 import net.dumbcode.dumblibrary.server.dna.storages.GeneticTypeLayerColorStorage;
 import net.dumbcode.dumblibrary.server.dna.storages.RandomUUIDStorage;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentTypes;
+import net.dumbcode.dumblibrary.server.ecs.component.impl.GeneticLayerComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.impl.RenderAdjustmentsComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.impl.SleepingComponent;
 import net.dumbcode.dumblibrary.server.registry.RegisterGeneticTypes;
@@ -25,9 +26,10 @@ import net.minecraftforge.fml.common.registry.GameRegistry;
 public class GeneticTypes {
 
     public static final GeneticType<GeneticTypeLayerColorStorage> LAYER_COLORS = InjectedUtils.injected();
+    public static final GeneticType<GeneticTypeOverallTintStorage> OVERALL_TINT = InjectedUtils.injected();
     public static final GeneticType<RandomUUIDStorage> SPEED_MODIFIER = InjectedUtils.injected();
-    public static final GeneticType<?> SIZE = InjectedUtils.injected();
-    public static final GeneticType<?> NOCTURNAL_CHANCE = InjectedUtils.injected();
+    public static final GeneticType<GeneticFieldModifierStorage> SIZE = InjectedUtils.injected();
+    public static final GeneticType<GeneticFieldModifierStorage> NOCTURNAL_CHANCE = InjectedUtils.injected();
 
     @SubscribeEvent
     public static void onRegisterGenetics(RegisterGeneticTypes event) {
@@ -38,6 +40,20 @@ public class GeneticTypes {
                     -> component.setLayerValues(storage.getLayerName(), GeneticUtils.decode3BitColor(rawValue)))
                 .dataHandler(ColouredGeneticDataHandler.INSTANCE)
                 .build("layer_colors"),
+
+            GeneticType.<GeneticTypeOverallTintStorage>builder()
+                .storage(GeneticTypeOverallTintStorage::new)
+                .onChange(EntityComponentTypes.GENETIC_LAYER_COLORS, (value, rawValue, component, storage) -> {
+                    for (GeneticLayerComponent.GeneticLayerEntry entry : component.getEntries()) {
+                        if(storage.getTintType() == GeneticTypeOverallTintStorage.TintType.DIRECT) {
+                            entry.addDirectTint(storage.getRandomUUID(), GeneticUtils.decode3BitColor(rawValue));
+                        } else {
+                            entry.addTargetTint(storage.getRandomUUID(), GeneticUtils.decode3BitColor(rawValue));
+                        }
+                    }
+                })
+                .dataHandler(ColouredGeneticDataHandler.INSTANCE)
+                .build("overall_tint"),
 
             GeneticType.<RandomUUIDStorage>builder()
                 .storage(RandomUUIDStorage::new)
@@ -54,11 +70,8 @@ public class GeneticTypes {
                 })
                 .build("speed_modifier"),
 
-            GeneticType.simpleFieldModifierType("bfd2e581-117b-4401-bd3f-1d14b08252b0", EntityComponentTypes.RENDER_ADJUSTMENTS,
-                RenderAdjustmentsComponent::getScaleModifier, "size"),
-
-            GeneticType.simpleFieldModifierType("2d584d07-7884-4475-a2c3-90544de642c5", EntityComponentTypes.SLEEPING,
-                SleepingComponent::getNocturnalChance, ModOp.ADD, "nocturnal_chance")
+            GeneticType.simpleFieldModifierType(EntityComponentTypes.RENDER_ADJUSTMENTS, RenderAdjustmentsComponent::getScaleModifier, "size"),
+            GeneticType.simpleFieldModifierType(EntityComponentTypes.SLEEPING, SleepingComponent::getNocturnalChance, "nocturnal_chance")
         );
     }
 

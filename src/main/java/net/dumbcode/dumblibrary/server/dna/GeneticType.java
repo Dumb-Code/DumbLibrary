@@ -28,14 +28,10 @@ public class GeneticType<T extends GeneticFactoryStorage> extends IForgeRegistry
         return (Class<GeneticType<?>>) (Class<?>) GeneticType.class;
     }
 
-    public static <E extends EntityComponent> GeneticType<?> simpleFieldModifierType(String uuid, EntityComponentType<E, ?> componentType, Function<E, ModifiableField> func, String name) {
-        return simpleFieldModifierType(uuid, componentType, func, ModOp.MULTIPLY_BASE_THEN_ADD, name);
-    }
-
-    public static <E extends EntityComponent> GeneticType<?> simpleFieldModifierType(String uuid, EntityComponentType<E, ?> componentType, Function<E, ModifiableField> func, ModOp op, String name) {
-        UUID u = UUID.fromString(uuid);
-        return GeneticType.builder()
-            .onChange(componentType, func, (value, rawValue, type, storage) -> type.addModifer(u, op, value))
+    public static <E extends EntityComponent> GeneticType<GeneticFieldModifierStorage> simpleFieldModifierType(EntityComponentType<E, ?> componentType, Function<E, ModifiableField> func, String name) {
+        return GeneticType.<GeneticFieldModifierStorage>builder()
+            .storage(GeneticFieldModifierStorage::new)
+            .onChange(componentType, func, (value, rawValue, field, storage) -> field.addModifer(storage.getRandomUUID(), storage.getOperation(), value*storage.getModifier()))
             .build(name);
     }
 

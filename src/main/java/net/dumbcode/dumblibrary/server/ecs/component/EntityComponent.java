@@ -70,7 +70,7 @@ public abstract class EntityComponent {
     }
 
     public void syncToClient() {
-        TaskScheduler.INSTANCE.addTask(() -> this.syncer.run(), 3);
+        TaskScheduler.addTask(() -> this.syncer.run(), 3);
     }
 
     public void setResync(ComponentAccess access) {

@@ -33,7 +33,7 @@ public class ItemComponentHandler {
             ArrayDeque<Particle>[][] fxLayers = ObfuscationReflectionHelper.getPrivateValue(ParticleManager.class, Minecraft.getMinecraft().effectRenderer, "field_78876_b", "fxLayers");
             fxLayers[1][1].removeIf(particle -> {
                 if(particle instanceof ParticleBreaking) {
-                    TextureAtlasSprite sprite = ObfuscationReflectionHelper.getPrivateValue(Particle.class, particle, "field_187241_h", "particleTexture");
+                    TextureAtlasSprite sprite = ObfuscationReflectionHelper.getPrivateValue(Particle.class, particle, "field_187119_C", "particleTexture");
                     return sprite instanceof ItemComponentDummyBreakingParticle;
                 }
                 return false;

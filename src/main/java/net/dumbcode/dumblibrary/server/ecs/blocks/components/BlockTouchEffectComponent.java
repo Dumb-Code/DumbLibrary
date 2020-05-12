@@ -1,6 +1,5 @@
 package net.dumbcode.dumblibrary.server.ecs.blocks.components;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import lombok.Getter;
 import lombok.Setter;
@@ -16,7 +15,6 @@ import net.minecraft.util.JsonUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 public class BlockTouchEffectComponent extends EntityComponent {
 
@@ -35,9 +33,8 @@ public class BlockTouchEffectComponent extends EntityComponent {
         private List<PotionEffect> potionEffectList = new ArrayList<>();
 
         @Override
-        public BlockTouchEffectComponent constructTo(BlockTouchEffectComponent component) {
+        public void constructTo(BlockTouchEffectComponent component) {
             component.potionEffectList.addAll(this.potionEffectList);
-            return component;
         }
 
         @Override

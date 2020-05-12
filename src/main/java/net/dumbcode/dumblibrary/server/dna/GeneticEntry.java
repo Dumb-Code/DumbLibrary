@@ -3,7 +3,6 @@ package net.dumbcode.dumblibrary.server.dna;
 import com.google.gson.JsonObject;
 import lombok.Data;
 import lombok.experimental.Accessors;
-import net.dumbcode.dumblibrary.server.json.JsonUtil;
 import net.dumbcode.dumblibrary.server.registry.DumbRegistries;
 import net.dumbcode.dumblibrary.server.utils.JavaUtils;
 import net.minecraft.nbt.NBTTagCompound;

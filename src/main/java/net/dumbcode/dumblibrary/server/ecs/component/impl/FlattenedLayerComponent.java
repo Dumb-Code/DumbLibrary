@@ -9,9 +9,9 @@ import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentTypes;
+import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderFlattenedLayerComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLayerComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLocationComponent;
-import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderFlattenedLayerComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.impl.data.FlattenedLayerProperty;
 import net.dumbcode.dumblibrary.server.utils.BuilderNode;
 import net.dumbcode.dumblibrary.server.utils.IOCollectors;
@@ -177,9 +177,8 @@ public class FlattenedLayerComponent extends EntityComponent implements RenderLa
         }
 
         @Override
-        public FlattenedLayerComponent constructTo(FlattenedLayerComponent component) {
+        public void constructTo(FlattenedLayerComponent component) {
             component.staticLayers.addAll(this.staticLayers);
-            return component;
         }
 
         @Override

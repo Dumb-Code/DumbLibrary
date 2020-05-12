@@ -1,12 +1,10 @@
 package net.dumbcode.dumblibrary.server.ecs.blocks.components;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
 import net.dumbcode.dumblibrary.server.ecs.item.ItemComponentAccessCreatable;
@@ -15,7 +13,6 @@ import net.dumbcode.dumblibrary.server.utils.StreamUtils;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.ShapedRecipes;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.JsonUtils;
 import net.minecraftforge.common.util.Constants;
 
@@ -24,7 +21,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import java.util.stream.StreamSupport;
 
 public class BlockDropsComponent extends EntityComponent {
 
@@ -58,14 +54,13 @@ public class BlockDropsComponent extends EntityComponent {
         private List<ItemComponentAccessCreatable> creatables = new ArrayList<>();
 
         @Override
-        public BlockDropsComponent constructTo(BlockDropsComponent component) {
+        public void constructTo(BlockDropsComponent component) {
             for (ItemStack stack : this.stackList) {
                 component.stackList.add(() -> stack);
             }
             for (ItemComponentAccessCreatable creatable : this.creatables) {
                 component.stackList.add(creatable.getStack());
             }
-            return component;
         }
 
         @Override

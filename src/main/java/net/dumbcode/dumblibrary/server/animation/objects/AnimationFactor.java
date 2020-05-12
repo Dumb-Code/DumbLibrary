@@ -1,8 +1,6 @@
 package net.dumbcode.dumblibrary.server.animation.objects;
 
 import lombok.Getter;
-import net.dumbcode.dumblibrary.DumbLibrary;
-import net.minecraftforge.fml.common.registry.GameRegistry;
 
 import java.util.HashMap;
 import java.util.Map;

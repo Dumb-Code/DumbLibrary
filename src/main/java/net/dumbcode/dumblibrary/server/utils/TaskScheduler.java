@@ -6,8 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.minecraft.client.Minecraft;
-import net.minecraft.server.dedicated.DedicatedServer;
-import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.util.Util;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.Mod;
@@ -27,8 +25,6 @@ import java.util.concurrent.FutureTask;
 
 @Mod.EventBusSubscriber(modid = DumbLibrary.MODID)
 public class TaskScheduler {
-    public static final TaskScheduler INSTANCE = new TaskScheduler();
-
     private static final Queue<Scheduled> tasksToAdd = new ArrayDeque<>();
     private static final List<Scheduled> scheduledTasks = new ArrayList<>();
 
@@ -70,7 +66,7 @@ public class TaskScheduler {
         }
     }
 
-    public static ListenableFuture addTask(Runnable task, int ticks) {
+    public static ListenableFuture<?> addTask(Runnable task, int ticks) {
         Validate.notNull(task);
         return addTask(Executors.callable(task), ticks);
     }

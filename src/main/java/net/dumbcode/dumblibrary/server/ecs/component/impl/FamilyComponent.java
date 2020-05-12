@@ -10,13 +10,11 @@ import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentTypes;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.CanBreedComponent;
-import net.dumbcode.dumblibrary.server.json.JsonUtil;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.JsonUtils;
 import net.minecraft.util.ResourceLocation;
 
-import java.util.Optional;
 import java.util.UUID;
 
 
@@ -67,9 +65,8 @@ public class FamilyComponent extends EntityComponent implements CanBreedComponen
         private ResourceLocation familyType;
 
         @Override
-        public FamilyComponent constructTo(FamilyComponent component) {
+        public void constructTo(FamilyComponent component) {
             component.familyTypeId = this.familyType;
-            return component;
         }
 
         @Override

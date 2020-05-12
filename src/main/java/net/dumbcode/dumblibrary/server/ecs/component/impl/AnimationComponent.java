@@ -1,7 +1,6 @@
 package net.dumbcode.dumblibrary.server.ecs.component.impl;
 
 import com.google.common.collect.Lists;
-import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,7 +22,6 @@ import net.minecraft.entity.Entity;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.IntStream;
 
 public class AnimationComponent<E extends Entity & ComponentAccess> extends EntityComponent implements RenderCallbackComponent {
 

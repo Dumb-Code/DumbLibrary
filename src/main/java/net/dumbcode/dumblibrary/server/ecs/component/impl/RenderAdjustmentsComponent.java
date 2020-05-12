@@ -5,6 +5,7 @@ import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import net.dumbcode.dumblibrary.server.attributes.ModifiableField;
 import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
@@ -12,7 +13,6 @@ import net.dumbcode.dumblibrary.server.ecs.component.FinalizableComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderCallbackComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.ScaleAdjustmentComponent;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.entity.ai.attributes.ModifiableAttributeInstance;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.JsonUtils;
 
@@ -26,6 +26,9 @@ public class RenderAdjustmentsComponent extends EntityComponent implements Rende
     private final float[] defaultScale = new float[3];
 
     private final List<Supplier<Float>> modifiers = new ArrayList<>();
+
+    @Getter
+    public final ModifiableField scaleModifier = ModifiableField.createField(1D);
 
     public float[] getScale() {
         float[] mutScale = new float[] { this.defaultScale[0], this.defaultScale[1], this.defaultScale[0] };
@@ -81,6 +84,7 @@ public class RenderAdjustmentsComponent extends EntityComponent implements Rende
     @Override
     public void finalizeComponent(ComponentAccess entity) {
         this.modifiers.clear();
+        this.modifiers.add(() -> (float) this.scaleModifier.getValue());
         for (EntityComponent component : entity.getAllComponents()) {
             if (component instanceof ScaleAdjustmentComponent) {
                 ((ScaleAdjustmentComponent) component).applyScale(this.modifiers::add);
@@ -97,11 +101,10 @@ public class RenderAdjustmentsComponent extends EntityComponent implements Rende
         private float scaleZ = 1F;
 
         @Override
-        public RenderAdjustmentsComponent constructTo(RenderAdjustmentsComponent component) {
+        public void constructTo(RenderAdjustmentsComponent component) {
             component.defaultScale[0] = this.scaleX;
             component.defaultScale[1] = this.scaleY;
             component.defaultScale[2] = this.scaleZ;
-            return component;
         }
 
         @Override

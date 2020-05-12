@@ -52,10 +52,9 @@ public class BlinkingComponent extends EntityComponent {
         private int tickTimeClose;
 
         @Override
-        public BlinkingComponent constructTo(BlinkingComponent component) {
+        public void constructTo(BlinkingComponent component) {
             component.tickTimeOpen = this.tickTimeOpen;
             component.tickTimeClose = this.tickTimeClose;
-            return component;
         }
 
         @Override

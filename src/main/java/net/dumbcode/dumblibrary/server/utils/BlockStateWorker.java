@@ -1,6 +1,5 @@
 package net.dumbcode.dumblibrary.server.utils;
 
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.ChunkCache;
 import net.minecraft.world.IBlockAccess;

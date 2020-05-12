@@ -3,7 +3,6 @@ package net.dumbcode.dumblibrary.server.utils;
 import io.netty.buffer.ByteBuf;
 import lombok.Cleanup;
 import net.dumbcode.dumblibrary.DumbLibrary;
-import net.minecraftforge.fml.common.network.ByteBufUtils;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;

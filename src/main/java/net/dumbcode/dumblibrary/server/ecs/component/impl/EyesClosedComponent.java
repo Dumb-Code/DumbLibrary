@@ -107,10 +107,9 @@ public class EyesClosedComponent extends EntityComponent implements RenderFlatte
         private String eyesOffTexture;
 
         @Override
-        public EyesClosedComponent constructTo(EyesClosedComponent component) {
+        public void constructTo(EyesClosedComponent component) {
             component.eyesOnTexture = this.eyesOnTexture;
             component.eyesOffTexture = this.eyesOffTexture;
-            return component;
         }
 
         @Override

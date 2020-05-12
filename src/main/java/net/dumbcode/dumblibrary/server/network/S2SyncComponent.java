@@ -5,7 +5,6 @@ import io.netty.buffer.Unpooled;
 import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentType;
-import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentTypes;
 import net.dumbcode.dumblibrary.server.registry.DumbRegistries;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;

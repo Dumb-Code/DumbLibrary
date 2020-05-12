@@ -115,9 +115,8 @@ public class ModelComponent extends EntityComponent implements RenderCallbackCom
         private float shadowSize;
 
         @Override
-        public ModelComponent constructTo(ModelComponent component) {
+        public void constructTo(ModelComponent component) {
             component.shadowSize = this.shadowSize;
-            return component;
         }
 
         @Override

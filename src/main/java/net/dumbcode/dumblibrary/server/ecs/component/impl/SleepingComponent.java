@@ -8,7 +8,6 @@ import net.dumbcode.dumblibrary.server.animation.objects.Animation;
 import net.dumbcode.dumblibrary.server.attributes.ModifiableField;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
-import net.dumbcode.dumblibrary.server.registry.DumbRegistries;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.JsonUtils;
 import net.minecraft.util.ResourceLocation;
@@ -23,8 +22,21 @@ public class SleepingComponent extends EntityComponent {
 
     private final ModifiableField sleepTime = new ModifiableField();
     private final ModifiableField wakeupTime = new ModifiableField();
+    private final ModifiableField nocturnalChance = new ModifiableField(); //If passed 1 then is nocturnal
 
     private boolean isSleeping;
+
+    public boolean isNocturnal() {
+        return this.nocturnalChance.getValue() >= 1;
+    }
+
+    public ModifiableField getSleepTime() {
+        return this.isNocturnal() ? this.wakeupTime : this.sleepTime;
+    }
+
+    public ModifiableField getWakeupTime() {
+        return this.isNocturnal() ? this.sleepTime : this.wakeupTime;
+    }
 
     @Override
     public NBTTagCompound serialize(NBTTagCompound compound) {
@@ -54,11 +66,11 @@ public class SleepingComponent extends EntityComponent {
         private double wakeupTime;
 
         @Override
-        public SleepingComponent constructTo(SleepingComponent component) {
+        public void constructTo(SleepingComponent component) {
             component.sleepingAnimation = new Animation(this.sleepingAnimation);
             component.sleepTime.setBaseValue(this.sleepTime);
             component.wakeupTime.setBaseValue(this.wakeupTime);
-            return component;
+            component.nocturnalChance.setBaseValue(0D);
         }
 
         @Override

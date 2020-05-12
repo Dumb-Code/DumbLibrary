@@ -1,6 +1,5 @@
 package net.dumbcode.dumblibrary.server.ecs.item.components;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,7 +10,6 @@ import net.dumbcode.dumblibrary.server.utils.DumbJsonUtils;
 import net.dumbcode.dumblibrary.server.utils.IOCollectors;
 import net.dumbcode.dumblibrary.server.utils.StreamUtils;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.JsonUtils;
 import net.minecraftforge.common.util.Constants;
@@ -19,7 +17,6 @@ import net.minecraftforge.common.util.Constants;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 @Getter
 public class ItemEatenComponent extends EntityComponent {
@@ -67,12 +64,11 @@ public class ItemEatenComponent extends EntityComponent {
         private float saturation;
 
         @Override
-        public ItemEatenComponent constructTo(ItemEatenComponent component) {
+        public void constructTo(ItemEatenComponent component) {
             component.potionEffectList.addAll(this.potionEffectList);
             component.duration = this.duration;
             component.fillAmount = this.fillAmount;
             component.saturation = this.saturation;
-            return component;
         }
 
         @Override

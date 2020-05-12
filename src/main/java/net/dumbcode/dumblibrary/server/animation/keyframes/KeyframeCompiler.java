@@ -7,7 +7,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.dumbcode.dumblibrary.server.animation.TabulaUtils;
 import net.dumbcode.dumblibrary.server.animation.objects.AnimatableCube;
-import net.dumbcode.dumblibrary.server.animation.objects.AnimationLayer;
 import net.dumbcode.dumblibrary.server.animation.objects.CubeReference;
 import net.dumbcode.dumblibrary.server.animation.objects.PoseData;
 import net.dumbcode.dumblibrary.server.tabula.TabulaModelInformation;

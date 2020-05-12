@@ -2,7 +2,6 @@ package net.dumbcode.dumblibrary.client.model;
 
 import net.dumbcode.dumblibrary.client.model.tabula.TabulaModel;
 import net.dumbcode.dumblibrary.server.tabula.TabulaModelInformation;
-import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.model.ModelRenderer;
 import net.minecraft.entity.Entity;
 

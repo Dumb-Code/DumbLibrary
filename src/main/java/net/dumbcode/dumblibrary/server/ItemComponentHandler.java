@@ -8,10 +8,8 @@ import net.minecraft.client.particle.ParticleManager;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.item.Item;
 import net.minecraftforge.client.event.ModelBakeEvent;
 import net.minecraftforge.client.model.BakedModelWrapper;
-import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -35,7 +33,7 @@ public class ItemComponentHandler {
             ArrayDeque<Particle>[][] fxLayers = ObfuscationReflectionHelper.getPrivateValue(ParticleManager.class, Minecraft.getMinecraft().effectRenderer, "field_78876_b", "fxLayers");
             fxLayers[1][1].removeIf(particle -> {
                 if(particle instanceof ParticleBreaking) {
-                    TextureAtlasSprite sprite = ObfuscationReflectionHelper.getPrivateValue(Particle.class, particle, "field_187241_h", "particleTexture");
+                    TextureAtlasSprite sprite = ObfuscationReflectionHelper.getPrivateValue(Particle.class, particle, "field_187119_C", "particleTexture");
                     return sprite instanceof ItemComponentDummyBreakingParticle;
                 }
                 return false;

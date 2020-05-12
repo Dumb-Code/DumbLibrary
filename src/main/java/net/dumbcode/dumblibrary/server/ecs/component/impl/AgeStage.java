@@ -1,7 +1,6 @@
 package net.dumbcode.dumblibrary.server.ecs.component.impl;
 
 import lombok.Data;
-import lombok.Value;
 import lombok.experimental.Accessors;
 
 @Data

@@ -15,7 +15,6 @@ import net.minecraft.util.JsonUtils;
 
 import java.util.Arrays;
 import java.util.Random;
-import java.util.stream.StreamSupport;
 
 public class GrowingComponent extends EntityComponent implements FinalizableComponent {
 
@@ -39,9 +38,8 @@ public class GrowingComponent extends EntityComponent implements FinalizableComp
         private String[] growTo;
 
         @Override
-        public GrowingComponent constructTo(GrowingComponent component) {
+        public void constructTo(GrowingComponent component) {
             component.growTo = this.growTo;
-            return component;
         }
 
         @Override

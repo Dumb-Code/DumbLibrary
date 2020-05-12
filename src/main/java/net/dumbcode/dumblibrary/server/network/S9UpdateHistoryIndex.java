@@ -1,7 +1,7 @@
 package net.dumbcode.dumblibrary.server.network;
 
 import io.netty.buffer.ByteBuf;
-import net.dumbcode.dumblibrary.server.taxidermy.TaxidermyBlockEntity;
+import net.dumbcode.dumblibrary.server.taxidermy.BaseTaxidermyBlockEntity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
@@ -46,8 +46,8 @@ public class S9UpdateHistoryIndex implements IMessage {
         protected void handleMessage(S9UpdateHistoryIndex message, MessageContext ctx, World world, EntityPlayer player) {
             BlockPos.PooledMutableBlockPos pos = BlockPos.PooledMutableBlockPos.retain(message.x, message.y, message.z);
             TileEntity te = world.getTileEntity(pos);
-            if(te instanceof TaxidermyBlockEntity) {
-                TaxidermyBlockEntity builder = (TaxidermyBlockEntity)te;
+            if(te instanceof BaseTaxidermyBlockEntity) {
+                BaseTaxidermyBlockEntity builder = (BaseTaxidermyBlockEntity)te;
                 if(message.direction > 0) {
                     builder.getHistory().redo();
                 } else if(message.direction < 0) {

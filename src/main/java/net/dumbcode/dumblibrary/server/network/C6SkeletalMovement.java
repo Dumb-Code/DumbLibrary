@@ -2,7 +2,7 @@ package net.dumbcode.dumblibrary.server.network;
 
 import io.netty.buffer.ByteBuf;
 import net.dumbcode.dumblibrary.DumbLibrary;
-import net.dumbcode.dumblibrary.server.taxidermy.TaxidermyBlockEntity;
+import net.dumbcode.dumblibrary.server.taxidermy.BaseTaxidermyBlockEntity;
 import net.dumbcode.dumblibrary.server.taxidermy.TaxidermyHistory;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
@@ -58,8 +58,8 @@ public class C6SkeletalMovement implements IMessage {
             // FIXME: security checks?
             BlockPos.PooledMutableBlockPos pos = BlockPos.PooledMutableBlockPos.retain(message.x, message.y, message.z);
             TileEntity te = world.getTileEntity(pos);
-            if(te instanceof TaxidermyBlockEntity) {
-                TaxidermyBlockEntity builder = (TaxidermyBlockEntity)te;
+            if(te instanceof BaseTaxidermyBlockEntity) {
+                BaseTaxidermyBlockEntity builder = (BaseTaxidermyBlockEntity)te;
                 builder.getHistory().add(new TaxidermyHistory.Record(message.part, message.rotations));
             }
             DumbLibrary.NETWORK.sendToDimension(new S7HistoryRecord(pos, message.part, message.rotations), world.provider.getDimension());

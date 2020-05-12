@@ -6,7 +6,7 @@ import net.dumbcode.dumblibrary.client.model.tabula.TabulaModelRenderer;
 import net.dumbcode.dumblibrary.server.network.C4MoveSelectedSkeletalPart;
 import net.dumbcode.dumblibrary.server.network.C6SkeletalMovement;
 import net.dumbcode.dumblibrary.server.network.C8MoveInHistory;
-import net.dumbcode.dumblibrary.server.taxidermy.TaxidermyBlockEntity;
+import net.dumbcode.dumblibrary.server.taxidermy.BaseTaxidermyBlockEntity;
 import net.dumbcode.dumblibrary.server.taxidermy.TaxidermyHistory;
 import net.dumbcode.dumblibrary.server.utils.RotationAxis;
 import net.minecraft.util.ResourceLocation;
@@ -17,9 +17,9 @@ import java.util.Map;
 
 public class GuiTaxidermy extends GuiModelPoseEdit {
 
-    private final TaxidermyBlockEntity blockEntity;
+    private final BaseTaxidermyBlockEntity blockEntity;
 
-    public GuiTaxidermy(TabulaModel model, ResourceLocation texture, ITextComponent title, TaxidermyBlockEntity blockEntity) {
+    public GuiTaxidermy(TabulaModel model, ResourceLocation texture, ITextComponent title, BaseTaxidermyBlockEntity blockEntity) {
         super(model, texture, title);
         this.blockEntity = blockEntity;
     }

@@ -1,8 +1,7 @@
 package net.dumbcode.dumblibrary.server.network;
 
 import io.netty.buffer.ByteBuf;
-import net.dumbcode.dumblibrary.server.taxidermy.TaxidermyBlockEntity;
-import net.dumbcode.dumblibrary.server.taxidermy.TaxidermyHistory;
+import net.dumbcode.dumblibrary.server.taxidermy.BaseTaxidermyBlockEntity;
 import net.dumbcode.dumblibrary.server.utils.RotationAxis;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
@@ -57,8 +56,8 @@ public class S5UpdateSkeletalBuilder implements IMessage {
         protected void handleMessage(S5UpdateSkeletalBuilder message, MessageContext ctx, World world, EntityPlayer player) {
             BlockPos.PooledMutableBlockPos pos = BlockPos.PooledMutableBlockPos.retain(message.x, message.y, message.z);
             TileEntity te = world.getTileEntity(pos);
-            if(te instanceof TaxidermyBlockEntity) {
-                ((TaxidermyBlockEntity)te).getHistory().liveEdit(message.part, message.axis, message.newAngle);
+            if(te instanceof BaseTaxidermyBlockEntity) {
+                ((BaseTaxidermyBlockEntity)te).getHistory().liveEdit(message.part, message.axis, message.newAngle);
             }
             pos.release();
         }

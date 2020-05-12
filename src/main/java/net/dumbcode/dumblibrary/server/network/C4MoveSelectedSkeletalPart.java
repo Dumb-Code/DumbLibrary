@@ -2,8 +2,7 @@ package net.dumbcode.dumblibrary.server.network;
 
 import io.netty.buffer.ByteBuf;
 import net.dumbcode.dumblibrary.DumbLibrary;
-import net.dumbcode.dumblibrary.server.taxidermy.TaxidermyBlockEntity;
-import net.dumbcode.dumblibrary.server.taxidermy.TaxidermyHistory;
+import net.dumbcode.dumblibrary.server.taxidermy.BaseTaxidermyBlockEntity;
 import net.dumbcode.dumblibrary.server.utils.RotationAxis;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
@@ -59,8 +58,8 @@ public class C4MoveSelectedSkeletalPart implements IMessage {
             // FIXME: security checks?
             BlockPos.PooledMutableBlockPos pos = BlockPos.PooledMutableBlockPos.retain(message.x, message.y, message.z);
             TileEntity te = world.getTileEntity(pos);
-            if(te instanceof TaxidermyBlockEntity) {
-                TaxidermyBlockEntity builder = (TaxidermyBlockEntity)te;
+            if(te instanceof BaseTaxidermyBlockEntity) {
+                BaseTaxidermyBlockEntity builder = (BaseTaxidermyBlockEntity)te;
                 builder.getHistory().liveEdit(message.part, message.axis, message.newAngle);
                 builder.markDirty();
                 DumbLibrary.NETWORK.sendToAll(new S5UpdateSkeletalBuilder(pos, message.part, message.axis, message.newAngle));

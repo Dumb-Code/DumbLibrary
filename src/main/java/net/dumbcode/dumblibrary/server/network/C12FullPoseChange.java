@@ -3,7 +3,7 @@ package net.dumbcode.dumblibrary.server.network;
 import com.google.common.collect.Lists;
 import io.netty.buffer.ByteBuf;
 import net.dumbcode.dumblibrary.DumbLibrary;
-import net.dumbcode.dumblibrary.server.taxidermy.TaxidermyBlockEntity;
+import net.dumbcode.dumblibrary.server.taxidermy.BaseTaxidermyBlockEntity;
 import net.dumbcode.dumblibrary.server.taxidermy.TaxidermyHistory;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
@@ -71,8 +71,8 @@ public class C12FullPoseChange implements IMessage {
         protected void handleMessage(C12FullPoseChange message, MessageContext ctx, World world, EntityPlayer player) {
             BlockPos.PooledMutableBlockPos pos = BlockPos.PooledMutableBlockPos.retain(message.x, message.y, message.z);
             TileEntity te = world.getTileEntity(pos);
-            if(te instanceof TaxidermyBlockEntity) {
-                TaxidermyBlockEntity builder = (TaxidermyBlockEntity)te;
+            if(te instanceof BaseTaxidermyBlockEntity) {
+                BaseTaxidermyBlockEntity builder = (BaseTaxidermyBlockEntity)te;
                 List<TaxidermyHistory.Record> records = Lists.newArrayList();
                 message.pose.forEach((s, v) -> records.add(new TaxidermyHistory.Record(s, v)));
                 builder.getHistory().addGroupedRecord(records);

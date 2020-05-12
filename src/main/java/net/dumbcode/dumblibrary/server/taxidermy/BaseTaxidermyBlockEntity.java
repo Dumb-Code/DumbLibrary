@@ -9,7 +9,7 @@ import net.minecraft.util.ResourceLocation;
 import javax.vecmath.Vector3f;
 import java.util.Map;
 
-public abstract class TaxidermyBlockEntity extends SimpleBlockEntity {
+public abstract class BaseTaxidermyBlockEntity extends SimpleBlockEntity {
 
     @Getter private final TaxidermyHistory history = new TaxidermyHistory();
 

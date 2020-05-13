@@ -25,7 +25,7 @@ public abstract class BaseTaxidermyBlockEntity extends SimpleBlockEntity {
         super.readFromNBT(compound);
     }
 
-    public Map<String, Vector3f> getPoseData() {
+    public Map<String, TaxidermyHistory.CubeProps> getPoseData() {
         return this.history.getPoseData();
     }
 

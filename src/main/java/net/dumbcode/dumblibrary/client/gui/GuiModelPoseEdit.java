@@ -5,7 +5,7 @@ import net.dumbcode.dumblibrary.client.model.tabula.TabulaModel;
 import net.dumbcode.dumblibrary.client.model.tabula.TabulaModelRenderer;
 import net.dumbcode.dumblibrary.server.animation.TabulaUtils;
 import net.dumbcode.dumblibrary.server.taxidermy.TaxidermyHistory;
-import net.dumbcode.dumblibrary.server.utils.RotationAxis;
+import net.dumbcode.dumblibrary.server.utils.XYZAxis;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.model.ModelRenderer;
@@ -59,7 +59,7 @@ public abstract class GuiModelPoseEdit extends GuiScreen {
     protected float cameraYaw = 90f;
     protected double zoom = 1.0;
     private TabulaModel rotationRingModel;
-    private RotationAxis currentSelectedRing = RotationAxis.NONE;
+    private XYZAxis currentSelectedRing = XYZAxis.NONE;
     private boolean draggingRing = false;
     private Vector2f dMouse = new Vector2f();
 
@@ -102,6 +102,12 @@ public abstract class GuiModelPoseEdit extends GuiScreen {
             new TextComponentTranslation(PREFIX_KEY, "Z").getUnformattedText(),
             new TextComponentTranslation(SUFFIX_KEY).getUnformattedText(),
             -180.0, 180.0, 0.0, true, true);
+
+    private GuiNumberEntry xPosition;
+    private GuiNumberEntry yPosition;
+    private GuiNumberEntry zPosition;
+
+    private GuiNumberEntry mouseOverEntry;
 
 
     private GuiButton propertiesButton = new GuiButtonExt(8, 0, 0, propertiesGui.getUnformattedText());
@@ -158,6 +164,18 @@ public abstract class GuiModelPoseEdit extends GuiScreen {
         addButton(propertiesButton);
         addButton(exportButton);
         addButton(importButton);
+
+        xPosition = new GuiNumberEntry(
+            0, 0, 1/4F, 2, width - 168, zRotationSlider.y+zRotationSlider.height+15,
+            66, 20, this::addButton, this::positionChanged);
+
+        yPosition = new GuiNumberEntry(
+            1, 0, 1/4F, 2, width - 101, zRotationSlider.y+zRotationSlider.height+15,
+            66, 20, this::addButton, this::positionChanged);
+
+        zPosition = new GuiNumberEntry(
+            2, 0, 1/4F, 2, width - 34, zRotationSlider.y+zRotationSlider.height+15,
+            66, 20, this::addButton, this::positionChanged);
     }
 
     @Override
@@ -182,6 +200,9 @@ public abstract class GuiModelPoseEdit extends GuiScreen {
 //        else if(button == propertiesButton) {
 //            this.mc.displayGuiScreen(new GuiSkeletalProperties(this, this.builder));
 //        }
+        xPosition.buttonClicked(button);
+        yPosition.buttonClicked(button);
+        zPosition.buttonClicked(button);
     }
 
     protected abstract void undo();
@@ -190,22 +211,29 @@ public abstract class GuiModelPoseEdit extends GuiScreen {
     protected abstract void exportPose();
     protected abstract void importPose();
     protected abstract TaxidermyHistory getHistory();
-    protected abstract void actualizeRotation(TabulaModelRenderer part, RotationAxis axis, float amount);
+    protected abstract void actualizeRotation(TabulaModelRenderer part, XYZAxis axis, float amount);
+    protected abstract void actualizePosition(TabulaModelRenderer part, XYZAxis axis, float amount);
     protected abstract void actualizeEdit(TabulaModelRenderer part);
-    protected abstract Map<String, Vector3f> getPoseData();
+    protected abstract Map<String, TaxidermyHistory.CubeProps> getPoseData();
+
+    public void positionChanged(GuiNumberEntry entry, int id) {
+        if(selectedPart != null) {
+            actualizePosition(selectedPart, XYZAxis.values()[id], (float) entry.getValue());
+        }
+    }
 
     public void sliderChanged(GuiSlider slider) {
-        if(currentSelectedRing != RotationAxis.NONE)
+        if(currentSelectedRing != XYZAxis.NONE)
             return;
         if(selectedPart == null)
             return;
-        RotationAxis axis;
+        XYZAxis axis;
         if(slider == xRotationSlider) {
-            axis = RotationAxis.X_AXIS;
+            axis = XYZAxis.X_AXIS;
         } else if(slider == yRotationSlider) {
-            axis = RotationAxis.Y_AXIS;
+            axis = XYZAxis.Y_AXIS;
         } else {
-            axis = RotationAxis.Z_AXIS;
+            axis = XYZAxis.Z_AXIS;
         }
         actualizeRotation(selectedPart, axis, (float)Math.toRadians(slider.getValue()));
     }
@@ -215,12 +243,10 @@ public abstract class GuiModelPoseEdit extends GuiScreen {
 //        if(this.dialogBox.isOpen()) {
 //            return;
 //        }
+        xPosition.updateEntry();
+        yPosition.updateEntry();
+        zPosition.updateEntry();
         super.updateScreen();
-        int scrollDirection = (int) Math.signum(Mouse.getDWheel());
-        final double zoomSpeed = 0.1;
-        zoom += scrollDirection * zoomSpeed;
-        if(zoom < zoomSpeed)
-            zoom = zoomSpeed;
         undoButton.enabled = getHistory().canUndo();
         redoButton.enabled = getHistory().canRedo();
 
@@ -260,6 +286,29 @@ public abstract class GuiModelPoseEdit extends GuiScreen {
 //        if(this.dialogBox.isOpen()) {
 //            mouseX = mouseY = -1;
 //        }
+
+        GuiNumberEntry mouseOver = null;
+        if(xPosition.mouseOver(mouseX, mouseY)) {
+            mouseOver = xPosition;
+        } else if(yPosition.mouseOver(mouseX, mouseY)) {
+            mouseOver = yPosition;
+        } else if(zPosition.mouseOver(mouseX, mouseY)) {
+            mouseOver = zPosition;
+        }
+
+        int scrollDirection = (int) Math.signum(Mouse.getDWheel());
+        if(mouseOver == null) {
+            final double zoomSpeed = 0.1;
+            zoom += scrollDirection * zoomSpeed;
+            if(zoom < zoomSpeed)
+                zoom = zoomSpeed;
+        }
+
+        if(selectedPart != null && mouseOverEntry != null && !mouseOverEntry.isSyncedSinceEdit() && (mouseOver != mouseOverEntry || mouseOverEntry.getTicksSinceChanged() > 20)) {
+            actualizeEdit(selectedPart);
+            mouseOverEntry.setSyncedSinceEdit(true);
+        }
+        mouseOverEntry = mouseOver;
 
         drawBackground(0);
 
@@ -302,9 +351,9 @@ public abstract class GuiModelPoseEdit extends GuiScreen {
 
         setModelToPose();
         prepareModelRendering(width/8*3, height/2, 30f);
-        RotationAxis ringBelowMouse = findRingBelowMouse();
+        XYZAxis ringBelowMouse = findRingBelowMouse();
         if(draggingRing) {
-            if(ringBelowMouse != RotationAxis.NONE) {
+            if(ringBelowMouse != XYZAxis.NONE) {
                 handleRingDrag(dMouse.x, dMouse.y);
             }
             dMouse.set(0f, 0f);
@@ -312,13 +361,17 @@ public abstract class GuiModelPoseEdit extends GuiScreen {
         }
         TabulaModelRenderer partBelowMouse = findPartBelowMouse();
         if(registeredLeftClick) {
-            if(ringBelowMouse == RotationAxis.NONE) {
+            if(ringBelowMouse == XYZAxis.NONE) {
                 this.selectedPart = partBelowMouse;
-                this.currentSelectedRing = RotationAxis.NONE;
+                this.currentSelectedRing = XYZAxis.NONE;
                 if(selectedPart != null) {
                     xRotationSlider.setValue(MathHelper.wrapDegrees(Math.toDegrees(selectedPart.rotateAngleX)));
                     yRotationSlider.setValue(MathHelper.wrapDegrees(Math.toDegrees(selectedPart.rotateAngleY)));
                     zRotationSlider.setValue(MathHelper.wrapDegrees(Math.toDegrees(selectedPart.rotateAngleZ)));
+
+                    xPosition.setValue(selectedPart.rotationPointX, false);
+                    yPosition.setValue(selectedPart.rotationPointY, false);
+                    zPosition.setValue(selectedPart.rotationPointZ, false);
 
                     prevXSlider = xRotationSlider.getValue();
                     prevYSlider = yRotationSlider.getValue();
@@ -332,14 +385,18 @@ public abstract class GuiModelPoseEdit extends GuiScreen {
         actualModelRender(partBelowMouse);
         GuiHelper.cleanupModelRendering();
 
+        xPosition.render();
+        yPosition.render();
+        zPosition.render();
+
         if(partBelowMouse != null) {
             drawHoveringText(partBelowMouse.boxName, mouseX, mouseY);
         }
     }
 
-    private RotationAxis findRingBelowMouse() {
+    private XYZAxis findRingBelowMouse() {
         if(selectedPart == null)
-            return RotationAxis.NONE;
+            return XYZAxis.NONE;
         int color = getColorUnderMouse();
         renderRotationRing();
         int newColor = getColorUnderMouse();
@@ -348,18 +405,18 @@ public abstract class GuiModelPoseEdit extends GuiScreen {
             int green = (newColor >> 8) & 0xFF;
             int blue = newColor & 0xFF;
             if(red > 0xF0 && green < 0x0A && blue < 0x0A) {
-                return RotationAxis.Y_AXIS;
+                return XYZAxis.Y_AXIS;
             }
 
             if(green > 0xF0 && red < 0x0A && blue < 0x0A) {
-                return RotationAxis.Z_AXIS;
+                return XYZAxis.Z_AXIS;
             }
 
             if(blue > 0xF0 && red < 0x0A && green < 0x0A) {
-                return RotationAxis.X_AXIS;
+                return XYZAxis.X_AXIS;
             }
         }
-        return RotationAxis.NONE;
+        return XYZAxis.NONE;
     }
 
     private int getColorUnderMouse() {
@@ -412,8 +469,11 @@ public abstract class GuiModelPoseEdit extends GuiScreen {
 
     @Override
     protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
+        xPosition.mouseClicked(mouseX, mouseY, mouseButton);
+        yPosition.mouseClicked(mouseX, mouseY, mouseButton);
+        zPosition.mouseClicked(mouseX, mouseY, mouseButton);
         super.mouseClicked(mouseX, mouseY, mouseButton);
-        if(onSliders(mouseX, mouseY))
+        if(onSliders(mouseX, mouseY) || xPosition.mouseOver(mouseX, mouseY) || yPosition.mouseOver(mouseX, mouseY) || zPosition.mouseOver(mouseX, mouseY))
             return;
         if(mouseButton == 0) {
             registeredLeftClick = true;
@@ -432,7 +492,7 @@ public abstract class GuiModelPoseEdit extends GuiScreen {
             }
             return;
         }
-        if(clickedMouseButton == 0 && currentSelectedRing == RotationAxis.NONE) {
+        if(clickedMouseButton == 0 && currentSelectedRing == XYZAxis.NONE) {
             float dx = Mouse.getX() - lastClickPosition.x;
             float dy = Mouse.getY() - lastClickPosition.y;
             cameraPitch += dy;
@@ -478,7 +538,7 @@ public abstract class GuiModelPoseEdit extends GuiScreen {
     private void handleRingDrag(float dx, float dy) {
         if(selectedPart == null)
             return;
-        if(currentSelectedRing == RotationAxis.NONE)
+        if(currentSelectedRing == XYZAxis.NONE)
             return;
         Matrix3f rotationMatrix = computeRotationMatrix(selectedPart);
         Vector3f force = new Vector3f(-dx, -dy, 0f);
@@ -581,7 +641,7 @@ public abstract class GuiModelPoseEdit extends GuiScreen {
                 if(selectedPart != null)
                     actualizeEdit(selectedPart);
             }
-            currentSelectedRing = RotationAxis.NONE;
+            currentSelectedRing = XYZAxis.NONE;
         }
     }
 
@@ -612,7 +672,18 @@ public abstract class GuiModelPoseEdit extends GuiScreen {
 //        if(this.dialogBox.isOpen()) {
 //            return;
 //        }
+        xPosition.handleMouseInput(this.width, this.height);
+        yPosition.handleMouseInput(this.width, this.height);
+        zPosition.handleMouseInput(this.width, this.height);
         super.handleMouseInput();
+    }
+
+    @Override
+    protected void keyTyped(char typedChar, int keyCode) throws IOException {
+        super.keyTyped(typedChar, keyCode);
+        xPosition.keyTyped(typedChar, keyCode);
+        yPosition.keyTyped(typedChar, keyCode);
+        zPosition.keyTyped(typedChar, keyCode);
     }
 
     private void prepareModelRendering(int posX, int posY, float scale) {
@@ -700,18 +771,32 @@ public abstract class GuiModelPoseEdit extends GuiScreen {
     }
 
     private void setModelToPose() {
-        Map<String, Vector3f> poseData = this.getPoseData();
+        Map<String, TaxidermyHistory.CubeProps> poseData = this.getPoseData();
         for(TabulaModelRenderer box : model.getAllCubes()) {
-            Vector3f rotations = poseData.get(box.boxName);
-            if(rotations != null) {
-                box.rotateAngleX = rotations.x;
-                box.rotateAngleY = rotations.y;
-                box.rotateAngleZ = rotations.z;
+            TaxidermyHistory.CubeProps cube = poseData.get(box.boxName);
+            if(cube != null) {
+                if(!Float.isNaN(cube.getAngle().x)) {
+                    box.rotateAngleX = cube.getAngle().x;
+                }
+                if(!Float.isNaN(cube.getAngle().y)) {
+                    box.rotateAngleY = cube.getAngle().y;
+                }
+                if(!Float.isNaN(cube.getAngle().z)) {
+                    box.rotateAngleZ= cube.getAngle().z;
+                }
+
+                if(!Float.isNaN(cube.getRotationPoint().x)) {
+                    box.rotationPointX = cube.getRotationPoint().x;
+                }
+                if(!Float.isNaN(cube.getRotationPoint().y)) {
+                    box.rotationPointY = cube.getRotationPoint().y;
+                }
+                if(!Float.isNaN(cube.getRotationPoint().z)) {
+                    box.rotationPointZ= cube.getRotationPoint().z;
+                }
             } else {
-                float[] rotation = box.getDefaultRotation();
-                box.rotateAngleX = rotation[0];
-                box.rotateAngleY = rotation[1];
-                box.rotateAngleZ = rotation[2];
+                box.resetRotations();
+                box.resetRotationPoint();
             }
         }
     }

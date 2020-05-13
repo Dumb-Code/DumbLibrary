@@ -20,15 +20,18 @@ public class S7HistoryRecord implements IMessage {
     private int z;
     private String part;
     private Vector3f rotations;
+    private Vector3f position;
+
 
     public S7HistoryRecord() { }
 
-    public S7HistoryRecord(BlockPos pos, String selectedPart, Vector3f rotations) {
+    public S7HistoryRecord(BlockPos pos, String selectedPart, Vector3f rotations, Vector3f position) {
         this.x = pos.getX();
         this.y = pos.getY();
         this.z = pos.getZ();
         this.part = selectedPart;
         this.rotations = rotations;
+        this.position = position;
     }
 
     @Override
@@ -38,6 +41,7 @@ public class S7HistoryRecord implements IMessage {
         z = buf.readInt();
         part = ByteBufUtils.readUTF8String(buf);
         rotations = new Vector3f(buf.readFloat(), buf.readFloat(), buf.readFloat());
+        position = new Vector3f(buf.readFloat(), buf.readFloat(), buf.readFloat());
     }
 
     @Override
@@ -49,6 +53,9 @@ public class S7HistoryRecord implements IMessage {
         buf.writeFloat(this.rotations.x);
         buf.writeFloat(this.rotations.y);
         buf.writeFloat(this.rotations.z);
+        buf.writeFloat(this.position.x);
+        buf.writeFloat(this.position.y);
+        buf.writeFloat(this.position.z);
     }
 
     public static class Handler extends WorldModificationsMessageHandler<S7HistoryRecord, IMessage> {
@@ -58,7 +65,7 @@ public class S7HistoryRecord implements IMessage {
             TileEntity te = world.getTileEntity(pos);
             if(te instanceof BaseTaxidermyBlockEntity) {
                 BaseTaxidermyBlockEntity builder = (BaseTaxidermyBlockEntity)te;
-                builder.getHistory().add(new TaxidermyHistory.Record(message.part, message.rotations));
+                builder.getHistory().add(new TaxidermyHistory.Record(message.part, new TaxidermyHistory.CubeProps(message.rotations, message.position)));
             }
 
             pos.release();

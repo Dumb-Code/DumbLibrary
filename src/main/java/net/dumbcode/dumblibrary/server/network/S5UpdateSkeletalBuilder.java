@@ -2,7 +2,7 @@ package net.dumbcode.dumblibrary.server.network;
 
 import io.netty.buffer.ByteBuf;
 import net.dumbcode.dumblibrary.server.taxidermy.BaseTaxidermyBlockEntity;
-import net.dumbcode.dumblibrary.server.utils.RotationAxis;
+import net.dumbcode.dumblibrary.server.utils.XYZAxis;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
@@ -17,18 +17,20 @@ public class S5UpdateSkeletalBuilder implements IMessage {
     private int y;
     private int z;
     private String part;
-    private RotationAxis axis;
-    private float newAngle;
+    private XYZAxis axis;
+    private int type;
+    private float value;
 
     public S5UpdateSkeletalBuilder() { }
 
-    public S5UpdateSkeletalBuilder(BlockPos pos, String selectedPart, RotationAxis axis, float newAngle) {
+    public S5UpdateSkeletalBuilder(BlockPos pos, String selectedPart, int type, XYZAxis axis, float value) {
         this.x = pos.getX();
         this.y = pos.getY();
         this.z = pos.getZ();
         this.part = selectedPart;
+        this.type = type;
         this.axis = axis;
-        this.newAngle = newAngle;
+        this.value = value;
     }
 
     @Override
@@ -37,8 +39,9 @@ public class S5UpdateSkeletalBuilder implements IMessage {
         y = buf.readInt();
         z = buf.readInt();
         part = ByteBufUtils.readUTF8String(buf);
-        axis = RotationAxis.values()[buf.readInt()];
-        newAngle = buf.readFloat();
+        type = buf.readByte();
+        axis = XYZAxis.values()[buf.readInt()];
+        value = buf.readFloat();
     }
 
     @Override
@@ -47,8 +50,9 @@ public class S5UpdateSkeletalBuilder implements IMessage {
         buf.writeInt(y);
         buf.writeInt(z);
         ByteBufUtils.writeUTF8String(buf, part);
+        buf.writeByte(type);
         buf.writeInt(axis.ordinal());
-        buf.writeFloat(newAngle);
+        buf.writeFloat(value);
     }
 
     public static class Handler extends WorldModificationsMessageHandler<S5UpdateSkeletalBuilder, IMessage> {
@@ -57,7 +61,7 @@ public class S5UpdateSkeletalBuilder implements IMessage {
             BlockPos.PooledMutableBlockPos pos = BlockPos.PooledMutableBlockPos.retain(message.x, message.y, message.z);
             TileEntity te = world.getTileEntity(pos);
             if(te instanceof BaseTaxidermyBlockEntity) {
-                ((BaseTaxidermyBlockEntity)te).getHistory().liveEdit(message.part, message.axis, message.newAngle);
+                ((BaseTaxidermyBlockEntity)te).getHistory().liveEdit(message.part, message.type, message.axis, message.value);
             }
             pos.release();
         }

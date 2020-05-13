@@ -73,8 +73,8 @@ public class C12FullPoseChange implements IMessage {
             TileEntity te = world.getTileEntity(pos);
             if(te instanceof BaseTaxidermyBlockEntity) {
                 BaseTaxidermyBlockEntity builder = (BaseTaxidermyBlockEntity)te;
-                List<TaxidermyHistory.Record> records = Lists.newArrayList();
-                message.pose.forEach((s, v) -> records.add(new TaxidermyHistory.Record(s, v)));
+                List<TaxidermyHistory.Record> records = Lists.newArrayList(); //TODO: re-add this
+//                message.pose.forEach((s, v) -> records.add(new TaxidermyHistory.Record(s, v)));
                 builder.getHistory().addGroupedRecord(records);
                 builder.markDirty();
                 DumbLibrary.NETWORK.sendToAll(new S11FullPoseChange(pos, message.pose));

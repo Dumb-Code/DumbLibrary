@@ -3,7 +3,7 @@ package net.dumbcode.dumblibrary.server.network;
 import io.netty.buffer.ByteBuf;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.server.taxidermy.BaseTaxidermyBlockEntity;
-import net.dumbcode.dumblibrary.server.utils.RotationAxis;
+import net.dumbcode.dumblibrary.server.utils.XYZAxis;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
@@ -18,18 +18,20 @@ public class C4MoveSelectedSkeletalPart implements IMessage {
     private int y;
     private int z;
     private String part;
-    private RotationAxis axis;
-    private float newAngle;
+    private XYZAxis axis;
+    private int type;
+    private float value;
 
     public C4MoveSelectedSkeletalPart() { }
 
-    public C4MoveSelectedSkeletalPart(BlockPos pos, String selectedPart, RotationAxis axis, float newAngle) {
+    public C4MoveSelectedSkeletalPart(BlockPos pos, String selectedPart, int type, XYZAxis axis, float value) {
         this.x = pos.getX();
         this.y = pos.getY();
         this.z = pos.getZ();
         this.part = selectedPart;
+        this.type = type;
         this.axis = axis;
-        this.newAngle = newAngle;
+        this.value = value;
     }
 
     @Override
@@ -38,8 +40,9 @@ public class C4MoveSelectedSkeletalPart implements IMessage {
         y = buf.readInt();
         z = buf.readInt();
         part = ByteBufUtils.readUTF8String(buf);
-        axis = RotationAxis.values()[buf.readInt()];
-        newAngle = buf.readFloat();
+        type = buf.readByte();
+        axis = XYZAxis.values()[buf.readInt()];
+        value = buf.readFloat();
     }
 
     @Override
@@ -48,9 +51,11 @@ public class C4MoveSelectedSkeletalPart implements IMessage {
         buf.writeInt(y);
         buf.writeInt(z);
         ByteBufUtils.writeUTF8String(buf, part);
+        buf.writeByte(type);
         buf.writeInt(axis.ordinal());
-        buf.writeFloat(newAngle);
+        buf.writeFloat(value);
     }
+
 
     public static class Handler extends WorldModificationsMessageHandler<C4MoveSelectedSkeletalPart, IMessage> {
         @Override
@@ -60,9 +65,9 @@ public class C4MoveSelectedSkeletalPart implements IMessage {
             TileEntity te = world.getTileEntity(pos);
             if(te instanceof BaseTaxidermyBlockEntity) {
                 BaseTaxidermyBlockEntity builder = (BaseTaxidermyBlockEntity)te;
-                builder.getHistory().liveEdit(message.part, message.axis, message.newAngle);
+                builder.getHistory().liveEdit(message.part, message.type, message.axis, message.value);
                 builder.markDirty();
-                DumbLibrary.NETWORK.sendToAll(new S5UpdateSkeletalBuilder(pos, message.part, message.axis, message.newAngle));
+                DumbLibrary.NETWORK.sendToAll(new S5UpdateSkeletalBuilder(pos, message.part, message.type, message.axis, message.value));
             }
 
             pos.release();

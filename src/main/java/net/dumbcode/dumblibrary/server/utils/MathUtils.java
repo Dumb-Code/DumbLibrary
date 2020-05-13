@@ -32,14 +32,14 @@ public class MathUtils {
     public static float mod(float x, float k) {
         return ((x % k) + k) % k; //Respect the sign -> https://stackoverflow.com/a/4403631
     }
-    public static String ensureTrailingZeros(float num, int dp) {
+    public static String ensureTrailingZeros(double num, int dp) {
         StringBuilder number = new StringBuilder(String.valueOf(num));
         int point = number.lastIndexOf(".");
         int zeros = point != -1 ? dp - (number.length()-point) : dp;
         if(point == -1) {
             number.append(".");
         }
-        for (int i = 0; i < zeros; i++) {
+        for (int i = 0; i <= zeros; i++) {
             number.append("0");
         }
         return number.toString();

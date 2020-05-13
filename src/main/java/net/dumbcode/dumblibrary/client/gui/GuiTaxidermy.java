@@ -8,7 +8,7 @@ import net.dumbcode.dumblibrary.server.network.C6SkeletalMovement;
 import net.dumbcode.dumblibrary.server.network.C8MoveInHistory;
 import net.dumbcode.dumblibrary.server.taxidermy.BaseTaxidermyBlockEntity;
 import net.dumbcode.dumblibrary.server.taxidermy.TaxidermyHistory;
-import net.dumbcode.dumblibrary.server.utils.RotationAxis;
+import net.dumbcode.dumblibrary.server.utils.XYZAxis;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
 
@@ -36,7 +36,7 @@ public class GuiTaxidermy extends GuiModelPoseEdit {
 
     @Override
     protected void reset() {
-        DumbLibrary.NETWORK.sendToServer(new C6SkeletalMovement(this.blockEntity.getPos(), TaxidermyHistory.RESET_NAME, new Vector3f()));
+        DumbLibrary.NETWORK.sendToServer(new C6SkeletalMovement(this.blockEntity.getPos(), TaxidermyHistory.RESET_NAME, new Vector3f(), new Vector3f()));
     }
 
     @Override
@@ -55,18 +55,25 @@ public class GuiTaxidermy extends GuiModelPoseEdit {
     }
 
     @Override
-    protected void actualizeRotation(TabulaModelRenderer part, RotationAxis axis, float amount) {
-        DumbLibrary.NETWORK.sendToServer(new C4MoveSelectedSkeletalPart(this.blockEntity.getPos(), part.boxName, axis, amount));
+    protected void actualizeRotation(TabulaModelRenderer part, XYZAxis axis, float amount) {
+        DumbLibrary.NETWORK.sendToServer(new C4MoveSelectedSkeletalPart(this.blockEntity.getPos(), part.boxName, 0, axis, amount));
+    }
+
+    @Override
+    protected void actualizePosition(TabulaModelRenderer part, XYZAxis axis, float amount) {
+        DumbLibrary.NETWORK.sendToServer(new C4MoveSelectedSkeletalPart(this.blockEntity.getPos(), part.boxName, 1, axis, amount));
     }
 
     @Override
     protected void actualizeEdit(TabulaModelRenderer part) {
-        DumbLibrary.NETWORK.sendToServer(new C6SkeletalMovement(this.blockEntity.getPos(), part.boxName, new Vector3f(part.rotateAngleX, part.rotateAngleY, part.rotateAngleZ)));
+        DumbLibrary.NETWORK.sendToServer(new C6SkeletalMovement(this.blockEntity.getPos(), part.boxName,
+            new Vector3f(part.rotateAngleX, part.rotateAngleY, part.rotateAngleZ), new Vector3f(part.rotationPointX, part.rotationPointY, part.rotationPointZ)
+        ));
 
     }
 
     @Override
-    protected Map<String, Vector3f> getPoseData() {
+    protected Map<String, TaxidermyHistory.CubeProps> getPoseData() {
         return this.blockEntity.getPoseData();
     }
 }

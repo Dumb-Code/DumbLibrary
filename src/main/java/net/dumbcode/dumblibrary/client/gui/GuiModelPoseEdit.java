@@ -775,25 +775,7 @@ public abstract class GuiModelPoseEdit extends GuiScreen {
         for(TabulaModelRenderer box : model.getAllCubes()) {
             TaxidermyHistory.CubeProps cube = poseData.get(box.boxName);
             if(cube != null) {
-                if(!Float.isNaN(cube.getAngle().x)) {
-                    box.rotateAngleX = cube.getAngle().x;
-                }
-                if(!Float.isNaN(cube.getAngle().y)) {
-                    box.rotateAngleY = cube.getAngle().y;
-                }
-                if(!Float.isNaN(cube.getAngle().z)) {
-                    box.rotateAngleZ= cube.getAngle().z;
-                }
-
-                if(!Float.isNaN(cube.getRotationPoint().x)) {
-                    box.rotationPointX = cube.getRotationPoint().x;
-                }
-                if(!Float.isNaN(cube.getRotationPoint().y)) {
-                    box.rotationPointY = cube.getRotationPoint().y;
-                }
-                if(!Float.isNaN(cube.getRotationPoint().z)) {
-                    box.rotationPointZ= cube.getRotationPoint().z;
-                }
+                cube.applyTo(box);
             } else {
                 box.resetRotations();
                 box.resetRotationPoint();

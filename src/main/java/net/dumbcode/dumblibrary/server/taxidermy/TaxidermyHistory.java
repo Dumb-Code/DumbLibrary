@@ -6,10 +6,13 @@ import lombok.AllArgsConstructor;
 import lombok.Value;
 import net.dumbcode.dumblibrary.server.utils.HistoryList;
 import net.dumbcode.dumblibrary.server.utils.XYZAxis;
+import net.minecraft.client.model.ModelRenderer;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.vecmath.Vector3f;
 import java.util.HashMap;
@@ -33,12 +36,12 @@ public class TaxidermyHistory {
             for (Record record : records) {
                 NBTTagCompound tag = new NBTTagCompound();
                 tag.setString("Part", record.getPart());
-                tag.setFloat("AngleX", record.getProps().getAngle().x);
-                tag.setFloat("AngleY", record.getProps().getAngle().y);
-                tag.setFloat("AngleZ", record.getProps().getAngle().z);
-                tag.setFloat("PosX", record.getProps().getRotationPoint().x);
-                tag.setFloat("PosY", record.getProps().getRotationPoint().y);
-                tag.setFloat("PosZ", record.getProps().getRotationPoint().z);
+                tag.setFloat("AngleX", record.getProps().angle.x);
+                tag.setFloat("AngleY", record.getProps().angle.y);
+                tag.setFloat("AngleZ", record.getProps().angle.z);
+                tag.setFloat("PosX", record.getProps().rotationPoint.x);
+                tag.setFloat("PosY", record.getProps().rotationPoint.y);
+                tag.setFloat("PosZ", record.getProps().rotationPoint.z);
                 taglist.appendTag(tag);
             }
             list.appendTag(taglist);
@@ -74,14 +77,14 @@ public class TaxidermyHistory {
             if(record.getPart().equals(TaxidermyHistory.RESET_NAME)) {
                 this.poseDataCache.clear();
             } else {
-                this.poseDataCache.put(record.getPart(), new CubeProps(new Vector3f(record.getProps().getAngle()), new Vector3f(record.getProps().getRotationPoint())));
+                this.poseDataCache.put(record.getPart(), record.getProps().clone());
             }
         }));
 
         for (Map.Entry<String, TaxidermyHistory.Edit> entry : this.editingData.entrySet()) {
             CubeProps cube = this.poseDataCache.computeIfAbsent(entry.getKey(), s -> new CubeProps(new Vector3f(Float.NaN, Float.NaN, Float.NaN), new Vector3f(Float.NaN, Float.NaN, Float.NaN)));
             TaxidermyHistory.Edit edit = entry.getValue();
-            Vector3f vec = edit.type == 0 ? cube.getAngle() : cube.getRotationPoint();
+            Vector3f vec = edit.type == 0 ? cube.angle : cube.rotationPoint;
             switch (edit.axis) {
                 case X_AXIS:
                     vec.x = edit.value;
@@ -149,7 +152,39 @@ public class TaxidermyHistory {
 
     @Value public static class Record { String part; CubeProps props; }
 
-    @Value public static class CubeProps { Vector3f angle, rotationPoint; }
+    @AllArgsConstructor
+    public static class CubeProps implements Cloneable {
+        private final Vector3f angle;
+        private final Vector3f rotationPoint;
+
+        @SideOnly(Side.CLIENT)
+        public void applyTo(ModelRenderer box) {
+            if(!Float.isNaN(this.angle.x)) {
+                box.rotateAngleX = this.angle.x;
+            }
+            if(!Float.isNaN(this.angle.y)) {
+                box.rotateAngleY = this.angle.y;
+            }
+            if(!Float.isNaN(this.angle.z)) {
+                box.rotateAngleZ= this.angle.z;
+            }
+
+            if(!Float.isNaN(this.rotationPoint.x)) {
+                box.rotationPointX = this.rotationPoint.x;
+            }
+            if(!Float.isNaN(this.rotationPoint.y)) {
+                box.rotationPointY = this.rotationPoint.y;
+            }
+            if(!Float.isNaN(this.rotationPoint.z)) {
+                box.rotationPointZ = this.rotationPoint.z;
+            }
+        }
+
+        public CubeProps clone() {
+            return new CubeProps(new Vector3f(this.angle), new Vector3f(this.rotationPoint));
+        }
+
+    }
 
     @AllArgsConstructor private static class Edit { XYZAxis axis; int type; float value; }
 }

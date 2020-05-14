@@ -81,7 +81,11 @@ public class GuiNumberEntry {
     }
 
     public void mouseClicked(int mouseX, int mouseY, int mouseButton) {
+        boolean focused = this.textField.isFocused();
         this.textField.mouseClicked(mouseX, mouseY, mouseButton);
+        if(focused && !this.textField.isFocused()) {
+            this.onChange(false, true);
+        }
     }
 
     public void keyTyped(char typedChar, int keyCode) {
@@ -141,7 +145,7 @@ public class GuiNumberEntry {
             this.syncedSinceEdit = false;
             this.listener.accept(this, this.id);
         }
-        if(updateTextField) {
+        if(updateTextField && !this.textField.isFocused()) {
             double pow = Math.pow(10, this.decimalPlace);
             double val = Math.round(this.value * pow) / pow;
             this.textField.setText(MathUtils.ensureTrailingZeros(val, this.decimalPlace));

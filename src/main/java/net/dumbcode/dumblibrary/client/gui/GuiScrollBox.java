@@ -4,6 +4,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import net.dumbcode.dumblibrary.client.RenderUtils;
+import net.dumbcode.dumblibrary.client.StencilStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiScreen;
@@ -16,8 +17,7 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.Rectangle;
 
 import java.awt.geom.Rectangle2D;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Supplier;
 
 @Getter
@@ -33,8 +33,8 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> {
 
     private final int cellMax;
 
-    private final int xPos;
-    private final int yPos;
+    private int xPos;
+    private int yPos;
 
     private int insideColor = 0xFF000000;
     private int highlightColor = 0x2299bbff;
@@ -85,8 +85,7 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> {
             Minecraft.getMinecraft().getFramebuffer().enableStencil();
         }
 
-        GL11.glEnable(GL11.GL_STENCIL_TEST);
-        RenderUtils.renderSquareStencil(this.xPos, this.yPos, this.xPos + this.width, this.yPos + height, true, 2, GL11.GL_LEQUAL);
+        StencilStack.pushSquareStencil(this.xPos, this.yPos, this.xPos + this.width, this.yPos + height);
 
         int borderSize = 1;
         MC.renderEngine.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
@@ -99,7 +98,7 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> {
         }
 
         RenderHelper.disableStandardItemLighting();
-        GL11.glDisable(GL11.GL_STENCIL_TEST);
+        StencilStack.popStencil();
 
         GlStateManager.disableDepth();
         RenderUtils.renderBorder(this.xPos, this.yPos, this.xPos + this.width, this.yPos + height, borderSize, this.borderColor);
@@ -142,20 +141,26 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> {
     private void renderEntries(List<T> entries, int height, Rectangle2D.Float scrollBar, int borderSize, int mouseX, int mouseY) {
         boolean mouseOver = this.isMouseOver(mouseX, mouseY, height);
 
-        for (int i = 0; i < entries.size(); i++) {
-            int yStart = (int) (this.yPos + this.cellHeight * i - this.scroll * this.cellHeight);
+        List<T> sorted = new ArrayList<>(entries);
+        sorted.sort(Comparator.comparing(GuiScrollboxEntry::zLevel));
+
+        for (T entry : sorted) {
+            int yStart = (int) (this.yPos + this.cellHeight * entries.indexOf(entry) - this.scroll * this.cellHeight);
             //Usually it would be yStart + cellHeight, however because the ystart is offsetted (due to the active selection box), it cancels out
             if (yStart + this.cellHeight >= this.yPos && yStart <= this.yPos + height) {
-                Gui.drawRect(this.xPos, yStart, this.xPos + this.width, yStart + this.cellHeight, entries.get(i) == this.selectedElement ? this.cellSelectedColor : this.cellHighlightColor);
+                Gui.drawRect(this.xPos, yStart, this.xPos + this.width, yStart + this.cellHeight, entry == this.selectedElement ? this.cellSelectedColor : this.cellHighlightColor);
                 Gui.drawRect(this.xPos, yStart, this.xPos + this.width, yStart + borderSize, this.borderColor);
-                entries.get(i).draw(this.xPos, yStart, mouseX, mouseY);
+
+                boolean mouseOverElement = !this.mouseOverScrollBar(mouseX, mouseY, height, scrollBar) && mouseOver && mouseY >= yStart && mouseY < yStart + this.cellHeight;
+
+                entry.draw(this.xPos, yStart, mouseX, mouseY, mouseOverElement);
 
                 //Draw highlighted section of the cell (if mouse is over)
-                if (!this.mouseOverScrollBar(mouseX, mouseY, height, scrollBar) && mouseOver && mouseY >= yStart && mouseY < yStart + this.cellHeight) {
+                if (mouseOverElement) {
                     Gui.drawRect(this.xPos, yStart, this.xPos + this.width, yStart + this.cellHeight, this.highlightColor);
                 }
 
-                entries.get(i).postDraw(this.xPos, yStart, mouseX, mouseY);
+                entry.postDraw(this.xPos, yStart, mouseX, mouseY);
             }
         }
     }
@@ -250,22 +255,20 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> {
      * @param mouseButton the mouse button clicked.
      */
     public void mouseClicked(int mouseX, int mouseY, int mouseButton) {
-        if (mouseButton == 0) {
-            List<T> entries = this.listSupplier.get();
+        List<T> entries = this.listSupplier.get();
 
-            boolean additionalRows = entries.size() > this.cellMax;
-            int height = this.getTotalSize(entries.size());
-            Rectangle2D.Float scrollBar = this.getScrollBar(entries.size(), height);
+        boolean additionalRows = entries.size() > this.cellMax;
+        int height = this.getTotalSize(entries.size());
+        Rectangle2D.Float scrollBar = this.getScrollBar(entries.size(), height);
 
-            //Scroll bar clicked
-            if (additionalRows && this.mouseOverScrollBar(mouseX, mouseY, height, scrollBar)) {
-                this.lastYClicked = mouseY;
-                return;
-            }
+        //Scroll bar clicked
+        if (additionalRows && this.mouseOverScrollBar(mouseX, mouseY, height, scrollBar)) {
+            this.lastYClicked = mouseY;
+            return;
+        }
 
-            if (this.isMouseOver(mouseX, mouseY, height) && mouseY - this.yPos < height) {
-                this.clickedEntry(entries, mouseX, mouseY);
-            }
+        if (this.isMouseOver(mouseX, mouseY, height) && mouseY - this.yPos < height) {
+            this.clickedEntry(entries, mouseX, mouseY, mouseButton);
         }
     }
 
@@ -276,14 +279,21 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> {
      * @param mouseX  the mouse's x
      * @param mouseY  the mouse's y
      */
-    private void clickedEntry(List<T> entries, int mouseX, int mouseY) {
-        for (int i = 0; i < entries.size(); i++) {
-            int yStart = (int) (this.yPos + this.cellHeight * i - this.scroll * this.cellHeight);
-            if (mouseY - this.yPos <= this.cellHeight * (i + 1) - this.scroll * this.cellHeight) {
-                if (entries.get(i).onClicked(mouseX - this.xPos, mouseY - yStart, mouseX, mouseY)) {
-                    this.selectedElement = entries.get(i);
+    private void clickedEntry(List<T> entries, int mouseX, int mouseY, int mouseButton) {
+        for (T entry : entries) {
+            if(entry.globalClicked(mouseX, mouseY, mouseButton)) {
+                return;
+            }
+        }
+        if(mouseButton == 0) {
+            for (int i = 0; i < entries.size(); i++) {
+                int yStart = (int) (this.yPos + this.cellHeight * i - this.scroll * this.cellHeight);
+                if (mouseY - this.yPos <= this.cellHeight * (i + 1) - this.scroll * this.cellHeight) {
+                    if (entries.get(i).onClicked(mouseX - this.xPos, mouseY - yStart, mouseX, mouseY)) {
+                        this.selectedElement = entries.get(i);
+                    }
+                    break;
                 }
-                break;
             }
         }
     }
@@ -295,7 +305,13 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> {
     public void handleMouseInput() {
         int mouseInput = Mouse.getDWheel();
         if (mouseInput != 0) {
-            this.scroll((mouseInput < 0 ? -1 : 1) * SCROLL_AMOUNT);
+            int scroll = mouseInput < 0 ? -1 : 1;
+            for (T t : this.listSupplier.get()) {
+                if (t.consumeScroll(scroll)) {
+                    return;
+                }
+            }
+            this.scroll(scroll * SCROLL_AMOUNT);
         }
     }
 

@@ -5,6 +5,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import net.dumbcode.dumblibrary.client.RenderUtils;
+import net.dumbcode.dumblibrary.client.StencilStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiScreen;
@@ -23,15 +24,14 @@ public class GuiDropdownBox<T extends SelectListEntry> {
 
     @Getter @Setter private boolean open;
     private int cellHeight;
-    private int xPos;
-    private int yPos;
+    @Getter private int xPos;
+    @Getter private int yPos;
     private int width;
     private String search = "";
 
     @Getter(AccessLevel.NONE)
     @Setter(AccessLevel.NONE)
     private final Supplier<List<T>> listSupplier;
-
 
     public GuiDropdownBox(int xPos, int yPos, int width, int cellHeight, int cellMax, Supplier<List<T>> listSupplier) {
         this.scrollBox = new GuiScrollBox<>(xPos, yPos + cellHeight, width, cellHeight, cellMax, this::getSearchedList);
@@ -48,6 +48,16 @@ public class GuiDropdownBox<T extends SelectListEntry> {
 
     public T getActive() {
         return this.scrollBox.getSelectedElement();
+    }
+
+    public void setXPos(int xPos) {
+        this.xPos = xPos;
+        this.scrollBox.setXPos(xPos);
+    }
+
+    public void setYPos(int yPos) {
+        this.yPos = yPos;
+        this.scrollBox.setYPos(yPos + this.cellHeight);
     }
 
     /**
@@ -86,14 +96,13 @@ public class GuiDropdownBox<T extends SelectListEntry> {
         Gui.drawRect(this.xPos, this.yPos, this.xPos + this.width, this.yPos + this.cellHeight, this.scrollBox.getBorderColor());
         Gui.drawRect(this.xPos+1, this.yPos+1, this.xPos + this.width-1, this.yPos + this.cellHeight-1, this.scrollBox.getInsideColor());
 
-        GL11.glEnable(GL11.GL_STENCIL_TEST);
-        RenderUtils.renderSquareStencil(this.xPos, this.yPos, this.xPos + this.width, this.yPos + this.cellHeight, true, 2, GL11.GL_LEQUAL);
+        StencilStack.pushSquareStencil(this.xPos, this.yPos, this.xPos + this.width, this.yPos + this.cellHeight);
         if (!this.search.isEmpty()) {
             MC.fontRenderer.drawString(this.search, this.xPos + 5, this.yPos + this.cellHeight / 2 - MC.fontRenderer.FONT_HEIGHT / 2, -1);
         } else if (this.getActive() != null) {
-            this.getActive().draw(this.xPos, this.yPos, mouseX, mouseY);
+            this.getActive().draw(this.xPos, this.yPos, mouseX, mouseY, this.mouseOnTopCell(mouseX, mouseY));
         }
-        GL11.glDisable(GL11.GL_STENCIL_TEST);
+        StencilStack.popStencil();
 
         //Draw the highlighted section of the main part, if the mouse is over
         if (mouseX - this.xPos > 0 && mouseX - this.xPos <= this.width && mouseY >= this.yPos && mouseY < this.yPos + this.cellHeight) {

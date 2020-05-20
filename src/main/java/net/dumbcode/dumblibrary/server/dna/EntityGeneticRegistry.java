@@ -14,12 +14,12 @@ import java.util.Map;
 public enum EntityGeneticRegistry {
     INSTANCE;
 
+    private final Map<Class<? extends Entity>, List<Entry<?>>> entityEntryList = new HashMap<>();
+
     EntityGeneticRegistry() {
         register(EntityBat.class, GeneticTypes.SIZE, new GeneticFieldModifierStorage().setOperation(ModOp.MULTIPLY_BASE_THEN_ADD), -0.25F);
         registerTargetTint(EntityBat.class, 0x1C1912);
     }
-
-    private final Map<Class<? extends Entity>, List<Entry<?>>> entityEntryList = new HashMap<>();
 
     public <S extends GeneticFactoryStorage> void register(Class<? extends Entity> clazz, GeneticType<S> type, float value) {
         this.register(clazz, type, type.getStorage().get(), value);

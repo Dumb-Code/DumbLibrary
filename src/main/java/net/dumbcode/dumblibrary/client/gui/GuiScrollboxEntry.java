@@ -9,7 +9,15 @@ public interface GuiScrollboxEntry {
      * @param mouseX the mouse X position
      * @param mouseY the mouse Y position
      */
-    void draw(int x, int y, int mouseX, int mouseY);
+    @Deprecated
+    default void draw(int x, int y, int mouseX, int mouseY) {
+
+    }
+
+    default void draw(int x, int y, int mouseX, int mouseY, boolean mouseOver) {
+        draw(x, y, mouseX, mouseY);
+    }
+
 
     /**
      * Draws the element
@@ -33,5 +41,17 @@ public interface GuiScrollboxEntry {
      */
     default boolean onClicked(int relMouseX, int relMouseY, int mouseX, int mouseY) {
         return false;
+    }
+
+    default boolean globalClicked(int mouseX, int mouseY, int mouseButton) {
+        return false;//return true to cancel propagation
+    }
+
+    default boolean consumeScroll(int scrollAmount) {
+        return false;
+    }
+
+    default int zLevel() {
+        return 1;
     }
 }

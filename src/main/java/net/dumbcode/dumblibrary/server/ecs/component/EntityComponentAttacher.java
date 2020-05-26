@@ -6,7 +6,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import lombok.Getter;
 import lombok.Value;
-import lombok.experimental.Wither;
+import lombok.With;
 import net.dumbcode.dumblibrary.server.ecs.ComponentWriteAccess;
 import net.dumbcode.dumblibrary.server.registry.DumbRegistries;
 import net.minecraft.util.JsonUtils;
@@ -121,7 +121,7 @@ public class EntityComponentAttacher {
         return new ConstructConfiguration();
     }
 
-    @Wither
+    @With
     public class ConstructConfiguration {
         private final boolean defaultTypes;
         private final List<EntityComponentType> addedTypes;

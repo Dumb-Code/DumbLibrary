@@ -3,7 +3,7 @@ package net.dumbcode.dumblibrary.client.model;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import lombok.experimental.Wither;
+import lombok.With;
 import lombok.val;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
@@ -25,7 +25,7 @@ import java.util.function.UnaryOperator;
  * @author Wyn Price
  * @see TransformTypeModelLoader
  */
-@Wither
+@With
 public class TransformTypeIModel implements IModel {
 
     private IModel defaultModel;

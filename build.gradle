@@ -62,7 +62,7 @@ repositories {
 dependencies {
     deobfCompile "mezz.jei:jei_1.12.2:4.9.1.187:api"
     runtime "mezz.jei:jei_1.12.2:4.9.1.187"
-    compile 'org.projectlombok:lombok:1.18.0'
+    compile 'org.projectlombok:lombok:1.18.12'
     compile group: 'org.apache.commons', name: 'commons-collections4', version: '4.0'
 }
 

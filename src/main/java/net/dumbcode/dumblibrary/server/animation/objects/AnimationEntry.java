@@ -3,7 +3,7 @@ package net.dumbcode.dumblibrary.server.animation.objects;
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.experimental.Wither;
+import lombok.With;
 import net.dumbcode.dumblibrary.server.animation.interpolation.Interpolation;
 import net.dumbcode.dumblibrary.server.animation.interpolation.LinearInterpolation;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
@@ -11,7 +11,7 @@ import net.minecraftforge.fml.common.network.ByteBufUtils;
 import javax.annotation.Nullable;
 
 @Getter
-@Wither
+@With
 public class AnimationEntry {
 
     @NonNull

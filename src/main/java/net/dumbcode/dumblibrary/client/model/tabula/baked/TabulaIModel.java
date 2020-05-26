@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import lombok.RequiredArgsConstructor;
-import lombok.experimental.Wither;
+import lombok.With;
 import net.dumbcode.dumblibrary.server.tabula.TabulaModelInformation;
 import net.dumbcode.dumblibrary.server.utils.MathUtils;
 import net.minecraft.client.renderer.block.model.BakedQuad;
@@ -37,7 +37,7 @@ import static net.dumbcode.dumblibrary.server.utils.MatrixUtils.*;
  *
  * @author Wyn Price
  */
-@Wither
+@With
 @RequiredArgsConstructor
 public class TabulaIModel implements IModel {
 

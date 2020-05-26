@@ -21,6 +21,7 @@ import net.minecraftforge.client.model.IModel;
 import net.minecraftforge.client.model.pipeline.UnpackedBakedQuad;
 import net.minecraftforge.common.model.IModelState;
 import net.minecraftforge.common.model.TRSRTransformation;
+import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nonnull;
 import javax.vecmath.Matrix4f;
@@ -43,6 +44,7 @@ public class TabulaIModel implements IModel {
 
     private final Collection<TabulaModelHandler.TextureLayer> allTextures;
     private final List<TabulaModelHandler.LightupData> lightupData;
+    private final  Map<Integer, Pair<List<TabulaModelHandler.CubeFacingValues>, Integer>> directCubeTints;
     private final ResourceLocation particle;
     private final ImmutableMap<ItemCameraTransforms.TransformType, TRSRTransformation> transforms;
     private final TabulaModelInformation model;
@@ -91,7 +93,9 @@ public class TabulaIModel implements IModel {
         for (TabulaModelHandler.TextureLayer layer : textures) {
             for (TabulaModelInformation.CubeGroup group : this.model.getGroups()) {
                 for (TabulaModelInformation.Cube cube : group.getCubeList()) {
-                    build(format, quadList, stack, cube, layer);
+                    if(layer.getCubePredicate().test(cube.getName())) {
+                        this.build(format, quadList, stack, cube, layer);
+                    }
                 }
             }
         }
@@ -124,7 +128,7 @@ public class TabulaIModel implements IModel {
         float[] dims = cube.getDimension();
         float scale = cube.getMcScale();
 
-        Point3f[] vertices = this.generatedAllVertices(new Vec3d(positions[0], positions[1], positions[2]).subtract(scale, scale, scale), dims[0], dims[1], dims[2]);
+        Point3f[] vertices = this.generatedAllVertices(new Vec3d(positions[0], positions[1], positions[2]).subtract(scale, scale, scale), dims[0]+scale*2, dims[1]+scale*2, dims[2]+scale*2);
 
         //Go through all the vertices and transform them with the current matrix
         for (Point3f vertex : vertices) {
@@ -135,7 +139,7 @@ public class TabulaIModel implements IModel {
 
         //Loop through all of the EnumFacing and create the quad for each face
         for (EnumFacing value : EnumFacing.values()) {
-            int[] uvData = uvMap.get(value); //The uv data
+            int[] uvData = uvMap.get(cube.isTextureMirror() && value.getAxis() == EnumFacing.Axis.X ? value.getOpposite() : value); //The uv data
 
             //Check to make sure that the quad has a texture in the specific uv section
             if (!this.hasSpriteGotTexture(layer.getSprite(), uvData)) {
@@ -149,13 +153,13 @@ public class TabulaIModel implements IModel {
 
                 //Flip the uv data if the texture is mirrored. As the model is scaled [-1, -1, 1], the UV data is already flipped.
                 //So just un-flip it if the texture isn't mirrored
-                if (!cube.isTextureMirror()) {
+                if (!cube.isTextureMirror() && value.getAxis() != EnumFacing.Axis.X) {
                     int minU = uvData[0];
                     uvData[0] = uvData[2];
                     uvData[2] = minU;
                 }
 
-                outList.add(this.buildQuad(pointVertices, layer, uvData, this.generateLightupData(layer, cube), format));
+                outList.add(this.buildQuad(pointVertices, layer, uvData, format, cube));
             }
 
 
@@ -259,17 +263,18 @@ public class TabulaIModel implements IModel {
      *
      * @param layer The layer to generate the lightup data with
      * @param cube  The cube of which to generate the data from
+     * @param facing The cubes facing
      * @return a float[2] of lightup data ranging from 0-16 on each component
      */
-    private float[] generateLightupData(TabulaModelHandler.TextureLayer layer, TabulaModelInformation.Cube cube) {
+    private float[] generateLightupData(TabulaModelHandler.TextureLayer layer, TabulaModelInformation.Cube cube, EnumFacing facing) {
         //ts is the custom block-light/skylight data
         float[] ts = new float[2];
 
         //On UP&DOWN side, directional up on the texture sheet is south for texture
         for (TabulaModelHandler.LightupData datum : this.lightupData) {
             if (datum.getLayersApplied().contains(layer.getLayerName())) {
-                for (TabulaModelHandler.LightupEntry entry : datum.getEntry()) {
-                    if (entry.getCubeName().equals(cube.getName())) {
+                for (TabulaModelHandler.CubeFacingValues entry : datum.getEntry()) {
+                    if (entry.getCubeName().equals(cube.getName()) && entry.getFacing().contains(facing)) {
                         ts[0] = datum.getBlockLight();
                         ts[1] = datum.getSkyLight();
                     }
@@ -380,21 +385,30 @@ public class TabulaIModel implements IModel {
      * @param pointVertices The 4 vertices generated from {@link #generateSideVertices(EnumFacing, Point3f[])}
      * @param layer         The texture layer to generate the texture from
      * @param uvData        The uv data in the form [minU, minV, maxU, maxV]
-     * @param ts            the 2 sized lightup data array
      * @param format        the vertex format the build too
+     * @param cube          the cubes
      * @return the build quad.
      */
-    private BakedQuad buildQuad(Point3f[] pointVertices, TabulaModelHandler.TextureLayer layer, int[] uvData, float[] ts, VertexFormat format) {
-
+    private BakedQuad buildQuad(Point3f[] pointVertices, TabulaModelHandler.TextureLayer layer, int[] uvData, VertexFormat format, TabulaModelInformation.Cube cube) {
         Vector3f normal = MathUtils.calcualeNormalF(pointVertices[0].x, pointVertices[0].y, pointVertices[0].z, pointVertices[1].x, pointVertices[1].y, pointVertices[1].z, pointVertices[2].x, pointVertices[2].y, pointVertices[2].z);
         EnumFacing quadFacing = EnumFacing.getFacingFromVector(normal.x, normal.y, normal.z);
+        float[] ts = this.generateLightupData(layer, cube, quadFacing);
         UnpackedBakedQuad.Builder builder = new UnpackedBakedQuad.Builder(format);
         builder.setQuadOrientation(quadFacing);
         builder.setTexture(layer.getSprite());
-        builder.setQuadTint(layer.getLayer());
+        int tint = layer.getLayer();
+        if(this.directCubeTints.containsKey(tint)) {
+            for (TabulaModelHandler.CubeFacingValues values : this.directCubeTints.get(tint).getLeft()) {
+                if(values.getCubeName().equals(cube.getName()) && values.getFacing().contains(quadFacing)) {
+                    tint = this.directCubeTints.get(tint).getRight();
+                }
+            }
+//            builder.setQuadTint( this.directCubeTints.get(cubeName).get(layer.getLayer()));
+        }
+        builder.setQuadTint(tint);
         for (int i = 0; i < pointVertices.length; i++) {
             this.putVertexData(builder, pointVertices[i], normal,
-                    layer.getSprite().getInterpolatedU(uvData[(i / 2) * 2] / (float) this.model.getTexWidth() * 16D),
+                    layer.getSprite().getInterpolatedU(uvData[2 - (i / 2) * 2] / (float) this.model.getTexWidth() * 16D),
                     layer.getSprite().getInterpolatedV(uvData[(i % 3 == 0) ? 1 : 3] / (float) this.model.getTexHeight() * 16D),
                     ts, format);
 
@@ -521,7 +535,7 @@ public class TabulaIModel implements IModel {
             if (textures.containsKey(texture.getLayerName())) {
                 String remapped = textures.get(texture.getLayerName());
                 if (!remapped.isEmpty()) { //Removed texture
-                    textureLayers.add(new TabulaModelHandler.TextureLayer(texture.getLayerName(), new ResourceLocation(remapped), texture.getLayer()));
+                    textureLayers.add(new TabulaModelHandler.TextureLayer(texture.getLayerName(), new ResourceLocation(remapped), texture.getCubePredicate(), texture.getLayer()));
                 }
             } else {
                 textureLayers.add(texture);

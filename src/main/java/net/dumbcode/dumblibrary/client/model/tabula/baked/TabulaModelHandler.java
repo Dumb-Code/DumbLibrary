@@ -1,5 +1,6 @@
 package net.dumbcode.dumblibrary.client.model.tabula.baked;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.gson.*;
@@ -7,7 +8,9 @@ import lombok.Cleanup;
 import lombok.Data;
 import lombok.Value;
 import net.dumbcode.dumblibrary.server.animation.TabulaUtils;
+import net.dumbcode.dumblibrary.server.json.JsonUtil;
 import net.dumbcode.dumblibrary.server.tabula.TabulaModelInformation;
+import net.dumbcode.dumblibrary.server.utils.StreamUtils;
 import net.minecraft.client.renderer.block.model.ModelBlock;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.IResource;
@@ -19,13 +22,14 @@ import net.minecraftforge.client.model.ICustomModelLoader;
 import net.minecraftforge.client.model.IModel;
 import net.minecraftforge.client.model.PerspectiveMapWrapper;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.InputStreamReader;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * The model handler for loading .tbl models
@@ -36,7 +40,7 @@ public enum TabulaModelHandler implements ICustomModelLoader {
     /**
      * A dummy texture layer representing the missing texture/layer
      */
-    public static final TextureLayer MISSING = new TextureLayer("missing", new ResourceLocation("missingno"), -1);
+    public static final TextureLayer MISSING = new TextureLayer("missing", new ResourceLocation("missingno"), Predicates.alwaysTrue(), -1);
 
     private static final JsonParser PARSER = new JsonParser();
     /**
@@ -67,13 +71,29 @@ public enum TabulaModelHandler implements ICustomModelLoader {
         ModelBlock modelBlock = ModelBlock.deserialize(string);
         List<TextureLayer> allTextures = Lists.newArrayList();
         Set<String> layers = Sets.newHashSet();
+        JsonObject object = JsonUtils.getJsonObject(json, "texture_data", new JsonObject());
         for (String key : modelBlock.textures.keySet()) {
             int layer = -1;
             Matcher matcher = PATTERN.matcher(key);
             if (matcher.matches()) {
                 layer = Integer.parseInt(matcher.group(1));
             }
-            allTextures.add(new TextureLayer(key, new ResourceLocation(modelBlock.textures.get(key)), layer));
+            Predicate<String> cubePredicate = Predicates.alwaysTrue();
+            if(json.has("layer_" + layer)) {
+                JsonObject layerObject = JsonUtils.getJsonObject(object, "layer" + layer);
+                String type = JsonUtils.getString(layerObject, "type");
+                List<String> cubeNames = StreamUtils.stream(JsonUtils.getJsonArray(layerObject, "cubes")).map(JsonElement::getAsString).collect(Collectors.toList());
+                switch (type) {
+                    case "whitelist":
+                        cubePredicate = cubeNames::contains;
+                    case "blacklist":
+                        cubePredicate = cubePredicate.negate();
+                        break;
+                    default:
+                        throw new IllegalArgumentException("Don't know how to handle texture info type " + type);
+                }
+            }
+            allTextures.add(new TextureLayer(key, new ResourceLocation(modelBlock.textures.get(key)), cubePredicate, layer));
             layers.add(key);
         }
         String particle = modelBlock.textures.get("particle");
@@ -87,7 +107,18 @@ public enum TabulaModelHandler implements ICustomModelLoader {
             }
         }
 
-        return new TabulaIModel(Collections.unmodifiableList(allTextures), lightupData, part, PerspectiveMapWrapper.getTransforms(modelBlock.getAllTransforms()), information, modelBlock.ambientOcclusion, modelBlock.isGui3d(), modelBlock.getOverrides());
+        Map<Integer, Pair<List<CubeFacingValues>, Integer>> directTints = new HashMap<>();
+        if(JsonUtils.isJsonArray(json, "direct_cube_tint")) {
+            for (JsonElement element : JsonUtils.getJsonArray(json, "direct_cube_tint")) {
+                JsonObject cubeTint = element.getAsJsonObject();
+                Matcher matcher = PATTERN.matcher(JsonUtils.getString(cubeTint, "layer"));
+                if (matcher.matches()) {
+                    directTints.put(Integer.parseInt(matcher.group(1)), Pair.of(parseCubeFacingValues(JsonUtils.getJsonArray(cubeTint, "cubes")), JsonUtils.getInt(cubeTint, "tint")));
+                }
+            }
+        }
+
+        return new TabulaIModel(Collections.unmodifiableList(allTextures), lightupData, directTints, part, PerspectiveMapWrapper.getTransforms(modelBlock.getAllTransforms()), information, modelBlock.ambientOcclusion, modelBlock.isGui3d(), modelBlock.getOverrides());
     }
 
     @Override
@@ -99,6 +130,7 @@ public enum TabulaModelHandler implements ICustomModelLoader {
     public static class TextureLayer {
         private final String layerName;
         private final ResourceLocation loc;
+        private final Predicate<String> cubePredicate;
         private final int layer;
         private TextureAtlasSprite sprite;
     }
@@ -112,11 +144,11 @@ public enum TabulaModelHandler implements ICustomModelLoader {
      *             "layer0",
      *             "layer1",
      *         ],
-     *         "cubes_lit": [               <--- A list of the cubes lit. Each one of these entries, no matter the type, is a {@link LightupEntry}
+     *         "cubes_lit": [               <--- A list of the cubes lit. Each one of these entries, no matter the type, is a {@link CubeFacingValues }
      *             "headPiece1",            <--- Having them as strings will mean the whole cube is lit
      *             "headPiece2",
      *             {                        <--- If you don't want the whole cube lit up, you can define the faces for the full-bright to act on
-     *                 "cube_name",
+     *                 "cube_name": "some_cube",
      *                 "faces": [           <--- The faces that will be light up with full-bright. Note that if the cube is rotated say 90* on the x axis, then UP will not be UP
      *                     "north",
      *                     "south",
@@ -134,7 +166,7 @@ public enum TabulaModelHandler implements ICustomModelLoader {
     @Value
     public static class LightupData {
         private Set<String> layersApplied;
-        private List<LightupEntry> entry;
+        private List<CubeFacingValues> entry;
         private float blockLight;
         private float skyLight;
 
@@ -149,45 +181,46 @@ public enum TabulaModelHandler implements ICustomModelLoader {
                 layersApplied.addAll(layers);
             }
 
-
-            List<LightupEntry> list = Lists.newArrayList();
-            for (JsonElement cube : JsonUtils.getJsonArray(json, "cubes_lit")) {
-                if (cube.isJsonPrimitive() && ((JsonPrimitive) cube).isString()) {
-                    list.add(new LightupEntry(cube.getAsString(), EnumFacing.values()));
-                } else if (cube.isJsonObject()) {
-                    JsonObject cubeJson = cube.getAsJsonObject();
-                    String name = JsonUtils.getString(cubeJson, "cube_name");
-                    JsonArray faces = JsonUtils.getJsonArray(cubeJson, "faces");
-                    String[] astr = new String[faces.size()];
-                    for (int i = 0; i < faces.size(); i++) {
-                        astr[i] = JsonUtils.getString(faces.get(i), "faces[" + i + "]");
-                    }
-                    Set<EnumFacing> facings = Sets.newHashSet();
-                    for (EnumFacing value : EnumFacing.values()) {
-                        for (String face : astr) {
-                            if (value.getName2().equalsIgnoreCase(face)) {
-                                facings.add(value);
-                                break;
-                            }
-                        }
-                    }
-                    list.add(new LightupEntry(name, facings.toArray(new EnumFacing[0])));
-                } else {
-                    throw new JsonSyntaxException("Expected a String or a Json Object");
-                }
-            }
-
             float blockLight = JsonUtils.getFloat(json, "block_light", 15F);
             float skyLight = JsonUtils.getFloat(json, "sky_light", 15F);
 
-
-            return new LightupData(layersApplied, list, blockLight, skyLight);
+            return new LightupData(layersApplied, parseCubeFacingValues(JsonUtils.getJsonArray(json, "cubes_lit")), blockLight, skyLight);
         }
     }
 
+    public static List<CubeFacingValues> parseCubeFacingValues(JsonArray array) {
+        List<CubeFacingValues> list = Lists.newArrayList();
+        for (JsonElement cube : array) {
+            if (cube.isJsonPrimitive() && ((JsonPrimitive) cube).isString()) {
+                list.add(new CubeFacingValues(cube.getAsString(), Sets.newHashSet(EnumFacing.values())));
+            } else if (cube.isJsonObject()) {
+                JsonObject cubeJson = cube.getAsJsonObject();
+                String name = JsonUtils.getString(cubeJson, "cube_name");
+                JsonArray faces = JsonUtils.getJsonArray(cubeJson, "faces");
+                String[] astr = new String[faces.size()];
+                for (int i = 0; i < faces.size(); i++) {
+                    astr[i] = JsonUtils.getString(faces.get(i), "faces[" + i + "]");
+                }
+                Set<EnumFacing> facings = Sets.newHashSet();
+                for (EnumFacing value : EnumFacing.values()) {
+                    for (String face : astr) {
+                        if (value.getName2().equalsIgnoreCase(face)) {
+                            facings.add(value);
+                            break;
+                        }
+                    }
+                }
+                list.add(new CubeFacingValues(name, facings));
+            } else {
+                throw new JsonSyntaxException("Expected a String or a Json Object");
+            }
+        }
+        return list;
+    }
+
     @Value
-    public static class LightupEntry {
+    public static class CubeFacingValues {
         String cubeName;
-        EnumFacing[] facing;
+        Set<EnumFacing> facing;
     }
 }

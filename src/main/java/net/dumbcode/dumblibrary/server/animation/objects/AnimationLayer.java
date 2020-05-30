@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import net.dumbcode.dumblibrary.client.model.tabula.TabulaModel;
+import net.dumbcode.dumblibrary.server.TickHandler;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -88,7 +89,7 @@ public class AnimationLayer {
     }
 
     private void adjustForGhostWraps(float partialTicks) {
-        float age = FMLCommonHandler.instance().getMinecraftServerInstance().getTickCounter() + partialTicks;
+        float age = TickHandler.getTicks() + partialTicks;
         for (String cubeName : this.getCubeNames()) {
             AnimatableCube cube = this.anicubeRef.apply(cubeName);
             List<GhostAnimationData> ghosts = this.ghostWraps.getOrDefault(cubeName, Lists.newArrayList());

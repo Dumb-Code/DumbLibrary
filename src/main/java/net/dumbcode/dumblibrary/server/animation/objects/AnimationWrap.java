@@ -2,6 +2,7 @@ package net.dumbcode.dumblibrary.server.animation.objects;
 
 import lombok.Getter;
 import net.dumbcode.dumblibrary.client.model.tabula.TabulaModel;
+import net.dumbcode.dumblibrary.server.TickHandler;
 import net.dumbcode.dumblibrary.server.animation.interpolation.Interpolation;
 import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.fml.common.FMLCommonHandler;
@@ -46,7 +47,7 @@ public class AnimationWrap {
         this.cuberef = cuberef;
         this.anicubeRef = anicubeRef;
         this.cubeNames = cubeNames;
-        this.animationTicks = FMLCommonHandler.instance().getMinecraftServerInstance().getTickCounter();
+        this.animationTicks = TickHandler.getTicks();
         this.entry = animation;
         this.object = object;
         this.poseStack.addAll(this.animationDataGetter.apply(animation.getAnimation()));
@@ -111,7 +112,7 @@ public class AnimationWrap {
 
         timeModifier /= this.entry.getSpeedFactor().tryApply(object, AnimationFactor.Type.SPEED, partialTicks);
 
-        float ticks = FMLCommonHandler.instance().getMinecraftServerInstance().getTickCounter();
+        float ticks = TickHandler.getTicks();
         this.tick += ((ticks-this.animationTicks) + (partialTicks-this.animationPartialTicks)) / timeModifier;//todo: Check that looping and holding work
 
         //Make sure to catchup to correct render

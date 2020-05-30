@@ -4,12 +4,17 @@ import com.google.common.collect.Lists;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.*;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
+import net.minecraftforge.client.ForgeHooksClient;
+import net.minecraftforge.client.MinecraftForgeClient;
+import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.model.TRSRTransformation;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nullable;
 import javax.vecmath.Matrix4f;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -20,9 +25,9 @@ import java.util.Map;
  */
 public class TabulaBakedModel implements IBakedModel {
 
-    private static final List<BakedQuad> EMPTY = Lists.newArrayList();
+    private static final List<BakedQuad> EMPTY = Collections.emptyList();
 
-    private final List<BakedQuad> quads;
+    private final Map<BlockRenderLayer, List<BakedQuad>> quadMap;
 
     private final boolean ambientOcclusion;
     private final boolean gui3d;
@@ -30,8 +35,8 @@ public class TabulaBakedModel implements IBakedModel {
     private final ItemOverrideList itemOverrides;
     private final Map<ItemCameraTransforms.TransformType, TRSRTransformation> transforms;
 
-    public TabulaBakedModel(List<BakedQuad> quads, boolean ambientOcclusion, boolean gui3d, TextureAtlasSprite particleTexture, List<ItemOverride> itemOverrides, Map<ItemCameraTransforms.TransformType, TRSRTransformation> transforms) {
-        this.quads = quads;
+    public TabulaBakedModel(Map<BlockRenderLayer, List<BakedQuad>> quadMap, boolean ambientOcclusion, boolean gui3d, TextureAtlasSprite particleTexture, List<ItemOverride> itemOverrides, Map<ItemCameraTransforms.TransformType, TRSRTransformation> transforms) {
+        this.quadMap = quadMap;
         this.ambientOcclusion = ambientOcclusion;
         this.gui3d = gui3d;
         this.particleTexture = particleTexture;
@@ -42,7 +47,7 @@ public class TabulaBakedModel implements IBakedModel {
 
     @Override
     public List<BakedQuad> getQuads(@Nullable IBlockState state, @Nullable EnumFacing side, long rand) {
-        return side == null ? this.quads : EMPTY;
+        return side == null ? this.quadMap.getOrDefault(MinecraftForgeClient.getRenderLayer(), EMPTY) : EMPTY;
     }
 
     @Override

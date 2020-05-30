@@ -6,6 +6,7 @@ import com.google.common.collect.Sets;
 import com.google.gson.*;
 import lombok.Cleanup;
 import lombok.Data;
+import lombok.Getter;
 import lombok.Value;
 import net.dumbcode.dumblibrary.server.animation.TabulaUtils;
 import net.dumbcode.dumblibrary.server.json.JsonUtil;
@@ -15,6 +16,7 @@ import net.minecraft.client.renderer.block.model.ModelBlock;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.IResource;
 import net.minecraft.client.resources.IResourceManager;
+import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.JsonUtils;
 import net.minecraft.util.ResourceLocation;
@@ -79,18 +81,16 @@ public enum TabulaModelHandler implements ICustomModelLoader {
                 layer = Integer.parseInt(matcher.group(1));
             }
             Predicate<String> cubePredicate = Predicates.alwaysTrue();
-            if(json.has("layer_" + layer)) {
+            if(object.has("layer" + layer)) {
                 JsonObject layerObject = JsonUtils.getJsonObject(object, "layer" + layer);
                 String type = JsonUtils.getString(layerObject, "type");
                 List<String> cubeNames = StreamUtils.stream(JsonUtils.getJsonArray(layerObject, "cubes")).map(JsonElement::getAsString).collect(Collectors.toList());
-                switch (type) {
-                    case "whitelist":
-                        cubePredicate = cubeNames::contains;
-                    case "blacklist":
-                        cubePredicate = cubePredicate.negate();
-                        break;
-                    default:
-                        throw new IllegalArgumentException("Don't know how to handle texture info type " + type);
+                if(!type.equals("whitelist") && !type.equals("blacklist")) {
+                    throw new IllegalArgumentException("Don't know how to handle texture info type " + type);
+                }
+                cubePredicate = cubeNames::contains;
+                if(type.equals("blacklist")) {
+                    cubePredicate = cubePredicate.negate();
                 }
             }
             allTextures.add(new TextureLayer(key, new ResourceLocation(modelBlock.textures.get(key)), cubePredicate, layer));
@@ -118,7 +118,24 @@ public enum TabulaModelHandler implements ICustomModelLoader {
             }
         }
 
-        return new TabulaIModel(Collections.unmodifiableList(allTextures), lightupData, directTints, part, PerspectiveMapWrapper.getTransforms(modelBlock.getAllTransforms()), information, modelBlock.ambientOcclusion, modelBlock.isGui3d(), modelBlock.getOverrides());
+        Map<Integer, BlockRenderLayer> renderLayerDataMap = new HashMap<>();
+        JsonObject renderLayers = JsonUtils.getJsonObject(json, "render_layers", new JsonObject());
+        for (BlockRenderLayer value : BlockRenderLayer.values()) {
+            String key = value.name().toLowerCase();
+            if(renderLayers.has(key)) {
+                JsonObject renderLayerObject = JsonUtils.getJsonObject(renderLayers, key);
+                if(JsonUtils.isJsonArray(renderLayerObject, "layers")) {
+                    for (JsonElement element : JsonUtils.getJsonArray(renderLayerObject, "layers")) {
+                        Matcher matcher = PATTERN.matcher(element.getAsString());
+                        if (matcher.matches()) {
+                            renderLayerDataMap.put(Integer.parseInt(matcher.group(1)), value);
+                        }
+                    }
+                }
+            }
+        }
+
+        return new TabulaIModel(Collections.unmodifiableList(allTextures), lightupData, directTints, renderLayerDataMap, part, PerspectiveMapWrapper.getTransforms(modelBlock.getAllTransforms()), information, modelBlock.ambientOcclusion, modelBlock.isGui3d(), modelBlock.getOverrides());
     }
 
     @Override

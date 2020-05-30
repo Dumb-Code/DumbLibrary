@@ -14,6 +14,7 @@ import net.minecraft.client.renderer.block.model.ItemOverride;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.renderer.vertex.VertexFormat;
+import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.Vec3d;
@@ -44,7 +45,8 @@ public class TabulaIModel implements IModel {
 
     private final Collection<TabulaModelHandler.TextureLayer> allTextures;
     private final List<TabulaModelHandler.LightupData> lightupData;
-    private final  Map<Integer, Pair<List<TabulaModelHandler.CubeFacingValues>, Integer>> directCubeTints;
+    private final Map<Integer, Pair<List<TabulaModelHandler.CubeFacingValues>, Integer>> directCubeTints;
+    private final Map<Integer, BlockRenderLayer> layerMap;
     private final ResourceLocation particle;
     private final ImmutableMap<ItemCameraTransforms.TransformType, TRSRTransformation> transforms;
     private final TabulaModelInformation model;
@@ -80,7 +82,8 @@ public class TabulaIModel implements IModel {
             }
         }
 
-        List<BakedQuad> quadList = Lists.newArrayList();
+        List<BakedQuad> allLayerQuads = new ArrayList<>();
+        Map<BlockRenderLayer, List<BakedQuad>> quadMap = new HashMap<>();
 
         //Set the custom matrix values from the model state, and finalizeComponent the translation and scale to get the model in the correct place. (due to tabula)
         this.getMatrix(stack).mul(state.apply(Optional.empty()).orElse(TRSRTransformation.identity()).getMatrix());
@@ -91,17 +94,20 @@ public class TabulaIModel implements IModel {
 
         //Iterate through all the layers, then through every group, and on each group go through all the root cubes.
         for (TabulaModelHandler.TextureLayer layer : textures) {
+            List<BakedQuad> quadList = !this.layerMap.containsKey(layer.getLayer()) ? allLayerQuads : quadMap.computeIfAbsent(this.layerMap.get(layer.getLayer()), l -> new ArrayList<>());
             for (TabulaModelInformation.CubeGroup group : this.model.getGroups()) {
                 for (TabulaModelInformation.Cube cube : group.getCubeList()) {
-                    if(layer.getCubePredicate().test(cube.getName())) {
-                        this.build(format, quadList, stack, cube, layer);
-                    }
+                    this.build(format, quadList, stack, cube, layer);
                 }
             }
         }
 
+        for (BlockRenderLayer value : BlockRenderLayer.values()) {
+            quadMap.computeIfAbsent(value, l -> new ArrayList<>()).addAll(allLayerQuads);
+        }
+
         //Return the new model
-        return new TabulaBakedModel(quadList, this.ambientOcclusion, this.gui3d, texFunc.apply(this.particle), this.itemOverrides, this.transforms);
+        return new TabulaBakedModel(quadMap, this.ambientOcclusion, this.gui3d, texFunc.apply(this.particle), this.itemOverrides, this.transforms);
     }
 
     /**
@@ -119,50 +125,48 @@ public class TabulaIModel implements IModel {
      * @param layer   The texture layer of which to use for the uv coords. If the quad has no texture on this layer then the quad isn't generated and is instead ignored.
      */
     private void build(VertexFormat format, List<BakedQuad> outList, Deque<Matrix4f> stack, TabulaModelInformation.Cube cube, TabulaModelHandler.TextureLayer layer) {
-
         //Apply the matrix changes for the cube
         this.applyMatrixChanges(stack, cube);
 
-        //Get the minimum and maximum points of this cube, in relative space (no rotation/translation)
-        float[] positions = cube.getOffset();
-        float[] dims = cube.getDimension();
-        float scale = cube.getMcScale();
+        if(layer.getCubePredicate().test(cube.getName())) {
+            //Get the minimum and maximum points of this cube, in relative space (no rotation/translation)
+            float[] positions = cube.getOffset();
+            float[] dims = cube.getDimension();
+            float scale = cube.getMcScale();
 
-        Point3f[] vertices = this.generatedAllVertices(new Vec3d(positions[0], positions[1], positions[2]).subtract(scale, scale, scale), dims[0]+scale*2, dims[1]+scale*2, dims[2]+scale*2);
+            Point3f[] vertices = this.generatedAllVertices(new Vec3d(positions[0], positions[1], positions[2]).subtract(scale, scale, scale), dims[0]+scale*2, dims[1]+scale*2, dims[2]+scale*2);
 
-        //Go through all the vertices and transform them with the current matrix
-        for (Point3f vertex : vertices) {
-            this.getMatrix(stack).transform(vertex);
-        }
-
-        Map<EnumFacing, int[]> uvMap = this.generateUvMap(cube);
-
-        //Loop through all of the EnumFacing and create the quad for each face
-        for (EnumFacing value : EnumFacing.values()) {
-            int[] uvData = uvMap.get(cube.isTextureMirror() && value.getAxis() == EnumFacing.Axis.X ? value.getOpposite() : value); //The uv data
-
-            //Check to make sure that the quad has a texture in the specific uv section
-            if (!this.hasSpriteGotTexture(layer.getSprite(), uvData)) {
-                continue;
+            //Go through all the vertices and transform them with the current matrix
+            for (Point3f vertex : vertices) {
+                this.getMatrix(stack).transform(vertex);
             }
 
+            Map<EnumFacing, int[]> uvMap = this.generateUvMap(cube);
 
-            Point3f[] pointVertices = this.generateSideVertices(value, vertices);
+            //Loop through all of the EnumFacing and create the quad for each face
+            for (EnumFacing value : EnumFacing.values()) {
+                int[] uvData = uvMap.get(cube.isTextureMirror() && value.getAxis() == EnumFacing.Axis.X ? value.getOpposite() : value); //The uv data
 
-            if (!this.isOneDimensional(pointVertices)) {
-
-                //Flip the uv data if the texture is mirrored. As the model is scaled [-1, -1, 1], the UV data is already flipped.
-                //So just un-flip it if the texture isn't mirrored
-                if (!cube.isTextureMirror() && value.getAxis() != EnumFacing.Axis.X) {
-                    int minU = uvData[0];
-                    uvData[0] = uvData[2];
-                    uvData[2] = minU;
+                //Check to make sure that the quad has a texture in the specific uv section
+                if (!this.hasSpriteGotTexture(layer.getSprite(), uvData)) {
+                    continue;
                 }
 
-                outList.add(this.buildQuad(pointVertices, layer, uvData, format, cube));
+
+                Point3f[] pointVertices = this.generateSideVertices(value, vertices);
+                if (!this.isOneDimensional(pointVertices)) {
+
+                    //Flip the uv data if the texture is mirrored. As the model is scaled [-1, -1, 1], the UV data is already flipped.
+                    //So just un-flip it if the texture isn't mirrored
+                    if (!cube.isTextureMirror() && value.getAxis() != EnumFacing.Axis.X) {
+                        int minU = uvData[0];
+                        uvData[0] = uvData[2];
+                        uvData[2] = minU;
+                    }
+
+                    outList.add(this.buildQuad(pointVertices, layer, uvData, format, cube));
+                }
             }
-
-
         }
 
         //Iterate through this cubes children and build the quads
@@ -403,7 +407,6 @@ public class TabulaIModel implements IModel {
                     tint = this.directCubeTints.get(tint).getRight();
                 }
             }
-//            builder.setQuadTint( this.directCubeTints.get(cubeName).get(layer.getLayer()));
         }
         builder.setQuadTint(tint);
         for (int i = 0; i < pointVertices.length; i++) {

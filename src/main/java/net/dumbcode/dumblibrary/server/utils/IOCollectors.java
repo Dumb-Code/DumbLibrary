@@ -50,11 +50,15 @@ public class IOCollectors {
     }
 
     public static <T> Collector<T, List<T>, Stream<T>> shuffler(Random rand) {
-        return new CollectorImpl<T, List<T>, Stream<T>>(
-            ArrayList::new,
-            List::add,
-            (list1, list2) -> { list1.addAll(list2); return list1; }
-        ).finisher(ts -> { Collections.shuffle(ts, rand); return ts.stream();});
+        return listDelegate(ts -> { Collections.shuffle(ts, rand); return ts.stream();});
+    }
+
+    public static <T> Collector<T, List<T>, Optional<T>> randomPicker(Random random) {
+        return listDelegate(ts -> ts.isEmpty() ? Optional.empty() : Optional.of(ts.get(random.nextInt(ts.size()))));
+    }
+
+    private static <T, S> Collector<T, List<T>, S> listDelegate(Function<List<T>, S> finisher) {
+        return new CollectorImpl<T, List<T>, S>(ArrayList::new, List::add, (list1, list2) -> { list1.addAll(list2); return list1; }).finisher(finisher);
     }
 
     @Setter

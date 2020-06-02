@@ -1,7 +1,6 @@
 package net.dumbcode.dumblibrary.client;
 
 import net.dumbcode.dumblibrary.server.utils.MathUtils;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
@@ -108,9 +107,9 @@ public class RenderUtils {
     public static void drawSpacedCube(double ulfx, double ulfy, double ulfz, double ulbx, double ulby, double ulbz, double urbx, double urby, double urbz, double urfx, double urfy, double urfz, double dlfx, double dlfy, double dlfz, double dlbx, double dlby, double dlbz, double drbx, double drby, double drbz, double drfx, double drfy, double drfz, double uu, double uv,double du, double dv, double lu, double lv,double ru, double rv, double fu, double fv,double bu, double bv, double tw,double th,double td) {
         BufferBuilder buff = Tessellator.getInstance().getBuffer();
         buff.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_NORMAL);
-        Vector3f xNorm = MathUtils.calcualeNormalF(urfx, urfy, urfz, drfx, drfy, drfz, dlfx, dlfy, dlfz);
-        Vector3f yNorm = MathUtils.calcualeNormalF(ulfx, ulfy, ulfz, ulbx, ulby, ulbz, urbx, urby, urbz);
-        Vector3f zNorm = MathUtils.calcualeNormalF(drfx, drfy, drfz, urfx, urfy, urfz, urbx, urby, urbz);
+        Vector3f xNorm = MathUtils.calculateNormalF(urfx, urfy, urfz, drfx, drfy, drfz, dlfx, dlfy, dlfz);
+        Vector3f yNorm = MathUtils.calculateNormalF(ulfx, ulfy, ulfz, ulbx, ulby, ulbz, urbx, urby, urbz);
+        Vector3f zNorm = MathUtils.calculateNormalF(drfx, drfy, drfz, urfx, urfy, urfz, urbx, urby, urbz);
         buff.pos(urfx, urfy, urfz).tex(fu, fv).normal(xNorm.x, xNorm.y, xNorm.z).endVertex();
         buff.pos(drfx, drfy, drfz).tex(fu, fv+th).normal(xNorm.x, xNorm.y, xNorm.z).endVertex();
         buff.pos(dlfx, dlfy, dlfz).tex(fu+td, fv+th).normal(xNorm.x, xNorm.y, xNorm.z).endVertex();

@@ -6,6 +6,7 @@ import lombok.experimental.UtilityClass;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
+import javax.vecmath.Point3f;
 import javax.vecmath.Vector3f;
 import java.util.Collection;
 import java.util.Map;
@@ -124,9 +125,13 @@ public class MathUtils {
         return NORMAL_CACHE.computeIfAbsent(new TriVec(pos1, pos2, pos3), v -> pos2.subtract(pos1).crossProduct(pos3.subtract(pos1)).normalize());
     }
 
-    public static Vector3f calcualeNormalF(double... data) {
+    public static Vector3f calculateNormalF(double... data) {
         Vec3d vec = calculateNormal(data);
         return new Vector3f((float) vec.x, (float) vec.y, (float) vec.z);
+    }
+
+    public static Vector3f calculateNormalF(Point3f p0, Point3f p1, Point3f p2) {
+        return calculateNormalF(p0.x, p0.y, p0.z, p1.x, p1.y, p1.z, p2.x, p2.y, p2.z);
     }
 
     public static double horizontalDegree(double x, double z, boolean forward) {

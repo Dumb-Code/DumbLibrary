@@ -581,10 +581,10 @@ public class TabulaIModel implements IModel {
      * where 1 represents the positive direction, and 0 is the negative direction <br>
      * For example;
      * <ul>
-     * <li>{@link EnumFacing#UP}    -> 0b010 -> 2</li>
-     * <li>{@link EnumFacing#DOWN}  -> 0b000 -> 0</li>
-     * <li>{@link EnumFacing#EAST}  -> 0b100 -> 4</li>
-     * <li>{@link EnumFacing#NORTH} -> 0b000 -> 0</li>
+     * <li><pre>{@link EnumFacing#UP}    -> 0b010 -> 2</pre></li>
+     * <li><pre>{@link EnumFacing#DOWN}  -> 0b000 -> 0</pre></li>
+     * <li><pre>{@link EnumFacing#EAST}  -> 0b100 -> 4</pre></li>
+     * <li><pre>{@link EnumFacing#NORTH} -> 0b000 -> 0</pre></li>
      * </ul>
      * Note that this is not a 1->1 function. If the {@code facing } is facing the negative direction on it's axis,
      * then the result will just be 0.

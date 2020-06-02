@@ -43,9 +43,12 @@ public class TabulaModelRenderer extends ModelRenderer implements AnimatableCube
     @Setter(AccessLevel.NONE)
     private boolean compiled;
 
-    public TabulaModelRenderer(ModelBase model, TabulaModelInformation.Cube cube) {
+    private TabulaModel model;
+
+    public TabulaModelRenderer(TabulaModel model, TabulaModelInformation.Cube cube) {
         super(model, cube.getName());
         this.cube = cube;
+        this.model = model;
     }
 
     @Override
@@ -86,6 +89,9 @@ public class TabulaModelRenderer extends ModelRenderer implements AnimatableCube
             if (!this.hideButShowChildren) {
                 GlStateManager.pushMatrix();
 
+                if(this.model.getOnRenderCallback() != null) {
+                    this.model.getOnRenderCallback().accept(this);
+                }
                 this.renderCube();
 
                 GlStateManager.popMatrix();

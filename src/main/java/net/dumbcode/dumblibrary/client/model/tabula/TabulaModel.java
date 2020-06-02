@@ -16,6 +16,7 @@ import net.minecraft.entity.EntityLivingBase;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * The ModelBase handler for a tabula model
@@ -33,6 +34,8 @@ public class TabulaModel extends ModelBase {
     @Getter
     private final Map<String, TabulaModelRenderer> cubeNameMap = Maps.newHashMap();
     private TabulaModelAnimator modelAnimator;
+
+    private Consumer<TabulaModelRenderer> onRenderCallback ;
 
     public TabulaModel(TabulaModelInformation information) {
         this.information = information;

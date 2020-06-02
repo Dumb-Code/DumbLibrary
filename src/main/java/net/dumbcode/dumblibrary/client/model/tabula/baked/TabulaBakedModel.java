@@ -47,7 +47,8 @@ public class TabulaBakedModel implements IBakedModel {
 
     @Override
     public List<BakedQuad> getQuads(@Nullable IBlockState state, @Nullable EnumFacing side, long rand) {
-        return side == null ? this.quadMap.getOrDefault(MinecraftForgeClient.getRenderLayer(), EMPTY) : EMPTY;
+        BlockRenderLayer layer = MinecraftForgeClient.getRenderLayer();
+        return side == null ? this.quadMap.getOrDefault(layer == null ? BlockRenderLayer.SOLID : layer, EMPTY) : EMPTY;
     }
 
     @Override

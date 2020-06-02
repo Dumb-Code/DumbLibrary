@@ -26,6 +26,7 @@ import net.minecraftforge.client.model.PerspectiveMapWrapper;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
+import javax.annotation.Nullable;
 import java.io.InputStreamReader;
 import java.util.*;
 import java.util.function.Predicate;
@@ -122,14 +123,11 @@ public enum TabulaModelHandler implements ICustomModelLoader {
         JsonObject renderLayers = JsonUtils.getJsonObject(json, "render_layers", new JsonObject());
         for (BlockRenderLayer value : BlockRenderLayer.values()) {
             String key = value.name().toLowerCase();
-            if(renderLayers.has(key)) {
-                JsonObject renderLayerObject = JsonUtils.getJsonObject(renderLayers, key);
-                if(JsonUtils.isJsonArray(renderLayerObject, "layers")) {
-                    for (JsonElement element : JsonUtils.getJsonArray(renderLayerObject, "layers")) {
-                        Matcher matcher = PATTERN.matcher(element.getAsString());
-                        if (matcher.matches()) {
-                            renderLayerDataMap.put(Integer.parseInt(matcher.group(1)), value);
-                        }
+            if(JsonUtils.isJsonArray(renderLayers, key)) {
+                for (JsonElement element : JsonUtils.getJsonArray(renderLayers, key)) {
+                    Matcher matcher = PATTERN.matcher(element.getAsString());
+                    if (matcher.matches()) {
+                        renderLayerDataMap.put(Integer.parseInt(matcher.group(1)), value);
                     }
                 }
             }
@@ -184,26 +182,45 @@ public enum TabulaModelHandler implements ICustomModelLoader {
     public static class LightupData {
         private Set<String> layersApplied;
         private List<CubeFacingValues> entry;
+        private List<SmoothFace> smoothFace;
         private float blockLight;
         private float skyLight;
 
         public static LightupData parse(JsonObject json, Set<String> layers) {
             Set<String> layersApplied = Sets.newHashSet();
-            if (JsonUtils.isJsonArray(json, "layers")) {
-                JsonArray arr = JsonUtils.getJsonArray(json, "layers");
+            if (JsonUtils.isJsonArray(json, "layers_applied")) {
+                JsonArray arr = JsonUtils.getJsonArray(json, "layers_applied");
                 for (int i = 0; i < arr.size(); i++) {
-                    layersApplied.add(JsonUtils.getString(arr.get(i), "layers[" + i + "]"));
+                    layersApplied.add(JsonUtils.getString(arr.get(i), "layers_applied[" + i + "]"));
                 }
             } else {
                 layersApplied.addAll(layers);
             }
 
+            List<SmoothFace> smoothFaces = new ArrayList<>();
+            if(JsonUtils.isJsonArray(json, "smooth_cubes")) {
+                for (JsonElement element : JsonUtils.getJsonArray(json, "smooth_cubes")) {
+                    JsonObject jsonSFO = element.getAsJsonObject();
+                    if(JsonUtils.isString(jsonSFO, "origin")) {
+                        String face = JsonUtils.getString(jsonSFO, "origin");
+                        for (EnumFacing value : EnumFacing.values()) {
+                            if(value.getName().equals(face)) {
+                                smoothFaces.add(new SmoothFace(JsonUtils.getString(jsonSFO, "cube_name"), value, JsonUtils.getInt(jsonSFO, "size_block"), JsonUtils.getInt(jsonSFO, "size_sky")));
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
             float blockLight = JsonUtils.getFloat(json, "block_light", 15F);
             float skyLight = JsonUtils.getFloat(json, "sky_light", 15F);
 
-            return new LightupData(layersApplied, parseCubeFacingValues(JsonUtils.getJsonArray(json, "cubes_lit")), blockLight, skyLight);
+            return new LightupData(layersApplied, parseCubeFacingValues(JsonUtils.getJsonArray(json, "cubes_lit", new JsonArray())), smoothFaces, blockLight, skyLight);
         }
     }
+
+    @Value public static class SmoothFace { String cube; EnumFacing smoothFaceOrigin; int blockAmount, skyAmount; }
 
     public static List<CubeFacingValues> parseCubeFacingValues(JsonArray array) {
         List<CubeFacingValues> list = Lists.newArrayList();

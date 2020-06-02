@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import lombok.With;
 import net.dumbcode.dumblibrary.server.tabula.TabulaModelInformation;
 import net.dumbcode.dumblibrary.server.utils.MathUtils;
@@ -74,12 +75,8 @@ public class TabulaIModel implements IModel {
         }
 
         //If it has lightup data, then we need to make sure the vertex format has the lightmap element
-        if (!this.lightupData.isEmpty()) {
-            if (format == DefaultVertexFormats.ITEM) { // ITEM is convertible to BLOCK (replace normal+padding with lmap)
-                format = DefaultVertexFormats.BLOCK;
-            } else if (!format.getElements().contains(DefaultVertexFormats.TEX_2S)) { // Otherwise, this format is unknown, add TEX_2S if it does not exist
-                format = new VertexFormat(format).addElement(DefaultVertexFormats.TEX_2S);
-            }
+        if (!this.lightupData.isEmpty() && !format.getElements().contains(DefaultVertexFormats.TEX_2S)) {
+            format = new VertexFormat(format).addElement(DefaultVertexFormats.TEX_2S);
         }
 
         List<BakedQuad> allLayerQuads = new ArrayList<>();
@@ -153,7 +150,7 @@ public class TabulaIModel implements IModel {
                 }
 
 
-                Point3f[] pointVertices = this.generateSideVertices(value, vertices);
+                VertexInfo[] pointVertices = this.generateSideVertices(value, vertices);
                 if (!this.isOneDimensional(pointVertices)) {
 
                     //Flip the uv data if the texture is mirrored. As the model is scaled [-1, -1, 1], the UV data is already flipped.
@@ -164,7 +161,7 @@ public class TabulaIModel implements IModel {
                         uvData[2] = minU;
                     }
 
-                    outList.add(this.buildQuad(pointVertices, layer, uvData, format, cube));
+                    outList.add(this.buildQuad(pointVertices, layer, uvData, format, cube, value));
                 }
             }
         }
@@ -270,19 +267,37 @@ public class TabulaIModel implements IModel {
      * @param facing The cubes facing
      * @return a float[2] of lightup data ranging from 0-16 on each component
      */
-    private float[] generateLightupData(TabulaModelHandler.TextureLayer layer, TabulaModelInformation.Cube cube, EnumFacing facing) {
+    private float[] generateLightupData(TabulaModelHandler.TextureLayer layer, TabulaModelInformation.Cube cube, EnumFacing facing, int vertexID) {
         //ts is the custom block-light/skylight data
         float[] ts = new float[2];
 
         //On UP&DOWN side, directional up on the texture sheet is south for texture
         for (TabulaModelHandler.LightupData datum : this.lightupData) {
             if (datum.getLayersApplied().contains(layer.getLayerName())) {
-                for (TabulaModelHandler.CubeFacingValues entry : datum.getEntry()) {
-                    if (entry.getCubeName().equals(cube.getName()) && entry.getFacing().contains(facing)) {
-                        ts[0] = datum.getBlockLight();
-                        ts[1] = datum.getSkyLight();
+                for (TabulaModelHandler.SmoothFace face : datum.getSmoothFace()) {
+                    if(face.getCube().equals(cube.getName())) {
+                        EnumFacing origin = face.getSmoothFaceOrigin();
+                        boolean originData = origin.getAxisDirection().getOffset() > 0;
+                        int mask = (Math.abs(origin.getXOffset()) << 2) | (Math.abs(origin.getYOffset()) << 1) | Math.abs(origin.getZOffset());
+
+                        int data = vertexID & mask;
+
+                        if((data == 0) == originData) {
+                            ts[0] = Math.max(datum.getBlockLight(), ts[0]);
+                            ts[1] = Math.max(datum.getSkyLight(), ts[1]);
+                        } else {
+                            ts[0] = Math.max(datum.getBlockLight() - face.getBlockAmount(), ts[0]);
+                            ts[1] = Math.max(datum.getSkyLight() - face.getSkyAmount(), ts[1]);
+                        }
                     }
                 }
+                for (TabulaModelHandler.CubeFacingValues entry : datum.getEntry()) {
+                    if (entry.getCubeName().equals(cube.getName()) && entry.getFacing().contains(facing)) {
+                        ts[0] = Math.max(datum.getBlockLight(), ts[0]);
+                        ts[1] = Math.max(datum.getSkyLight(), ts[1]);
+                    }
+                }
+
             }
         }
         return ts;
@@ -324,8 +339,8 @@ public class TabulaIModel implements IModel {
      * @param vertices the list of 8 verticies, generated from {@link #generatedAllVertices(Vec3d, float...)}
      * @return a list of 4 vertices, in the order as discussed above.
      */
-    private Point3f[] generateSideVertices(EnumFacing facing, Point3f[] vertices) {
-        Point3f[] pointVertices = new Point3f[4];
+    private VertexInfo[] generateSideVertices(EnumFacing facing, Point3f[] vertices) {
+        VertexInfo[] pointVertices = new VertexInfo[4];
 
         for (int i = 0; i < 4; i++) {
             boolean horizontal = facing.getAxis().isHorizontal();
@@ -355,7 +370,7 @@ public class TabulaIModel implements IModel {
 
             //If the plane is on the horizontals, then we need to account for the fact that the vertices should be in the form 2,3,0,1.
             //This only needs to happen if the quad is a horizontal. The top and bottom plane are fine
-            pointVertices[horizontal ? (i + 2) % 4 : i] = vertices[vertex];
+            pointVertices[horizontal ? (i + 2) % 4 : i] = new VertexInfo(vertices[vertex], vertex);
         }
         return pointVertices;
     }
@@ -386,31 +401,33 @@ public class TabulaIModel implements IModel {
     /**
      * Builds the quad from the given data.
      *
-     * @param pointVertices The 4 vertices generated from {@link #generateSideVertices(EnumFacing, Point3f[])}
+     * @param vertices The 4 vertices generated from {@link #generateSideVertices(EnumFacing, Point3f[])}
      * @param layer         The texture layer to generate the texture from
      * @param uvData        The uv data in the form [minU, minV, maxU, maxV]
      * @param format        the vertex format the build too
      * @param cube          the cubes
      * @return the build quad.
      */
-    private BakedQuad buildQuad(Point3f[] pointVertices, TabulaModelHandler.TextureLayer layer, int[] uvData, VertexFormat format, TabulaModelInformation.Cube cube) {
-        Vector3f normal = MathUtils.calcualeNormalF(pointVertices[0].x, pointVertices[0].y, pointVertices[0].z, pointVertices[1].x, pointVertices[1].y, pointVertices[1].z, pointVertices[2].x, pointVertices[2].y, pointVertices[2].z);
+    private BakedQuad buildQuad(VertexInfo[] vertices, TabulaModelHandler.TextureLayer layer, int[] uvData, VertexFormat format, TabulaModelInformation.Cube cube, EnumFacing cubeDirection) {
+
+        Vector3f normal = MathUtils.calculateNormalF(vertices[0].getPoint(), vertices[1].getPoint(), vertices[2].getPoint());
         EnumFacing quadFacing = EnumFacing.getFacingFromVector(normal.x, normal.y, normal.z);
-        float[] ts = this.generateLightupData(layer, cube, quadFacing);
         UnpackedBakedQuad.Builder builder = new UnpackedBakedQuad.Builder(format);
         builder.setQuadOrientation(quadFacing);
         builder.setTexture(layer.getSprite());
         int tint = layer.getLayer();
         if(this.directCubeTints.containsKey(tint)) {
             for (TabulaModelHandler.CubeFacingValues values : this.directCubeTints.get(tint).getLeft()) {
-                if(values.getCubeName().equals(cube.getName()) && values.getFacing().contains(quadFacing)) {
+                if(values.getCubeName().equals(cube.getName()) && values.getFacing().contains(cubeDirection)) {
                     tint = this.directCubeTints.get(tint).getRight();
                 }
             }
         }
         builder.setQuadTint(tint);
-        for (int i = 0; i < pointVertices.length; i++) {
-            this.putVertexData(builder, pointVertices[i], normal,
+
+        for (int i = 0; i < vertices.length; i++) {
+            float[] ts = this.generateLightupData(layer, cube, cubeDirection, vertices[i].getIndex());
+            this.putVertexData(builder, vertices[i].getPoint(), normal,
                     layer.getSprite().getInterpolatedU(uvData[2 - (i / 2) * 2] / (float) this.model.getTexWidth() * 16D),
                     layer.getSprite().getInterpolatedV(uvData[(i % 3 == 0) ? 1 : 3] / (float) this.model.getTexHeight() * 16D),
                     ts, format);
@@ -492,12 +509,12 @@ public class TabulaIModel implements IModel {
      * @param pointVertices the vertices to check on
      * @return true if it is one dimensional, false otherwise
      */
-    private boolean isOneDimensional(Point3f[] pointVertices) {
+    private boolean isOneDimensional(VertexInfo[] pointVertices) {
         //Make sure that this plane is not 1D, as it would be pointless to create it.
         for (int i = 0; i < pointVertices.length; i++) {
-            Point3f vertex = pointVertices[i];
+            Point3f vertex = pointVertices[i].getPoint();
             for (int n = i + 1; n < pointVertices.length; n++) {
-                if (vertex.epsilonEquals(pointVertices[n], 1e-3F)) {
+                if (vertex.epsilonEquals(pointVertices[n].getPoint(), 1e-3F)) {
                     return true;
                 }
             }
@@ -575,7 +592,9 @@ public class TabulaIModel implements IModel {
      * @param facing the facing
      * @return the encoded integer
      */
-    private int encode(EnumFacing facing) {
-        return Math.max(facing.getXOffset(), 0) << 2 | Math.max(facing.getYOffset(), 0) << 1 | Math.max(facing.getZOffset(), 0);
+    public int encode(EnumFacing facing) {
+        return (Math.max(facing.getXOffset(), 0) << 2) | (Math.max(facing.getYOffset(), 0) << 1) | Math.max(facing.getZOffset(), 0);
     }
+
+    @Value private static class VertexInfo { Point3f point; int index; }
 }

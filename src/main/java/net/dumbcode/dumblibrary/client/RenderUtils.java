@@ -104,12 +104,19 @@ public class RenderUtils {
         Tessellator.getInstance().draw();
     }
 
-    public static void drawSpacedCube(double ulfx, double ulfy, double ulfz, double ulbx, double ulby, double ulbz, double urbx, double urby, double urbz, double urfx, double urfy, double urfz, double dlfx, double dlfy, double dlfz, double dlbx, double dlby, double dlbz, double drbx, double drby, double drbz, double drfx, double drfy, double drfz, double uu, double uv,double du, double dv, double lu, double lv,double ru, double rv, double fu, double fv,double bu, double bv, double tw,double th,double td) {
+    public static void drawSpacedCube(double ulfx, double ulfy, double ulfz, double ulbx, double ulby, double ulbz, double urfx, double urfy, double urfz, double urbx, double urby, double urbz, double dlfx, double dlfy, double dlfz, double dlbx, double dlby, double dlbz, double drfx, double drfy, double drfz, double drbx, double drby, double drbz, double uu, double uv, double du, double dv, double lu, double lv, double ru, double rv, double fu, double fv,double bu, double bv, double tw,double th, double td) {
         BufferBuilder buff = Tessellator.getInstance().getBuffer();
         buff.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX_NORMAL);
+        drawSpacedCube(buff, ulfx, ulfy, ulfz, ulbx, ulby, ulbz, urfx, urfy, urfz, urbx, urby, urbz, dlfx, dlfy, dlfz, dlbx, dlby, dlbz, drfx, drfy, drfz, drbx, drby, drbz, uu, uv, du, dv, lu, lv, ru, rv, fu, fv, bu, bv, tw, th, td);
+        Tessellator.getInstance().draw();
+    }
+
+    //ulf, ulb, urf, urb, dlf, dlb, drf, drb
+    public static void drawSpacedCube(BufferBuilder buff, double ulfx, double ulfy, double ulfz, double ulbx, double ulby, double ulbz, double urfx, double urfy, double urfz, double urbx, double urby, double urbz, double dlfx, double dlfy, double dlfz, double dlbx, double dlby, double dlbz, double drfx, double drfy, double drfz, double drbx, double drby, double drbz, double uu, double uv, double du, double dv, double lu, double lv, double ru, double rv, double fu, double fv,double bu, double bv, double tw,double th, double td) {
         Vector3f xNorm = MathUtils.calculateNormalF(urfx, urfy, urfz, drfx, drfy, drfz, dlfx, dlfy, dlfz);
         Vector3f yNorm = MathUtils.calculateNormalF(ulfx, ulfy, ulfz, ulbx, ulby, ulbz, urbx, urby, urbz);
         Vector3f zNorm = MathUtils.calculateNormalF(drfx, drfy, drfz, urfx, urfy, urfz, urbx, urby, urbz);
+
         buff.pos(urfx, urfy, urfz).tex(fu, fv).normal(xNorm.x, xNorm.y, xNorm.z).endVertex();
         buff.pos(drfx, drfy, drfz).tex(fu, fv+th).normal(xNorm.x, xNorm.y, xNorm.z).endVertex();
         buff.pos(dlfx, dlfy, dlfz).tex(fu+td, fv+th).normal(xNorm.x, xNorm.y, xNorm.z).endVertex();
@@ -123,9 +130,9 @@ public class RenderUtils {
         buff.pos(urbx, urby, urbz).tex(uu+td, uv+tw).normal(yNorm.x, yNorm.y, yNorm.z).endVertex();
         buff.pos(urfx, urfy, urfz).tex(uu+td, uv).normal(yNorm.x, yNorm.y, yNorm.z).endVertex();
         buff.pos(dlbx, dlby, dlbz).tex(du, dv).normal(-yNorm.x, -yNorm.y, -yNorm.z).endVertex();
-        buff.pos(dlfx, dlfy, dlfz).tex(du+td, dv+tw).normal(-yNorm.x, -yNorm.y, -yNorm.z).endVertex();
+        buff.pos(dlfx, dlfy, dlfz).tex(du, dv+tw).normal(-yNorm.x, -yNorm.y, -yNorm.z).endVertex();
         buff.pos(drfx, drfy, drfz).tex(du+td, dv+tw).normal(-yNorm.x, -yNorm.y, -yNorm.z).endVertex();
-        buff.pos(drbx, drby, drbz).tex(du, dv).normal(-yNorm.x, -yNorm.y, -yNorm.z).endVertex();
+        buff.pos(drbx, drby, drbz).tex(du+td, dv).normal(-yNorm.x, -yNorm.y, -yNorm.z).endVertex();
         buff.pos(drfx, drfy, drfz).tex(ru, rv).normal(zNorm.x, zNorm.y, zNorm.z).endVertex();
         buff.pos(urfx, urfy, urfz).tex(ru+th, rv).normal(zNorm.x, zNorm.y, zNorm.z).endVertex();
         buff.pos(urbx, urby, urbz).tex(ru+th, rv+tw).normal(zNorm.x, zNorm.y, zNorm.z).endVertex();
@@ -134,9 +141,7 @@ public class RenderUtils {
         buff.pos(dlfx, dlfy, dlfz).tex(lu+th, lv).normal(-zNorm.x, -zNorm.y, -zNorm.z).endVertex();
         buff.pos(dlbx, dlby, dlbz).tex(lu+th, lv+tw).normal(-zNorm.x, -zNorm.y, -zNorm.z).endVertex();
         buff.pos(ulbx, ulby, ulbz).tex(lu, lv+tw).normal(-zNorm.x, -zNorm.y, -zNorm.z).endVertex();
-        Tessellator.getInstance().draw();
     }
-
 
     public static void renderBoxLines(Vector3d[] points, EnumFacing... blocked) { //todo: color params
         render(points, blocked, 0b100, 0b101, 0b111, 0b110);

@@ -14,7 +14,7 @@ import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLayerComp
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLocationComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.impl.data.FlattenedLayerProperty;
 import net.dumbcode.dumblibrary.server.utils.BuilderNode;
-import net.dumbcode.dumblibrary.server.utils.IOCollectors;
+import net.dumbcode.dumblibrary.server.utils.CollectorUtils;
 import net.dumbcode.dumblibrary.server.utils.IndexedObject;
 import net.dumbcode.dumblibrary.server.utils.StreamUtils;
 import net.minecraft.client.Minecraft;
@@ -153,7 +153,7 @@ public class FlattenedLayerComponent extends EntityComponent implements RenderLa
         compound.setTag("layers",
             this.staticLayers.stream()
                 .map(io -> IndexedObject.serializeNBT(io, aStatic -> new NBTTagString(aStatic.getValue())))
-                .collect(IOCollectors.toNBTTagList())
+                .collect(CollectorUtils.toNBTTagList())
         );
         return super.serialize(compound);
     }
@@ -186,7 +186,7 @@ public class FlattenedLayerComponent extends EntityComponent implements RenderLa
             json.add("layers",
                 this.staticLayers.stream()
                     .map(io -> IndexedObject.serializeJson(io, aStatic -> new JsonPrimitive(aStatic.getValue())))
-                    .collect(IOCollectors.toJsonArray())
+                    .collect(CollectorUtils.toJsonArray())
             );
         }
 

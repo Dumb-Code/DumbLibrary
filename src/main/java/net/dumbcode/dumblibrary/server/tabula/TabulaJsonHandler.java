@@ -1,7 +1,7 @@
 package net.dumbcode.dumblibrary.server.tabula;
 
 import com.google.gson.*;
-import net.dumbcode.dumblibrary.server.utils.IOCollectors;
+import net.dumbcode.dumblibrary.server.utils.CollectorUtils;
 import net.minecraft.util.JsonUtils;
 
 import java.lang.reflect.Type;
@@ -130,7 +130,7 @@ public enum TabulaJsonHandler implements JsonDeserializer<TabulaModelInformation
 
         for (TabulaModelInformation.CubeGroup group : src.getGroups()) {
             if(group.getName().equals("@@ROOT@@") && group.getIdentifier().equals("~~root~~")) {
-                obj.add("cubes", group.getCubeList().stream().map(this::jsonifyCube).collect(IOCollectors.toJsonArray()));
+                obj.add("cubes", group.getCubeList().stream().map(this::jsonifyCube).collect(CollectorUtils.toJsonArray()));
             } else {
                 groups.add(this.jsonifyGroup(group));
             }
@@ -159,7 +159,7 @@ public enum TabulaJsonHandler implements JsonDeserializer<TabulaModelInformation
         }
         json.addProperty("identifier", cube.getIdentifier());
 
-        json.add("children", cube.getChildren().stream().map(this::jsonifyCube).collect(IOCollectors.toJsonArray()));
+        json.add("children", cube.getChildren().stream().map(this::jsonifyCube).collect(CollectorUtils.toJsonArray()));
 
         return json;
     }
@@ -173,8 +173,8 @@ public enum TabulaJsonHandler implements JsonDeserializer<TabulaModelInformation
         json.add("metadata", toArr(group.getMetadata()));
         json.addProperty("identifier", group.getIdentifier());
 
-        json.add("cubes", group.getCubeList().stream().map(this::jsonifyCube).collect(IOCollectors.toJsonArray()));
-        json.add("cubeGroups", group.getChildGroups().stream().map(this::jsonifyGroup).collect(IOCollectors.toJsonArray()));
+        json.add("cubes", group.getCubeList().stream().map(this::jsonifyCube).collect(CollectorUtils.toJsonArray()));
+        json.add("cubeGroups", group.getChildGroups().stream().map(this::jsonifyGroup).collect(CollectorUtils.toJsonArray()));
 
         return json;
     }

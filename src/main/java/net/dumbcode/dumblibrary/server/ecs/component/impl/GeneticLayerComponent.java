@@ -4,7 +4,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import io.netty.buffer.ByteBuf;
-import jdk.nashorn.internal.runtime.logging.Logger;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -23,7 +22,7 @@ import net.dumbcode.dumblibrary.server.ecs.component.additionals.GatherGeneticsC
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLayerComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLocationComponent;
 import net.dumbcode.dumblibrary.server.utils.GeneticUtils;
-import net.dumbcode.dumblibrary.server.utils.IOCollectors;
+import net.dumbcode.dumblibrary.server.utils.CollectorUtils;
 import net.dumbcode.dumblibrary.server.utils.StreamUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
@@ -91,7 +90,7 @@ public class GeneticLayerComponent extends EntityComponent implements RenderLaye
 
     @Override
     public NBTTagCompound serialize(NBTTagCompound compound) {
-        compound.setTag("entries", this.entries.stream().map(g -> GeneticLayerEntry.serialize(g, new NBTTagCompound())).collect(IOCollectors.toNBTTagList()));
+        compound.setTag("entries", this.entries.stream().map(g -> GeneticLayerEntry.serialize(g, new NBTTagCompound())).collect(CollectorUtils.toNBTTagList()));
         return super.serialize(compound);
     }
 
@@ -146,7 +145,7 @@ public class GeneticLayerComponent extends EntityComponent implements RenderLaye
 
         @Override
         public void writeJson(JsonObject json) {
-            json.add("entries", this.entries.stream().map(e -> GeneticLayerEntry.serialize(e, new JsonObject())).collect(IOCollectors.toJsonArray()));
+            json.add("entries", this.entries.stream().map(e -> GeneticLayerEntry.serialize(e, new JsonObject())).collect(CollectorUtils.toJsonArray()));
         }
 
         @Override
@@ -270,7 +269,7 @@ public class GeneticLayerComponent extends EntityComponent implements RenderLaye
 
         public static NBTTagCompound serialize(GeneticLayerEntry entry, NBTTagCompound tag) {
             tag.setString("layer", entry.layerName);
-            tag.setTag("locations", Arrays.stream(entry.locationSuffix).map(NBTTagString::new).collect(IOCollectors.toNBTTagList()));
+            tag.setTag("locations", Arrays.stream(entry.locationSuffix).map(NBTTagString::new).collect(CollectorUtils.toNBTTagList()));
 
             tag.setTag("BaseTints", writeMap(entry.baseTints));
             tag.setTag("TargetTints", writeMap(entry.targetTints));
@@ -295,7 +294,7 @@ public class GeneticLayerComponent extends EntityComponent implements RenderLaye
 
         public static JsonObject serialize(GeneticLayerEntry entry, JsonObject json) {
             json.addProperty("layer", entry.layerName);
-            json.add("locations", Arrays.stream(entry.locationSuffix).map(JsonPrimitive::new).collect(IOCollectors.toJsonArray()));
+            json.add("locations", Arrays.stream(entry.locationSuffix).map(JsonPrimitive::new).collect(CollectorUtils.toJsonArray()));
             return json;
         }
 

@@ -11,7 +11,7 @@ import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentType;
 import net.dumbcode.dumblibrary.server.ecs.component.FinalizableComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.GatherGeneticsComponent;
-import net.dumbcode.dumblibrary.server.utils.IOCollectors;
+import net.dumbcode.dumblibrary.server.utils.CollectorUtils;
 import net.dumbcode.dumblibrary.server.utils.JavaUtils;
 import net.dumbcode.dumblibrary.server.utils.StreamUtils;
 import net.minecraft.nbt.NBTTagCompound;
@@ -47,7 +47,7 @@ public class GeneticComponent extends EntityComponent implements FinalizableComp
 
     @Override
     public NBTTagCompound serialize(NBTTagCompound compound) {
-        compound.setTag("genetics", this.genetics.stream().map(e -> e.serialize(new NBTTagCompound())).collect(IOCollectors.toNBTTagList()));
+        compound.setTag("genetics", this.genetics.stream().map(e -> e.serialize(new NBTTagCompound())).collect(CollectorUtils.toNBTTagList()));
         return super.serialize(compound);
     }
 
@@ -110,7 +110,7 @@ public class GeneticComponent extends EntityComponent implements FinalizableComp
 
         @Override
         public void writeJson(JsonObject json) {
-            json.add("genetics", this.baseEntries.stream().map(e -> e.serialize(new JsonObject())).collect(IOCollectors.toJsonArray()));
+            json.add("genetics", this.baseEntries.stream().map(e -> e.serialize(new JsonObject())).collect(CollectorUtils.toJsonArray()));
         }
     }
 }

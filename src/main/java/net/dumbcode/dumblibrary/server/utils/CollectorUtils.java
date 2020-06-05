@@ -17,7 +17,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collector;
 import java.util.stream.Stream;
 
-public class IOCollectors {
+public class CollectorUtils {
 
     public static Collector<JsonElement, JsonArray, JsonArray> toJsonArray() { return toTypeJsonArray(JsonArray::add); }
     public static Collector<String, JsonArray, JsonArray> toJsonArrayString() { return toTypeJsonArray(JsonArray::add); }
@@ -37,7 +37,7 @@ public class IOCollectors {
         return new CollectorImpl<>(
                 NBTTagList::new,
                 NBTTagList::appendTag,
-                (list1, list2) -> {list2.forEach(list1::appendTag); return list1; }
+                (list1, list2) -> { list2.forEach(list1::appendTag); return list1; }
         );
     }
 
@@ -55,6 +55,10 @@ public class IOCollectors {
 
     public static <T> Collector<T, List<T>, Optional<T>> randomPicker(Random random) {
         return listDelegate(ts -> ts.isEmpty() ? Optional.empty() : Optional.of(ts.get(random.nextInt(ts.size()))));
+    }
+
+    public static <T, S> Collector<T, List<T>, Stream<S>> functionMapper(Supplier<S> creator, BiConsumer<T, S> biConsumer) {
+        return listDelegate(ts -> ts.stream().map(t -> { S s = creator.get(); biConsumer.accept(t, s); return s; }));
     }
 
     private static <T, S> Collector<T, List<T>, S> listDelegate(Function<List<T>, S> finisher) {

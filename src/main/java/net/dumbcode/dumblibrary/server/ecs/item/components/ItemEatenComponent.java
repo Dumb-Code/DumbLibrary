@@ -7,7 +7,7 @@ import lombok.experimental.Accessors;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
 import net.dumbcode.dumblibrary.server.utils.DumbJsonUtils;
-import net.dumbcode.dumblibrary.server.utils.IOCollectors;
+import net.dumbcode.dumblibrary.server.utils.CollectorUtils;
 import net.dumbcode.dumblibrary.server.utils.StreamUtils;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.potion.PotionEffect;
@@ -33,7 +33,7 @@ public class ItemEatenComponent extends EntityComponent {
 
     @Override
     public NBTTagCompound serialize(NBTTagCompound compound) {
-        compound.setTag("effects", this.potionEffectList.stream().map(effect -> effect.writeCustomPotionEffectToNBT(new NBTTagCompound())).collect(IOCollectors.toNBTTagList()));
+        compound.setTag("effects", this.potionEffectList.stream().map(effect -> effect.writeCustomPotionEffectToNBT(new NBTTagCompound())).collect(CollectorUtils.toNBTTagList()));
         compound.setBoolean("ignore_hunger", this.ignoreHunger);
         compound.setInteger("duration", this.duration);
         compound.setInteger("fill_amount", this.fillAmount);
@@ -85,7 +85,7 @@ public class ItemEatenComponent extends EntityComponent {
 
         @Override
         public void writeJson(JsonObject json) {
-            json.add("effects", this.potionEffectList.stream().map(DumbJsonUtils::writePotionEffect).collect(IOCollectors.toJsonArray()));
+            json.add("effects", this.potionEffectList.stream().map(DumbJsonUtils::writePotionEffect).collect(CollectorUtils.toJsonArray()));
 
             json.addProperty("ignore_hunger", this.ignoreHunger);
             json.addProperty("duration", this.duration);

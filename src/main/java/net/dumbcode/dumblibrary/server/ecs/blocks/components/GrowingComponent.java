@@ -8,7 +8,7 @@ import net.dumbcode.dumblibrary.server.ecs.blocks.BlockstateComponentProperty;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
 import net.dumbcode.dumblibrary.server.ecs.component.FinalizableComponent;
-import net.dumbcode.dumblibrary.server.utils.IOCollectors;
+import net.dumbcode.dumblibrary.server.utils.CollectorUtils;
 import net.dumbcode.dumblibrary.server.utils.StreamUtils;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.util.JsonUtils;
@@ -52,7 +52,7 @@ public class GrowingComponent extends EntityComponent implements FinalizableComp
 
         @Override
         public void writeJson(JsonObject json) {
-            json.add("grow_to", Arrays.stream(this.growTo).map(JsonPrimitive::new).collect(IOCollectors.toJsonArray()));
+            json.add("grow_to", Arrays.stream(this.growTo).map(JsonPrimitive::new).collect(CollectorUtils.toJsonArray()));
         }
 
         public Storage setGrowTo(String... growTo) {

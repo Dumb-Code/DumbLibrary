@@ -100,6 +100,10 @@ public class HerdSystem implements EntitySystem {
                 hsd.removeMember(entity.getUniqueID(), component.get());
             });
         }
+        Entity source = event.getSource().getTrueSource();
+        if(source instanceof ComponentAccess) {
+            ((ComponentAccess) source).get(EntityComponentTypes.HERD).flatMap(HerdComponent::getHerdData).ifPresent(h -> h.removeEnemy(entity.getUniqueID()));
+        }
     }
 
     @SubscribeEvent
@@ -107,7 +111,11 @@ public class HerdSystem implements EntitySystem {
         Entity entity = event.getEntity();
         Entity source = event.getSource().getTrueSource();
         if(source !=  null && entity instanceof ComponentAccess) {
-            ((ComponentAccess) entity).get(EntityComponentTypes.HERD).flatMap(HerdComponent::getHerdData).ifPresent(d -> d.addEnemy(source.getUniqueID()));
+            ((ComponentAccess) entity).get(EntityComponentTypes.HERD).flatMap(HerdComponent::getHerdData).ifPresent(d -> {
+                if(!d.getMembers().contains(source.getUniqueID())) {
+                    d.addEnemy(source.getUniqueID());
+                }
+            });
         }
     }
 }

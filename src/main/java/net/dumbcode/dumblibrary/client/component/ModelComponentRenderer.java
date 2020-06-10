@@ -7,8 +7,10 @@ import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderCallbackC
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLocationComponent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.entity.RenderLiving;
 import net.minecraft.client.renderer.entity.RenderLivingBase;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.ResourceLocation;
 import org.apache.commons.lang3.NotImplementedException;
@@ -18,7 +20,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.Supplier;
 
-public class ModelComponentRenderer extends RenderLivingBase<EntityLivingBase> implements RenderCallbackComponent.MainCallback {
+public class ModelComponentRenderer extends RenderLiving<EntityLiving> implements RenderCallbackComponent.MainCallback {
 
     @Getter
     private final int renderID;
@@ -74,8 +76,8 @@ public class ModelComponentRenderer extends RenderLivingBase<EntityLivingBase> i
         // An alternative to havin all these different components would be to have one component then have tuple
         // additions to allow/disallow certian modules. Other mods can just add their own component
 
-        if(entity instanceof EntityLivingBase) {
-            this.doRender((EntityLivingBase) entity, x, y, z, entityYaw, partialTicks);
+        if(entity instanceof EntityLiving) {
+            this.doRender((EntityLiving) entity, x, y, z, entityYaw, partialTicks);
         } else {
             throw new NotImplementedException("Not implemented yet. Entity needs to be a subclass of EntityLivingBase");
         }
@@ -86,30 +88,30 @@ public class ModelComponentRenderer extends RenderLivingBase<EntityLivingBase> i
     }
 
     @Override
-    protected void renderModel(EntityLivingBase entitylivingbaseIn, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scaleFactor) {
+    protected void renderModel(EntityLiving entityLiving, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scaleFactor) {
         GlStateManager.glNewList(this.renderID, GL11.GL_COMPILE);
-        this.mainModel.render(entitylivingbaseIn, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scaleFactor);
+        this.mainModel.render(entityLiving, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scaleFactor);
         GlStateManager.glEndList();
     }
 
     @Override
-    protected void renderLayers(EntityLivingBase entitylivingbaseIn, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch, float scaleIn) {
+    protected void renderLayers(EntityLiving entityLiving, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch, float scaleIn) {
         GlStateManager.enableNormalize();
         GlStateManager.enableBlend();
         GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
-        super.renderLayers(entitylivingbaseIn, limbSwing, limbSwingAmount, partialTicks, ageInTicks, netHeadYaw, headPitch, scaleIn);
+        super.renderLayers(entityLiving, limbSwing, limbSwingAmount, partialTicks, ageInTicks, netHeadYaw, headPitch, scaleIn);
         GlStateManager.disableBlend();
         GlStateManager.disableNormalize();
     }
 
     @Override
-    protected void preRenderCallback(EntityLivingBase entitylivingbaseIn, float partialTickTime) {
+    protected void preRenderCallback(EntityLiving entityLiving, float partialTickTime) {
         this.preCallbacks.run();
     }
 
     @Nullable
     @Override
-    protected ResourceLocation getEntityTexture(EntityLivingBase entity) {
+    protected ResourceLocation getEntityTexture(EntityLiving entity) {
         return this.texture.getLocation();
     }
 }

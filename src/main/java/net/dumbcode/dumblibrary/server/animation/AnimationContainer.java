@@ -49,9 +49,9 @@ public class AnimationContainer {
     public AnimationContainer(ResourceLocation regname) {
 
         //The base location of all the models
-        String baseLoc = "models/entities/" + regname.getPath().replace("_", "/") + "/";
+        String baseLoc = "models/entities/" + regname.getPath() + "/";
 
-        this.mainModel = TabulaUtils.getModelInformation(new ResourceLocation(regname.getNamespace(), baseLoc + regname.getPath() + ".tbl"));
+        this.mainModel = TabulaUtils.getModelInformation(new ResourceLocation(regname.getNamespace(), baseLoc + regname.getPath().replace("/", "_") + ".tbl"));
         this.loadAnimations(regname, baseLoc);
     }
 

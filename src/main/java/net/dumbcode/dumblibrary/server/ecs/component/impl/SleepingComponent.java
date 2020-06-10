@@ -1,6 +1,7 @@
 package net.dumbcode.dumblibrary.server.ecs.component.impl;
 
 import com.google.gson.JsonObject;
+import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -8,15 +9,18 @@ import net.dumbcode.dumblibrary.server.animation.objects.Animation;
 import net.dumbcode.dumblibrary.server.attributes.ModifiableField;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
+import net.dumbcode.dumblibrary.server.ecs.component.additionals.MovePredicateComponent;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.JsonUtils;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
 
 import java.util.Objects;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 @Getter
-@Setter
-public class SleepingComponent extends EntityComponent {
+public class SleepingComponent extends EntityComponent implements MovePredicateComponent {
 
     private Animation sleepingAnimation;
 
@@ -38,6 +42,11 @@ public class SleepingComponent extends EntityComponent {
         return this.isNocturnal() ? this.sleepTime : this.wakeupTime;
     }
 
+    public void setSleeping(boolean sleeping) {
+        this.isSleeping = sleeping;
+        this.syncToClient();
+    }
+
     @Override
     public NBTTagCompound serialize(NBTTagCompound compound) {
         compound.setString("animation", Objects.requireNonNull(this.sleepingAnimation.getKey()).toString());
@@ -54,6 +63,25 @@ public class SleepingComponent extends EntityComponent {
         this.wakeupTime.readFromNBT(compound.getCompoundTag("wakeup_time"));
         this.isSleeping = compound.getBoolean("is_sleeping");
         super.deserialize(compound);
+    }
+
+    @Override
+    public void serialize(ByteBuf buf) {
+        ByteBufUtils.writeUTF8String(buf, this.sleepingAnimation.getKey().toString());
+        buf.writeBoolean(this.isSleeping);
+        super.serialize(buf);
+    }
+
+    @Override
+    public void deserialize(ByteBuf buf) {
+        this.sleepingAnimation = new Animation(new ResourceLocation(ByteBufUtils.readUTF8String(buf)));
+        this.isSleeping = buf.readBoolean();
+        super.deserialize(buf);
+    }
+
+    @Override
+    public void addBlockers(Consumer<Supplier<Boolean>> registry) {
+        registry.accept(() -> !this.isSleeping());
     }
 
     @Getter

@@ -53,7 +53,6 @@ public class SpeedTrackingSystem implements EntitySystem {
         double x = entity.motionX;
         double z = entity.motionZ;
         float speed = MathHelper.sqrt(x * x + z * z);
-
         component.setSpeed(component.getSpeed() + (speed - component.getSpeed()) * 0.1F);
     }
 }

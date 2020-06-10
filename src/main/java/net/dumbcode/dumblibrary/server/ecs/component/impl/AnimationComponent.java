@@ -19,10 +19,12 @@ import net.dumbcode.dumblibrary.server.utils.SidedExecutor;
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.entity.Entity;
 
+import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+//TODO: remove the E
 public class AnimationComponent<E extends Entity & ComponentAccess> extends EntityComponent implements RenderCallbackComponent {
 
     @Setter @Getter AnimationContainer animationContainer;
@@ -31,7 +33,7 @@ public class AnimationComponent<E extends Entity & ComponentAccess> extends Enti
 
     private AnimationLayer animationLayer;
 
-    private AnimationWrap[] layersActive = new AnimationWrap[Byte.MAX_VALUE];
+    private final AnimationWrap[] layersActive = new AnimationWrap[Byte.MAX_VALUE];
 
     /**
      * Plays the animation on a certain channel, after a series of time
@@ -52,7 +54,12 @@ public class AnimationComponent<E extends Entity & ComponentAccess> extends Enti
      * @return true if an animation is being played, false otherwise.
      */
     public boolean isChannelActive(int channel) {
-        return this.layersActive[channel] != null;
+        return this.layersActive[channel] != null && !this.layersActive[channel].isInvalidated();
+    }
+
+    @Nullable
+    public AnimationWrap getWrap(int channel) {
+        return this.layersActive[channel];
     }
 
     /**

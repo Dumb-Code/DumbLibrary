@@ -10,12 +10,16 @@ import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentTypes;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.CanBreedComponent;
+import net.dumbcode.dumblibrary.server.ecs.component.additionals.GatherEnemiesComponent;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.JsonUtils;
 import net.minecraft.util.ResourceLocation;
 
 import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 
 public class FamilyComponent extends EntityComponent implements CanBreedComponent {

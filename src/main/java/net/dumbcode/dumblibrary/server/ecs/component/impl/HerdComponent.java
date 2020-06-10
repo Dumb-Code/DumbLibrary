@@ -11,6 +11,7 @@ import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentTypes;
 import net.dumbcode.dumblibrary.server.ecs.component.FinalizableComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.CanBreedComponent;
+import net.dumbcode.dumblibrary.server.ecs.component.additionals.GatherEnemiesComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
@@ -20,8 +21,10 @@ import net.minecraft.util.ResourceLocation;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 
-public class HerdComponent extends EntityComponent implements FinalizableComponent, CanBreedComponent {
+public class HerdComponent extends EntityComponent implements FinalizableComponent, CanBreedComponent, GatherEnemiesComponent {
 
     public UUID herdUUID;
     public ResourceLocation herdTypeID;
@@ -83,6 +86,11 @@ public class HerdComponent extends EntityComponent implements FinalizableCompone
     @Override
     public boolean canBreedWith(ComponentAccess otherEntity) {
         return otherEntity.get(EntityComponentTypes.HERD).map(h -> Objects.equals(this.herdUUID, h.herdUUID)).orElse(true);
+    }
+
+    @Override
+    public void gatherEnemyPredicates(Consumer<Predicate<EntityLivingBase>> registry) {
+        registry.accept(e -> this.getHerdData().map(h -> h.getEnemies().contains(e.getUniqueID())).orElse(false));
     }
 
     @Accessors(chain = true)

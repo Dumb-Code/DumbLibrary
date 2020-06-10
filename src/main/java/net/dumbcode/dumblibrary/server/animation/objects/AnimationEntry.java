@@ -3,6 +3,7 @@ package net.dumbcode.dumblibrary.server.animation.objects;
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 import lombok.With;
 import net.dumbcode.dumblibrary.server.animation.interpolation.Interpolation;
 import net.dumbcode.dumblibrary.server.animation.interpolation.LinearInterpolation;
@@ -15,7 +16,8 @@ import javax.annotation.Nullable;
 public class AnimationEntry {
 
     @NonNull
-    private final Animation animation;
+    @Setter
+    private Animation animation;
     private final int time; //-2 = loop, -1 = run until finished, x > 0 run for x amount of ticks
     private final boolean hold;
     private final AnimationFactor<?> speedFactor;

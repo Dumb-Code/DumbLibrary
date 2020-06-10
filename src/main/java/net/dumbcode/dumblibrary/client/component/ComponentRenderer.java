@@ -1,6 +1,7 @@
 package net.dumbcode.dumblibrary.client.component;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.MapMaker;
 import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderCallbackComponent;
@@ -11,12 +12,11 @@ import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
 
 import javax.annotation.Nullable;
-import java.util.List;
-import java.util.WeakHashMap;
+import java.util.*;
 
 public class ComponentRenderer<E extends Entity & ComponentAccess> extends Render<E> {
 
-    private final WeakHashMap<E, RenderComponentContext> contextMap = new WeakHashMap<>();
+    private final Map<E, RenderComponentContext> contextMap = new MapMaker().weakKeys().makeMap(); //We use MapMaker so we can have weak keys, with identity checks rather than #hashCode checks
 
     public ComponentRenderer(RenderManager renderManager) {
         super(renderManager);

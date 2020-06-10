@@ -22,6 +22,7 @@ public class FamilySavedData extends WorldSavedData {
     private UUID parentTwo;
 
     private final List<UUID> children = Lists.newArrayList();
+    private final List<UUID> enemies = Lists.newArrayList();
 
     public FamilySavedData(String name) {
         super(name);
@@ -36,6 +37,7 @@ public class FamilySavedData extends WorldSavedData {
             compound.setUniqueId("parent_2", this.parentTwo);
         }
         compound.setTag("children", HerdSavedData.saveList(this.children));
+        compound.setTag("enemies", HerdSavedData.saveList(this.enemies));
         return compound;
     }
 
@@ -44,6 +46,7 @@ public class FamilySavedData extends WorldSavedData {
         this.parentOne = nbt.hasUniqueId("parent_1") ? nbt.getUniqueId("parent_1") : null;
         this.parentTwo = nbt.hasUniqueId("parent_2") ? nbt.getUniqueId("parent_2") : null;
         HerdSavedData.loadList(nbt.getCompoundTag("children"), this.children);
+        HerdSavedData.loadList(nbt.getCompoundTag("enemies"), this.enemies);
     }
 
     public static FamilySavedData getData(UUID familyUUID) {

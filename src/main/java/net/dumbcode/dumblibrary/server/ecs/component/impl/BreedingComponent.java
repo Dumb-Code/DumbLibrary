@@ -34,6 +34,7 @@ public class BreedingComponent extends EntityComponent implements CanBreedCompon
 
     @Override
     public boolean canBreedWith(ComponentAccess otherEntity) {
+//        return true
         return this.ticksSinceLastBreed >= this.minTicksBetweenBreeding && otherEntity.get(EntityComponentTypes.BREEDING).map(b -> b.ticksSinceLastBreed >= b.minTicksBetweenBreeding).orElse(true);
     }
 

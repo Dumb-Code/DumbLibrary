@@ -32,6 +32,7 @@ public class EntityComponentTypes {
     public static final EntityComponentType<FamilyComponent, FamilyComponent.Storage> FAMILY = InjectedUtils.injected();
     public static final EntityComponentType<BreedingComponent, BreedingComponent.Storage> BREEDING = InjectedUtils.injected();
     public static final EntityComponentType<SleepingComponent, SleepingComponent.Storage> SLEEPING = InjectedUtils.injected();
+    public static final EntityComponentType<CloseProximityAngryComponent, CloseProximityAngryComponent.Storage> CLOSE_PROXIMITY_ANGRY = InjectedUtils.injected();
 
     public static final EntityComponentType<GrowingComponent, GrowingComponent.Storage> BLOCK_GROWING = InjectedUtils.injected();
     public static final EntityComponentType<FlowerWorldgenComponent, FlowerWorldgenComponent.Storage> FLOWER_WORLDGEN = InjectedUtils.injected();
@@ -113,6 +114,11 @@ public class EntityComponentTypes {
                 .withConstructor(SleepingComponent::new)
                 .withStorage(SleepingComponent.Storage::new)
                 .build(),
+            SimpleComponentType.builder(CloseProximityAngryComponent.class, CloseProximityAngryComponent.Storage.class)
+                .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "close_proximity_angry"))
+                .withConstructor(CloseProximityAngryComponent::new)
+                .withStorage(CloseProximityAngryComponent.Storage::new)
+                .build(),
 
             SimpleComponentType.builder(GrowingComponent.class, GrowingComponent.Storage.class)
                 .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "block_growing"))
@@ -163,6 +169,7 @@ public class EntityComponentTypes {
         event.registerSystem(new BlinkingSystem());
         event.registerSystem(new EyesClosedSystem());
         event.registerSystem(new SleepingSystem());
+        event.registerSystem(new CloseProximityAngrySystem());
 
         event.registerSystem(new GrowingSystem());
         event.registerSystem(new FlowerWorldgenSystem());

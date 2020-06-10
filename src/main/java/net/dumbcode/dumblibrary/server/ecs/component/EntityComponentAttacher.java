@@ -80,10 +80,20 @@ public class EntityComponentAttacher {
         }
     }
 
-    @Nonnull
+    @Nullable
+    public <T extends EntityComponent, S extends EntityComponentStorage<T>> S getStorageOrNull(EntityComponentType<T, S> type) {
+        for (ComponentPair<?,?> allPair : this.allPairs) {
+            if (allPair.type == type) {
+                return (S) allPair.storage;
+            }
+        }
+        return null;
+    }
+
+        @Nonnull
     @SuppressWarnings("unchecked")
     public <T extends EntityComponent, S extends EntityComponentStorage<T>> S getStorage(EntityComponentType<T, S> type) {
-        for (ComponentPair allPair : this.allPairs) {
+        for (ComponentPair<?,?> allPair : this.allPairs) {
             if (allPair.type == type) {
                 if (allPair.storage == null) {
                     throw new IllegalArgumentException("Requested storage on " + type.getIdentifier() + " but none were found");

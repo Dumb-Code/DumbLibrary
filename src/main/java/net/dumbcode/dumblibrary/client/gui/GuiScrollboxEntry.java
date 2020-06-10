@@ -40,7 +40,7 @@ public interface GuiScrollboxEntry {
      * @return true if this element should be set as the selected, false otherwise
      */
     default boolean onClicked(int relMouseX, int relMouseY, int mouseX, int mouseY) {
-        return false;
+        return true;
     }
 
     default boolean globalClicked(int mouseX, int mouseY, int mouseButton) {

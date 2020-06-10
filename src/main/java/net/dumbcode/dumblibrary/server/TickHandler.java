@@ -1,6 +1,7 @@
 package net.dumbcode.dumblibrary.server;
 
 import net.dumbcode.dumblibrary.DumbLibrary;
+import net.minecraft.client.Minecraft;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -13,7 +14,7 @@ public class TickHandler {
 
     @SubscribeEvent
     public static void onClientTick(TickEvent.ClientTickEvent event) {
-        if(event.phase == TickEvent.Phase.START && FMLCommonHandler.instance().getSide() == Side.CLIENT) {
+        if(event.phase == TickEvent.Phase.START && FMLCommonHandler.instance().getSide() == Side.CLIENT && !Minecraft.getMinecraft().isGamePaused()) {
             ticks++;
         }
     }

@@ -124,7 +124,7 @@ public class GeneticLayerComponent extends EntityComponent implements RenderLaye
             .map(GeneticLayerEntry::getLayerName)
             .forEach(n -> {
                 GeneticEntry<?> entry = new GeneticEntry<>(GeneticTypes.LAYER_COLORS, "genetic_layer_" + n, new GeneticTypeLayerColorStorage().setLayerName(n), 128, 128);
-                entry.setModifier(GeneticUtils.encode3BitColor(0.6F + RAND.nextFloat() * 0.4F, 0.6F + RAND.nextFloat() * 0.4F, 0.6F + RAND.nextFloat() * 0.4F));
+                entry.setModifier(GeneticUtils.encode3BitColor(0.7F + RAND.nextFloat() * 0.3F, 0.7F + RAND.nextFloat() * 0.3F, 0.7F + RAND.nextFloat() * 0.3F));
                 registry.accept(entry);
             });
     }
@@ -231,7 +231,7 @@ public class GeneticLayerComponent extends EntityComponent implements RenderLaye
         }
 
         public void setAverageColor(float r, float b, float g) {
-            this.averageColor.set(r, g, b);
+            this.averageColor = new Vector3f(r, g, b);
             this.colorCache = null;
         }
 

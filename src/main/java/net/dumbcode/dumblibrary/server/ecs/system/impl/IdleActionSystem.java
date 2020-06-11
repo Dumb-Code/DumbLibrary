@@ -19,6 +19,7 @@ public class IdleActionSystem implements EntitySystem {
     private IdleActionComponent[] components = new IdleActionComponent[0];
     private AnimationComponent<?>[] animationComponents = new AnimationComponent[0];
     private SoundStorageComponent[] soundStorageComponents = new SoundStorageComponent[0];
+    private SleepingComponent[] sleepingComponents = new SleepingComponent[0];
 
     @Override
     public void populateEntityBuffers(EntityManager manager) {
@@ -27,6 +28,7 @@ public class IdleActionSystem implements EntitySystem {
         this.components = family.populateBuffer(EntityComponentTypes.IDLE_ACTION, this.components);
         this.animationComponents = family.populateBuffer(EntityComponentTypes.ANIMATION, this.animationComponents);
         this.soundStorageComponents = family.populateBuffer(EntityComponentTypes.SOUND_STORAGE, this.soundStorageComponents);
+        this.sleepingComponents = family.populateBuffer(EntityComponentTypes.SLEEPING, this.sleepingComponents);
     }
 
     @Override
@@ -36,15 +38,16 @@ public class IdleActionSystem implements EntitySystem {
             IdleActionComponent component = this.components[i];
             AnimationComponent<?> animationComponent = this.animationComponents[i];
             SoundStorageComponent soundStorageComponent = this.soundStorageComponents[i];
+            SleepingComponent sleep = this.sleepingComponents[i];
 
-            if(soundStorageComponent != null && entity.world.rand.nextInt(1000) < component.soundTicks++) {
+            if(soundStorageComponent != null && (sleep == null || !sleep.isSleeping()) && entity.world.rand.nextInt(1000) < component.soundTicks++) {
                 component.soundTicks -= 150;
                 soundStorageComponent.getSound(ECSSounds.IDLE).ifPresent(e ->
                     entity.world.playSound(null, entity.posX, entity.posY, entity.posZ, e, SoundCategory.AMBIENT, 1F, (entity.world.rand.nextFloat() - entity.world.rand.nextFloat()) * 0.2F + 1.0F)
                 );
             }
 
-            if(animationComponent != null && entity.world.rand.nextInt(1000) < component.animationTicks++) {
+            if(animationComponent != null && (sleep == null || !sleep.isSleeping()) && entity.world.rand.nextInt(1000) < component.animationTicks++) {
                 ComponentAccess access = (ComponentAccess) entity;
                 boolean sleeping = access.get(EntityComponentTypes.SLEEPING).map(SleepingComponent::isSleeping).orElse(false);
                 boolean moving = entity.motionX*entity.motionX + entity.motionZ*entity.motionZ < 0.002;

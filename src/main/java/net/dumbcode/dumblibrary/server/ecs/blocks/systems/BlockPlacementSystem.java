@@ -15,7 +15,7 @@ public class BlockPlacementSystem implements EntitySystem {
     @SubscribeEvent
     public void onRightClick(PlayerInteractEvent.RightClickBlock event) {
         ItemStack stack = event.getItemStack();
-        if(stack.getItem() instanceof ItemBlock) {
+        if(stack.getItem() instanceof ItemBlock && event.getFace() != null) {
             ItemBlock item = (ItemBlock) stack.getItem();
             IBlockState placement = item.getBlock().getStateForPlacement(event.getWorld(), event.getPos().offset(event.getFace()), event.getFace(), (float) event.getHitVec().x, (float) event.getHitVec().y, (float) event.getHitVec().z, stack.getMetadata(), event.getEntityLiving(), event.getHand());
             BlockPropertyAccess.getAccessFromState(placement)

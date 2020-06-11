@@ -1,5 +1,6 @@
 package net.dumbcode.dumblibrary.server.ecs.system.impl;
 
+import net.dumbcode.dumblibrary.server.animation.objects.AnimationWrap;
 import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.ecs.EntityFamily;
 import net.dumbcode.dumblibrary.server.ecs.EntityManager;
@@ -62,9 +63,13 @@ public class IdleActionSystem implements EntitySystem {
                 } else if(!sleeping && !component.movementAnimation.isEmpty() && !running) {
                     component.animationTicks -= 30;
                     animationComponent.playAnimation(access, component.movementAnimation.get(world.rand.nextInt(component.movementAnimation.size())), IDLE_CHANNEL);
-                } else {
+                }
+
+                AnimationWrap wrap = animationComponent.getWrap(IDLE_CHANNEL);
+                if(wrap != null && wrap.getEntry().getAnimation() == component.sittingAnimation && !still) {
                     animationComponent.stopAnimation(entity, IDLE_CHANNEL);
                 }
+
             }
 
         }

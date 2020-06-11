@@ -15,6 +15,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.IntStream;
 
 public class KeyframeCompiler {
 
@@ -41,6 +42,24 @@ public class KeyframeCompiler {
     public List<PoseData> compile() {
         //Reset everything
         this.map.values().forEach(AnimatableCube::reset);
+
+        //Transform from relative to absolute by adding the base tbl model
+        if(this.version >= 3) {
+            this.map.forEach((name, cube) -> {
+                for (Keyframe keyframe : this.keyframes) {
+                    for (int i = 0; i < 3; i++) {
+                        if(keyframe.rotationMap.containsKey(name)) {
+                            keyframe.rotationMap.get(name)[i] += cube.getDefaultRotation()[i];
+                        }
+
+                        if(keyframe.rotationPointMap.containsKey(name)) {
+                            keyframe.rotationPointMap.get(name)[i] += cube.getDefaultRotationPoint()[i];
+                        }
+                    }
+                }
+            });
+        }
+
 
         //Load the event map and put the first reference in
         Map<Float, List<Pair<String, CubeReference>>> eventMap = Maps.newHashMap();

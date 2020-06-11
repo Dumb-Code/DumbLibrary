@@ -51,10 +51,11 @@ public class IdleActionSystem implements EntitySystem {
                 );
             }
 
+            boolean still = entity.motionX*entity.motionX + entity.motionZ*entity.motionZ < 0.002;
+
             if(animationComponent != null && (sleep == null || !sleep.isSleeping()) && entity.world.rand.nextInt(500) < component.animationTicks++) {
                 ComponentAccess access = (ComponentAccess) entity;
                 boolean sleeping = access.get(EntityComponentTypes.SLEEPING).map(SleepingComponent::isSleeping).orElse(false);
-                boolean still = entity.motionX*entity.motionX + entity.motionZ*entity.motionZ < 0.002;
                 boolean running = entity.motionX*entity.motionX + entity.motionZ*entity.motionZ > 0.03;
 
                 if(!sleeping && still && world.rand.nextBoolean()) {
@@ -64,12 +65,13 @@ public class IdleActionSystem implements EntitySystem {
                     component.animationTicks -= 30;
                     animationComponent.playAnimation(access, component.movementAnimation.get(world.rand.nextInt(component.movementAnimation.size())).createEntry().withSpeed(0.5F), IDLE_CHANNEL);
                 }
+            }
 
+            if(animationComponent != null) {
                 AnimationWrap wrap = animationComponent.getWrap(IDLE_CHANNEL);
                 if(wrap != null && wrap.getEntry().getAnimation() == component.sittingAnimation && !still) {
                     animationComponent.stopAnimation(entity, IDLE_CHANNEL);
                 }
-
             }
 
         }

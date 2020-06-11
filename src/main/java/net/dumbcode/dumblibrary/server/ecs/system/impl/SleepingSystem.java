@@ -104,7 +104,7 @@ public class SleepingSystem implements EntitySystem {
     private void ensureAnimation(Entity entity, SleepingComponent component, AnimationComponent<?> animationComponent) {
         if(component.isSleeping()) {
             if(animationComponent != null && !animationComponent.isChannelActive(SLEEPING_CHANNEL)) {
-                animationComponent.playAnimation((ComponentAccess) entity, component.getSleepingAnimation().createEntry().withHold(true), SLEEPING_CHANNEL);
+                animationComponent.playAnimation((ComponentAccess) entity, component.getSleepingAnimation().createEntry().withHold(true).withSpeed(1.5F), SLEEPING_CHANNEL);
             }
         } else if(animationComponent != null && animationComponent.isChannelActive(SLEEPING_CHANNEL)) {
             animationComponent.stopAnimation(entity, SLEEPING_CHANNEL);

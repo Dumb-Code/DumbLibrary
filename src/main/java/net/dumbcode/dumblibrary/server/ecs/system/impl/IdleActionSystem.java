@@ -58,7 +58,7 @@ public class IdleActionSystem implements EntitySystem {
                 boolean sleeping = access.get(EntityComponentTypes.SLEEPING).map(SleepingComponent::isSleeping).orElse(false);
                 boolean running = entity.motionX*entity.motionX + entity.motionZ*entity.motionZ > 0.03;
 
-                if(!sleeping && still && world.rand.nextBoolean()) {
+                if(!sleeping && still && world.rand.nextBoolean() && !component.idleAnimations.isEmpty()) {
                     component.animationTicks -= 150;
                     animationComponent.playAnimation(access, world.rand.nextFloat() < 0.3 ? component.sittingAnimation.createEntry().withHold(true) : component.movementAnimation.get(world.rand.nextInt(component.idleAnimations.size())).createEntry(), IDLE_CHANNEL);
                 } else if(!sleeping && !component.movementAnimation.isEmpty() && !running) {

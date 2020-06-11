@@ -20,19 +20,21 @@ public class AnimationEntry {
     private Animation animation;
     private final int time; //-2 = loop, -1 = run until finished, x > 0 run for x amount of ticks
     private final boolean hold;
+    private final float speed;
     private final AnimationFactor<?> speedFactor;
     private final AnimationFactor<?> degreeFactor;
     private final AnimationEntry exitAnimation;
     private final Interpolation interpolation;
 
     public AnimationEntry(Animation animation) {
-        this(animation, -1, false, AnimationFactor.getDefault(), AnimationFactor.getDefault(), null, new LinearInterpolation());
+        this(animation, -1, false, 1F, AnimationFactor.getDefault(), AnimationFactor.getDefault(), null, new LinearInterpolation());
     }
 
-    public AnimationEntry(Animation animation, int time, boolean hold, AnimationFactor<?> speedFactor, AnimationFactor<?> degreeFactor, @Nullable AnimationEntry andThen, @Nullable Interpolation interpolation) {
+    public AnimationEntry(Animation animation, int time, boolean hold, float speed, AnimationFactor<?> speedFactor, AnimationFactor<?> degreeFactor, @Nullable AnimationEntry andThen, @Nullable Interpolation interpolation) {
         this.animation = animation;
         this.time = time;
         this.hold = hold;
+        this.speed = speed;
         this.speedFactor = speedFactor;
         this.degreeFactor = degreeFactor;
         this.exitAnimation = andThen;
@@ -52,6 +54,7 @@ public class AnimationEntry {
         ByteBufUtils.writeUTF8String(buf, this.animation.getKey().getPath());
         buf.writeInt(this.time);
         buf.writeBoolean(this.hold);
+        buf.writeFloat(this.speed);
         ByteBufUtils.writeUTF8String(buf, this.speedFactor.getName());
         ByteBufUtils.writeUTF8String(buf, this.degreeFactor.getName());
         buf.writeBoolean(this.exitAnimation != null);
@@ -65,6 +68,7 @@ public class AnimationEntry {
             new Animation(ByteBufUtils.readUTF8String(buf), ByteBufUtils.readUTF8String(buf)),
             buf.readInt(),
             buf.readBoolean(),
+            buf.readFloat(),
             AnimationFactor.getFactor(ByteBufUtils.readUTF8String(buf)),
             AnimationFactor.getFactor(ByteBufUtils.readUTF8String(buf)),
             buf.readBoolean() ? deserialize(buf) : null,

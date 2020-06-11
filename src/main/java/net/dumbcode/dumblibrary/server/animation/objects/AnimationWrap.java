@@ -113,6 +113,7 @@ public class AnimationWrap {
         }
 
         timeModifier /= this.entry.getSpeedFactor().tryApply(object, AnimationFactor.Type.SPEED, partialTicks);
+        timeModifier /= this.entry.getSpeed();
 
 //        float ticks = ((Entity)object).ticksExisted + partialTicks;
 //        this.tick += (ticks - this.animationTicks) / timeModifier;//todo: Check that looping and holding work

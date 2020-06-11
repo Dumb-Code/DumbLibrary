@@ -38,12 +38,13 @@ public class MathUtils {
         int point = number.lastIndexOf(".");
         int zeros = point != -1 ? dp - (number.length()-point) : dp;
         if(point == -1) {
+            point = number.length();
             number.append(".");
         }
         for (int i = 0; i <= zeros; i++) {
             number.append("0");
         }
-        return number.toString();
+        return number.toString().substring(0, point + dp + 1);
 
     }
 

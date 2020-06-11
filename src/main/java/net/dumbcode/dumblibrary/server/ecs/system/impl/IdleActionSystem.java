@@ -1,5 +1,6 @@
 package net.dumbcode.dumblibrary.server.ecs.system.impl;
 
+import com.sun.xml.internal.bind.v2.model.core.ID;
 import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.ecs.EntityFamily;
 import net.dumbcode.dumblibrary.server.ecs.EntityManager;
@@ -47,17 +48,20 @@ public class IdleActionSystem implements EntitySystem {
                 );
             }
 
-            if(animationComponent != null && (sleep == null || !sleep.isSleeping()) && entity.world.rand.nextInt(1000) < component.animationTicks++) {
+            if(animationComponent != null && (sleep == null || !sleep.isSleeping()) && entity.world.rand.nextInt(500) < component.animationTicks++) {
                 ComponentAccess access = (ComponentAccess) entity;
                 boolean sleeping = access.get(EntityComponentTypes.SLEEPING).map(SleepingComponent::isSleeping).orElse(false);
                 boolean still = entity.motionX*entity.motionX + entity.motionZ*entity.motionZ < 0.002;
-                if(!sleeping && still) {
+                boolean running = entity.motionX*entity.motionX + entity.motionZ*entity.motionZ > 0.03;
+
+                if(!sleeping && still && world.rand.nextBoolean()) {
                     component.animationTicks -= 150;
-                    animationComponent.playAnimation(access, component.idleAnimation, IDLE_CHANNEL);
-                }
-                if(!sleeping && !component.movementAnimation.isEmpty()) {
-                    component.animationTicks -= 150;
+                    animationComponent.playAnimation(access, world.rand.nextFloat() < 0.3 ? component.sittingAnimation.createEntry().withHold(true) : component.idleAnimation.createEntry(), IDLE_CHANNEL);
+                } else if(!sleeping && !component.movementAnimation.isEmpty() && !running) {
+                    component.animationTicks -= 30;
                     animationComponent.playAnimation(access, component.movementAnimation.get(world.rand.nextInt(component.movementAnimation.size())), IDLE_CHANNEL);
+                } else {
+                    animationComponent.stopAnimation(entity, IDLE_CHANNEL);
                 }
             }
 

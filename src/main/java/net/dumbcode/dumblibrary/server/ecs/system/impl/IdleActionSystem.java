@@ -50,14 +50,15 @@ public class IdleActionSystem implements EntitySystem {
             if(animationComponent != null && (sleep == null || !sleep.isSleeping()) && entity.world.rand.nextInt(1000) < component.animationTicks++) {
                 ComponentAccess access = (ComponentAccess) entity;
                 boolean sleeping = access.get(EntityComponentTypes.SLEEPING).map(SleepingComponent::isSleeping).orElse(false);
-                boolean moving = entity.motionX*entity.motionX + entity.motionZ*entity.motionZ < 0.002;
-                if(!sleeping && !moving) {
-                    component.animationTicks -= 250;
+                boolean still = entity.motionX*entity.motionX + entity.motionZ*entity.motionZ < 0.002;
+                if(!sleeping && still) {
+                    component.animationTicks -= 150;
                     animationComponent.playAnimation(access, component.idleAnimation, IDLE_CHANNEL);
                 }
-//                soundStorageComponent.getSound(ECSSounds.IDLE).ifPresent(e ->
-//                    entity.world.playSound(null, entity.posX, entity.posY, entity.posZ, e, SoundCategory.AMBIENT, 1F, (entity.world.rand.nextFloat() - entity.world.rand.nextFloat()) * 0.2F + 1.0F)
-//                );
+                if(!sleeping && !component.movementAnimation.isEmpty()) {
+                    component.animationTicks -= 150;
+                    animationComponent.playAnimation(access, component.movementAnimation.get(world.rand.nextInt(component.movementAnimation.size())), IDLE_CHANNEL);
+                }
             }
 
         }

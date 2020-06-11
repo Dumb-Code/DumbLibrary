@@ -1,12 +1,14 @@
 package net.dumbcode.dumblibrary.server.ecs.system.impl;
 
-import com.sun.xml.internal.bind.v2.model.core.ID;
 import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.ecs.EntityFamily;
 import net.dumbcode.dumblibrary.server.ecs.EntityManager;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentTypes;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.ECSSounds;
-import net.dumbcode.dumblibrary.server.ecs.component.impl.*;
+import net.dumbcode.dumblibrary.server.ecs.component.impl.AnimationComponent;
+import net.dumbcode.dumblibrary.server.ecs.component.impl.IdleActionComponent;
+import net.dumbcode.dumblibrary.server.ecs.component.impl.SleepingComponent;
+import net.dumbcode.dumblibrary.server.ecs.component.impl.SoundStorageComponent;
 import net.dumbcode.dumblibrary.server.ecs.system.EntitySystem;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.SoundCategory;

@@ -22,14 +22,10 @@ public class AnimationSystem implements EntitySystem {
         this.components = manager.resolveFamily(EntityComponentTypes.ANIMATION).populateBuffer(EntityComponentTypes.ANIMATION, this.components);
     }
 
-    private void updateComponent(AnimationComponent<?> component) {
-        component.getFutureAnimations().removeIf(AnimationComponent.FutureAnimation::tick);
-    }
-
     @Override
     public void update(World world) {
         for (AnimationComponent<?> component : this.components) {
-            this.updateComponent(component);
+            component.getFutureAnimations().removeIf(AnimationComponent.FutureAnimation::tick);
         }
     }
 
@@ -40,7 +36,9 @@ public class AnimationSystem implements EntitySystem {
         if(world != null && !Minecraft.getMinecraft().isGamePaused()) {
             for (Entity entity : world.loadedEntityList) {
                 if(entity instanceof ComponentAccess) {
-                    ((ComponentAccess) entity).get(EntityComponentTypes.ANIMATION).ifPresent(this::updateComponent);
+                    ((ComponentAccess) entity).get(EntityComponentTypes.ANIMATION).ifPresent(e ->
+                        e.getFutureAnimations().removeIf(AnimationComponent.FutureAnimation::tick)
+                    );
                 }
             }
         }

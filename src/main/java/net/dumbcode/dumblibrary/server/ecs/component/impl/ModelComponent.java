@@ -35,7 +35,7 @@ public class ModelComponent extends EntityComponent implements RenderCallbackCom
     private final ConfigurableLocation fileLocation = new ConfigurableLocation();
 
     @SideOnly(Side.CLIENT)
-    private TabulaModel modelCache = null;
+    private TabulaModel modelCache;
 
     private float shadowSize;
 
@@ -90,7 +90,7 @@ public class ModelComponent extends EntityComponent implements RenderCallbackCom
         }
 
         if(entity instanceof Entity && ((Entity) entity).world != null && ((Entity) entity).world.isRemote) {
-            SidedExecutor.runClient(() -> () -> this.createRenderer(entity));
+            this.createRenderer(entity);
         }
     }
 

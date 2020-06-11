@@ -49,8 +49,6 @@ public class GeneticLayerComponent extends EntityComponent implements RenderLaye
     @Getter
     private final List<GeneticLayerEntry> entries = new ArrayList<>();
 
-    private static final TextureManager RENDER_ENGINE = Minecraft.getMinecraft().renderEngine;
-
     private RenderLocationComponent.ConfigurableLocation baseLocation = null;
 
     private static final Random RAND = new Random();
@@ -60,7 +58,7 @@ public class GeneticLayerComponent extends EntityComponent implements RenderLaye
         for (GeneticLayerEntry entry : this.entries) {
             registry.accept(runnable -> {
                 if(this.baseLocation != null) {
-                    RENDER_ENGINE.bindTexture(entry.getTextureLocation(this.baseLocation));
+                    Minecraft.getMinecraft().renderEngine.bindTexture(entry.getTextureLocation(this.baseLocation));
                     float[] colours = entry.getColours();
                     GlStateManager.color(colours[0], colours[1], colours[2], 1F);
                     runnable.run();

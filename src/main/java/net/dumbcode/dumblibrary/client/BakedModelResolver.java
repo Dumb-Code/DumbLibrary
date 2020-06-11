@@ -13,12 +13,13 @@ import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.common.model.TRSRTransformation;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.relauncher.Side;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Getter
-@Mod.EventBusSubscriber(modid = DumbLibrary.MODID)
+@Mod.EventBusSubscriber(value = Side.CLIENT, modid = DumbLibrary.MODID)
 public class BakedModelResolver {
     private static final List<BakedModelResolver> RESOLVERS = new ArrayList<>();
 

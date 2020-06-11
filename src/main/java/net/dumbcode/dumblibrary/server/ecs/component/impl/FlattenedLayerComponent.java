@@ -32,7 +32,6 @@ import java.util.function.Consumer;
 public class FlattenedLayerComponent extends EntityComponent implements RenderLayerComponent {
 
     private final List<IndexedObject<FlattenedLayerProperty.Static>> staticLayers = new ArrayList<>();
-    private static final TextureManager RENDER_ENGINE = Minecraft.getMinecraft().renderEngine;
 
     @Override
     public void gatherLayers(ComponentAccess entity, Consumer<Consumer<Runnable>> registry) {
@@ -106,7 +105,7 @@ public class FlattenedLayerComponent extends EntityComponent implements RenderLa
                 if(element.getChildren().size() != 1) {
                     throw new IllegalArgumentException("Error whilst traversing tree, reached destination: " + element.getChildren());
                 }
-                RENDER_ENGINE.bindTexture(new ResourceLocation(element.getChildren().get(0).getElement()));
+                Minecraft.getMinecraft().renderEngine.bindTexture(new ResourceLocation(element.getChildren().get(0).getElement()));
                 runnable.run();
             });
         }

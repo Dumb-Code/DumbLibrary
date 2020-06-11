@@ -52,7 +52,8 @@ public class SleepingSystem implements EntitySystem {
 
             this.ensureAnimation(entity, component, this.animationComponents[i]);
 
-            //https://www.desmos.com/calculator/i7bpf2hi5w
+            //TODO: add support for waking up before 0
+            //https://www.desmos.com/calculator/9ac2nhfp16
             boolean shouldWake = time > component.getWakeupTime().getValue() && time < component.getSleepTime().getValue();
             component.setSleeping(component.isSleeping());
             if(component.isSleeping()) {
@@ -66,7 +67,7 @@ public class SleepingSystem implements EntitySystem {
 
                 //TODO-stream: remove
                 if(entity instanceof EntityCreature) {
-                    ((EntityCreature) entity).getNavigator().clearPath();
+                    ((EntityCreature) entity).getNavigator().setPath(null, 0);
                 }
 
             } else {

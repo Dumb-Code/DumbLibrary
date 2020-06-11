@@ -5,14 +5,13 @@ import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.ecs.EntityFamily;
 import net.dumbcode.dumblibrary.server.ecs.EntityManager;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentTypes;
-import net.dumbcode.dumblibrary.server.ecs.component.impl.AnimationComponent;
-import net.dumbcode.dumblibrary.server.ecs.component.impl.EyesClosedComponent;
-import net.dumbcode.dumblibrary.server.ecs.component.impl.SleepingComponent;
-import net.dumbcode.dumblibrary.server.ecs.component.impl.SpeedTrackingComponent;
+import net.dumbcode.dumblibrary.server.ecs.component.additionals.ECSSounds;
+import net.dumbcode.dumblibrary.server.ecs.component.impl.*;
 import net.dumbcode.dumblibrary.server.ecs.system.EntitySystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityCreature;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -29,7 +28,8 @@ public class SleepingSystem implements EntitySystem {
     private Entity[] entities = new Entity[0];
     private SleepingComponent[] sleepingComponents = new SleepingComponent[0];
     private EyesClosedComponent[] eyesClosedComponents = new EyesClosedComponent[0];
-    private AnimationComponent[] animationComponents = new AnimationComponent[0];
+    private AnimationComponent<?>[] animationComponents = new AnimationComponent[0];
+    private SoundStorageComponent[] soundStorageComponents = new SoundStorageComponent[0];
 
     @Override
     public void populateEntityBuffers(EntityManager manager) {
@@ -38,6 +38,7 @@ public class SleepingSystem implements EntitySystem {
         this.sleepingComponents = family.populateBuffer(EntityComponentTypes.SLEEPING, this.sleepingComponents);
         this.eyesClosedComponents = family.populateBuffer(EntityComponentTypes.EYES_CLOSED, this.eyesClosedComponents);
         this.animationComponents = family.populateBuffer(EntityComponentTypes.ANIMATION, this.animationComponents);
+        this.soundStorageComponents = family.populateBuffer(EntityComponentTypes.SOUND_STORAGE, this.soundStorageComponents);
     }
 
     @Override
@@ -47,6 +48,7 @@ public class SleepingSystem implements EntitySystem {
             Entity entity = this.entities[i];
             SleepingComponent component = this.sleepingComponents[i];
             EyesClosedComponent eyesClosedComponent = this.eyesClosedComponents[i];
+            SoundStorageComponent soundStorageComponent = this.soundStorageComponents[i];
 
             this.ensureAnimation(entity, component, this.animationComponents[i]);
 
@@ -71,6 +73,13 @@ public class SleepingSystem implements EntitySystem {
                 if(!shouldWake) {
                     component.setSleeping(true);
                 }
+            }
+
+            if(soundStorageComponent != null && entity.world.rand.nextInt(500) < component.snoringTicks++) {
+                component.snoringTicks -= 75;
+                soundStorageComponent.getSound(ECSSounds.SNORING).ifPresent(e ->
+                    entity.world.playSound(null, entity.posX, entity.posY, entity.posZ, e, SoundCategory.AMBIENT, 1F, (entity.world.rand.nextFloat() - entity.world.rand.nextFloat()) * 0.2F + 1.0F)
+                );
             }
         }
     }

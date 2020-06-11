@@ -30,6 +30,8 @@ public class SleepingComponent extends EntityComponent implements MovePredicateC
 
     private boolean isSleeping;
 
+    public int snoringTicks;
+
     public boolean isNocturnal() {
         return this.nocturnalChance.getValue() >= 1;
     }

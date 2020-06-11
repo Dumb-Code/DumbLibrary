@@ -6,4 +6,5 @@ public class ECSSounds {
     public static final ECSSound DRINKING = new ECSSound("drink");
     public static final ECSSound ATTACKING = new ECSSound("attack");
     public static final ECSSound IDLE = new ECSSound("idle");
+    public static final ECSSound SNORING = new ECSSound("snoring");
 }

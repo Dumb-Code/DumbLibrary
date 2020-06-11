@@ -4,6 +4,7 @@ import lombok.Getter;
 import net.dumbcode.dumblibrary.client.model.tabula.TabulaModel;
 import net.dumbcode.dumblibrary.server.TickHandler;
 import net.dumbcode.dumblibrary.server.animation.interpolation.Interpolation;
+import net.minecraft.entity.Entity;
 import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
@@ -47,6 +48,7 @@ public class AnimationWrap {
         this.cuberef = cuberef;
         this.anicubeRef = anicubeRef;
         this.cubeNames = cubeNames;
+//        this.animationTicks = ((Entity)object).ticksExisted;
         this.animationTicks = TickHandler.getTicks();
         this.entry = animation;
         this.object = object;
@@ -99,9 +101,9 @@ public class AnimationWrap {
 
             float[] positions = cube.getDefaultRotationPoint();
             cube.addRotationPoint(
-                interpolatedPosition[0] - positions[0],
-                interpolatedPosition[1] - positions[1],
-                interpolatedPosition[2] - positions[2]
+                (interpolatedPosition[0] - positions[0]) * factor,
+                (interpolatedPosition[1] - positions[1]) * factor,
+                (interpolatedPosition[2] - positions[2]) * factor
             );
         }
 
@@ -112,6 +114,8 @@ public class AnimationWrap {
 
         timeModifier /= this.entry.getSpeedFactor().tryApply(object, AnimationFactor.Type.SPEED, partialTicks);
 
+//        float ticks = ((Entity)object).ticksExisted + partialTicks;
+//        this.tick += (ticks - this.animationTicks) / timeModifier;//todo: Check that looping and holding work
         float ticks = TickHandler.getTicks();
         this.tick += ((ticks-this.animationTicks) + (partialTicks-this.animationPartialTicks)) / timeModifier;//todo: Check that looping and holding work
 

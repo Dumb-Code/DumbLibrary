@@ -1,6 +1,7 @@
 package net.dumbcode.dumblibrary.server.ecs.system.impl;
 
 import com.google.common.base.Predicate;
+import net.dumbcode.dumblibrary.server.ecs.ComposableCreatureEntity;
 import net.dumbcode.dumblibrary.server.ecs.EntityFamily;
 import net.dumbcode.dumblibrary.server.ecs.EntityManager;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentTypes;
@@ -39,7 +40,7 @@ public class CloseProximityAngrySystem implements EntitySystem {
             Predicate<Entity> withinRange = EntitySelectors.withinRange(entity.posX, entity.posY, entity.posZ, range);
 
             List<Entity> entities = world.getEntitiesInAABBexcluding(entity, new AxisAlignedBB(entity.getPosition()).grow(range, range, range),
-                e -> withinRange.test(e) && component.getPredicate().test(e) && e instanceof EntityCreature
+                e -> withinRange.test(e) && !(e instanceof ComposableCreatureEntity) && e instanceof EntityCreature
             );
             if(entities.isEmpty()) {
                 component.setAngryAtEntity(null);

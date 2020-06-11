@@ -60,7 +60,7 @@ public class IdleActionSystem implements EntitySystem {
 
                 if(!sleeping && still && world.rand.nextBoolean()) {
                     component.animationTicks -= 150;
-                    animationComponent.playAnimation(access, world.rand.nextFloat() < 0.3 ? component.sittingAnimation.createEntry().withHold(true) : component.idleAnimation.createEntry(), IDLE_CHANNEL);
+                    animationComponent.playAnimation(access, world.rand.nextFloat() < 0.3 ? component.sittingAnimation.createEntry().withHold(true) : component.movementAnimation.get(world.rand.nextInt(component.idleAnimations.size())).createEntry(), IDLE_CHANNEL);
                 } else if(!sleeping && !component.movementAnimation.isEmpty() && !running) {
                     component.animationTicks -= 30;
                     animationComponent.playAnimation(access, component.movementAnimation.get(world.rand.nextInt(component.movementAnimation.size())).createEntry().withSpeed(0.5F), IDLE_CHANNEL);

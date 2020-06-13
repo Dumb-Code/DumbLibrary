@@ -147,15 +147,8 @@ public class AnimationComponent<E extends Entity & ComponentAccess> extends Enti
             if(e.world.isRemote) {
                 ModelComponent component = entity.get(EntityComponentTypes.MODEL).orElseThrow(() -> new IllegalStateException("Animation component needs a model component"));
                 this.animationLayer = SidedExecutor.getClient(() -> () -> {
-                    ModelBase model = component.getModelCache();
-                    if(model instanceof TabulaModel) {
-                        TabulaModel tm = (TabulaModel) model;
-                        return new AnimationLayer(tm.getAllCubesNames(), tm::getCube, this.animationContainer.createDataGetter(), e);
-                    } else {
-                        //todo: make an implementation for non tabula models?
-                        return new AnimationLayer(Lists.newArrayList(), s -> AnimatableCubeEmpty.INSTANCE, this.animationContainer.createDataGetter(), e);
-
-                    }
+                    TabulaModel model = component.getModelCache();
+                    return new AnimationLayer(model.getAllCubesNames(), model::getCube, this.animationContainer.createDataGetter(), e);
                 }, null);
 
             } else {

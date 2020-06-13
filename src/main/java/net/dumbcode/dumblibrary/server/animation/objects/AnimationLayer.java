@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 import net.dumbcode.dumblibrary.client.model.tabula.TabulaModel;
 import net.dumbcode.dumblibrary.server.TickHandler;
+import net.dumbcode.dumblibrary.server.animation.interpolation.Interpolation;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -37,6 +38,7 @@ public class AnimationLayer {
         this.object = object;
     }
 
+
     public void animate(float partialTicks) {
         this.checkInvalidations();
 
@@ -56,11 +58,12 @@ public class AnimationLayer {
         Iterator<AnimationWrap> iterator = this.animations.iterator();
         while (iterator.hasNext()) {
             AnimationWrap wrap = iterator.next();
+            Interpolation interpolation = wrap.getEntry().getInterpolation();
             if (wrap == animation) {
-                for (String name : wrap.getCubeNames()) {
-                    CubeWrapper cube = wrap.getCuberef().apply(name);
+                for (String name : this.cubeNames) {
+                    CubeWrapper cube = wrap.getCube(name);
                     this.ghostWraps.computeIfAbsent(name, s -> Lists.newArrayList()).add(
-                            new GhostAnimationData(wrap.getInterpolation().getInterpPos(cube, wrap.getCi()), wrap.getInterpolation().getInterpRot(cube, wrap.getCi()), 1F, animation.getAnimationTicks() + animation.getAnimationPartialTicks()));
+                            new GhostAnimationData(interpolation.getInterpPos(cube, wrap.getCi()), interpolation.getInterpRot(cube, wrap.getCi()), 1F, animation.getAnimationTicks() + animation.getAnimationPartialTicks()));
                 }
                 wrap.onFinish();
                 if(wrap.getEntry().getExitAnimation() != null) {
@@ -123,32 +126,32 @@ public class AnimationLayer {
         this.cubeNames.clear();
         this.cubeNames.addAll(model.getAllCubesNames());
         this.anicubeRef = model::getCube;
-
-        for (AnimationWrap wrap : this.animations) {
-            wrap.setFromModel(model);
-        }
     }
 
     public boolean isPlaying(Animation animation) {
         for (AnimationWrap wrap : this.animations) {
-            if (wrap.entry.getAnimation() == animation) {
+            if (wrap.getEntry().getAnimation() == animation) {
                 return true;
             }
         }
         return false;
     }
 
-    public AnimationWrap create(AnimationEntry entry) {
-
-        //Do we really need this as a cached map?
-        //yes
-        Map<String, CubeWrapper> cacheMap = new HashMap<>();
-        return new AnimationWrap(entry, this.animationDataGetter, s -> cacheMap.computeIfAbsent(s, o -> new CubeWrapper(this.anicubeRef.apply(o))), this.anicubeRef, this.cubeNames, this.object);
+    public List<PoseData> getPoseData(Animation animation) {
+        return this.animationDataGetter.apply(animation);
     }
 
+    public AnimatableCube getAnimatableCube(String name) {
+        return this.anicubeRef.apply(name);
+    }
+
+    public AnimationWrap create(AnimationEntry entry) {
+        return new AnimationWrap(entry, this);
+    }
 
     @AllArgsConstructor
     private static class GhostAnimationData {
+
         float[] positions;
         float[] rotations;
         float ci;

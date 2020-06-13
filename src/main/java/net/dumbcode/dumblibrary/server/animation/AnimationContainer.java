@@ -20,6 +20,7 @@ import net.dumbcode.dumblibrary.server.utils.StreamUtils;
 import net.minecraft.util.JsonUtils;
 import net.minecraft.util.ResourceLocation;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.util.Strings;
 
 import java.io.DataInputStream;
@@ -187,11 +188,9 @@ public class AnimationContainer {
                 }
 
                 if(version >= 2) {
-                    //TODO: progression points
                     float ppSize = dis.readFloat(); //Progression points size
                     for (int p = 0; p < ppSize; p++) {
-                        dis.readFloat();//x
-                        dis.readFloat();//y
+                        kf.getProgressionPoints().add(Pair.of(dis.readFloat(), 1F - dis.readFloat()));
                     }
                 }
             }

@@ -16,20 +16,14 @@ import java.util.function.Function;
 
 @Getter
 public class AnimationWrap {
-    protected AnimationEntry entry;
+    private final AnimationEntry entry;
+    private final AnimationLayer layer;
 
-    private final Function<Animation, List<PoseData>> animationDataGetter;
-    private final Function<String, CubeWrapper> cuberef;
-    private Function<String, AnimatableCube> anicubeRef;
-    private final Collection<String> cubeNames;
-
-    private final Interpolation interpolation;
+    private final Map<String, CubeWrapper> cubeMap = new HashMap<>();
 
     private final Deque<PoseData> poseStack = new ArrayDeque<>();
 
     private final float totalPoseTime;
-
-    private final Object object;
 
     private float animationTicks;
     private float animationPartialTicks;
@@ -40,25 +34,18 @@ public class AnimationWrap {
 
     private boolean invalidated;
 
-    public AnimationWrap (
-        AnimationEntry animation, Function<Animation, List<PoseData>> animationDataGetter,
-        Function<String, CubeWrapper> cuberef, Function<String, AnimatableCube> anicubeRef,
-        Collection<String> cubeNames, Object object) {
-        this.animationDataGetter = animationDataGetter;
-        this.cuberef = cuberef;
-        this.anicubeRef = anicubeRef;
-        this.cubeNames = cubeNames;
-//        this.animationTicks = ((Entity)object).ticksExisted;
+    public AnimationWrap(AnimationEntry entry, AnimationLayer layer) {
+        this.entry = entry;
+        this.layer = layer;
+
         this.animationTicks = TickHandler.getTicks();
-        this.entry = animation;
-        this.object = object;
-        this.poseStack.addAll(this.animationDataGetter.apply(animation.getAnimation()));
+
+        this.poseStack.addAll(this.layer.getAnimationDataGetter().apply(entry.getAnimation()));
         if(this.poseStack.isEmpty()) {
             this.invalidated = true;
         } else {
             this.maxTicks = this.getData().getTime();
         }
-        this.interpolation = animation.getInterpolation();
 
         float tpt = 0;
         for (PoseData poseData : this.poseStack) {
@@ -82,14 +69,14 @@ public class AnimationWrap {
 
         this.ci = MathHelper.clamp(perc, 0, 1);
 
-        float factor = this.entry.getDegreeFactor().tryApply(object, AnimationFactor.Type.ANGLE, partialTicks);
+        float factor = this.entry.getDegreeFactor().tryApply(this.layer.getObject(), AnimationFactor.Type.ANGLE, partialTicks);
 
-        for (String partName : this.cubeNames) {
-            CubeWrapper cubeWrapper = Objects.requireNonNull(this.cuberef.apply(partName));
-            AnimatableCube cube = this.anicubeRef.apply(partName);
+        for (String partName : this.layer.getCubeNames()) {
+            CubeWrapper cubeWrapper = Objects.requireNonNull(this.getCube(partName));
+            AnimatableCube cube = this.layer.getAnimatableCube(partName);
 
-            float[] interpolatedRotation = this.interpolation.getInterpRot(cubeWrapper, ci);
-            float[] interpolatedPosition = this.interpolation.getInterpPos(cubeWrapper, ci);
+            float[] interpolatedRotation = this.entry.getInterpolation().getInterpRot(cubeWrapper, ci);
+            float[] interpolatedPosition = this.entry.getInterpolation().getInterpPos(cubeWrapper, ci);
 
             float[] rotation = cube.getDefaultRotation();
             cube.addRotation(
@@ -112,11 +99,9 @@ public class AnimationWrap {
             timeModifier = this.entry.getTime() / this.totalPoseTime;
         }
 
-        timeModifier /= this.entry.getSpeedFactor().tryApply(object, AnimationFactor.Type.SPEED, partialTicks);
+        timeModifier /= this.entry.getSpeedFactor().tryApply(this.layer.getObject(), AnimationFactor.Type.SPEED, partialTicks);
         timeModifier /= this.entry.getSpeed();
 
-//        float ticks = ((Entity)object).ticksExisted + partialTicks;
-//        this.tick += (ticks - this.animationTicks) / timeModifier;//todo: Check that looping and holding work
         float ticks = TickHandler.getTicks();
         this.tick += ((ticks-this.animationTicks) + (partialTicks-this.animationPartialTicks)) / timeModifier;//todo: Check that looping and holding work
 
@@ -125,7 +110,7 @@ public class AnimationWrap {
             this.poseStack.pop();
             if (this.poseStack.isEmpty()) {
                 if (this.entry.getTime() == AnimationLayer.LOOP) {
-                    this.poseStack.addAll(this.animationDataGetter.apply(this.entry.getAnimation()));
+                    this.poseStack.addAll(this.layer.getPoseData(this.entry.getAnimation()));
                 } else {
                     this.invalidated = true;
                 }
@@ -140,16 +125,9 @@ public class AnimationWrap {
         this.animationPartialTicks = partialTicks;
     }
 
-    @SideOnly(Side.CLIENT)
-    public void setFromModel(TabulaModel model) {
-        this.cubeNames.clear();
-        this.cubeNames.addAll(model.getAllCubesNames());
-        this.anicubeRef = model::getCube;
-    }
-
     private void incrementVecs(boolean updatePrevious) {
         for (Map.Entry<String, CubeReference> mapEntry : this.getData().getCubes().entrySet()) {
-            CubeWrapper cube = Objects.requireNonNull(this.cuberef.apply(mapEntry.getKey()));
+            CubeWrapper cube = this.getCube(mapEntry.getKey());
             Vector3f cr = cube.getRotation();
             Vector3f pr = cube.getPrevRotation();
 
@@ -178,11 +156,11 @@ public class AnimationWrap {
 
     public void onFinish() {
         this.invalidated = true;
-        for (String name : this.cubeNames) {
-            CubeWrapper cube = this.cuberef.apply(name);
+        for (String name : this.layer.getCubeNames()) {
+            CubeWrapper cube = this.getCube(name);
 
-            float[] rot = this.interpolation.getInterpRot(cube, ci);
-            float[] pos = this.interpolation.getInterpPos(cube, ci);
+            float[] rot = this.entry.getInterpolation().getInterpRot(cube, ci);
+            float[] pos = this.entry.getInterpolation().getInterpPos(cube, ci);
 
             Vector3f pr = cube.getPrevRotation();
             Vector3f pp = cube.getPrevRotationPoint();
@@ -196,6 +174,10 @@ public class AnimationWrap {
             pp.z = pos[2];
 
         }
+    }
+
+    public CubeWrapper getCube(String cube) {
+        return this.cubeMap.computeIfAbsent(cube, s -> new CubeWrapper(this.layer.getAnicubeRef().apply(s)));
     }
 
     private PoseData getData() {

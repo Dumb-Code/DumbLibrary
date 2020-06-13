@@ -12,10 +12,7 @@ import net.dumbcode.dumblibrary.server.animation.objects.PoseData;
 import net.dumbcode.dumblibrary.server.tabula.TabulaModelInformation;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.IntStream;
+import java.util.*;
 
 public class KeyframeCompiler {
 
@@ -63,6 +60,7 @@ public class KeyframeCompiler {
 
         //Load the event map and put the first reference in
         Map<Float, List<Pair<String, CubeReference>>> eventMap = Maps.newHashMap();
+
         eventMap.put(0F, this.getCubeData());
 
         //Setup all the keyframes so the from maps are correct
@@ -76,15 +74,20 @@ public class KeyframeCompiler {
 
         //Go through all the keyframes and animate at their start and end times, setting that time into the event map
         for (Keyframe eventFrame : this.keyframes) {
-            for (Keyframe keyframe : this.keyframes) {
-                keyframe.animate(eventFrame.startTime);
+            eventFrame.progressionPoints.add(Pair.of(0F, 0F));
+            eventFrame.progressionPoints.add(Pair.of(1F, 1F));
+            for (Pair<Float, Float> point : eventFrame.progressionPoints) {
+                for (Keyframe keyframe : this.keyframes) {
+                    keyframe.animate(eventFrame.startTime + eventFrame.duration*point.getRight());
+                }
+                eventMap.put(eventFrame.startTime + eventFrame.duration*point.getLeft(), this.getCubeData());
             }
-            eventMap.put(eventFrame.startTime, this.getCubeData());
 
-            for (Keyframe keyframe : this.keyframes) {
-                keyframe.animate(eventFrame.startTime + eventFrame.duration);
-            }
-            eventMap.put(eventFrame.startTime + eventFrame.duration, this.getCubeData());
+//            for (Keyframe keyframe : this.keyframes) {
+//                keyframe.animate(eventFrame.startTime + eventFrame.duration);
+//            }
+//            eventMap.put(eventFrame.startTime + eventFrame.duration, this.getCubeData());
+
         }
 
         List<PoseData> poseData = Lists.newLinkedList();
@@ -139,6 +142,8 @@ public class KeyframeCompiler {
 
         private final Map<String, float[]> fromRotationMap = Maps.newHashMap();
         private final Map<String, float[]> fromRotationPointMap = Maps.newHashMap();
+
+        @Getter private final Set<Pair<Float, Float>> progressionPoints = new HashSet<>();
 
         private boolean setup = false;
 

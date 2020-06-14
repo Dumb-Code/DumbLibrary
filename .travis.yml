@@ -21,6 +21,8 @@ install:
   - true
 
 script:
+  - "bash create_eula.sh"
+  - "./gradlew runServer"
   - "./gradlew postRequest"
   - "./gradlew sonarqube"
     

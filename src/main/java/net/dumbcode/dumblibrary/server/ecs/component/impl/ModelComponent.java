@@ -5,7 +5,6 @@ import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import net.dumbcode.dumblibrary.client.component.ModelComponentLayerRenderer;
 import net.dumbcode.dumblibrary.client.component.ModelComponentRenderer;
 import net.dumbcode.dumblibrary.client.model.tabula.TabulaModel;
 import net.dumbcode.dumblibrary.server.animation.TabulaUtils;
@@ -17,14 +16,17 @@ import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderCallbackC
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLayerComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLocationComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLocationComponent.ConfigurableLocation;
-import net.dumbcode.dumblibrary.server.utils.SidedExecutor;
+import net.dumbcode.dumblibrary.server.utils.IndexedObject;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.JsonUtils;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 //Client usage only
 public class ModelComponent extends EntityComponent implements RenderCallbackComponent, FinalizableComponent {
@@ -97,13 +99,13 @@ public class ModelComponent extends EntityComponent implements RenderCallbackCom
     @SideOnly(Side.CLIENT)
     private void createRenderer(ComponentAccess entity) {
         if(this.renderer == null) {
-            this.renderer = new ModelComponentRenderer(this.shadowSize, this::getModelCache, this.texture);
-        }
-        this.renderer.clearLayers();
-        for (EntityComponent component : entity.getAllComponents()) {
-            if(component instanceof RenderLayerComponent) {
-                ((RenderLayerComponent) component).gatherLayers(entity, rc -> this.renderer.addLayer(new ModelComponentLayerRenderer(rc, this.renderer::getRenderID)));
+            List<IndexedObject<Supplier<RenderLayerComponent.Layer>>> layerList = new ArrayList<>();
+            for (EntityComponent component : entity.getAllComponents()) {
+                if(component instanceof RenderLayerComponent) {
+                    ((RenderLayerComponent) component).gatherLayers(entity, layerList::add);
+                }
             }
+            this.renderer = new ModelComponentRenderer(this.shadowSize, this::getModelCache, this.texture, IndexedObject.sortIndex(layerList));
         }
     }
 

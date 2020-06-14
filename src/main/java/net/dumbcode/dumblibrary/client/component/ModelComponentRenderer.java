@@ -1,41 +1,43 @@
 package net.dumbcode.dumblibrary.client.component;
 
-import lombok.Getter;
+import net.dumbcode.dumblibrary.client.FramebufferCache;
 import net.dumbcode.dumblibrary.client.model.ModelMissing;
 import net.dumbcode.dumblibrary.client.model.tabula.TabulaModel;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderCallbackComponent;
+import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLayerComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLocationComponent;
+import net.dumbcode.dumblibrary.server.utils.IndexedObject;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.entity.RenderLiving;
-import net.minecraft.client.renderer.entity.RenderLivingBase;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.client.shader.Framebuffer;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.MathHelper;
 import org.apache.commons.lang3.NotImplementedException;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.util.glu.Project;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class ModelComponentRenderer extends RenderLiving<EntityLiving> implements RenderCallbackComponent.MainCallback {
 
-    @Getter
-    private final int renderID;
+    private static final Minecraft MC = Minecraft.getMinecraft();
+
     private final Supplier<TabulaModel> modelSupplier;
     private final RenderLocationComponent.ConfigurableLocation texture;
+    private final List<Supplier<RenderLayerComponent.Layer>> layerList;
 
-    public ModelComponentRenderer(float shadowSize, Supplier<TabulaModel> modelSupplier, RenderLocationComponent.ConfigurableLocation texture) {
-        super(Minecraft.getMinecraft().getRenderManager(), ModelMissing.INSTANCE, shadowSize);
-        this.renderID = GlStateManager.glGenLists(1);
+    public ModelComponentRenderer(float shadowSize, Supplier<TabulaModel> modelSupplier, RenderLocationComponent.ConfigurableLocation texture, List<Supplier<RenderLayerComponent.Layer>> layerList) {
+        super(MC.getRenderManager(), ModelMissing.INSTANCE, shadowSize);
         this.modelSupplier = modelSupplier;
         this.texture = texture;
-    }
-
-    public void clearLayers() {
-        this.layerRenderers.clear();
+        this.layerList = layerList;
     }
 
     Runnable preCallbacks;
@@ -89,19 +91,81 @@ public class ModelComponentRenderer extends RenderLiving<EntityLiving> implement
 
     @Override
     protected void renderModel(EntityLiving entityLiving, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scaleFactor) {
-        GlStateManager.glNewList(this.renderID, GL11.GL_COMPILE);
+        Framebuffer frameBuffer = this.getFrameBuffer();
+        frameBuffer.bindFramebuffer(true);
+        this.renderAllLayers();
+
+        MC.getFramebuffer().bindFramebuffer(true);
+        frameBuffer.bindFramebufferTexture();
         this.mainModel.render(entityLiving, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scaleFactor);
-        GlStateManager.glEndList();
+    }
+
+    private void renderAllLayers() {
+        GlStateManager.clearColor(0F, 0, 0, 0);
+        GlStateManager.clear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
+        GlStateManager.color(1f, 1f, 1f, 1f);
+
+        MC.entityRenderer.disableLightmap();
+        GlStateManager.disableLighting();
+
+        GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+        GlStateManager.enableAlpha();
+        GlStateManager.enableBlend();
+
+        int lastMode = GL11.glGetInteger(GL11.GL_MATRIX_MODE);
+        GlStateManager.pushMatrix();
+        GlStateManager.matrixMode(GL11.GL_PROJECTION);
+        GlStateManager.pushMatrix();
+        GlStateManager.loadIdentity();
+        GlStateManager.ortho(0, 1, 0, 1, 0, 1000);
+        GlStateManager.matrixMode(GL11.GL_MODELVIEW);
+        GlStateManager.pushMatrix();
+        GlStateManager.loadIdentity();
+
+        BufferBuilder buffer = Tessellator.getInstance().getBuffer();
+
+        for (Supplier<RenderLayerComponent.Layer> supplier : this.layerList) {
+            RenderLayerComponent.Layer layer = supplier.get();
+            GlStateManager.color(layer.getRed(), layer.getGreen(), layer.getBlue(), layer.getAlpha());
+            MC.renderEngine.bindTexture(layer.getTexture());
+            buffer.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
+            buffer.pos(0, 1, -2).tex(0, 1).color(255, 255, 255, 255).endVertex();
+            buffer.pos(1, 1, -2).tex(1, 1).color(255, 255, 255, 255).endVertex();
+            buffer.pos(1, 0, -2).tex(1, 0).color(255, 255, 255, 255).endVertex();
+            buffer.pos(0, 0, -2).tex(0, 0).color(255, 255, 255, 255).endVertex();
+            Tessellator.getInstance().draw();
+        }
+
+        GlStateManager.popMatrix();
+        GlStateManager.matrixMode(GL11.GL_PROJECTION);
+        GlStateManager.popMatrix();
+        GlStateManager.matrixMode(lastMode);
+        GlStateManager.popMatrix();
+
+        MC.entityRenderer.enableLightmap();
+        GlStateManager.enableLighting();
+        GlStateManager.disableBlend();
+
+    }
+
+    private Framebuffer getFrameBuffer() {
+        int width = this.mainModel.textureWidth;
+        for (Supplier<RenderLayerComponent.Layer> supplier : this.layerList) {
+            MC.renderEngine.bindTexture(supplier.get().getTexture());
+            width = Math.max(width, GL11.glGetTexLevelParameteri(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_WIDTH));
+        }
+        int height = (int) ((float) width * this.mainModel.textureHeight /  this.mainModel.textureWidth);
+        return FramebufferCache.getFrameBuffer(width, height);
     }
 
     @Override
     protected void renderLayers(EntityLiving entityLiving, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch, float scaleIn) {
-        GlStateManager.enableNormalize();
-        GlStateManager.enableBlend();
-        GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
-        super.renderLayers(entityLiving, limbSwing, limbSwingAmount, partialTicks, ageInTicks, netHeadYaw, headPitch, scaleIn);
-        GlStateManager.disableBlend();
-        GlStateManager.disableNormalize();
+//        GlStateManager.enableNormalize();
+//        GlStateManager.enableBlend();
+//        GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
+//        super.renderLayers(entityLiving, limbSwing, limbSwingAmount, partialTicks, ageInTicks, netHeadYaw, headPitch, scaleIn);
+//        GlStateManager.disableBlend();
+//        GlStateManager.disableNormalize();
     }
 
     @Override

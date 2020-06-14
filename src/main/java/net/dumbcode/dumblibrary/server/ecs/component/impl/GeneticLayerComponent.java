@@ -23,6 +23,7 @@ import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLayerComp
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLocationComponent;
 import net.dumbcode.dumblibrary.server.utils.GeneticUtils;
 import net.dumbcode.dumblibrary.server.utils.CollectorUtils;
+import net.dumbcode.dumblibrary.server.utils.IndexedObject;
 import net.dumbcode.dumblibrary.server.utils.StreamUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
@@ -42,6 +43,7 @@ import javax.vecmath.Vector3f;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
 public class GeneticLayerComponent extends EntityComponent implements RenderLayerComponent, FinalizableComponent, GatherGeneticsComponent {
@@ -54,19 +56,18 @@ public class GeneticLayerComponent extends EntityComponent implements RenderLaye
     private static final Random RAND = new Random();
 
     @Override
-    public void gatherLayers(ComponentAccess entity, Consumer<Consumer<Runnable>> registry) {
+    public void gatherLayers(ComponentAccess entity, Consumer<IndexedObject<Supplier<Layer>>> registry) {
         for (GeneticLayerEntry entry : this.entries) {
-            registry.accept(runnable -> {
+            registry.accept(new IndexedObject<>(() -> {
                 if(this.baseLocation != null) {
-                    Minecraft.getMinecraft().renderEngine.bindTexture(entry.getTextureLocation(this.baseLocation));
                     float[] colours = entry.getColours();
-                    GlStateManager.color(colours[0], colours[1], colours[2], 1F);
-                    runnable.run();
-                    GlStateManager.color(1F, 1F, 1F, 1F);
+                    return new Layer(colours[0], colours[1], colours[2], 1F, entry.getTextureLocation(this.baseLocation));
                 }
-            });
+                return null;
+            }, entry.index));
         }
     }
+
 
     public void setLayerValues(String layer, float[] rgb) {
         for (GeneticLayerEntry entry : this.entries) {
@@ -131,8 +132,8 @@ public class GeneticLayerComponent extends EntityComponent implements RenderLaye
 
         private final List<GeneticLayerEntry> entries = new ArrayList<>();
 
-        public Storage addLayer(String layerName, String... locationsSuffix) {
-            this.entries.add(new GeneticLayerEntry(layerName, locationsSuffix));
+        public Storage addLayer(String layerName, float index, String... locationsSuffix) {
+            this.entries.add(new GeneticLayerEntry(layerName, index, locationsSuffix));
             return this;
         }
 
@@ -161,6 +162,7 @@ public class GeneticLayerComponent extends EntityComponent implements RenderLaye
     @Accessors(chain = true)
     public static class GeneticLayerEntry {
         private final String layerName;
+        private final float index;
         private final String[] locationSuffix;
 
         private ResourceLocation textureLocationCache;
@@ -170,8 +172,9 @@ public class GeneticLayerComponent extends EntityComponent implements RenderLaye
         private final Map<UUID, Vector3f> targetTints = new HashMap<>();
         private Vector3f averageColor = null;
 
-        private GeneticLayerEntry(String layerName, String... locationsSuffix) {
+        private GeneticLayerEntry(String layerName, float index, String... locationsSuffix) {
             this.layerName = layerName;
+            this.index = index;
             this.locationSuffix = locationsSuffix;
         }
 
@@ -191,7 +194,7 @@ public class GeneticLayerComponent extends EntityComponent implements RenderLaye
                 for (int textureDatum : data) {
                     if(((textureDatum >> 24) & 0xFF) != 0) {
                         acceptablePixels.add(new Vec3d(
-                                ((textureDatum >> 16) & 0xFF) / 255F,
+                            ((textureDatum >> 16) & 0xFF) / 255F,
                             ((textureDatum >> 8) & 0xFF) / 255F,
                             (textureDatum & 0xFF) / 255F
                         ));
@@ -245,6 +248,7 @@ public class GeneticLayerComponent extends EntityComponent implements RenderLaye
 
         public static void serialize(GeneticLayerEntry entry, ByteBuf buf) {
             ByteBufUtils.writeUTF8String(buf, entry.layerName);
+            buf.writeFloat(entry.index);
             buf.writeShort(entry.getLocationSuffix().length);
             for (String suffix : entry.locationSuffix) {
                 ByteBufUtils.writeUTF8String(buf, suffix);
@@ -267,6 +271,7 @@ public class GeneticLayerComponent extends EntityComponent implements RenderLaye
 
         public static NBTTagCompound serialize(GeneticLayerEntry entry, NBTTagCompound tag) {
             tag.setString("layer", entry.layerName);
+            tag.setFloat("index", entry.index);
             tag.setTag("locations", Arrays.stream(entry.locationSuffix).map(NBTTagString::new).collect(CollectorUtils.toNBTTagList()));
 
             tag.setTag("BaseTints", writeMap(entry.baseTints));
@@ -292,6 +297,7 @@ public class GeneticLayerComponent extends EntityComponent implements RenderLaye
 
         public static JsonObject serialize(GeneticLayerEntry entry, JsonObject json) {
             json.addProperty("layer", entry.layerName);
+            json.addProperty("index", entry.index);
             json.add("locations", Arrays.stream(entry.locationSuffix).map(JsonPrimitive::new).collect(CollectorUtils.toJsonArray()));
             return json;
         }
@@ -299,6 +305,7 @@ public class GeneticLayerComponent extends EntityComponent implements RenderLaye
         public static GeneticLayerEntry deserailize(NBTTagCompound nbt) {
             GeneticLayerEntry entry = new GeneticLayerEntry(
                 nbt.getString("layer"),
+                nbt.getFloat("index"),
                 StreamUtils.stream(nbt.getTagList("locations", Constants.NBT.TAG_STRING)).map(b -> ((NBTTagString) b).getString()).toArray(String[]::new)
             );
 
@@ -321,6 +328,7 @@ public class GeneticLayerComponent extends EntityComponent implements RenderLaye
         public static GeneticLayerEntry deserailize(JsonObject json) {
             return new GeneticLayerEntry(
                 JsonUtils.getString(json, "layer"),
+                JsonUtils.getFloat(json, "index"),
                 StreamUtils.stream(JsonUtils.getJsonArray(json, "locations")).map(JsonElement::getAsString).toArray(String[]::new)
             );
         }
@@ -328,6 +336,7 @@ public class GeneticLayerComponent extends EntityComponent implements RenderLaye
         public static GeneticLayerEntry deserailize(ByteBuf buf) {
             GeneticLayerEntry entry = new GeneticLayerEntry(
                 ByteBufUtils.readUTF8String(buf),
+                buf.readFloat(),
                 IntStream.range(0, buf.readShort()).mapToObj(i -> ByteBufUtils.readUTF8String(buf)).toArray(String[]::new)
             );
 

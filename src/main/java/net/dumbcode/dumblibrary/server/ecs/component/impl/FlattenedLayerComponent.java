@@ -4,6 +4,9 @@ import com.google.common.collect.Lists;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import io.netty.buffer.ByteBuf;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 import net.dumbcode.dumblibrary.client.TextureUtils;
 import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
@@ -28,13 +31,15 @@ import net.minecraftforge.fml.common.network.ByteBufUtils;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public class FlattenedLayerComponent extends EntityComponent implements RenderLayerComponent {
 
+    private float index;
     private final List<IndexedObject<FlattenedLayerProperty.Static>> staticLayers = new ArrayList<>();
 
     @Override
-    public void gatherLayers(ComponentAccess entity, Consumer<Consumer<Runnable>> registry) {
+    public void gatherLayers(ComponentAccess entity, Consumer<IndexedObject<Supplier<Layer>>> registry) {
         List<IndexedObject<FlattenedLayerProperty>> layerEntries = new ArrayList<>();
         for (IndexedObject<FlattenedLayerProperty.Static> layer : this.staticLayers) {
             layerEntries.add(new IndexedObject<>(layer.getObject(), layer.getIndex()));
@@ -93,7 +98,7 @@ public class FlattenedLayerComponent extends EntityComponent implements RenderLa
             }
             this.generateTexture(location.get(), new ArrayDeque<>(), root);
 
-            registry.accept(runnable -> {
+            registry.accept(new IndexedObject<>(() -> {
                 BuilderNode.Entry<String> element = root;
                 for (FlattenedLayerProperty sorted : sortedByIndex) {
                     String currentValue = sorted.currentValue();
@@ -105,9 +110,9 @@ public class FlattenedLayerComponent extends EntityComponent implements RenderLa
                 if(element.getChildren().size() != 1) {
                     throw new IllegalArgumentException("Error whilst traversing tree, reached destination: " + element.getChildren());
                 }
-                Minecraft.getMinecraft().renderEngine.bindTexture(new ResourceLocation(element.getChildren().get(0).getElement()));
-                runnable.run();
-            });
+                return new Layer(1F, 1F, 1F, 1F, new ResourceLocation(element.getChildren().get(0).getElement()));
+            }, this.index));
+
         }
     }
 
@@ -134,6 +139,7 @@ public class FlattenedLayerComponent extends EntityComponent implements RenderLa
         for (IndexedObject<FlattenedLayerProperty.Static> layer : this.staticLayers) {
             IndexedObject.serializeByteBuf(buf, layer, aStatic -> ByteBufUtils.writeUTF8String(buf, aStatic.getValue()));
         }
+        buf.writeFloat(this.index);
     }
 
     @Override
@@ -145,6 +151,7 @@ public class FlattenedLayerComponent extends EntityComponent implements RenderLa
         for (int i = 0; i < size; i++) {
             this.staticLayers.add(IndexedObject.deserializeByteBuf(buf, () -> new FlattenedLayerProperty.Static(ByteBufUtils.readUTF8String(buf))));
         }
+        this.index = buf.readFloat();
     }
 
     @Override
@@ -154,6 +161,7 @@ public class FlattenedLayerComponent extends EntityComponent implements RenderLa
                 .map(io -> IndexedObject.serializeNBT(io, aStatic -> new NBTTagString(aStatic.getValue())))
                 .collect(CollectorUtils.toNBTTagList())
         );
+        compound.setFloat("Index", this.index);
         return super.serialize(compound);
     }
 
@@ -163,11 +171,16 @@ public class FlattenedLayerComponent extends EntityComponent implements RenderLa
         StreamUtils.stream(compound.getTagList("layers", Constants.NBT.TAG_COMPOUND))
             .map(t -> IndexedObject.deserializeNBT((NBTTagCompound)t, b -> new FlattenedLayerProperty.Static(((NBTTagString) b).getString())))
             .forEach(this.staticLayers::add);
+        this.index = compound.getFloat("Index");
         super.deserialize(compound);
     }
 
+    @Getter
+    @Setter
+    @Accessors(chain = true)
     public static class Storage implements EntityComponentStorage<FlattenedLayerComponent> {
 
+        private float index;
         private final List<IndexedObject<FlattenedLayerProperty.Static>> staticLayers = new ArrayList<>();
 
         public Storage staticLayer(String layerName, float index) {
@@ -178,6 +191,7 @@ public class FlattenedLayerComponent extends EntityComponent implements RenderLa
         @Override
         public void constructTo(FlattenedLayerComponent component) {
             component.staticLayers.addAll(this.staticLayers);
+            component.index = this.index;
         }
 
         @Override
@@ -187,6 +201,7 @@ public class FlattenedLayerComponent extends EntityComponent implements RenderLa
                     .map(io -> IndexedObject.serializeJson(io, aStatic -> new JsonPrimitive(aStatic.getValue())))
                     .collect(CollectorUtils.toJsonArray())
             );
+            json.addProperty("index", this.index);
         }
 
         @Override
@@ -195,6 +210,7 @@ public class FlattenedLayerComponent extends EntityComponent implements RenderLa
             StreamUtils.stream(JsonUtils.getJsonArray(json, "layers"))
                 .map(e -> IndexedObject.deserializeJson(e.getAsJsonObject(), b -> new FlattenedLayerProperty.Static(b.getAsString())))
                 .forEach(this.staticLayers::add);
+            this.index = JsonUtils.getFloat(json, "index");
         }
     }
 }

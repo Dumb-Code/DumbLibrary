@@ -10,7 +10,7 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 //This is used so once travis loads the world it doesn't go on forever
 @Mod.EventBusSubscriber(modid = DumbLibrary.MODID)
 public class TravisWorldTickListener {
-    
+
     @SubscribeEvent
     public static void onWorldTick(TickEvent.WorldTickEvent event) {
         if("true".equals(System.getenv("TRAVIS"))) {

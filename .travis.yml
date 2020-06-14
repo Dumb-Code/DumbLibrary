@@ -23,6 +23,7 @@ install:
 script:
   - "bash create_eula.sh"
   - "./gradlew runServer"
+  - "bash check_crash.sh"
   - "./gradlew postRequest"
   - "./gradlew sonarqube"
     

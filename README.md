@@ -44,45 +44,9 @@ gradlew.bat idea
 * [Travis-CI](https://travis-ci.org/) - Continuous Integration
 * [SonarCloud](https://sonarcloud.io) - Continous Inspection
 
-## The DumbCode Team
-
-#### Programmers
-* [Jack Goldsworth](https://github.com/JackGoldsworth)
-* [Wyn Price](https://github.com/Wyn-Price)
-* [TheXFactor117](https://github.com/TheXFactor117)
-* [jglrxavpok](https://github.com/jglrxavpok)
-* [Gegy](https://github.com/gegy1000)
-* [BobMowzie](https://github.com/BobMowzie)
-
-#### Modelers
-* HarvNut
-* Cody
-* Hyperion
-* WolfGanK
-* Satan
-* Ithronyar
-
-#### Texture Artists
-* Cody
-* Hyperion
-* WolfGanK
-* Satan
-* Ithronyar
-
-#### Animators
-* RaptorWhisper
-
-#### Misc
-* BrownBoiiWonder
-
-
-#### Contributors
-
-See also the list of [contributors](https://github.com/dumb-code/DumbLibrary/contributors) who participated in this project.
-
 ## License
 
-This project is licensed under the Microsoft reference source license - see the [LICENSE.md](LICENSE.md) file for details
+This project is licensed under the GNU Lesser General Public License v3.0 - see the [LICENSE.md](LICENSE.md) file for details
 
 ## Acknowledgments
 

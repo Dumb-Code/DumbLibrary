@@ -42,6 +42,8 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> {
     private int cellSelectedColor = 0xFFA0A0A0;
     private int borderColor = 0xFFFFFFFF;
 
+    private boolean defaultCellRendering = true;
+    
     private float scroll;
 
     private T selectedElement;
@@ -100,9 +102,18 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> {
         RenderHelper.disableStandardItemLighting();
         StencilStack.popStencil();
 
-        GlStateManager.disableDepth();
-        RenderUtils.renderBorder(this.xPos, this.yPos, this.xPos + this.width, this.yPos + height, borderSize, this.borderColor);
-        GlStateManager.enableDepth();
+        if(defaultCellRendering) {
+            GlStateManager.disableDepth();
+            RenderUtils.renderBorder(this.xPos, this.yPos, this.xPos + this.width, this.yPos + height, borderSize, this.borderColor);
+            GlStateManager.enableDepth();
+        }
+    }
+    
+    /**
+     * Disables the default background, border, and highlight of the cells in the list
+     */
+    public void disableDefaultCellRendering() {
+        this.defaultCellRendering = false;
     }
 
     /**
@@ -148,15 +159,17 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> {
             int yStart = (int) (this.yPos + this.cellHeight * entries.indexOf(entry) - this.scroll * this.cellHeight);
             //Usually it would be yStart + cellHeight, however because the ystart is offsetted (due to the active selection box), it cancels out
             if (yStart + this.cellHeight >= this.yPos && yStart <= this.yPos + height) {
-                Gui.drawRect(this.xPos, yStart, this.xPos + this.width, yStart + this.cellHeight, entry == this.selectedElement ? this.cellSelectedColor : this.cellHighlightColor);
-                Gui.drawRect(this.xPos, yStart, this.xPos + this.width, yStart + borderSize, this.borderColor);
+                if(defaultCellRendering) {
+                    Gui.drawRect(this.xPos, yStart, this.xPos + this.width, yStart + this.cellHeight, entry == this.selectedElement ? this.cellSelectedColor : this.cellHighlightColor);
+                    Gui.drawRect(this.xPos, yStart, this.xPos + this.width, yStart + borderSize, this.borderColor);
+                }
 
                 boolean mouseOverElement = !this.mouseOverScrollBar(mouseX, mouseY, height, scrollBar) && mouseOver && mouseY >= yStart && mouseY < yStart + this.cellHeight;
 
                 entry.draw(this.xPos, yStart, mouseX, mouseY, mouseOverElement);
 
                 //Draw highlighted section of the cell (if mouse is over)
-                if (mouseOverElement) {
+                if (mouseOverElement && defaultCellRendering) {
                     Gui.drawRect(this.xPos, yStart, this.xPos + this.width, yStart + this.cellHeight, this.highlightColor);
                 }
 

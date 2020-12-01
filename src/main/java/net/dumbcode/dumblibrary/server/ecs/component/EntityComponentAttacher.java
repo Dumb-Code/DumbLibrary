@@ -121,6 +121,14 @@ public class EntityComponentAttacher {
         throw new IllegalArgumentException("Requested storage on component " + type.getIdentifier() + " but component was not attached");
     }
 
+    public <T> void getStorages(Class<T> clazz, Consumer<T> consumer) {
+        for (ComponentPair<?, ?> allPair : this.allPairs) {
+            if (clazz.isInstance(allPair.getStorage())) {
+                consumer.accept(clazz.cast(allPair.getStorage()));
+            }
+        }
+    }
+
     public static EntityComponentAttacher create(Consumer<EntityComponentAttacher> applier) {
         EntityComponentAttacher attacher = new EntityComponentAttacher();
         applier.accept(attacher);

@@ -16,6 +16,7 @@ import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderFlattened
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLayerComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLocationComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.impl.data.FlattenedLayerProperty;
+import net.dumbcode.dumblibrary.server.ecs.component.storge.ShowcasingTextureStorage;
 import net.dumbcode.dumblibrary.server.utils.BuilderNode;
 import net.dumbcode.dumblibrary.server.utils.CollectorUtils;
 import net.dumbcode.dumblibrary.server.utils.IndexedObject;
@@ -178,7 +179,7 @@ public class FlattenedLayerComponent extends EntityComponent implements RenderLa
     @Getter
     @Setter
     @Accessors(chain = true)
-    public static class Storage implements EntityComponentStorage<FlattenedLayerComponent> {
+    public static class Storage implements EntityComponentStorage<FlattenedLayerComponent>, ShowcasingTextureStorage {
 
         private float index;
         private final List<IndexedObject<FlattenedLayerProperty.Static>> staticLayers = new ArrayList<>();
@@ -211,6 +212,13 @@ public class FlattenedLayerComponent extends EntityComponent implements RenderLa
                 .map(e -> IndexedObject.deserializeJson(e.getAsJsonObject(), b -> new FlattenedLayerProperty.Static(b.getAsString())))
                 .forEach(this.staticLayers::add);
             this.index = JsonUtils.getFloat(json, "index");
+        }
+
+        @Override
+        public void gatherTextures(Consumer<IndexedObject<String>> consumer) {
+            for (IndexedObject<FlattenedLayerProperty.Static> layer : this.staticLayers) {
+                consumer.accept(new IndexedObject<>(layer.getObject().getValue(), this.index));
+            }
         }
     }
 }

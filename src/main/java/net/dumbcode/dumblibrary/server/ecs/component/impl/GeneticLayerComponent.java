@@ -21,6 +21,7 @@ import net.dumbcode.dumblibrary.server.ecs.component.FinalizableComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.GatherGeneticsComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLayerComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLocationComponent;
+import net.dumbcode.dumblibrary.server.ecs.component.storge.ShowcasingTextureStorage;
 import net.dumbcode.dumblibrary.server.utils.GeneticUtils;
 import net.dumbcode.dumblibrary.server.utils.CollectorUtils;
 import net.dumbcode.dumblibrary.server.utils.IndexedObject;
@@ -128,7 +129,7 @@ public class GeneticLayerComponent extends EntityComponent implements RenderLaye
             });
     }
 
-    public static class Storage implements EntityComponentStorage<GeneticLayerComponent> {
+    public static class Storage implements EntityComponentStorage<GeneticLayerComponent>, ShowcasingTextureStorage {
 
         private final List<GeneticLayerEntry> entries = new ArrayList<>();
 
@@ -153,6 +154,15 @@ public class GeneticLayerComponent extends EntityComponent implements RenderLaye
             StreamUtils.stream(JsonUtils.getJsonArray(json, "entries"))
                 .map(e -> GeneticLayerEntry.deserailize(e.getAsJsonObject()))
                 .forEach(this.entries::add);
+        }
+
+        @Override
+        public void gatherTextures(Consumer<IndexedObject<String>> consumer) {
+            for (GeneticLayerEntry entry : this.entries) {
+                for (String locationSuffix : entry.getLocationSuffix()) {
+                    consumer.accept(new IndexedObject<>(locationSuffix, entry.index));
+                }
+            }
         }
     }
 

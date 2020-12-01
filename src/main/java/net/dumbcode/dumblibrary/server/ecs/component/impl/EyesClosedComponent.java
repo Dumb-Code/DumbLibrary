@@ -10,6 +10,7 @@ import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderFlattenedLayerComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.impl.data.FlattenedLayerProperty;
+import net.dumbcode.dumblibrary.server.ecs.component.storge.ShowcasingTextureStorage;
 import net.dumbcode.dumblibrary.server.utils.IndexedObject;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.JsonUtils;
@@ -101,7 +102,7 @@ public class EyesClosedComponent extends EntityComponent implements RenderFlatte
 
     @Setter
     @Accessors(chain = true)
-    public static class Storage implements EntityComponentStorage<EyesClosedComponent> {
+    public static class Storage implements EntityComponentStorage<EyesClosedComponent>, ShowcasingTextureStorage {
 
         private String eyesOnTexture;
         private String eyesOffTexture;
@@ -122,6 +123,11 @@ public class EyesClosedComponent extends EntityComponent implements RenderFlatte
         public void readJson(JsonObject json) {
             this.eyesOnTexture = JsonUtils.getString(json, "on_texture");
             this.eyesOffTexture = JsonUtils.getString(json, "off_texture");
+        }
+
+        @Override
+        public void gatherTextures(Consumer<IndexedObject<String>> consumer) {
+            consumer.accept(new IndexedObject<>(this.eyesOnTexture, 100));
         }
     }
 }

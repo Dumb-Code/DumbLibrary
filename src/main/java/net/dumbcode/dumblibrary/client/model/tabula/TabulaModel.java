@@ -29,7 +29,7 @@ import java.util.function.Consumer;
 @Getter
 @Setter
 @Accessors(chain = true)
-public class TabulaModel<E extends Entity> extends EntityModel<E> {
+public class TabulaModel extends EntityModel<Entity> {
     @Setter(AccessLevel.NONE)
     private boolean rendered = false;
     private final TabulaModelInformation information;
@@ -52,7 +52,7 @@ public class TabulaModel<E extends Entity> extends EntityModel<E> {
     }
 
     @Override
-    public void prepareMobModel(E entityIn, float p_212843_2_, float p_212843_3_, float partialTickTime) {
+    public void prepareMobModel(Entity entityIn, float p_212843_2_, float p_212843_3_, float partialTickTime) {
         if(entityIn instanceof EntityWithAnimation) {
             ((EntityWithAnimation) entityIn).getAnimationEntry().applyAnimations(partialTickTime, this);
         }

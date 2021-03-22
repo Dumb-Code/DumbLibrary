@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.model.ModelRenderer;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -204,6 +205,11 @@ public class TabulaModelRenderer extends ModelRenderer implements AnimatableCube
         this.rotationPointX += pointX;
         this.rotationPointY += pointY;
         this.rotationPointZ += pointZ;
+    }
+
+    @Override
+    public void setRotationPoint(float pointX, float pointY, float pointZ) {
+
     }
 
     @Override

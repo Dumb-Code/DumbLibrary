@@ -4,19 +4,17 @@ import lombok.Getter;
 import lombok.Setter;
 import net.dumbcode.dumblibrary.server.utils.MathUtils;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Gui;
-import net.minecraft.client.gui.GuiButton;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.gui.GuiTextField;
-import org.lwjgl.input.Mouse;
+import net.minecraft.client.gui.IGuiEventListener;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.widget.TextFieldWidget;
+import net.minecraft.client.gui.widget.button.Button;
+import net.minecraft.util.text.StringTextComponent;
+import net.minecraftforge.fml.client.gui.widget.ExtendedButton;
 
-import java.io.IOException;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.function.ObjDoubleConsumer;
 import java.util.function.ObjIntConsumer;
 
-public class GuiNumberEntry {
+public class GuiNumberEntry implements IGuiEventListener {
 
     private static final int BUTTON_WIDTH = 20;
     private static final int PADDING = 3;
@@ -31,9 +29,9 @@ public class GuiNumberEntry {
     private final int width;
     private final int height;
 
-    private final GuiTextField textField;
-    private final GuiButton topButton;
-    private final GuiButton bottomButton;
+    private final TextFieldWidget textField;
+    private final Button topButton;
+    private final Button bottomButton;
 
     private final ObjIntConsumer<GuiNumberEntry> listener;
 
@@ -47,7 +45,7 @@ public class GuiNumberEntry {
     @Setter
     private boolean syncedSinceEdit = true;
 
-    public GuiNumberEntry(int id, double currentValue, double defaultScale, int decimalPlace, int x, int y, int width, int height, Consumer<GuiButton> buttonConsumer, ObjIntConsumer<GuiNumberEntry> listener) {
+    public GuiNumberEntry(int id, double currentValue, double defaultScale, int decimalPlace, int x, int y, int width, int height, Consumer<Button> buttonConsumer, ObjIntConsumer<GuiNumberEntry> listener) {
         this.id = id;
 
         this.decimalPlace = decimalPlace;
@@ -59,80 +57,58 @@ public class GuiNumberEntry {
         this.width = width;
         this.height = height;
 
-        this.textField = new GuiTextField(0, Minecraft.getMinecraft().fontRenderer, x-width/2, y-height/2, width-BUTTON_WIDTH-PADDING, height);
-        this.topButton = new GuiButton(0, x + width/2 - BUTTON_WIDTH, y-height/2, BUTTON_WIDTH, height/2, "+");
-        this.bottomButton = new GuiButton(0, x + width/2 - BUTTON_WIDTH, y, BUTTON_WIDTH, height/2, "-");
+        this.textField = new TextFieldWidget(Minecraft.getInstance().font, x-width/2, y-height/2, width-BUTTON_WIDTH-PADDING, height, new StringTextComponent(""));
+        this.topButton = new ExtendedButton(x + width/2 - BUTTON_WIDTH, y-height/2, BUTTON_WIDTH, height/2, new StringTextComponent("+"), b -> this.addScaled(1));
+        this.bottomButton = new ExtendedButton(x + width/2 - BUTTON_WIDTH, y, BUTTON_WIDTH, height/2, new StringTextComponent("-"), b -> this.addScaled(-1));
         this.listener = listener;
 
         buttonConsumer.accept(this.topButton);
-        buttonConsumer.accept(this.bottomButton);
+        buttonConsumer.accept(this.topButton);
 
         this.onChange(false, true);
 
     }
 
-    public void render() {
-        this.textField.drawTextBox();
+    @Override
+    public boolean isMouseOver(double x, double y) {
+        double diffX = x - this.x;
+        double diffY = y - this.y;
+        return diffX >= 0 && diffX <= this.width && diffY >= 0 && diffY <= this.height;
     }
 
-    public void updateEntry() {
-        this.textField.updateCursorCounter();
+    public void tick() {
+        this.textField.tick();
         this.ticksSinceChanged++;
     }
 
-    public void mouseClicked(int mouseX, int mouseY, int mouseButton) {
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
         boolean focused = this.textField.isFocused();
         this.textField.mouseClicked(mouseX, mouseY, mouseButton);
         if(focused && !this.textField.isFocused()) {
             this.onChange(false, true);
         }
+        return false;
     }
 
-    public void keyTyped(char typedChar, int keyCode) {
-        this.textField.textboxKeyTyped(typedChar, keyCode);
-        try {
-            this.value = Double.parseDouble(this.textField.getText());
-            this.onChange(true, false);
-        } catch (NumberFormatException ignored) {
-        }
-    }
-
-    public void buttonClicked(GuiButton button) {
-        if(button == this.topButton) {
-            this.addScaled(1);
-        }
-        if(button == this.bottomButton) {
-            this.addScaled(-1);
-        }
-    }
     public void setValue(double value, boolean listener) {
         this.value = value;
         this.onChange(listener, true);
     }
 
-    public boolean mouseOver(int mouseX, int mouseY) {
-        return Math.abs(this.x - mouseX) <= this.width/2 && Math.abs(this.y - mouseY) <= this.height/2;
+    public boolean mouseOver(double mouseX, double mouseY) {
+        return Math.abs(this.x - mouseX) <= this.width/2D && Math.abs(this.y - mouseY) <= this.height/2D;
     }
 
-    public void handleMouseInput(int width, int height) {
-        int mouseX = Mouse.getEventX() * width / Minecraft.getMinecraft().displayWidth;
-        int mouseY = height - Mouse.getEventY() * height / Minecraft.getMinecraft().displayHeight - 1;
-        if(this.mouseOver(mouseX, mouseY)) {
-            int mouseInput = Mouse.getEventDWheel();
-            if (mouseInput != 0) {
-                this.addScaled(mouseInput < 0 ? -1 : 1);
-            }
-        }
-    }
 
     private void addScaled(double amount) {
-        if(!GuiScreen.isAltKeyDown()) {
+        if(!Screen.hasAltDown()) {
             amount *= this.defaultScale;
         }
-        if(GuiScreen.isCtrlKeyDown()) {
+        if(Screen.hasControlDown()) {
             amount *= 2;
         }
-        if(GuiScreen.isShiftKeyDown()) {
+        if(Screen.hasShiftDown()) {
             amount /= 2;
         }
         this.value += amount;
@@ -148,7 +124,7 @@ public class GuiNumberEntry {
         if(updateTextField && !this.textField.isFocused()) {
             double pow = Math.pow(10, this.decimalPlace);
             double val = Math.round(this.value * pow) / pow;
-            this.textField.setText(MathUtils.ensureTrailingZeros(val, this.decimalPlace));
+            this.textField.setValue(MathUtils.ensureTrailingZeros(val, this.decimalPlace));
         }
     }
 }

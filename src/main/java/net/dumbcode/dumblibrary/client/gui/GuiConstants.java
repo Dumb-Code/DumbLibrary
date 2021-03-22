@@ -1,6 +1,7 @@
 package net.dumbcode.dumblibrary.client.gui;
 
 import net.dumbcode.dumblibrary.DumbLibrary;
+import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TranslationTextComponent;
@@ -21,7 +22,7 @@ public interface GuiConstants {
     TranslationTextComponent TRACKPAD_ZOOM_TEXT = new TranslationTextComponent(DumbLibrary.MODID+".gui.controls.trackpad_zoom");
     TranslationTextComponent MOUSE_WHEEL_TEXT = new TranslationTextComponent(DumbLibrary.MODID+".gui.controls.mouse_wheel");
 
-    static boolean mouseOn(Button button, int mouseX, int mouseY) {
+    static boolean mouseOn(Widget button, double mouseX, double mouseY) {
         return button.active && button.visible && mouseX >= button.x && mouseY >= button.y && mouseX < button.x + button.getWidth() && mouseY < button.y + button.getHeight();
     }
 }

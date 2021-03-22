@@ -1,32 +1,46 @@
 package net.dumbcode.dumblibrary.client.gui;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.dumbcode.dumblibrary.DumbLibrary;
+import net.dumbcode.dumblibrary.client.MutVector2f;
 import net.dumbcode.dumblibrary.client.model.tabula.TabulaModel;
 import net.dumbcode.dumblibrary.client.model.tabula.TabulaModelRenderer;
 import net.dumbcode.dumblibrary.server.animation.TabulaUtils;
 import net.dumbcode.dumblibrary.server.taxidermy.TaxidermyHistory;
 import net.dumbcode.dumblibrary.server.utils.XYZAxis;
+import net.minecraft.client.GameSettings;
+import net.minecraft.client.MainWindow;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.MouseHelper;
+import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiButton;
-import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.widget.Widget;
+import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.client.model.ModelRenderer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.vector.Matrix3f;
+import net.minecraft.util.math.vector.Vector3f;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextComponentTranslation;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraftforge.fml.client.config.GuiButtonExt;
 import net.minecraftforge.fml.client.config.GuiSlider;
+import net.minecraftforge.fml.client.gui.widget.ExtendedButton;
+import net.minecraftforge.fml.client.gui.widget.Slider;
 import org.lwjgl.BufferUtils;
+import org.lwjgl.glfw.GLFW;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
+import org.lwjgl.opengl.GLUtil;
 import org.lwjgl.util.glu.Project;
-import org.lwjgl.util.vector.Vector2f;
+import sun.tools.jstack.JStack;
 
 import javax.vecmath.Matrix3f;
 import javax.vecmath.Matrix4f;
@@ -34,16 +48,18 @@ import javax.vecmath.Vector3f;
 import java.io.IOException;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 
-public abstract class GuiModelPoseEdit extends GuiScreen {
+public abstract class GuiModelPoseEdit extends Screen {
 
     private final TabulaModel model;
     private final ResourceLocation texture;
     private final ITextComponent titleText;
     private boolean registeredLeftClick;
-    private Vector2f lastClickPosition = new Vector2f();
+    private MutVector2f lastClickPosition = new MutVector2f(0, 0);
     private IntBuffer colorBuffer = BufferUtils.createIntBuffer(1);
     private TabulaModelRenderer selectedPart;
     private boolean movedPart;
@@ -51,18 +67,13 @@ public abstract class GuiModelPoseEdit extends GuiScreen {
     private TranslationTextComponent redoText = new TranslationTextComponent(DumbLibrary.MODID+".gui.model_pose_edit.redo");
     private TranslationTextComponent resetText = new TranslationTextComponent(DumbLibrary.MODID+".gui.model_pose_edit.reset");
     private TranslationTextComponent propertiesGui = new TranslationTextComponent(DumbLibrary.MODID+".gui.model_pose_edit.edit_properties");
-    private GuiButton undoButton = new GuiButtonExt(0, 0, 0, undoText.getUnformattedText());
-    private GuiButton redoButton = new GuiButtonExt(1, 0, 0, redoText.getUnformattedText());
-    private GuiButton resetButton = new GuiButtonExt(2, 0, 0, resetText.getUnformattedText());
-    private GuiButton exportButton = new GuiButtonExt(3, 0, 0, 20, 20, "E");
-    private GuiButton importButton = new GuiButtonExt(4, 20, 0, 20, 20, "I");
     protected float cameraPitch;
     protected float cameraYaw = 90f;
     protected double zoom = 1.0;
     private TabulaModel rotationRingModel;
     private XYZAxis currentSelectedRing = XYZAxis.NONE;
     private boolean draggingRing = false;
-    private Vector2f dMouse = new Vector2f();
+    private MutVector2f dMouse = new MutVector2f(0, 0);
 
     private FloatBuffer modelMatrix = BufferUtils.createFloatBuffer(16);
     private FloatBuffer projectionMatrix = BufferUtils.createFloatBuffer(16);
@@ -73,10 +84,10 @@ public abstract class GuiModelPoseEdit extends GuiScreen {
      */
     private int baseYOffset = 20;
 
-    private TextComponentTranslation noPartSelectedText = new TextComponentTranslation(DumbLibrary.MODID+".gui.model_pose_edit.no_part_selected");
-    private TextComponentTranslation zoomText = new TextComponentTranslation(DumbLibrary.MODID+".gui.model_pose_edit.controls.zoom");
-    private TextComponentTranslation selectModelPartText = new TextComponentTranslation(DumbLibrary.MODID+".gui.model_pose_edit.controls.select_part");
-    private TextComponentTranslation rotateCameraText = new TextComponentTranslation(DumbLibrary.MODID+".gui.model_pose_edit.controls.rotate_camera");
+    private TranslationTextComponent noPartSelectedText = new TranslationTextComponent(DumbLibrary.MODID+".gui.model_pose_edit.no_part_selected");
+    private TranslationTextComponent zoomText = new TranslationTextComponent(DumbLibrary.MODID+".gui.model_pose_edit.controls.zoom");
+    private TranslationTextComponent selectModelPartText = new TranslationTextComponent(DumbLibrary.MODID+".gui.model_pose_edit.controls.select_part");
+    private TranslationTextComponent rotateCameraText = new TranslationTextComponent(DumbLibrary.MODID+".gui.model_pose_edit.controls.rotate_camera");
 
 //    private DialogBox dialogBox = new DialogBox()
 //            .root(new File(Minecraft.getMinecraft().gameDir, "dinosaur_poses"))
@@ -89,29 +100,25 @@ public abstract class GuiModelPoseEdit extends GuiScreen {
     public static final String PREFIX_KEY = DumbLibrary.MODID + ".gui.model_pose_edit.rotation_slider.prefix";
     public static final String SUFFIX_KEY = DumbLibrary.MODID + ".gui.model_pose_edit.rotation_slider.suffix";
 
-    private GuiSlider xRotationSlider = new GuiSlider(5, 0, 0, 200, 20,
-            new TextComponentTranslation(PREFIX_KEY, "X").getUnformattedText(),
-            new TextComponentTranslation(SUFFIX_KEY).getUnformattedText(),
-            -180.0, 180.0, 0.0, true, true);
-
-    private GuiSlider yRotationSlider = new GuiSlider(6, 0, 0, 200, 20,
-            new TextComponentTranslation(PREFIX_KEY, "Y").getUnformattedText(),
-            new TextComponentTranslation(SUFFIX_KEY).getUnformattedText(),
-            -180.0, 180.0, 0.0, true, true);
-
-    private GuiSlider zRotationSlider = new GuiSlider(7, 0, 0, 200, 20,
-            new TextComponentTranslation(PREFIX_KEY, "Z").getUnformattedText(),
-            new TextComponentTranslation(SUFFIX_KEY).getUnformattedText(),
-            -180.0, 180.0, 0.0, true, true);
+    private Slider xRotationSlider;
+    private Slider yRotationSlider;
+    private Slider zRotationSlider;
 
     private GuiNumberEntry xPosition;
     private GuiNumberEntry yPosition;
     private GuiNumberEntry zPosition;
 
+    private Button undoButton;
+    private Button redoButton;
+    private Button resetButton;
+    private Button exportButton;
+    private Button importButton;
+    private Button propertiesButton;
+
     private GuiNumberEntry mouseOverEntry;
 
 
-    private GuiButton propertiesButton = new GuiButtonExt(8, 0, 0, propertiesGui.getUnformattedText());
+//    private GuiButton propertiesButton = new GuiButtonExt(8, 0, 0, propertiesGui.getUnformattedText());
 
     public GuiModelPoseEdit(TabulaModel model, ResourceLocation texture, ITextComponent title) {
         this.model = model; // TODO: child models? -> Selectable
@@ -124,87 +131,61 @@ public abstract class GuiModelPoseEdit extends GuiScreen {
     }
 
     @Override
-    public void initGui() {
-        super.initGui();
+    public void init() {
+        super.init();
         int buttonWidth = width/3;
-        undoButton.x = 0;
-        redoButton.x = buttonWidth;
-        resetButton.x = buttonWidth*2;
 
-        undoButton.width = buttonWidth;
-        redoButton.width = buttonWidth;
-        resetButton.width = buttonWidth;
+        //Undo
+        this.addButton(undoButton = new ExtendedButton(0, height-21, buttonWidth, 20, undoText, b -> this.undo()));
+        //Redo
+        this.addButton(redoButton = new ExtendedButton(buttonWidth, height-21, buttonWidth, 20, redoText, b -> this.redo()));
+        //Reset
+        this.addButton(resetButton = new ExtendedButton(buttonWidth*2, height-21, buttonWidth, 20, resetText, b -> this.reset()));
+        //Properties
+        this.addButton(propertiesButton = new ExtendedButton(width-201, height-43, 200, 20, propertiesGui, p_onPress_1_ -> {
+            //this.mc.displayGuiScreen(new GuiSkeletalProperties(this, this.builder));
+        }));
 
-        undoButton.y = height-undoButton.height-1;
-        redoButton.y = height-redoButton.height-1;
-        resetButton.y = height-resetButton.height-1;
+        //Rotation slider X
+        this.addButton(xRotationSlider = new Slider(
+            width-201, baseYOffset+font.lineHeight+2, 200, 20,
+            new TranslationTextComponent(PREFIX_KEY, "X"),
+            new TranslationTextComponent(SUFFIX_KEY),
+            -180.0, 180.0, 0.0, true, true,
+            p_onPress_1_ -> {}, slider -> this.sliderChanged(slider.getValue(), XYZAxis.X_AXIS)
+        ));
 
-        xRotationSlider.x = width-xRotationSlider.width-1;
-        yRotationSlider.x = width-yRotationSlider.width-1;
-        zRotationSlider.x = width-zRotationSlider.width-1;
+        //Rotation slider Y
+        this.addButton(yRotationSlider = new Slider(
+            width-201, baseYOffset+font.lineHeight+27, 200, 20,
+            new TranslationTextComponent(PREFIX_KEY, "Y"),
+            new TranslationTextComponent(SUFFIX_KEY),
+            -180.0, 180.0, 0.0, true, true,
+            p_onPress_1_ -> {}, slider -> this.sliderChanged(slider.getValue(), XYZAxis.Y_AXIS)
+        ));
 
-        propertiesButton.x = width-propertiesButton.width-1;
+        //Rotation slider Z
+        this.addButton(zRotationSlider = new Slider(
+            width-201, baseYOffset+font.lineHeight+52, 200, 20,
+            new TranslationTextComponent(PREFIX_KEY, "Z"),
+            new TranslationTextComponent(SUFFIX_KEY),
+            -180.0, 180.0, 0.0, true, true,
+            p_onPress_1_ -> {}, slider -> this.sliderChanged(slider.getValue(), XYZAxis.Z_AXIS)
+        ));
 
-        // + height+2 to leave space for the text
-        xRotationSlider.y = baseYOffset+fontRenderer.FONT_HEIGHT+2;
-        yRotationSlider.y = baseYOffset+fontRenderer.FONT_HEIGHT+2+xRotationSlider.height+5;
-        zRotationSlider.y = baseYOffset+fontRenderer.FONT_HEIGHT+2+xRotationSlider.height+yRotationSlider.height+5+5;
+        this.addWidget(xPosition = new GuiNumberEntry(
+            0, 0, 1/4F, 2, width - 168, zRotationSlider.y+zRotationSlider.getHeight()+15,
+            66, 20, this::addButton, this::positionChanged));
 
-        propertiesButton.y = resetButton.y-2-propertiesButton.height;
+        this.addWidget(yPosition = new GuiNumberEntry(
+            1, 0, 1/4F, 2, width - 101, zRotationSlider.y+zRotationSlider.getHeight()+15,
+            66, 20, this::addButton, this::positionChanged));
 
-        xRotationSlider.setValue(180.0);
-        yRotationSlider.setValue(180.0);
-        zRotationSlider.setValue(180.0);
-
-        addButton(undoButton);
-        addButton(redoButton);
-        addButton(resetButton);
-        addButton(xRotationSlider);
-        addButton(yRotationSlider);
-        addButton(zRotationSlider);
-        addButton(propertiesButton);
-        addButton(exportButton);
-        addButton(importButton);
-
-        xPosition = new GuiNumberEntry(
-            0, 0, 1/4F, 2, width - 168, zRotationSlider.y+zRotationSlider.height+15,
-            66, 20, this::addButton, this::positionChanged);
-
-        yPosition = new GuiNumberEntry(
-            1, 0, 1/4F, 2, width - 101, zRotationSlider.y+zRotationSlider.height+15,
-            66, 20, this::addButton, this::positionChanged);
-
-        zPosition = new GuiNumberEntry(
-            2, 0, 1/4F, 2, width - 34, zRotationSlider.y+zRotationSlider.height+15,
-            66, 20, this::addButton, this::positionChanged);
+        this.addWidget(zPosition = new GuiNumberEntry(
+            2, 0, 1/4F, 2, width - 34, zRotationSlider.y+zRotationSlider.getHeight()+15,
+            66, 20, this::addButton, this::positionChanged));
     }
 
-    @Override
-    protected void actionPerformed(GuiButton button) throws IOException {
-        super.actionPerformed(button);
-        if(button == undoButton) {
-            this.undo();
-        } else if(button == redoButton) {
-            this.redo();
-        } else if(button == resetButton) {
-            this.reset();
-        } else if(button == exportButton) {
-            this.exportPose();
-//            this.dialogBox
-//                    .title("Export pose")
-//                    .showBox(DialogBox.Type.SAVE, file -> SkeletalBuilderFileHandler.serialize(new SkeletalBuilderFileInfomation(this.getDinosaur().getRegName(), this.builder.getPoseData()), file));
-//            this.mc.displayGuiScreen(new GuiFileExplorer(this, "dinosaur poses", "Export", file -> SkeletalBuilderFileHandler.serilize(new SkeletalBuilderFileInfomation(this.getDinosaur().getRegName(), this.builder.getPoseData()), file))); //TODO: localize
-        } else if(button == importButton) {
-            this.importPose();
-//            this.mc.displayGuiScreen(new GuiFileExplorer(this, "dinosaur poses", "Import", file -> ProjectNublar.NETWORK.sendToServer(new C8FullPoseChange(this.builder, SkeletalBuilderFileHandler.deserilize(file).getPoseData())))); //TODO: localize
-        }
-//        else if(button == propertiesButton) {
-//            this.mc.displayGuiScreen(new GuiSkeletalProperties(this, this.builder));
-//        }
-        xPosition.buttonClicked(button);
-        yPosition.buttonClicked(button);
-        zPosition.buttonClicked(button);
-    }
 
     protected abstract void undo();
     protected abstract void redo();
@@ -223,71 +204,53 @@ public abstract class GuiModelPoseEdit extends GuiScreen {
         }
     }
 
-    public void sliderChanged(GuiSlider slider) {
+    public void sliderChanged(double value, XYZAxis axis) {
         if(currentSelectedRing != XYZAxis.NONE)
             return;
         if(selectedPart == null)
             return;
-        XYZAxis axis;
-        if(slider == xRotationSlider) {
-            axis = XYZAxis.X_AXIS;
-        } else if(slider == yRotationSlider) {
-            axis = XYZAxis.Y_AXIS;
-        } else {
-            axis = XYZAxis.Z_AXIS;
-        }
-        actualizeRotation(selectedPart, axis, (float)Math.toRadians(slider.getValue()));
+        actualizeRotation(selectedPart, axis, (float)Math.toRadians(value));
     }
 
     @Override
-    public void updateScreen() {
-//        if(this.dialogBox.isOpen()) {
-//            return;
-//        }
-        xPosition.updateEntry();
-        yPosition.updateEntry();
-        zPosition.updateEntry();
-        super.updateScreen();
-        undoButton.enabled = getHistory().canUndo();
-        redoButton.enabled = getHistory().canRedo();
+    public void tick() {
+        xPosition.tick();
+        yPosition.tick();
+        zPosition.tick();
 
-        xRotationSlider.enabled = selectedPart != null;
-        yRotationSlider.enabled = selectedPart != null;
-        zRotationSlider.enabled = selectedPart != null;
+
+        super.tick();
+        undoButton.active = getHistory().canUndo();
+        redoButton.active = getHistory().canRedo();
+
+        xRotationSlider.active = selectedPart != null;
+        yRotationSlider.active = selectedPart != null;
+        zRotationSlider.active = selectedPart != null;
         xRotationSlider.updateSlider();
         yRotationSlider.updateSlider();
         zRotationSlider.updateSlider();
 
         if(xRotationSlider.getValue() != prevXSlider) {
-            sliderChanged(xRotationSlider);
+            sliderChanged(xRotationSlider.getValue(), XYZAxis.X_AXIS);
             prevXSlider = xRotationSlider.getValue();
         }
         if(yRotationSlider.getValue() != prevYSlider) {
-            sliderChanged(yRotationSlider);
+            sliderChanged(yRotationSlider.getValue(), XYZAxis.Y_AXIS);
             prevYSlider = yRotationSlider.getValue();
         }
         if(zRotationSlider.getValue() != prevZSlider) {
-            sliderChanged(zRotationSlider);
+            sliderChanged(zRotationSlider.getValue(), XYZAxis.Z_AXIS);
             prevZSlider = zRotationSlider.getValue();
         }
     }
 
     @Override
-    public boolean doesGuiPauseGame() {
+    public boolean isPauseScreen() {
         return false;
     }
 
     @Override
-    public void drawBackground(int tint) {
-        drawDefaultBackground();
-    }
-
-    @Override
-    public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-//        if(this.dialogBox.isOpen()) {
-//            mouseX = mouseY = -1;
-//        }
-
+    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
         GuiNumberEntry mouseOver = null;
         if(xPosition.mouseOver(mouseX, mouseY)) {
             mouseOver = xPosition;
@@ -297,58 +260,69 @@ public abstract class GuiModelPoseEdit extends GuiScreen {
             mouseOver = zPosition;
         }
 
-        int scrollDirection = (int) Math.signum(Mouse.getDWheel());
         if(mouseOver == null) {
             final double zoomSpeed = 0.1;
-            zoom += scrollDirection * zoomSpeed;
+            zoom += amount * zoomSpeed;
             if(zoom < zoomSpeed)
                 zoom = zoomSpeed;
         }
+        return false;
+    }
 
+    @Override
+    public void render(MatrixStack stack, int mouseX, int mouseY, float partialTicks) {
+        GuiNumberEntry mouseOver = null;
+        if(xPosition.mouseOver(mouseX, mouseY)) {
+            mouseOver = xPosition;
+        } else if(yPosition.mouseOver(mouseX, mouseY)) {
+            mouseOver = yPosition;
+        } else if(zPosition.mouseOver(mouseX, mouseY)) {
+            mouseOver = zPosition;
+        }
         if(selectedPart != null && mouseOverEntry != null && !mouseOverEntry.isSyncedSinceEdit() && (mouseOver != mouseOverEntry || mouseOverEntry.getTicksSinceChanged() > 20)) {
             actualizeEdit(selectedPart);
             mouseOverEntry.setSyncedSinceEdit(true);
         }
         mouseOverEntry = mouseOver;
 
-        drawBackground(0);
 
-        GlStateManager.pushMatrix();
+        stack.pushPose();
         // ensures that the buttons show above the model
-        GlStateManager.translate(0f, 0f, 1000f);
-        super.drawScreen(mouseX, mouseY, partialTicks);
+        stack.translate(0f, 0f, 1000f);
+        super.render(stack, mouseX, mouseY, partialTicks);
         TaxidermyHistory history = getHistory();
-        drawCenteredString(fontRenderer, (history.getIndex()+1)+"/"+history.getSize(), width/2, height-redoButton.height-fontRenderer.FONT_HEIGHT, GuiConstants.NICE_WHITE);
-        drawCenteredString(fontRenderer, titleText.getUnformattedText(), width/2, 1, GuiConstants.NICE_WHITE);
+        FontRenderer font = Minecraft.getInstance().font;
+        drawCenteredString(stack, font, (history.getIndex()+1)+"/"+history.getSize(), width/2, height-redoButton.getHeight()-font.lineHeight, GuiConstants.NICE_WHITE);
+        drawCenteredString(stack, font, titleText, width/2, 1, GuiConstants.NICE_WHITE);
 
         int yOffset = baseYOffset;
-        drawString(fontRenderer, TextFormatting.BOLD.toString()+TextFormatting.UNDERLINE.toString()+GuiConstants.CONTROLS_TEXT.getUnformattedText(), 5, yOffset, GuiConstants.NICE_WHITE);
+        drawString(stack, font, GuiConstants.CONTROLS_TEXT.copy().setStyle(Style.EMPTY.withBold(true).withUnderlined(true)), 5, yOffset, GuiConstants.NICE_WHITE);
         yOffset += 15;
-        drawString(fontRenderer, TextFormatting.UNDERLINE.toString()+selectModelPartText.getUnformattedText(), 5, yOffset, GuiConstants.NICE_WHITE);
+        drawString(stack, font, selectModelPartText.copy().setStyle(Style.EMPTY.withUnderlined(true)), 5, yOffset, GuiConstants.NICE_WHITE);
         yOffset += 12;
-        drawString(fontRenderer, GuiConstants.LEFT_CLICK_TEXT.getUnformattedText(), 10, yOffset, GuiConstants.NICE_WHITE);
+        drawString(stack, font, GuiConstants.LEFT_CLICK_TEXT, 10, yOffset, GuiConstants.NICE_WHITE);
         yOffset += 10;
-        drawString(fontRenderer, TextFormatting.UNDERLINE.toString()+rotateCameraText.getUnformattedText(), 5, yOffset, GuiConstants.NICE_WHITE);
+        drawString(stack, font, rotateCameraText.copy().setStyle(Style.EMPTY.withUnderlined(true)), 5, yOffset, GuiConstants.NICE_WHITE);
         yOffset += 12;
-        drawString(fontRenderer, GuiConstants.MIDDLE_CLICK_DRAG_TEXT.getUnformattedText(), 10, yOffset, GuiConstants.NICE_WHITE);
+        drawString(stack, font, GuiConstants.MIDDLE_CLICK_DRAG_TEXT, 10, yOffset, GuiConstants.NICE_WHITE);
         yOffset += 10;
-        drawString(fontRenderer, GuiConstants.MOVEMENT_KEYS_TEXT.getUnformattedText(), 10, yOffset, GuiConstants.NICE_WHITE);
+        drawString(stack, font, GuiConstants.MOVEMENT_KEYS_TEXT, 10, yOffset, GuiConstants.NICE_WHITE);
         yOffset += 10;
-        drawString(fontRenderer, GuiConstants.ARROW_KEYS_TEXT.getUnformattedText(), 10, yOffset, GuiConstants.NICE_WHITE);
+        drawString(stack, font, GuiConstants.ARROW_KEYS_TEXT, 10, yOffset, GuiConstants.NICE_WHITE);
         yOffset += 10;
-        drawString(fontRenderer, TextFormatting.UNDERLINE.toString()+zoomText.getUnformattedText(), 5, yOffset, GuiConstants.NICE_WHITE);
+        drawString(stack, font, zoomText.copy().withStyle(Style.EMPTY.withUnderlined(true)), 5, yOffset, GuiConstants.NICE_WHITE);
         yOffset += 12;
-        drawString(fontRenderer, GuiConstants.MOUSE_WHEEL_TEXT.getUnformattedText(), 10, yOffset, GuiConstants.NICE_WHITE);
+        drawString(stack, font, GuiConstants.MOUSE_WHEEL_TEXT, 10, yOffset, GuiConstants.NICE_WHITE);
         yOffset += 10;
-        drawString(fontRenderer, GuiConstants.TRACKPAD_ZOOM_TEXT.getUnformattedText(), 10, yOffset, GuiConstants.NICE_WHITE);
+        drawString(stack, font, GuiConstants.TRACKPAD_ZOOM_TEXT, 10, yOffset, GuiConstants.NICE_WHITE);
 
-        String selectionText;
+        ITextComponent selectionText;
         if(selectedPart == null)
-            selectionText = noPartSelectedText.getUnformattedText();
+            selectionText = noPartSelectedText;
         else
-            selectionText = new TextComponentTranslation(DumbLibrary.MODID+".gui.model_pose_edit.selected_part", selectedPart.boxName).getUnformattedText();
-        drawCenteredString(fontRenderer, selectionText, xRotationSlider.x+xRotationSlider.width/2, baseYOffset, GuiConstants.NICE_WHITE);
-        GlStateManager.popMatrix();
+            selectionText = new TranslationTextComponent(DumbLibrary.MODID+".gui.model_pose_edit.selected_part", selectedPart.getCube().getName());
+        drawCenteredString(stack, font, selectionText, xRotationSlider.x+xRotationSlider.getWidth()/2, baseYOffset, GuiConstants.NICE_WHITE);
+        stack.popPose();
 
         setModelToPose();
         prepareModelRendering(width/8*3, height/2, 30f);
@@ -366,13 +340,13 @@ public abstract class GuiModelPoseEdit extends GuiScreen {
                 this.selectedPart = partBelowMouse;
                 this.currentSelectedRing = XYZAxis.NONE;
                 if(selectedPart != null) {
-                    xRotationSlider.setValue(MathHelper.wrapDegrees(Math.toDegrees(selectedPart.rotateAngleX)));
-                    yRotationSlider.setValue(MathHelper.wrapDegrees(Math.toDegrees(selectedPart.rotateAngleY)));
-                    zRotationSlider.setValue(MathHelper.wrapDegrees(Math.toDegrees(selectedPart.rotateAngleZ)));
+                    xRotationSlider.setValue(MathHelper.wrapDegrees(Math.toDegrees(selectedPart.xRot)));
+                    yRotationSlider.setValue(MathHelper.wrapDegrees(Math.toDegrees(selectedPart.yRot)));
+                    zRotationSlider.setValue(MathHelper.wrapDegrees(Math.toDegrees(selectedPart.zRot)));
 
-                    xPosition.setValue(selectedPart.rotationPointX, false);
-                    yPosition.setValue(selectedPart.rotationPointY, false);
-                    zPosition.setValue(selectedPart.rotationPointZ, false);
+                    xPosition.setValue(selectedPart.xRot, false);
+                    yPosition.setValue(selectedPart.yRot, false);
+                    zPosition.setValue(selectedPart.zRot, false);
 
                     prevXSlider = xRotationSlider.getValue();
                     prevYSlider = yRotationSlider.getValue();
@@ -386,15 +360,10 @@ public abstract class GuiModelPoseEdit extends GuiScreen {
         actualModelRender(partBelowMouse);
         GuiHelper.cleanupModelRendering();
 
-        xPosition.render();
-        yPosition.render();
-        zPosition.render();
-
         if(partBelowMouse != null) {
-            drawHoveringText(partBelowMouse.boxName, mouseX, mouseY);
+//            drawHoveringText(partBelowMouse.boxName, mouseX, mouseY);
         }
     }
-
     private XYZAxis findRingBelowMouse() {
         if(selectedPart == null)
             return XYZAxis.NONE;
@@ -421,13 +390,12 @@ public abstract class GuiModelPoseEdit extends GuiScreen {
     }
 
     private int getColorUnderMouse() {
-        int x = Mouse.getX();
-        int y = Mouse.getY();
 //        if(this.dialogBox.isOpen()) {
 //            x = y = 0;
 //        }
         colorBuffer.rewind();
-        GL11.glReadPixels(x, y, 1, 1, GL12.GL_BGRA, GL12.GL_UNSIGNED_INT_8_8_8_8_REV, colorBuffer);
+        MouseHelper handler = Minecraft.getInstance().mouseHandler;
+        GL11.glReadPixels((int) handler.xpos(), (int)handler.ypos(), 1, 1, GL12.GL_BGRA, GL12.GL_UNSIGNED_INT_8_8_8_8_REV, colorBuffer);
         return colorBuffer.get(0);
     }
 
@@ -435,20 +403,21 @@ public abstract class GuiModelPoseEdit extends GuiScreen {
         TabulaModelRenderer newSelection = null;
         hideAllModelParts();
 
-        GlStateManager.pushMatrix();
-        GlStateManager.disableBlend();
-        GlStateManager.disableTexture2D();
+        RenderSystem.pushMatrix();
+        RenderSystem.disableBlend();
+        RenderSystem.disableTexture();
 
-        for (int index = 0; index < model.boxList.size(); index++) {
+        List<TabulaModelRenderer> boxes = new ArrayList<TabulaModelRenderer>(model.getAllCubes());
+        for (int index = 0; index < boxes.size(); index++) {
             // Render the model part with a specific color and check if the color below the mouse has changed.
             // If it did, the mouse is over this given box
-            TabulaModelRenderer box = (TabulaModelRenderer) model.boxList.get(index);
+            TabulaModelRenderer box = boxes.get(index);
 
             // multiply by 2 because in some cases, the colors are not far enough to allow to pick the correct part
             // (a box behind another may be picked instead because the color are too close)
             float color = index*2 / 255f; // TODO: 128 boxes MAX - can be done by having the int id as the color index, or a random color. Maybe make it so it splits 0 - 0xFFFFFF by the model box size and sets that as the color
 
-            GlStateManager.color(color, color, color);
+            RenderSystem.color3f(color, color, color);
             int prevColor = getColorUnderMouse();
 
             box.setHideButShowChildren(false);
@@ -461,49 +430,48 @@ public abstract class GuiModelPoseEdit extends GuiScreen {
                 newSelection = box;
             }
         }
-        GlStateManager.color(1f, 1f, 1f);
-        GlStateManager.enableTexture2D();
-        GlStateManager.enableBlend();
-        GlStateManager.popMatrix();
+        RenderSystem.color3f(1f, 1f, 1f);
+        RenderSystem.enableTexture();
+        RenderSystem.enableBlend();
+        RenderSystem.popMatrix();
         return newSelection;
     }
 
     @Override
-    protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
-        xPosition.mouseClicked(mouseX, mouseY, mouseButton);
-        yPosition.mouseClicked(mouseX, mouseY, mouseButton);
-        zPosition.mouseClicked(mouseX, mouseY, mouseButton);
+    public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
         super.mouseClicked(mouseX, mouseY, mouseButton);
         if(onSliders(mouseX, mouseY) || xPosition.mouseOver(mouseX, mouseY) || yPosition.mouseOver(mouseX, mouseY) || zPosition.mouseOver(mouseX, mouseY))
-            return;
+            return false;
         if(mouseButton == 0) {
             registeredLeftClick = true;
         }
-        lastClickPosition.set(Mouse.getX(), Mouse.getY());
+        MouseHelper handler = Minecraft.getInstance().mouseHandler;
+        lastClickPosition.set((float) handler.xpos(), (float) handler.xpos());
+        return true;
     }
 
     @Override
-    protected void mouseClickMove(int mouseX, int mouseY, int clickedMouseButton, long timeSinceLastClick) {
-        super.mouseClickMove(mouseX, mouseY, clickedMouseButton, timeSinceLastClick);
-        if(onButtons(mouseX, mouseY))
-            return;
+    public boolean mouseDragged(double mouseX, double mouseY, int mouseButton, double dragX, double dragY) {
+        if(onButtons(mouseX, mouseY)) {
+            return false;
+        }
         if(onSliders(mouseX, mouseY)) {
-            if(clickedMouseButton == 0 && !movedPart) {
+            if(mouseButton == 0 && !movedPart) {
                 movedPart = true;
             }
-            return;
+            return false;
         }
-        if(clickedMouseButton == 0 && currentSelectedRing == XYZAxis.NONE) {
-            float dx = Mouse.getX() - lastClickPosition.x;
-            float dy = Mouse.getY() - lastClickPosition.y;
+        MouseHelper handler = Minecraft.getInstance().mouseHandler;
+        float dx = (float) (handler.xpos() - lastClickPosition.x);
+        float dy = (float) (handler.ypos() - lastClickPosition.y);
+        if(mouseButton == 0 && currentSelectedRing == XYZAxis.NONE) {
+
             cameraPitch += dy;
             cameraYaw -= dx;
 
             cameraPitch %= 360f;
             cameraYaw %= 360f;
-        } else if(clickedMouseButton == 0) {
-            float dx = Mouse.getX() - lastClickPosition.x;
-            float dy = Mouse.getY() - lastClickPosition.y;
+        } else if(mouseButton == 0) {
             draggingRing = true;
             // set, don't set. This method can be called multiple types before rendering the screen, which causes the dMouse vector to be nil more often that it should
             dMouse.x += dx;
@@ -513,10 +481,11 @@ public abstract class GuiModelPoseEdit extends GuiScreen {
                 movedPart = true;
             }
         }
-        lastClickPosition.set(Mouse.getX(), Mouse.getY());
+        lastClickPosition.set((float)handler.xpos(), (float)handler.ypos());
+        return false;
     }
 
-    private boolean onSliders(int mouseX, int mouseY) {
+    private boolean onSliders(double mouseX, double mouseY) {
         if(GuiConstants.mouseOn(xRotationSlider, mouseX, mouseY))
             return true;
         if(GuiConstants.mouseOn(yRotationSlider, mouseX, mouseY))
@@ -524,8 +493,8 @@ public abstract class GuiModelPoseEdit extends GuiScreen {
         return GuiConstants.mouseOn(zRotationSlider, mouseX, mouseY);
     }
 
-    private boolean onButtons(int mouseX, int mouseY) {
-        for (GuiButton button : this.buttonList) {
+    private boolean onButtons(double mouseX, double mouseY) {
+        for (Widget button : this.buttons) {
             if(button != xRotationSlider && button != yRotationSlider && button != zRotationSlider && GuiConstants.mouseOn(button, mouseX, mouseY))
                 return true;
         }
@@ -537,155 +506,138 @@ public abstract class GuiModelPoseEdit extends GuiScreen {
      * Basically <a href=https://en.wikipedia.org/wiki/Angular_momentum>Angular momentum on Wikipédia</a>
      */
     private void handleRingDrag(float dx, float dy) {
-        if(selectedPart == null)
-            return;
-        if(currentSelectedRing == XYZAxis.NONE)
-            return;
-        Matrix3f rotationMatrix = computeRotationMatrix(selectedPart);
-        Vector3f force = new Vector3f(-dx, -dy, 0f);
-        rotationMatrix.transform(force);
-
-        // === START OF CODE FOR MOUSE WORLD POS ===
-        modelMatrix.rewind();
-        projectionMatrix.rewind();
-        viewport.rewind();
-        modelMatrix.rewind();
-        viewport.put(0).put(0).put(Display.getWidth()).put(Display.getHeight());
-        viewport.flip();
-        GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, modelMatrix);
-        GL11.glGetFloat(GL11.GL_PROJECTION_MATRIX, projectionMatrix);
-        modelMatrix.rewind();
-        projectionMatrix.rewind();
-        FloatBuffer out = BufferUtils.createFloatBuffer(3);
-        Project.gluUnProject(Mouse.getX(), Mouse.getY(), 0f, modelMatrix, projectionMatrix, viewport, out);
-
-        // === END OF CODE FOR MOUSE WORLD POS ===
-
-        float mouseZ = 400f;
-
-        Vector3f offset = new Vector3f(out.get(0), out.get(1), mouseZ);
-        Matrix4f modelMatrixCopy = new Matrix4f();
-        float[] modelCopy = new float[16];
-        for (int j = 0;j<4;j++) {
-            for(int i = 0;i<4;i++) {
-                modelCopy[i*4+j] = modelMatrix.get(i*4+j);
-            }
-        }
-        modelMatrixCopy.set(modelCopy);
-        Vector3f partOrigin = computeTranslationVector(selectedPart);
-
-        // Make sure our vectors are in the correct space
-        modelMatrixCopy.transform(partOrigin);
-        modelMatrixCopy.transform(force);
-
-        offset.sub(partOrigin);
-        Vector3f moment = new Vector3f();
-        moment.cross(offset, force);
-        float rotAmount = Math.signum(moment.dot(currentSelectedRing.getAxis()))*0.1f; // only get the sign to have total control on the speed (and avoid unit conversion)
-
-        float previousAngle;
-        GuiSlider slider;
-        switch (currentSelectedRing) {
-            case X_AXIS:
-                previousAngle = selectedPart.rotateAngleX;
-                slider = xRotationSlider;
-                break;
-            case Y_AXIS:
-                previousAngle = selectedPart.rotateAngleY;
-                slider = yRotationSlider;
-                break;
-            case Z_AXIS:
-                previousAngle = selectedPart.rotateAngleZ;
-                slider = zRotationSlider;
-                break;
-            default:
-                return;
-        }
-        float angle = previousAngle+rotAmount;
-        slider.setValue(Math.toDegrees(angle));
-        actualizeRotation(selectedPart, currentSelectedRing, angle);
+//        if(selectedPart == null)
+//            return;
+//        if(currentSelectedRing == XYZAxis.NONE)
+//            return;
+//        Matrix3f rotationMatrix = computeRotationMatrix(selectedPart);
+//        Vector3f force = new Vector3f(-dx, -dy, 0f);
+//        force.transform(rotationMatrix);
+//
+//        // === START OF CODE FOR MOUSE WORLD POS ===
+//        MainWindow window = Minecraft.getInstance().getWindow();
+//        modelMatrix.rewind();
+//        projectionMatrix.rewind();
+//        viewport.rewind();
+//        modelMatrix.rewind();
+//        viewport.put(0).put(0).put(window.getWidth()).put(window.getHeight());
+//        viewport.flip();
+//        GL11.glGetFloatv(GL11.GL_MODELVIEW_MATRIX, modelMatrix);
+//        GL11.glGetFloatv(GL11.GL_PROJECTION_MATRIX, projectionMatrix);
+//        modelMatrix.rewind();
+//        projectionMatrix.rewind();
+//        FloatBuffer out = BufferUtils.createFloatBuffer(3);
+//        gluUnProject(Mouse.getX(), Mouse.getY(), 0f, modelMatrix, projectionMatrix, viewport, out);
+//
+//        // === END OF CODE FOR MOUSE WORLD POS ===
+//
+//        float mouseZ = 400f;
+//
+//        Vector3f offset = new Vector3f(out.get(0), out.get(1), mouseZ);
+//        Matrix4f modelMatrixCopy = new Matrix4f();
+//        float[] modelCopy = new float[16];
+//        for (int j = 0;j<4;j++) {
+//            for(int i = 0;i<4;i++) {
+//                modelCopy[i*4+j] = modelMatrix.get(i*4+j);
+//            }
+//        }
+//        modelMatrixCopy.set(modelCopy);
+//        Vector3f partOrigin = computeTranslationVector(selectedPart);
+//
+//        // Make sure our vectors are in the correct space
+//        modelMatrixCopy.transform(partOrigin);
+//        modelMatrixCopy.transform(force);
+//
+//        offset.sub(partOrigin);
+//        Vector3f moment = new Vector3f();
+//        moment.cross(offset, force);
+//        float rotAmount = Math.signum(moment.dot(currentSelectedRing.getAxis()))*0.1f; // only get the sign to have total control on the speed (and avoid unit conversion)
+//
+//        float previousAngle;
+//        GuiSlider slider;
+//        switch (currentSelectedRing) {
+//            case X_AXIS:
+//                previousAngle = selectedPart.rotateAngleX;
+//                slider = xRotationSlider;
+//                break;
+//            case Y_AXIS:
+//                previousAngle = selectedPart.rotateAngleY;
+//                slider = yRotationSlider;
+//                break;
+//            case Z_AXIS:
+//                previousAngle = selectedPart.rotateAngleZ;
+//                slider = zRotationSlider;
+//                break;
+//            default:
+//                return;
+//        }
+//        float angle = previousAngle+rotAmount;
+//        slider.setValue(Math.toDegrees(angle));
+//        actualizeRotation(selectedPart, currentSelectedRing, angle);
     }
 
-    private Vector3f computeTranslationVector(TabulaModelRenderer part) {
-        Matrix4f transform = computeTransformMatrix(part);
-        Vector3f result = new Vector3f(0f, 0f, 0f);
-        transform.transform(result);
-        return result;
-    }
+//    private Vector3f computeTranslationVector(TabulaModelRenderer part) {
+//        Matrix4f transform = computeTransformMatrix(part);
+//        Vector3f result = new Vector3f(0f, 0f, 0f);
+//        transform.transform(result);
+//        return result;
+//    }
 
-    private Matrix4f computeTransformMatrix(TabulaModelRenderer part) {
-        Matrix4f result = new Matrix4f();
-        result.setIdentity();
-        TabulaUtils.applyTransformations(part, result);
-        return result;
-    }
+//    private Matrix4f computeTransformMatrix(TabulaModelRenderer part) {
+//        Matrix4f result = new Matrix4f();
+//        result.setIdentity();
+//        TabulaUtils.applyTransformations(part, result);
+//        return result;
+//    }
 
-    private Matrix3f computeRotationMatrix(TabulaModelRenderer part) {
-        Matrix3f result = new Matrix3f();
-        result.setIdentity();
-        TabulaModelRenderer parent = part.getParent();
-        if(parent != null) {
-            result.mul(computeRotationMatrix(parent));
-        }
-        result.rotZ(part.rotateAngleZ);
-        result.rotY(part.rotateAngleY);
-        result.rotX(part.rotateAngleX);
-        return result;
-    }
+//    private Matrix3f computeRotationMatrix(TabulaModelRenderer part) {
+//        Matrix3f result = new Matrix3f();
+//        result.setIdentity();
+//        TabulaModelRenderer parent = part.getParent();
+//        if(parent != null) {
+//            result.mul(computeRotationMatrix(parent));
+//        }
+//        result.rotZ(part.rotateAngleZ);
+//        result.rotY(part.rotateAngleY);
+//        result.rotX(part.rotateAngleX);
+//        return result;
+//    }
+
 
     @Override
-    protected void mouseReleased(int mouseX, int mouseY, int button) {
-        super.mouseReleased(mouseX, mouseY, button);
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
         if(button == 0) {
             if(movedPart) {
                 movedPart = false;
-                if(selectedPart != null)
+                if(selectedPart != null) {
                     actualizeEdit(selectedPart);
+                    return true;
+                }
             }
             currentSelectedRing = XYZAxis.NONE;
         }
+        return false;
     }
 
     @Override
-    public void handleKeyboardInput() throws IOException {
-//        if(this.dialogBox.isOpen()) {
-//            return;
-//        }
-        super.handleKeyboardInput();
-        GameSettings settings = mc.gameSettings;
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        GameSettings settings = Minecraft.getInstance().options;
         final float cameraSpeed = 10f;
-        if(Keyboard.isKeyDown(settings.keyBindLeft.getKeyCode()) || Keyboard.isKeyDown(Keyboard.KEY_LEFT)) {
+        if(settings.keyLeft.isDown()) {
             cameraYaw -= cameraSpeed;
         }
-        if(Keyboard.isKeyDown(settings.keyBindRight.getKeyCode()) || Keyboard.isKeyDown(Keyboard.KEY_RIGHT)) {
+        if(settings.keyRight.isDown()) {
             cameraYaw += cameraSpeed;
         }
-        if(Keyboard.isKeyDown(settings.keyBindBack.getKeyCode()) || Keyboard.isKeyDown(Keyboard.KEY_DOWN)) {
+        if(settings.keyDown.isDown()) {
             cameraPitch += cameraSpeed;
         }
-        if(Keyboard.isKeyDown(settings.keyBindForward.getKeyCode()) || Keyboard.isKeyDown(Keyboard.KEY_UP)) {
+        if(settings.keyUp.isDown()) {
             cameraPitch -= cameraSpeed;
         }
+        return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
-    @Override
-    public void handleMouseInput() throws IOException {
-//        if(this.dialogBox.isOpen()) {
-//            return;
-//        }
-        xPosition.handleMouseInput(this.width, this.height);
-        yPosition.handleMouseInput(this.width, this.height);
-        zPosition.handleMouseInput(this.width, this.height);
-        super.handleMouseInput();
-    }
-
-    @Override
-    protected void keyTyped(char typedChar, int keyCode) throws IOException {
-        super.keyTyped(typedChar, keyCode);
-        xPosition.keyTyped(typedChar, keyCode);
-        yPosition.keyTyped(typedChar, keyCode);
-        zPosition.keyTyped(typedChar, keyCode);
-    }
 
     private void prepareModelRendering(int posX, int posY, float scale) {
         scale *= zoom;
@@ -698,7 +650,7 @@ public abstract class GuiModelPoseEdit extends GuiScreen {
         resetScalings();
         hidePart(selectedPart);
         hidePart(partBelowMouse);
-        GlStateManager.color(1f, 1f, 1f);
+        RenderSystem.color3f(1f, 1f, 1f);
         renderModel();
         resetScalings();
     }

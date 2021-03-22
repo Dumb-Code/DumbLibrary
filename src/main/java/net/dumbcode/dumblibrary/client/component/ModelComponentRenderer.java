@@ -36,12 +36,12 @@ public class ModelComponentRenderer extends LivingRenderer<LivingEntity, EntityM
     private static final ResourceLocation DL_MODEL_TEX_LOCATION = new ResourceLocation(DumbLibrary.MODID, "dl_model_override_texture@@");
     private static final EditableTexture DL_MODEL_TEX = new EditableTexture();
 
-    private final Supplier<TabulaModel<LivingEntity>> modelSupplier;
+    private final Supplier<TabulaModel> modelSupplier;
     private final RenderLocationComponent.ConfigurableLocation texture;
     private final List<Supplier<RenderLayerComponent.Layer>> layerList;
 
 
-    public ModelComponentRenderer(float shadowSize, Supplier<TabulaModel<LivingEntity>> modelSupplier, RenderLocationComponent.ConfigurableLocation texture, List<Supplier<RenderLayerComponent.Layer>> layerList) {
+    public ModelComponentRenderer(float shadowSize, Supplier<TabulaModel> modelSupplier, RenderLocationComponent.ConfigurableLocation texture, List<Supplier<RenderLayerComponent.Layer>> layerList) {
         super(MC.getEntityRenderDispatcher(), ModelMissing.INSTANCE, shadowSize);
         this.modelSupplier = modelSupplier;
         this.texture = texture;
@@ -61,8 +61,8 @@ public class ModelComponentRenderer extends LivingRenderer<LivingEntity, EntityM
         MC.getMainRenderTarget().bindWrite(true);
         DL_MODEL_TEX.setId(frameBuffer.getColorTextureId());
 
-        TabulaModel<LivingEntity> model = this.modelSupplier.get();
-        this.model = model;
+        TabulaModel model = this.modelSupplier.get();
+        this.model = (EntityModel<LivingEntity>)(Object)model;
 
 //        GlStateManager.pushMatrix();
 //        GlStateManager.scale(0F, 0F, 0F);

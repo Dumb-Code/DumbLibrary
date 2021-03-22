@@ -1,50 +1,36 @@
 package net.dumbcode.dumblibrary.server.network;
 
-import io.netty.buffer.ByteBuf;
+import lombok.AllArgsConstructor;
 import net.dumbcode.dumblibrary.server.animation.objects.AnimationEntry;
 import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentTypes;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+import net.minecraft.network.PacketBuffer;
+import net.minecraftforge.fml.network.NetworkEvent;
 
-public class S0SyncAnimation implements IMessage {
+import java.util.function.Supplier;
+
+@AllArgsConstructor
+public class S0SyncAnimation {
 
     private int entityid;
     private AnimationEntry entry;
     private int channel;
 
-    public S0SyncAnimation() {
+    public static S0SyncAnimation fromBytes(PacketBuffer buf) {
+        return new S0SyncAnimation(buf.readInt(), AnimationEntry.deserialize(buf), buf.readInt());
     }
 
-    public <E extends Entity> S0SyncAnimation(E entity, AnimationEntry entry, int channel) {
-        this.entityid = entity.getEntityId();
-        this.entry = entry;
-        this.channel = channel;
+    public static void toBytes(S0SyncAnimation packet, PacketBuffer buf) {
+        buf.writeInt(packet.entityid);
+        packet.entry.serialize(buf);
+        buf.writeInt(packet.channel);
     }
 
-
-    @Override
-    public void fromBytes(ByteBuf buf) {
-        this.entityid = buf.readInt();
-        this.entry = AnimationEntry.deserialize(buf);
-        this.channel = buf.readInt();
-    }
-
-    @Override
-    public void toBytes(ByteBuf buf) {
-        buf.writeInt(this.entityid);
-        this.entry.serialize(buf);
-        buf.writeInt(this.channel);
-    }
-
-    public static class Handler extends WorldModificationsMessageHandler<S0SyncAnimation, S0SyncAnimation> {
-
-        @Override
-        protected void handleMessage(S0SyncAnimation message, MessageContext ctx, World world, EntityPlayer player) {
-            Entity entity = world.getEntityByID(message.entityid);
+    public static void handle(S0SyncAnimation message, Supplier<NetworkEvent.Context> supplier) {
+        NetworkEvent.Context context = supplier.get();
+        context.enqueueWork(() -> {
+            Entity entity = NetworkUtils.getPlayer(supplier).getCommandSenderWorld().getEntity(message.entityid);
             if (entity instanceof ComponentAccess) {
                 ((ComponentAccess) entity).get(EntityComponentTypes.ANIMATION).ifPresent(c -> {
                     if(c.isReadyForAnimations()) {
@@ -54,6 +40,6 @@ public class S0SyncAnimation implements IMessage {
                     }
                 });
             }
-        }
+        });
     }
 }

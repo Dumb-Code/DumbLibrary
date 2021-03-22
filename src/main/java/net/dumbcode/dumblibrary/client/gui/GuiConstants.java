@@ -1,9 +1,9 @@
 package net.dumbcode.dumblibrary.client.gui;
 
 import net.dumbcode.dumblibrary.DumbLibrary;
-import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.util.text.TranslationTextComponent;
 
 public interface GuiConstants {
     /**
@@ -13,15 +13,15 @@ public interface GuiConstants {
 
     ResourceLocation ROTATION_RING_LOCATION = new ResourceLocation(DumbLibrary.MODID, "models/misc/rotation_ring.tbl");
 
-    TextComponentTranslation LEFT_CLICK_TEXT = new TextComponentTranslation(DumbLibrary.MODID+".gui.controls.left_click");
-    TextComponentTranslation CONTROLS_TEXT = new TextComponentTranslation(DumbLibrary.MODID+".gui.controls");
-    TextComponentTranslation MIDDLE_CLICK_DRAG_TEXT = new TextComponentTranslation(DumbLibrary.MODID+".gui.controls.middle_click_drag");
-    TextComponentTranslation MOVEMENT_KEYS_TEXT = new TextComponentTranslation(DumbLibrary.MODID+".gui.controls.movement_keys");
-    TextComponentTranslation ARROW_KEYS_TEXT = new TextComponentTranslation(DumbLibrary.MODID+".gui.controls.arrow_keys");
-    TextComponentTranslation TRACKPAD_ZOOM_TEXT = new TextComponentTranslation(DumbLibrary.MODID+".gui.controls.trackpad_zoom");
-    TextComponentTranslation MOUSE_WHEEL_TEXT = new TextComponentTranslation(DumbLibrary.MODID+".gui.controls.mouse_wheel");
+    TranslationTextComponent LEFT_CLICK_TEXT = new TranslationTextComponent(DumbLibrary.MODID+".gui.controls.left_click");
+    TranslationTextComponent CONTROLS_TEXT = new TranslationTextComponent(DumbLibrary.MODID+".gui.controls");
+    TranslationTextComponent MIDDLE_CLICK_DRAG_TEXT = new TranslationTextComponent(DumbLibrary.MODID+".gui.controls.middle_click_drag");
+    TranslationTextComponent MOVEMENT_KEYS_TEXT = new TranslationTextComponent(DumbLibrary.MODID+".gui.controls.movement_keys");
+    TranslationTextComponent ARROW_KEYS_TEXT = new TranslationTextComponent(DumbLibrary.MODID+".gui.controls.arrow_keys");
+    TranslationTextComponent TRACKPAD_ZOOM_TEXT = new TranslationTextComponent(DumbLibrary.MODID+".gui.controls.trackpad_zoom");
+    TranslationTextComponent MOUSE_WHEEL_TEXT = new TranslationTextComponent(DumbLibrary.MODID+".gui.controls.mouse_wheel");
 
-    static boolean mouseOn(GuiButton button, int mouseX, int mouseY) {
-        return button.enabled && button.visible && mouseX >= button.x && mouseY >= button.y && mouseX < button.x + button.width && mouseY < button.y + button.height;
+    static boolean mouseOn(Button button, int mouseX, int mouseY) {
+        return button.active && button.visible && mouseX >= button.x && mouseY >= button.y && mouseX < button.x + button.getWidth() && mouseY < button.y + button.getHeight();
     }
 }

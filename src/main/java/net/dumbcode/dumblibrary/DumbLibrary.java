@@ -1,115 +1,106 @@
 package net.dumbcode.dumblibrary;
 
-import net.dumbcode.dumblibrary.server.DumbGuiHandler;
 import net.dumbcode.dumblibrary.server.ItemComponent;
 import net.dumbcode.dumblibrary.server.ecs.EntityManager;
-import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentTypes;
 import net.dumbcode.dumblibrary.server.ecs.component.RegisterStoragesEvent;
-import net.dumbcode.dumblibrary.server.ecs.item.ItemCompoundAccess;
-import net.dumbcode.dumblibrary.server.ecs.item.components.ItemRenderModelComponent;
 import net.dumbcode.dumblibrary.server.network.*;
 import net.dumbcode.dumblibrary.server.registry.DumbRegistries;
 import net.dumbcode.dumblibrary.server.registry.RegisterGeneticTypes;
 import net.dumbcode.dumblibrary.server.utils.InjectedUtils;
-import net.dumbcode.dumblibrary.server.utils.SidedExecutor;
 import net.dumbcode.dumblibrary.server.utils.VoidStorage;
-import net.minecraft.client.Minecraft;
 import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.common.capabilities.CapabilityManager;
-import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.network.NetworkRegistry;
-import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
-import net.minecraftforge.fml.common.registry.GameRegistry;
-import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.network.NetworkRegistry;
+import net.minecraftforge.fml.network.simple.SimpleChannel;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.ObjectHolderRegistry;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-@Mod(modid = DumbLibrary.MODID, name = DumbLibrary.NAME, version = DumbLibrary.VERSION)
+@Mod(DumbLibrary.MODID)
 @Mod.EventBusSubscriber(modid = DumbLibrary.MODID)
 public class DumbLibrary {
     public static final String MODID = "dumblibrary";
     public static final String NAME = "Dumb Library";
     public static final String VERSION = "0.5.2";
 
-    private static Logger logger;
+    private static final Logger logger = LogManager.getLogger(MODID);
 
-    @Mod.Instance(MODID)
-    public static DumbLibrary MOD_INSTANCE;
-
-    @GameRegistry.ObjectHolder("dumblibrary:component_item")
-    public static final Item COMPONENT_ITEM = InjectedUtils.injected();
-
+    private static final DeferredRegister<Item> DR = DeferredRegister.create(ForgeRegistries.ITEMS, MODID);
+    public static final RegistryObject<Item> COMPONENT_ITEM = DR.register("component_item", ItemComponent::new);
 
     @CapabilityInject(EntityManager.class)
     public static final Capability<EntityManager> ENTITY_MANAGER = InjectedUtils.injected();
 
-    public static final SimpleNetworkWrapper NETWORK = new SimpleNetworkWrapper(MODID);
+    private static final String PROTOCOL_VERSION = "1 debug";
+    public static final SimpleChannel NETWORK = NetworkRegistry.newSimpleChannel(
+        new ResourceLocation(MODID, "main"), () -> PROTOCOL_VERSION,
+        PROTOCOL_VERSION::equals, PROTOCOL_VERSION::equals
+    );
 
     public static final ResourceLocation MODEL_MISSING = new ResourceLocation("model_missing");
 
-    @Mod.EventHandler
-    public void preInit(FMLPreInitializationEvent event) {
-        ObjectHolderRegistry.INSTANCE.applyObjectHolders();
-        MinecraftForge.EVENT_BUS.post(new RegisterStoragesEvent());
-        MinecraftForge.EVENT_BUS.post(new RegisterGeneticTypes(DumbRegistries.GENETIC_TYPE_REGISTRY));
-        ObjectHolderRegistry.INSTANCE.applyObjectHolders();
+    public DumbLibrary() {
+        IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
+        IEventBus forgeBus = MinecraftForge.EVENT_BUS;
 
-        logger = event.getModLog();
-        NetworkRegistry.INSTANCE.registerGuiHandler(this, new DumbGuiHandler());
 
-        NETWORK.registerMessage(new S0SyncAnimation.Handler(), S0SyncAnimation.class, 0, Side.CLIENT);
-        NETWORK.registerMessage(new S1PlayItemCrackParticle.Handler(), S1PlayItemCrackParticle.class, 1, Side.CLIENT);
-        NETWORK.registerMessage(new S2SyncComponent.Handler(), S2SyncComponent.class, 2, Side.CLIENT);
-        NETWORK.registerMessage(new S3StopAnimation.Handler(), S3StopAnimation.class, 3, Side.CLIENT);
+        DR.register(bus);
+    }
 
-        NETWORK.registerMessage(new C4MoveSelectedSkeletalPart.Handler(), C4MoveSelectedSkeletalPart.class, 4, Side.SERVER);
-        NETWORK.registerMessage(new S5UpdateSkeletalBuilder.Handler(), S5UpdateSkeletalBuilder.class, 5, Side.CLIENT);
-        NETWORK.registerMessage(new C6SkeletalMovement.Handler(), C6SkeletalMovement.class, 6, Side.SERVER);
-        NETWORK.registerMessage(new S7HistoryRecord.Handler(), S7HistoryRecord.class, 7, Side.CLIENT);
-        NETWORK.registerMessage(new C8MoveInHistory.Handler(), C8MoveInHistory.class, 8, Side.SERVER);
-        NETWORK.registerMessage(new S9UpdateHistoryIndex.Handler(), S9UpdateHistoryIndex.class, 9, Side.CLIENT);
-        NETWORK.registerMessage(new S11FullPoseChange.Handler(), S11FullPoseChange.class, 11, Side.CLIENT);
-        NETWORK.registerMessage(new C12FullPoseChange.Handler(), C12FullPoseChange.class, 12, Side.SERVER);
+    public void preInit(FMLCommonSetupEvent event) {
+        IEventBus bus = MinecraftForge.EVENT_BUS;
 
-        NETWORK.registerMessage(new B13SplitNetworkPacket.Handler(), B13SplitNetworkPacket.class, 13, Side.CLIENT);
-        NETWORK.registerMessage(new B13SplitNetworkPacket.Handler(), B13SplitNetworkPacket.class, 14, Side.SERVER);
-        NETWORK.registerMessage(new B14ReleaseCollection.Handler(), B14ReleaseCollection.class, 15, Side.CLIENT);
-        NETWORK.registerMessage(new B14ReleaseCollection.Handler(), B14ReleaseCollection.class, 16, Side.SERVER);
+        ObjectHolderRegistry.applyObjectHolders();
+        bus.post(new RegisterStoragesEvent());
+        bus.post(new RegisterGeneticTypes(DumbRegistries.GENETIC_TYPE_REGISTRY));
+        ObjectHolderRegistry.applyObjectHolders();
+
+        NETWORK.registerMessage(0, S0SyncAnimation.class, S0SyncAnimation::toBytes, S0SyncAnimation::fromBytes, S0SyncAnimation::handle);
+        NETWORK.registerMessage(2, S2SyncComponent.class, S2SyncComponent::toBytes, S2SyncComponent::fromBytes, S2SyncComponent::handle);
+        NETWORK.registerMessage(3, S3StopAnimation.class, S3StopAnimation::toBytes, S3StopAnimation::fromBytes, S3StopAnimation::handle);
+
+        NETWORK.registerMessage(4, C4MoveSelectedSkeletalPart.class, C4MoveSelectedSkeletalPart::toBytes, C4MoveSelectedSkeletalPart::fromBytes, C4MoveSelectedSkeletalPart::handle);
+        NETWORK.registerMessage(5, S5UpdateSkeletalBuilder.class, S5UpdateSkeletalBuilder::toBytes, S5UpdateSkeletalBuilder::fromBytes, S5UpdateSkeletalBuilder::handle);
+        NETWORK.registerMessage(6, C6SkeletalMovement.class, C6SkeletalMovement::toBytes, C6SkeletalMovement::fromBytes, C6SkeletalMovement::handle);
+        NETWORK.registerMessage(7, S7HistoryRecord.class, S7HistoryRecord::toBytes, S7HistoryRecord::fromBytes, S7HistoryRecord::handle);
+        NETWORK.registerMessage(8, C8MoveInHistory.class, C8MoveInHistory::toBytes, C8MoveInHistory::fromBytes, C8MoveInHistory::handle);
+        NETWORK.registerMessage(9, S9UpdateHistoryIndex.class, S9UpdateHistoryIndex::toBytes, S9UpdateHistoryIndex::fromBytes, S9UpdateHistoryIndex::handle);
+        NETWORK.registerMessage(11, S11FullPoseChange.class, S11FullPoseChange::toBytes, S11FullPoseChange::fromBytes, S11FullPoseChange::handle);
+        NETWORK.registerMessage(12, C12FullPoseChange.class, C12FullPoseChange::toBytes, C12FullPoseChange::fromBytes, C12FullPoseChange::handle);
+
+        NETWORK.registerMessage(13, B13SplitNetworkPacket.class, B13SplitNetworkPacket::toBytes, B13SplitNetworkPacket::fromBytes, B13SplitNetworkPacket::handle);
+        NETWORK.registerMessage(14, B14ReleaseCollection.class, B14ReleaseCollection::toBytes, B14ReleaseCollection::fromBytes, B14ReleaseCollection::handle);
 
         CapabilityManager.INSTANCE.register(EntityManager.class, new VoidStorage<>(), EntityManager.Impl::new);
     }
 
-    @Mod.EventHandler
-    public void init(FMLInitializationEvent event) {
-        SidedExecutor.runClient(() -> () -> {
-            Minecraft.getMinecraft().getRenderItem().getItemModelMesher()
-                .register(COMPONENT_ITEM, stack -> ModelLoader.getInventoryVariant(
-                    ItemCompoundAccess.getAccess(stack)
-                        .flatMap(EntityComponentTypes.ITEM_RENDER)
-                        .map(ItemRenderModelComponent::getLocation)
-                        .orElse(MODEL_MISSING)
-                        .toString()
-                    )
-                );
+//    @Mod.EventHandler
+//    public void init(FMLInitializationEvent event) {
+//        SidedExecutor.runClient(() -> () -> {
+//            Minecraft.getInstance().getItemRenderer().getItemModelShaper()
+//                .register(COMPONENT_ITEM, stack -> ModelLoader.getInventoryVariant(
+//                    ItemCompoundAccess.getAccess(stack)
+//                        .flatMap(EntityComponentTypes.ITEM_RENDER)
+//                        .map(ItemRenderModelComponent::getLocation)
+//                        .orElse(MODEL_MISSING)
+//                        .toString()
+//                    )
+//                );
+//
+//        });
+//    }
 
-        });
-    }
-
-    @SubscribeEvent
-    public static void onItemRegister(RegistryEvent.Register<Item> event) {
-        event.getRegistry().registerAll(
-            new ItemComponent().setRegistryName("component_item").setTranslationKey("component_item")
-        );
-    }
 
     public static Logger getLogger() {
         return logger;

@@ -18,7 +18,7 @@ import java.util.function.Supplier;
 
 @Getter
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-public class GeneticType<T extends GeneticFactoryStorage> extends IForgeRegistryEntry.Impl<GeneticType<?>> {
+public class GeneticType<T extends GeneticFactoryStorage> implements IForgeRegistryEntry<GeneticType<?>> {
     private final GeneticValueApplier<T, ComponentAccess> onChange;
     private final GeneticDataHandler dataHandler;
     private final Supplier<T> storage;

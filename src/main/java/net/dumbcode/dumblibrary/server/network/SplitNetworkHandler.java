@@ -7,14 +7,17 @@ import io.netty.buffer.Unpooled;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
+import net.minecraftforge.fml.network.NetworkEvent;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
+import java.util.function.Supplier;
 
 public class SplitNetworkHandler {
     private static final Map<Short, byte[][]> BUFFER_MAP = new HashMap<>();
@@ -50,7 +53,7 @@ public class SplitNetworkHandler {
         }
     }
 
-    public static void handleSplitMessage(byte descriptor, short collectionID, byte index, byte total, byte[] data, EntityPlayer player, MessageContext context) {
+    public static void handleSplitMessage(byte descriptor, short collectionID, byte index, byte total, byte[] data, PlayerEntity player, NetworkEvent.Context context) {
         byte[][] abyte = BUFFER_MAP.computeIfAbsent(collectionID, aShort -> new byte[total][]);
         if(abyte.length != total) {
             throw new IllegalArgumentException("Invalid abyte length found for received packet. Expected " + abyte.length + ", found " + total);

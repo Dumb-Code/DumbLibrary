@@ -1,37 +1,25 @@
 package net.dumbcode.dumblibrary.server.network;
 
-import io.netty.buffer.ByteBuf;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+import lombok.AllArgsConstructor;
+import net.minecraft.network.PacketBuffer;
+import net.minecraftforge.fml.network.NetworkEvent;
 
-public class B14ReleaseCollection implements IMessage {
+import java.util.function.Supplier;
 
-    private short collectionID;
+@AllArgsConstructor
+public class B14ReleaseCollection {
 
-    public B14ReleaseCollection(short collectionID) {
-        this.collectionID = collectionID;
+    private final short collectionID;
+
+    public static B14ReleaseCollection fromBytes(PacketBuffer buf) {
+        return new B14ReleaseCollection(buf.readShort());
     }
 
-    public B14ReleaseCollection() {
+    public static void toBytes(B14ReleaseCollection packet, PacketBuffer buf) {
+        buf.writeShort(packet.collectionID);
     }
 
-    @Override
-    public void fromBytes(ByteBuf buf) {
-        this.collectionID = buf.readShort();
-    }
-
-    @Override
-    public void toBytes(ByteBuf buf) {
-        buf.writeShort(this.collectionID);
-    }
-
-    public static class Handler extends WorldModificationsMessageHandler<B14ReleaseCollection, B14ReleaseCollection> {
-
-        @Override
-        protected void handleMessage(B14ReleaseCollection message, MessageContext ctx, World world, EntityPlayer player) {
-            SplitNetworkHandler.releaseCollection(message.collectionID);
-        }
+    public static void handle(B14ReleaseCollection message, Supplier<NetworkEvent.Context> supplier) {
+        supplier.get().enqueueWork(() -> SplitNetworkHandler.releaseCollection(message.collectionID));
     }
 }

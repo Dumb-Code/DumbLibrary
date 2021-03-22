@@ -1,69 +1,79 @@
 package net.dumbcode.dumblibrary.client.component;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.systems.RenderSystem;
+import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.client.FramebufferCache;
 import net.dumbcode.dumblibrary.client.model.ModelMissing;
 import net.dumbcode.dumblibrary.client.model.tabula.TabulaModel;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderCallbackComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLayerComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLocationComponent;
-import net.dumbcode.dumblibrary.server.utils.IndexedObject;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.*;
-import net.minecraft.client.renderer.entity.RenderLiving;
+import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.IRenderTypeBuffer;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.entity.LivingRenderer;
+import net.minecraft.client.renderer.entity.model.EntityModel;
+import net.minecraft.client.renderer.texture.Texture;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.shader.Framebuffer;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.resources.IResourceManager;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.MathHelper;
 import org.apache.commons.lang3.NotImplementedException;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.util.glu.Project;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public class ModelComponentRenderer extends RenderLiving<EntityLiving> implements RenderCallbackComponent.MainCallback {
+public class ModelComponentRenderer extends LivingRenderer<LivingEntity, EntityModel<LivingEntity>> implements RenderCallbackComponent.MainCallback {
 
-    private static final Minecraft MC = Minecraft.getMinecraft();
+    private static final Minecraft MC = Minecraft.getInstance();
 
-    private final Supplier<TabulaModel> modelSupplier;
+    private static final ResourceLocation DL_MODEL_TEX_LOCATION = new ResourceLocation(DumbLibrary.MODID, "dl_model_override_texture@@");
+    private static final EditableTexture DL_MODEL_TEX = new EditableTexture();
+
+    private final Supplier<TabulaModel<LivingEntity>> modelSupplier;
     private final RenderLocationComponent.ConfigurableLocation texture;
     private final List<Supplier<RenderLayerComponent.Layer>> layerList;
 
-    public ModelComponentRenderer(float shadowSize, Supplier<TabulaModel> modelSupplier, RenderLocationComponent.ConfigurableLocation texture, List<Supplier<RenderLayerComponent.Layer>> layerList) {
-        super(MC.getRenderManager(), ModelMissing.INSTANCE, shadowSize);
+
+    public ModelComponentRenderer(float shadowSize, Supplier<TabulaModel<LivingEntity>> modelSupplier, RenderLocationComponent.ConfigurableLocation texture, List<Supplier<RenderLayerComponent.Layer>> layerList) {
+        super(MC.getEntityRenderDispatcher(), ModelMissing.INSTANCE, shadowSize);
         this.modelSupplier = modelSupplier;
         this.texture = texture;
         this.layerList = layerList;
+        Minecraft.getInstance().textureManager.register(DL_MODEL_TEX_LOCATION, DL_MODEL_TEX);
     }
 
-    Runnable preCallbacks;
+    Consumer<MatrixStack> preCallbacks;
 
     @Override
-    public void doRenderShadowAndFire(Entity entityIn, double x, double y, double z, float yaw, float partialTicks) {
-        super.doRenderShadowAndFire(entityIn, x, y, z, yaw, partialTicks);
-    }
-
-    @Override
-    public void invoke(RenderComponentContext context, Entity entity, double x, double y, double z, float entityYaw, float partialTicks, List<RenderCallbackComponent.SubCallback> preCallbacks, List<RenderCallbackComponent.SubCallback> postCallbacks) {
-
+    public void invoke(RenderComponentContext context, Entity entity, float entityYaw, float partialTicks, MatrixStack stack, IRenderTypeBuffer buffer, int light, List<RenderCallbackComponent.SubCallback> preCallbacks, List<RenderCallbackComponent.SubCallback> postCallbacks) {
 //            this.doRenderShadowAndFire(entity, x, y, z, entityYaw, partialTicks);
-        TabulaModel model = this.modelSupplier.get();
-        this.mainModel = model;
 
-        GlStateManager.pushMatrix();
-        GlStateManager.scale(0F, 0F, 0F);
+        Framebuffer frameBuffer = this.getFrameBuffer();
+        frameBuffer.bindWrite(true);
+        this.renderAllLayers();
+        MC.getMainRenderTarget().bindWrite(true);
+        DL_MODEL_TEX.setId(frameBuffer.getColorTextureId());
+
+        TabulaModel<LivingEntity> model = this.modelSupplier.get();
+        this.model = model;
+
+//        GlStateManager.pushMatrix();
+//        GlStateManager.scale(0F, 0F, 0F);
         if(!model.isRendered()) {
             model.renderBoxes(1/16F);
         }
-        GlStateManager.popMatrix();
+//        GlStateManager.popMatrix();
 
-        this.preCallbacks = () -> {
+        this.preCallbacks = ms -> {
             for (RenderCallbackComponent.SubCallback callback : preCallbacks) {
-                callback.invoke(context, entity, x, y, z, entityYaw, partialTicks);
+                callback.invoke(context, entity, entityYaw, partialTicks, ms, buffer, light);
             }
         };
 
@@ -78,104 +88,99 @@ public class ModelComponentRenderer extends RenderLiving<EntityLiving> implement
         // An alternative to havin all these different components would be to have one component then have tuple
         // additions to allow/disallow certian modules. Other mods can just add their own component
 
-        if(entity instanceof EntityLiving) {
-            this.doRender((EntityLiving) entity, x, y, z, entityYaw, partialTicks);
+        if(entity instanceof LivingEntity) {
+            this.render((LivingEntity) entity, entityYaw, partialTicks, stack, buffer, light);
         } else {
             throw new NotImplementedException("Not implemented yet. Entity needs to be a subclass of EntityLivingBase");
         }
 
         for (RenderCallbackComponent.SubCallback callback : postCallbacks) {
-            callback.invoke(context, entity, x, y, z, entityYaw, partialTicks);
+            callback.invoke(context, entity, entityYaw, partialTicks, stack, buffer, light);
         }
     }
 
     @Override
-    protected void renderModel(EntityLiving entityLiving, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scaleFactor) {
-        Framebuffer frameBuffer = this.getFrameBuffer();
-        frameBuffer.bindFramebuffer(true);
-        this.renderAllLayers();
-
-        MC.getFramebuffer().bindFramebuffer(true);
-        frameBuffer.bindFramebufferTexture();
-        this.mainModel.render(entityLiving, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scaleFactor);
+    public void render(LivingEntity entity, float p_225623_2_, float partialRenderTick, MatrixStack stack, IRenderTypeBuffer buffer, int light) {
+        super.render(entity, p_225623_2_, partialRenderTick, stack, buffer, light);
     }
 
+
     private void renderAllLayers() {
-        GlStateManager.clearColor(0F, 0, 0, 0);
-        GlStateManager.clear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
-        GlStateManager.color(1f, 1f, 1f, 1f);
+        RenderSystem.clearColor(0F, 0, 0, 0);
+        RenderSystem.clear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT, true);
+        RenderSystem.color4f(1f, 1f, 1f, 1f);
 
-        MC.entityRenderer.disableLightmap();
-        GlStateManager.disableLighting();
+//        MC.entityRenderer.disableLightmap();
+        RenderSystem.disableLighting();
 
-        GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-        GlStateManager.enableAlpha();
-        GlStateManager.enableBlend();
+        RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+        RenderSystem.enableBlend();
 
         int lastMode = GL11.glGetInteger(GL11.GL_MATRIX_MODE);
-        GlStateManager.pushMatrix();
-        GlStateManager.matrixMode(GL11.GL_PROJECTION);
-        GlStateManager.pushMatrix();
-        GlStateManager.loadIdentity();
-        GlStateManager.ortho(0, 1, 0, 1, 0, 1000);
-        GlStateManager.matrixMode(GL11.GL_MODELVIEW);
-        GlStateManager.pushMatrix();
-        GlStateManager.loadIdentity();
+        RenderSystem.pushMatrix();
+        RenderSystem.matrixMode(GL11.GL_PROJECTION);
+        RenderSystem.pushMatrix();
+        RenderSystem.loadIdentity();
+        RenderSystem.ortho(0, 1, 0, 1, 0, 1000);
+        RenderSystem.matrixMode(GL11.GL_MODELVIEW);
+        RenderSystem.pushMatrix();
+        RenderSystem.loadIdentity();
 
-        BufferBuilder buffer = Tessellator.getInstance().getBuffer();
+        BufferBuilder buffer = Tessellator.getInstance().getBuilder();
 
         for (Supplier<RenderLayerComponent.Layer> supplier : this.layerList) {
             RenderLayerComponent.Layer layer = supplier.get();
-            GlStateManager.color(layer.getRed(), layer.getGreen(), layer.getBlue(), layer.getAlpha());
-            MC.renderEngine.bindTexture(layer.getTexture());
+            RenderSystem.color4f(layer.getRed(), layer.getGreen(), layer.getBlue(), layer.getAlpha());
+            MC.textureManager.bind(layer.getTexture());
             buffer.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
-            buffer.pos(0, 1, -2).tex(0, 1).color(255, 255, 255, 255).endVertex();
-            buffer.pos(1, 1, -2).tex(1, 1).color(255, 255, 255, 255).endVertex();
-            buffer.pos(1, 0, -2).tex(1, 0).color(255, 255, 255, 255).endVertex();
-            buffer.pos(0, 0, -2).tex(0, 0).color(255, 255, 255, 255).endVertex();
-            Tessellator.getInstance().draw();
+            buffer.vertex(0, 1, -2).uv(0, 1).color(255, 255, 255, 255).endVertex();
+            buffer.vertex(1, 1, -2).uv(1, 1).color(255, 255, 255, 255).endVertex();
+            buffer.vertex(1, 0, -2).uv(1, 0).color(255, 255, 255, 255).endVertex();
+            buffer.vertex(0, 0, -2).uv(0, 0).color(255, 255, 255, 255).endVertex();
+            Tessellator.getInstance().end();
         }
 
-        GlStateManager.popMatrix();
-        GlStateManager.matrixMode(GL11.GL_PROJECTION);
-        GlStateManager.popMatrix();
-        GlStateManager.matrixMode(lastMode);
-        GlStateManager.popMatrix();
+        RenderSystem.popMatrix();
+        RenderSystem.matrixMode(GL11.GL_PROJECTION);
+        RenderSystem.popMatrix();
+        RenderSystem.matrixMode(lastMode);
+        RenderSystem.popMatrix();
 
-        MC.entityRenderer.enableLightmap();
-        GlStateManager.enableLighting();
-        GlStateManager.disableBlend();
+//        MC.entityRenderer.enableLightmap();
+        RenderSystem.enableLighting();
+        RenderSystem.disableBlend();
 
     }
 
     private Framebuffer getFrameBuffer() {
-        int width = this.mainModel.textureWidth;
+        int width = this.model.texWidth;
         for (Supplier<RenderLayerComponent.Layer> supplier : this.layerList) {
-            MC.renderEngine.bindTexture(supplier.get().getTexture());
+            MC.textureManager.bind(supplier.get().getTexture());
             width = Math.max(width, GL11.glGetTexLevelParameteri(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_WIDTH));
         }
-        int height = (int) ((float) width * this.mainModel.textureHeight /  this.mainModel.textureWidth);
+        int height = (int) ((float) width * this.model.texWidth /  this.model.texHeight);
         return FramebufferCache.getFrameBuffer(width, height);
     }
 
     @Override
-    protected void renderLayers(EntityLiving entityLiving, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch, float scaleIn) {
-//        GlStateManager.enableNormalize();
-//        GlStateManager.enableBlend();
-//        GlStateManager.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
-//        super.renderLayers(entityLiving, limbSwing, limbSwingAmount, partialTicks, ageInTicks, netHeadYaw, headPitch, scaleIn);
-//        GlStateManager.disableBlend();
-//        GlStateManager.disableNormalize();
+    protected void scale(LivingEntity p_225620_1_, MatrixStack stack, float p_225620_3_) {
+        this.preCallbacks.accept(stack);
     }
 
     @Override
-    protected void preRenderCallback(EntityLiving entityLiving, float partialTickTime) {
-        this.preCallbacks.run();
+    public ResourceLocation getTextureLocation(LivingEntity entity) {
+        return DL_MODEL_TEX_LOCATION;
     }
 
-    @Nullable
-    @Override
-    protected ResourceLocation getEntityTexture(EntityLiving entity) {
-        return this.texture.getLocation();
+    private static class EditableTexture extends Texture {
+
+        public void setId(int id) {
+            this.id = id;
+        }
+
+        @Override
+        public void load(IResourceManager p_195413_1_) {
+
+        }
     }
 }

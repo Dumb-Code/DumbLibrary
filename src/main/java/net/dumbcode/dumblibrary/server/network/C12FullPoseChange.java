@@ -1,86 +1,67 @@
 package net.dumbcode.dumblibrary.server.network;
 
 import com.google.common.collect.Lists;
-import io.netty.buffer.ByteBuf;
+import lombok.AllArgsConstructor;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.server.taxidermy.BaseTaxidermyBlockEntity;
 import net.dumbcode.dumblibrary.server.taxidermy.TaxidermyHistory;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.network.PacketBuffer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.vector.Vector3f;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.common.network.ByteBufUtils;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraftforge.fml.network.PacketDistributor;
 
-import javax.vecmath.Vector3f;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
-public class C12FullPoseChange implements IMessage {
+@AllArgsConstructor
+public class C12FullPoseChange {
 
-    private Map<String, Vector3f> pose;
-    private int x;
-    private int y;
-    private int z;
+    private final BlockPos pos;
+    private final Map<String, Vector3f> pose;
 
-    public C12FullPoseChange() { }
-
-    public C12FullPoseChange(BlockPos pos, Map<String, Vector3f> newPose) {
-        this.x = pos.getX();
-        this.y = pos.getY();
-        this.z = pos.getZ();
-        this.pose = newPose;
-    }
-
-    @Override
-    public void fromBytes(ByteBuf buf) {
-        x = buf.readInt();
-        y = buf.readInt();
-        z = buf.readInt();
+    public static C12FullPoseChange fromBytes(PacketBuffer buf) {
         int count = buf.readInt();
-        pose = new HashMap<>();
+        Map<String, Vector3f> pose = new HashMap<>();
         for (int i = 0; i < count; i++) {
-            String name = ByteBufUtils.readUTF8String(buf);
+            String name = buf.readUtf();
             float rx = buf.readFloat();
             float ry = buf.readFloat();
             float rz = buf.readFloat();
             pose.put(name, new Vector3f(rx, ry, rz));
         }
+        return new C12FullPoseChange(buf.readBlockPos(), pose);
     }
 
-    @Override
-    public void toBytes(ByteBuf buf) {
-        buf.writeInt(x);
-        buf.writeInt(y);
-        buf.writeInt(z);
-
-        buf.writeInt(pose.size());
-        for(Map.Entry<String, Vector3f> entry : pose.entrySet()) {
-            ByteBufUtils.writeUTF8String(buf, entry.getKey());
+    public static void toBytes(C12FullPoseChange packet, PacketBuffer buf) {
+        buf.writeInt(packet.pose.size());
+        for (Map.Entry<String, Vector3f> entry : packet.pose.entrySet()) {
+            buf.writeUtf(entry.getKey());
             Vector3f v = entry.getValue();
-            buf.writeFloat(v.x);
-            buf.writeFloat(v.y);
-            buf.writeFloat(v.z);
+            buf.writeFloat(v.x());
+            buf.writeFloat(v.y());
+            buf.writeFloat(v.z());
         }
+        buf.writeBlockPos(packet.pos);
     }
 
-    public static class Handler extends WorldModificationsMessageHandler<C12FullPoseChange, IMessage> {
-        @Override
-        protected void handleMessage(C12FullPoseChange message, MessageContext ctx, World world, EntityPlayer player) {
-            BlockPos.PooledMutableBlockPos pos = BlockPos.PooledMutableBlockPos.retain(message.x, message.y, message.z);
-            TileEntity te = world.getTileEntity(pos);
-            if(te instanceof BaseTaxidermyBlockEntity) {
-                BaseTaxidermyBlockEntity builder = (BaseTaxidermyBlockEntity)te;
+    public static void handle(C12FullPoseChange message, Supplier<NetworkEvent.Context> supplier) {
+        NetworkEvent.Context context = supplier.get();
+        context.enqueueWork(() -> {
+            World world = NetworkUtils.getPlayer(supplier).getCommandSenderWorld();
+            TileEntity blockEntity = world.getBlockEntity(message.pos);
+            if (blockEntity instanceof BaseTaxidermyBlockEntity) {
+                BaseTaxidermyBlockEntity builder = (BaseTaxidermyBlockEntity) blockEntity;
                 List<TaxidermyHistory.Record> records = Lists.newArrayList(); //TODO: re-add this
 //                message.pose.forEach((s, v) -> records.add(new TaxidermyHistory.Record(s, v)));
                 builder.getHistory().addGroupedRecord(records);
-                builder.markDirty();
-                DumbLibrary.NETWORK.sendToAll(new S11FullPoseChange(pos, message.pose));
-
+                builder.setChanged();
+                DumbLibrary.NETWORK.send(PacketDistributor.ALL.noArg(), new S11FullPoseChange(message.pos, message.pose));
             }
-            pos.release();
-        }
+        });
     }
 }

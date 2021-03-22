@@ -1,5 +1,6 @@
 package net.dumbcode.dumblibrary.client.gui;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -7,24 +8,27 @@ import net.dumbcode.dumblibrary.client.RenderUtils;
 import net.dumbcode.dumblibrary.client.StencilStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
-import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.gui.IGuiEventListener;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.texture.TextureMap;
+import net.minecraft.inventory.container.PlayerContainer;
 import net.minecraft.util.math.MathHelper;
 import org.lwjgl.input.Mouse;
-import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.Rectangle;
 
 import java.awt.geom.Rectangle2D;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
 import java.util.function.Supplier;
 
 @Getter
 @Setter
-public class GuiScrollBox<T extends GuiScrollboxEntry> {
+public class GuiScrollBox<T extends GuiScrollboxEntry> implements IGuiEventListener {
 
-    private static final Minecraft MC = Minecraft.getMinecraft();
+    private static final Minecraft MC = Minecraft.getInstance();
 
     public static final float SCROLL_AMOUNT = 0.4F;
 
@@ -69,7 +73,7 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> {
      * @param mouseX the mouse's x position
      * @param mouseY the mouse's y position
      */
-    public void render(int mouseX, int mouseY) {
+    public void render(MatrixStack stack, int mouseX, int mouseY) {
         this.scroll(0); //This is used to ensure the clamping of the scroll
 
         List<T> entries = this.listSupplier.get();
@@ -81,15 +85,15 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> {
             this.updateScroll(entries, height, scrollBar.height, mouseY);
         }
 
-        if (!Minecraft.getMinecraft().getFramebuffer().isStencilEnabled()) {
-            Minecraft.getMinecraft().getFramebuffer().enableStencil();
+        if (!Minecraft.getInstance().getMainRenderTarget().isStencilEnabled()) {
+            Minecraft.getInstance().getMainRenderTarget().enableStencil();
         }
 
         StencilStack.pushSquareStencil(this.xPos, this.yPos, this.xPos + this.width, this.yPos + height);
 
         int borderSize = 1;
-        MC.renderEngine.bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
-        RenderHelper.enableGUIStandardItemLighting();
+        MC.textureManager.bind(PlayerContainer.BLOCK_ATLAS);
+        RenderHelper.setupFor3DItems();
 
         this.renderEntries(entries, height, scrollBar, borderSize, mouseX, mouseY);
 
@@ -97,12 +101,10 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> {
             this.renderScrollBar(Objects.requireNonNull(scrollBar), borderSize, this.mouseOverScrollBar(mouseX, mouseY, height, scrollBar));
         }
 
-        RenderHelper.disableStandardItemLighting();
+        RenderHelper.turnOff();
         StencilStack.popStencil();
 
-        GlStateManager.disableDepth();
         RenderUtils.renderBorder(this.xPos, this.yPos, this.xPos + this.width, this.yPos + height, borderSize, this.borderColor);
-        GlStateManager.enableDepth();
     }
 
     /**
@@ -254,7 +256,7 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> {
      * @param mouseY      the mouse's y position
      * @param mouseButton the mouse button clicked.
      */
-    public void mouseClicked(int mouseX, int mouseY, int mouseButton) {
+    public void mouseClicked(double mouseX, double mouseY, int mouseButton) {
         List<T> entries = this.listSupplier.get();
 
         boolean additionalRows = entries.size() > this.cellMax;
@@ -298,21 +300,18 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> {
         }
     }
 
-    /**
-     * Handles the mouse input.
-     * Should be called from {@link GuiScreen#handleMouseInput()}
-     */
-    public void handleMouseInput() {
-        int mouseInput = Mouse.getDWheel();
-        if (mouseInput != 0) {
-            int scroll = mouseInput < 0 ? -1 : 1;
+    @Override
+    public boolean mouseScrolled(double p_231043_1_, double p_231043_3_, double amount) {
+        if (amount != 0) {
+            int scroll = amount < 0 ? -1 : 1;
             for (T t : this.listSupplier.get()) {
                 if (t.consumeScroll(scroll)) {
-                    return;
+                    return true;
                 }
             }
             this.scroll(scroll * SCROLL_AMOUNT);
         }
+        return false;
     }
 
     /**
@@ -322,7 +321,7 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> {
      * @param mouseY the mouse's y position
      * @return true if the mouse is over this element, false otherwise
      */
-    public boolean isMouseOver(int mouseX, int mouseY, int height) {
+    public boolean isMouseOver(double mouseX, double mouseY, int height) {
         return     mouseX - this.xPos > 0
                 && mouseX - this.xPos <= this.width
 

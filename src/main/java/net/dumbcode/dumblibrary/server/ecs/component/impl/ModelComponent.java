@@ -20,6 +20,8 @@ import net.dumbcode.dumblibrary.server.utils.IndexedObject;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.JsonUtils;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -96,7 +98,7 @@ public class ModelComponent extends EntityComponent implements RenderCallbackCom
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     private void createRenderer(ComponentAccess entity) {
         if(this.renderer == null) {
             List<IndexedObject<Supplier<RenderLayerComponent.Layer>>> layerList = new ArrayList<>();

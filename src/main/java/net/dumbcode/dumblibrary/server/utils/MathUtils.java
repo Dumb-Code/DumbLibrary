@@ -5,6 +5,8 @@ import lombok.Value;
 import lombok.experimental.UtilityClass;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.math.vector.Vector3f;
 
 import javax.vecmath.Point3f;
 import javax.vecmath.Vector3f;
@@ -111,7 +113,7 @@ public class MathUtils {
         return meanDeviation(list.stream().mapToDouble(Number::doubleValue).toArray());
     }
 
-    private static final Map<TriVec, Vec3d> NORMAL_CACHE = Maps.newHashMap();
+    private static final Map<TriVec, Vector3d> NORMAL_CACHE = Maps.newHashMap();
 
     /**
      * Calculate the normal of the given data
@@ -119,19 +121,19 @@ public class MathUtils {
      * @param data in the format [x1, y1, z1, x2, y2, z2, x3, y3, z3]
      * @return the Vec3d normal
      */
-    public static Vec3d calculateNormal(double... data) {
-        Vec3d pos1 = new Vec3d(data[0], data[1], data[2]);
-        Vec3d pos2 = new Vec3d(data[3], data[4], data[5]);
-        Vec3d pos3 = new Vec3d(data[6], data[7], data[8]);
-        return NORMAL_CACHE.computeIfAbsent(new TriVec(pos1, pos2, pos3), v -> pos2.subtract(pos1).crossProduct(pos3.subtract(pos1)).normalize());
+    public static Vector3d calculateNormal(double... data) {
+        Vector3d pos1 = new Vector3d(data[0], data[1], data[2]);
+        Vector3d pos2 = new Vector3d(data[3], data[4], data[5]);
+        Vector3d pos3 = new Vector3d(data[6], data[7], data[8]);
+        return NORMAL_CACHE.computeIfAbsent(new TriVec(pos1, pos2, pos3), v -> pos2.subtract(pos1).cross(pos3.subtract(pos1)).normalize());
     }
 
     public static Vector3f calculateNormalF(double... data) {
-        Vec3d vec = calculateNormal(data);
+        Vector3d vec = calculateNormal(data);
         return new Vector3f((float) vec.x, (float) vec.y, (float) vec.z);
     }
 
-    public static Vector3f calculateNormalF(Point3f p0, Point3f p1, Point3f p2) {
+    public static Vector3f calculateNormalF(Vector3d p0, Vector3d p1, Vector3d p2) {
         return calculateNormalF(p0.x, p0.y, p0.z, p1.x, p1.y, p1.z, p2.x, p2.y, p2.z);
     }
 
@@ -145,8 +147,8 @@ public class MathUtils {
 
     @Value
     private static class TriVec {
-        Vec3d pos1;
-        Vec3d pos2;
-        Vec3d pos3;
+        Vector3d pos1;
+        Vector3d pos2;
+        Vector3d pos3;
     }
 }

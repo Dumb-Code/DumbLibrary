@@ -1,76 +1,62 @@
 package net.dumbcode.dumblibrary.server.network;
 
-import io.netty.buffer.ByteBuf;
+import lombok.AllArgsConstructor;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.server.taxidermy.BaseTaxidermyBlockEntity;
 import net.dumbcode.dumblibrary.server.utils.XYZAxis;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.network.PacketBuffer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.common.network.ByteBufUtils;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraftforge.fml.network.PacketDistributor;
 
-public class C4MoveSelectedSkeletalPart implements IMessage {
+import java.util.function.Supplier;
 
-    private int x;
-    private int y;
-    private int z;
-    private String part;
-    private XYZAxis axis;
-    private int type;
-    private float value;
+@AllArgsConstructor
+public class C4MoveSelectedSkeletalPart {
 
-    public C4MoveSelectedSkeletalPart() { }
+    private final int x;
+    private final int y;
+    private final int z;
+    private final String part;
+    private final XYZAxis axis;
+    private final int type;
+    private final float value;
 
-    public C4MoveSelectedSkeletalPart(BlockPos pos, String selectedPart, int type, XYZAxis axis, float value) {
-        this.x = pos.getX();
-        this.y = pos.getY();
-        this.z = pos.getZ();
-        this.part = selectedPart;
-        this.type = type;
-        this.axis = axis;
-        this.value = value;
+
+    public static C4MoveSelectedSkeletalPart fromBytes(PacketBuffer buf) {
+        return new C4MoveSelectedSkeletalPart(
+            buf.readInt(),
+            buf.readInt(),
+            buf.readInt(),
+            buf.readUtf(),
+            XYZAxis.values()[buf.readInt()],
+            buf.readByte(),
+            buf.readFloat()
+        );
     }
 
-    @Override
-    public void fromBytes(ByteBuf buf) {
-        x = buf.readInt();
-        y = buf.readInt();
-        z = buf.readInt();
-        part = ByteBufUtils.readUTF8String(buf);
-        type = buf.readByte();
-        axis = XYZAxis.values()[buf.readInt()];
-        value = buf.readFloat();
+    public static void toBytes(C4MoveSelectedSkeletalPart packet, PacketBuffer buf) {
+        buf.writeInt(packet.x);
+        buf.writeInt(packet.y);
+        buf.writeInt(packet.z);
+        buf.writeUtf(packet.part);
+        buf.writeInt(packet.axis.ordinal());
+        buf.writeByte(packet.type);
+        buf.writeFloat(packet.value);
     }
 
-    @Override
-    public void toBytes(ByteBuf buf) {
-        buf.writeInt(x);
-        buf.writeInt(y);
-        buf.writeInt(z);
-        ByteBufUtils.writeUTF8String(buf, part);
-        buf.writeByte(type);
-        buf.writeInt(axis.ordinal());
-        buf.writeFloat(value);
-    }
-
-
-    public static class Handler extends WorldModificationsMessageHandler<C4MoveSelectedSkeletalPart, IMessage> {
-        @Override
-        public void handleMessage(C4MoveSelectedSkeletalPart message, MessageContext ctx, World world, EntityPlayer player) {
-            // FIXME: security checks?
-            BlockPos.PooledMutableBlockPos pos = BlockPos.PooledMutableBlockPos.retain(message.x, message.y, message.z);
-            TileEntity te = world.getTileEntity(pos);
-            if(te instanceof BaseTaxidermyBlockEntity) {
-                BaseTaxidermyBlockEntity builder = (BaseTaxidermyBlockEntity)te;
+    public static void handle(C4MoveSelectedSkeletalPart message, Supplier<NetworkEvent.Context> supplier) {
+        NetworkEvent.Context context = supplier.get();
+        context.enqueueWork(() -> {
+            BlockPos pos = new BlockPos(message.x, message.y, message.z);
+            TileEntity blockEntity = NetworkUtils.getPlayer(supplier).getCommandSenderWorld().getBlockEntity(pos);
+            if(blockEntity instanceof BaseTaxidermyBlockEntity) {
+                BaseTaxidermyBlockEntity builder = (BaseTaxidermyBlockEntity)blockEntity;
                 builder.getHistory().liveEdit(message.part, message.type, message.axis, message.value);
-                builder.markDirty();
-                DumbLibrary.NETWORK.sendToAll(new S5UpdateSkeletalBuilder(pos, message.part, message.type, message.axis, message.value));
+                builder.setChanged();
+                DumbLibrary.NETWORK.send(PacketDistributor.ALL.noArg(), new S5UpdateSkeletalBuilder(pos.getX(), pos.getY(), pos.getZ(), message.part, message.type, message.axis, message.value));
             }
-
-            pos.release();
-        }
+        });
     }
 }

@@ -1,6 +1,7 @@
 package net.dumbcode.dumblibrary.server.ecs.component;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.network.S2SyncComponent;
@@ -8,6 +9,7 @@ import net.dumbcode.dumblibrary.server.registry.DumbRegistries;
 import net.dumbcode.dumblibrary.server.utils.TaskScheduler;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.util.Constants;
 
@@ -60,6 +62,12 @@ public abstract class EntityComponent {
 
     public void serializeSync(ByteBuf buf) {
         this.serialize(buf);
+    }
+
+    public final byte[] serializeSync() {
+        ByteBuf buffer = Unpooled.buffer();
+        this.serializeSync(buffer);
+        return buffer.array();
     }
 
     public void deserialize(ByteBuf buf) {

@@ -2,7 +2,6 @@ package net.dumbcode.dumblibrary.server;
 
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.server.events.UseItemEvent;
-import net.dumbcode.dumblibrary.server.network.S1PlayItemCrackParticle;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.item.EnumAction;
 import net.minecraft.item.Item;
@@ -59,6 +58,7 @@ public class ItemComponent extends Item {
                 vec3d1 = vec3d1.rotateYaw(-entity.rotationYaw * 0.017453292F);
                 vec3d1 = vec3d1.add(entity.posX, entity.posY + (double)entity.getEyeHeight(), entity.posZ);
                 Vec3d pos = new Vec3d(vec3d1.x, vec3d1.y + 0.05D, vec3d1.z);
+
 
                 DumbLibrary.NETWORK.sendToDimension(new S1PlayItemCrackParticle(pos, speed, stack), entity.world.provider.getDimension());
             }

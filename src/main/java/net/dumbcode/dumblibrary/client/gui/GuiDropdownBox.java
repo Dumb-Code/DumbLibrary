@@ -1,24 +1,23 @@
 package net.dumbcode.dumblibrary.client.gui;
 
 import com.google.common.collect.Lists;
+import com.mojang.blaze3d.matrix.MatrixStack;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
-import net.dumbcode.dumblibrary.client.RenderUtils;
 import net.dumbcode.dumblibrary.client.StencilStack;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Gui;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.util.ChatAllowedCharacters;
-import org.lwjgl.input.Keyboard;
-import org.lwjgl.opengl.GL11;
+import net.minecraft.client.gui.AbstractGui;
+import net.minecraft.client.gui.IGuiEventListener;
+import net.minecraft.util.SharedConstants;
+import org.lwjgl.glfw.GLFW;
 
 import java.util.List;
 import java.util.function.Supplier;
 
-public class GuiDropdownBox<T extends SelectListEntry> {
+public class GuiDropdownBox<T extends SelectListEntry> implements IGuiEventListener {
 
-    private static final Minecraft MC = Minecraft.getMinecraft();
+    private static final Minecraft MC = Minecraft.getInstance();
 
     private final GuiScrollBox<T> scrollBox;
 
@@ -66,12 +65,12 @@ public class GuiDropdownBox<T extends SelectListEntry> {
      * @param mouseX the mouse's x position
      * @param mouseY the mouse's y position
      */
-    public void render(int mouseX, int mouseY) {
+    public void render(MatrixStack stack, int mouseX, int mouseY) {
         if (this.open) {
             this.scrollBox.render(mouseX, mouseY);
         }
 
-        this.renderMainCell(mouseX, mouseY);
+        this.renderMainCell(stack, mouseX, mouseY);
     }
 
     /**
@@ -81,24 +80,26 @@ public class GuiDropdownBox<T extends SelectListEntry> {
      * @param mouseY the mouse's y
      * @return true if it is within range, false otherwise
      */
-    private boolean mouseOnTopCell(int mouseX, int mouseY) {
+    private boolean mouseOnTopCell(double mouseX, double mouseY) {
         return mouseX - this.xPos > 0 && mouseY - this.yPos > 0 && mouseX - this.xPos <= this.width && mouseY - this.yPos <= this.cellHeight;
     }
 
     /**
      * Renders the main cell. If the user is searching, then this will render the search term instead of the cell entry.
      *
+     * @param stack the matrix stack
      * @param mouseX the mouse's x
      * @param mouseY the mouse's y
      */
-    private void renderMainCell(int mouseX, int mouseY) {
+    private void renderMainCell(MatrixStack stack, int mouseX, int mouseY) {
         //Draw the main background
-        Gui.drawRect(this.xPos, this.yPos, this.xPos + this.width, this.yPos + this.cellHeight, this.scrollBox.getBorderColor());
-        Gui.drawRect(this.xPos+1, this.yPos+1, this.xPos + this.width-1, this.yPos + this.cellHeight-1, this.scrollBox.getInsideColor());
+
+        AbstractGui.fill(stack, this.xPos, this.yPos, this.xPos + this.width, this.yPos + this.cellHeight, this.scrollBox.getBorderColor());
+        AbstractGui.fill(stack, this.xPos+1, this.yPos+1, this.xPos + this.width-1, this.yPos + this.cellHeight-1, this.scrollBox.getInsideColor());
 
         StencilStack.pushSquareStencil(this.xPos, this.yPos, this.xPos + this.width, this.yPos + this.cellHeight);
         if (!this.search.isEmpty()) {
-            MC.fontRenderer.drawString(this.search, this.xPos + 5, this.yPos + this.cellHeight / 2 - MC.fontRenderer.FONT_HEIGHT / 2, -1);
+            MC.font.draw(stack, this.search, this.xPos + 5, this.yPos + this.cellHeight / 2F - MC.font.lineHeight / 2F, -1);
         } else if (this.getActive() != null) {
             this.getActive().draw(this.xPos, this.yPos, mouseX, mouseY, this.mouseOnTopCell(mouseX, mouseY));
         }
@@ -106,68 +107,50 @@ public class GuiDropdownBox<T extends SelectListEntry> {
 
         //Draw the highlighted section of the main part, if the mouse is over
         if (mouseX - this.xPos > 0 && mouseX - this.xPos <= this.width && mouseY >= this.yPos && mouseY < this.yPos + this.cellHeight) {
-            Gui.drawRect(this.xPos, this.yPos, this.xPos + this.width, this.yPos + this.cellHeight, this.scrollBox.getHighlightColor());
+            AbstractGui.fill(stack, this.xPos, this.yPos, this.xPos + this.width, this.yPos + this.cellHeight, this.scrollBox.getHighlightColor());
         }
-
-
     }
 
-    /**
-     * Called when the mouse is clicked.
-     *
-     * @param mouseX      the mouse's x position
-     * @param mouseY      the mouse's y position
-     * @param mouseButton the mouse button clicked.
-     */
-    public void mouseClicked(int mouseX, int mouseY, int mouseButton) {
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
         if(this.open && this.scrollBox.isMouseOver(mouseX, mouseY, this.scrollBox.getTotalSize())) {
             SelectListEntry active = this.getActive();
             this.scrollBox.mouseClicked(mouseX, mouseY, mouseButton);
             if(active != this.getActive()) {
                 this.open = !this.open;
             }
-            return;
+            return true;
         }
         if (mouseButton == 0) {
             if (this.mouseOnTopCell(mouseX, mouseY)) {
                 this.open = !this.open;
-                return;
+                return true;
             }
         }
         this.open = false;
         this.search = "";
+        return false;
     }
 
-    /**
-     * Handles the mouse input.
-     * Should be called from {@link GuiScreen#handleMouseInput()}
-     */
-    public void handleMouseInput() {
-        if(this.open) {
-            this.scrollBox.handleMouseInput();
-        }
+    @Override
+    public boolean mouseScrolled(double x, double y, double a) {
+        return this.scrollBox.mouseScrolled(x, y, a);
     }
 
-    /**
-     * Handles the keyboard input.
-     * Should be called from {@link GuiScreen#handleKeyboardInput()}
-     */
-    @SuppressWarnings("unused")
-    public void handleKeyboardInput() {
+    @Override
+    public boolean charTyped(char c, int code) {
         if (!this.open) {
-            return;
+            return false;
         }
-        char c = Keyboard.getEventCharacter();
-        if (Keyboard.getEventKey() == 0 && c >= ' ' || Keyboard.getEventKeyState()) {
-            if (Keyboard.getEventKey() == Keyboard.KEY_BACK) {
-                if (!this.search.isEmpty()) {
-                    this.search = this.search.substring(0, this.search.length() - 1);
-                }
-            } else if (ChatAllowedCharacters.isAllowedCharacter(c)) {
-                this.search += Character.toLowerCase(c);
-                this.scrollBox.setScroll(0);
+        if (code == GLFW.GLFW_KEY_BACKSPACE) {
+            if (!this.search.isEmpty()) {
+                this.search = this.search.substring(0, this.search.length() - 1);
             }
+        } else if (SharedConstants.isAllowedChatCharacter(c)) {
+            this.search += Character.toLowerCase(c);
+            this.scrollBox.setScroll(0);
         }
+        return true;
     }
 
     /**

@@ -1,59 +1,44 @@
 package net.dumbcode.dumblibrary.server.network;
 
-import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import lombok.AllArgsConstructor;
 import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
-import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentType;
-import net.dumbcode.dumblibrary.server.registry.DumbRegistries;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.common.network.ByteBufUtils;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+import net.minecraft.network.PacketBuffer;
+import net.minecraftforge.fml.network.NetworkEvent;
 
-public class S2SyncComponent implements IMessage {
+import java.util.function.Supplier;
 
-    private int entityid;
-    private EntityComponentType<?, ?> type;
-    private byte[] data;
+@AllArgsConstructor
+public class S2SyncComponent {
 
-    public S2SyncComponent() {
+    private final int entityid;
+    private final EntityComponentType<?, ?> type;
+    private final byte[] data;
+
+
+    public static S2SyncComponent fromBytes(PacketBuffer buf) {
+        return new S2SyncComponent(
+            buf.readInt(),
+            buf.readRegistryIdSafe(EntityComponentType.class),
+            buf.readByteArray()
+        );
     }
 
-    public S2SyncComponent(int entityid, EntityComponentType type, EntityComponent component) {
-        ByteBuf buffer = Unpooled.buffer();
-        component.serializeSync(buffer);
-        this.entityid = entityid;
-        this.type = type;
-        this.data = buffer.array();
+    public static void toBytes(S2SyncComponent packet, PacketBuffer buf) {
+        buf.writeInt(packet.entityid);
+        buf.writeRegistryId(packet.type);
+        buf.writeByteArray(packet.data);
     }
 
-    @Override
-    public void fromBytes(ByteBuf buf) {
-        this.entityid = buf.readInt();
-        this.type = ByteBufUtils.readRegistryEntry(buf, DumbRegistries.COMPONENT_REGISTRY);
-        this.data = new byte[buf.readInt()];
-        buf.readBytes(this.data);
-    }
-
-    @Override
-    public void toBytes(ByteBuf buf) {
-        buf.writeInt(this.entityid);
-        ByteBufUtils.writeRegistryEntry(buf, this.type);
-        buf.writeInt(this.data.length);
-        buf.writeBytes(this.data);
-    }
-
-    public static class Handler extends WorldModificationsMessageHandler<S2SyncComponent, S2SyncComponent> {
-
-        @Override
-        protected void handleMessage(S2SyncComponent message, MessageContext ctx, World world, EntityPlayer player) {
-            Entity entity = world.getEntityByID(message.entityid);
+    public static void handle(S2SyncComponent message, Supplier<NetworkEvent.Context> supplier) {
+        NetworkEvent.Context context = supplier.get();
+        context.enqueueWork(() -> {
+            Entity entity = NetworkUtils.getPlayer(supplier).getCommandSenderWorld().getEntity(message.entityid);
             if (entity instanceof ComponentAccess) {
                 ((ComponentAccess) entity).get(message.type).ifPresent(c -> c.deserializeSync(Unpooled.wrappedBuffer(message.data)));
             }
-        }
+        });
     }
 }

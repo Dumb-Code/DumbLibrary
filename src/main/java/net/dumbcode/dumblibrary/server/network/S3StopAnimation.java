@@ -1,50 +1,38 @@
 package net.dumbcode.dumblibrary.server.network;
 
-import io.netty.buffer.ByteBuf;
+import lombok.AllArgsConstructor;
 import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentTypes;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.network.PacketBuffer;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+import net.minecraftforge.fml.network.NetworkEvent;
 
-public class S3StopAnimation implements IMessage {
+import java.util.function.Supplier;
 
-    private int entityid;
-    private int channel;
+@AllArgsConstructor
+public class S3StopAnimation {
 
-    public S3StopAnimation() {
+    private final int entityid;
+    private final int channel;
+
+
+    public static S3StopAnimation fromBytes(PacketBuffer buf) {
+        return new S3StopAnimation(buf.readInt(), buf.readInt());
     }
 
-    public S3StopAnimation(Entity entity, int channel) {
-        this.entityid = entity.getEntityId();
-        this.channel = channel;
+    public static void toBytes(S3StopAnimation packet, PacketBuffer buf) {
+        buf.writeInt(packet.entityid);
+        buf.writeInt(packet.channel);
     }
 
-
-    @Override
-    public void fromBytes(ByteBuf buf) {
-        this.entityid = buf.readInt();
-        this.channel = buf.readInt();
-    }
-
-    @Override
-    public void toBytes(ByteBuf buf) {
-        buf.writeInt(this.entityid);
-        buf.writeInt(this.channel);
-    }
-
-    public static class Handler extends WorldModificationsMessageHandler<S3StopAnimation, S3StopAnimation> {
-
-        @Override
-        protected void handleMessage(S3StopAnimation message, MessageContext ctx, World world, EntityPlayer player) {
-            Entity entity = world.getEntityByID(message.entityid);
-            if (entity instanceof ComponentAccess) {
-                ((ComponentAccess) entity).get(EntityComponentTypes.ANIMATION).ifPresent(c -> {
-                    c.stopAnimation(entity, message.channel);
-                });
-            }
+    public static void handle(S3StopAnimation message, Supplier<NetworkEvent.Context> supplier) {
+        World world = NetworkUtils.getPlayer(supplier).getCommandSenderWorld();
+        Entity entity = world.getEntity(message.entityid);
+        if (entity instanceof ComponentAccess) {
+            ((ComponentAccess) entity).get(EntityComponentTypes.ANIMATION).ifPresent(c -> {
+                c.stopAnimation(entity, message.channel);
+            });
         }
     }
 }

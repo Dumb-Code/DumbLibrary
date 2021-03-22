@@ -54,7 +54,6 @@ public class DumbLibrary {
         IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
         IEventBus forgeBus = MinecraftForge.EVENT_BUS;
 
-
         DR.register(bus);
     }
 

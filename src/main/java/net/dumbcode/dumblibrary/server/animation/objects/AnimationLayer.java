@@ -5,7 +5,7 @@ import com.google.common.collect.Maps;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-import net.dumbcode.dumblibrary.client.model.tabula.TabulaModel;
+import net.dumbcode.dumblibrary.client.model.tabula.DCMModel;
 import net.dumbcode.dumblibrary.server.TickHandler;
 import net.dumbcode.dumblibrary.server.animation.interpolation.Interpolation;
 import net.minecraftforge.fml.common.FMLCommonHandler;
@@ -122,7 +122,7 @@ public class AnimationLayer {
     }
 
     @SideOnly(Side.CLIENT)
-    public void setFromModel(TabulaModel model) {
+    public void setFromModel(DCMModel model) {
         this.cubeNames.clear();
         this.cubeNames.addAll(model.getAllCubesNames());
         this.anicubeRef = model::getCube;

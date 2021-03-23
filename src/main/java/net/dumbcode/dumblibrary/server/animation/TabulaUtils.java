@@ -4,9 +4,7 @@ import com.google.common.collect.Maps;
 import lombok.Cleanup;
 import lombok.experimental.UtilityClass;
 import net.dumbcode.dumblibrary.DumbLibrary;
-import net.dumbcode.dumblibrary.client.model.tabula.TabulaModel;
-import net.dumbcode.dumblibrary.client.model.tabula.TabulaModelAnimator;
-import net.dumbcode.dumblibrary.client.model.tabula.TabulaModelRenderer;
+import net.dumbcode.dumblibrary.client.model.tabula.DCMModel;
 import net.dumbcode.dumblibrary.server.animation.objects.AnimatableCube;
 import net.dumbcode.dumblibrary.server.info.ServerAnimatableCube;
 import net.dumbcode.dumblibrary.server.tabula.TabulaJsonHandler;
@@ -63,11 +61,11 @@ public class TabulaUtils {
         }
     }
 
-    public static TabulaModel getModel(ResourceLocation location) {
+    public static DCMModel getModel(ResourceLocation location) {
         return getModel(location, null);
     }
 
-    public static TabulaModel getModel(ResourceLocation location, TabulaModelAnimator animator) {
+    public static DCMModel getModel(ResourceLocation location, TabulaModelAnimator animator) {
         return getModelInformation(location).createModel().setModelAnimator(animator);
     }
 

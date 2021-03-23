@@ -3,8 +3,7 @@ package net.dumbcode.dumblibrary.server.json.objects;
 import com.google.common.collect.Lists;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import net.dumbcode.dumblibrary.client.model.tabula.TabulaModel;
-import net.dumbcode.dumblibrary.client.model.tabula.TabulaModelRenderer;
+import net.dumbcode.dumblibrary.client.model.tabula.DCMModel;
 import net.dumbcode.dumblibrary.server.json.JsonAnimator;
 import net.minecraft.util.JsonUtils;
 
@@ -19,7 +18,7 @@ public class AnimationInfoBase {
         this.animationPartNames = getParts(json, animator.getConstants());
     }
 
-    public TabulaModelRenderer[] getRenderers(TabulaModel model) {
+    public TabulaModelRenderer[] getRenderers(DCMModel model) {
         return this.animationPartNames.stream().map(model::getCube).filter(Objects::nonNull).toArray(TabulaModelRenderer[]::new);
     }
 

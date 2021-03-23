@@ -1,8 +1,7 @@
 package net.dumbcode.dumblibrary.client.gui;
 
 import net.dumbcode.dumblibrary.DumbLibrary;
-import net.dumbcode.dumblibrary.client.model.tabula.TabulaModel;
-import net.dumbcode.dumblibrary.client.model.tabula.TabulaModelRenderer;
+import net.dumbcode.dumblibrary.client.model.tabula.DCMModel;
 import net.dumbcode.dumblibrary.server.network.C4MoveSelectedSkeletalPart;
 import net.dumbcode.dumblibrary.server.network.C6SkeletalMovement;
 import net.dumbcode.dumblibrary.server.network.C8MoveInHistory;
@@ -19,7 +18,7 @@ public class GuiTaxidermy extends GuiModelPoseEdit {
 
     private final BaseTaxidermyBlockEntity blockEntity;
 
-    public GuiTaxidermy(TabulaModel model, ResourceLocation texture, ITextComponent title, BaseTaxidermyBlockEntity blockEntity) {
+    public GuiTaxidermy(DCMModel model, ResourceLocation texture, ITextComponent title, BaseTaxidermyBlockEntity blockEntity) {
         super(model, texture, title);
         this.blockEntity = blockEntity;
     }

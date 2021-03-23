@@ -1,6 +1,6 @@
 package net.dumbcode.dumblibrary.client.model;
 
-import net.dumbcode.dumblibrary.client.model.tabula.TabulaModel;
+import net.dumbcode.dumblibrary.client.model.tabula.DCMModel;
 import net.dumbcode.dumblibrary.server.tabula.TabulaModelInformation;
 import net.minecraft.client.model.ModelRenderer;
 import net.minecraft.entity.Entity;
@@ -8,7 +8,7 @@ import net.minecraft.entity.Entity;
 /**
  * A simple missing model. Just one 16x16x16 cube
  */
-public class ModelMissing extends TabulaModel {
+public class ModelMissing extends DCMModel {
 
     public static final ModelMissing INSTANCE = new ModelMissing();
 

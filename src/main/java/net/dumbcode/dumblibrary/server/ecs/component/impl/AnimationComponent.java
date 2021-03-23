@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import net.dumbcode.dumblibrary.DumbLibrary;
-import net.dumbcode.dumblibrary.client.model.tabula.TabulaModel;
+import net.dumbcode.dumblibrary.client.model.tabula.DCMModel;
 import net.dumbcode.dumblibrary.server.animation.AnimationContainer;
 import net.dumbcode.dumblibrary.server.animation.TabulaUtils;
 import net.dumbcode.dumblibrary.server.animation.objects.*;
@@ -147,7 +147,7 @@ public class AnimationComponent<E extends Entity & ComponentAccess> extends Enti
             if(e.world.isRemote) {
                 ModelComponent component = entity.get(EntityComponentTypes.MODEL).orElseThrow(() -> new IllegalStateException("Animation component needs a model component"));
                 this.animationLayer = SidedExecutor.getClient(() -> () -> {
-                    TabulaModel model = component.getModelCache();
+                    DCMModel model = component.getModelCache();
                     return new AnimationLayer(model.getAllCubesNames(), model::getCube, this.animationContainer.createDataGetter(), e);
                 }, null);
 

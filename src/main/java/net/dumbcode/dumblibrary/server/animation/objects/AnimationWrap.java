@@ -1,10 +1,7 @@
 package net.dumbcode.dumblibrary.server.animation.objects;
 
 import lombok.Getter;
-import net.dumbcode.dumblibrary.client.model.tabula.TabulaModel;
 import net.dumbcode.dumblibrary.server.TickHandler;
-import net.dumbcode.dumblibrary.server.animation.interpolation.Interpolation;
-import net.minecraft.entity.Entity;
 import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
@@ -12,7 +9,6 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.vecmath.Vector3f;
 import java.util.*;
-import java.util.function.Function;
 
 @Getter
 public class AnimationWrap {

@@ -1,7 +1,7 @@
 package net.dumbcode.dumblibrary.server.taxidermy;
 
 import lombok.Getter;
-import net.dumbcode.dumblibrary.client.model.tabula.TabulaModel;
+import net.dumbcode.dumblibrary.client.model.tabula.DCMModel;
 import net.dumbcode.dumblibrary.server.SimpleBlockEntity;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
@@ -30,6 +30,6 @@ public abstract class BaseTaxidermyBlockEntity extends SimpleBlockEntity {
     }
 
     public abstract ResourceLocation getTexture();
-    public abstract TabulaModel getModel();
+    public abstract DCMModel getModel();
 
 }

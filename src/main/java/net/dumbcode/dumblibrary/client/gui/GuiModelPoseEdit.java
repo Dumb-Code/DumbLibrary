@@ -4,13 +4,11 @@ import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.client.MutVector2f;
-import net.dumbcode.dumblibrary.client.model.tabula.TabulaModel;
-import net.dumbcode.dumblibrary.client.model.tabula.TabulaModelRenderer;
+import net.dumbcode.dumblibrary.client.model.tabula.DCMModel;
 import net.dumbcode.dumblibrary.server.animation.TabulaUtils;
 import net.dumbcode.dumblibrary.server.taxidermy.TaxidermyHistory;
 import net.dumbcode.dumblibrary.server.utils.XYZAxis;
 import net.minecraft.client.GameSettings;
-import net.minecraft.client.MainWindow;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHelper;
 import net.minecraft.client.gui.FontRenderer;
@@ -23,8 +21,6 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.vector.Matrix3f;
-import net.minecraft.util.math.vector.Vector3f;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TranslationTextComponent;
@@ -32,20 +28,16 @@ import net.minecraftforge.fml.client.config.GuiSlider;
 import net.minecraftforge.fml.client.gui.widget.ExtendedButton;
 import net.minecraftforge.fml.client.gui.widget.Slider;
 import org.lwjgl.BufferUtils;
-import org.lwjgl.glfw.GLFW;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
-import org.lwjgl.opengl.GLUtil;
 import org.lwjgl.util.glu.Project;
-import sun.tools.jstack.JStack;
 
 import javax.vecmath.Matrix3f;
 import javax.vecmath.Matrix4f;
 import javax.vecmath.Vector3f;
-import java.io.IOException;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
@@ -55,7 +47,7 @@ import java.util.Map;
 
 public abstract class GuiModelPoseEdit extends Screen {
 
-    private final TabulaModel model;
+    private final DCMModel model;
     private final ResourceLocation texture;
     private final ITextComponent titleText;
     private boolean registeredLeftClick;
@@ -70,7 +62,7 @@ public abstract class GuiModelPoseEdit extends Screen {
     protected float cameraPitch;
     protected float cameraYaw = 90f;
     protected double zoom = 1.0;
-    private TabulaModel rotationRingModel;
+    private DCMModel rotationRingModel;
     private XYZAxis currentSelectedRing = XYZAxis.NONE;
     private boolean draggingRing = false;
     private MutVector2f dMouse = new MutVector2f(0, 0);
@@ -120,7 +112,7 @@ public abstract class GuiModelPoseEdit extends Screen {
 
 //    private GuiButton propertiesButton = new GuiButtonExt(8, 0, 0, propertiesGui.getUnformattedText());
 
-    public GuiModelPoseEdit(TabulaModel model, ResourceLocation texture, ITextComponent title) {
+    public GuiModelPoseEdit(DCMModel model, ResourceLocation texture, ITextComponent title) {
         this.model = model; // TODO: child models? -> Selectable
         this.texture = texture;
         this.titleText = title;

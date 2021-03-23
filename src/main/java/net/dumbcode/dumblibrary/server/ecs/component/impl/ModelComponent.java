@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.dumbcode.dumblibrary.client.component.ModelComponentRenderer;
-import net.dumbcode.dumblibrary.client.model.tabula.TabulaModel;
+import net.dumbcode.dumblibrary.client.model.tabula.DCMModel;
 import net.dumbcode.dumblibrary.server.animation.TabulaUtils;
 import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
@@ -27,7 +27,6 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 //Client usage only
@@ -39,7 +38,7 @@ public class ModelComponent extends EntityComponent implements RenderCallbackCom
     private final ConfigurableLocation fileLocation = new ConfigurableLocation();
 
     @SideOnly(Side.CLIENT)
-    private TabulaModel modelCache;
+    private DCMModel modelCache;
 
     private float shadowSize;
 
@@ -75,7 +74,7 @@ public class ModelComponent extends EntityComponent implements RenderCallbackCom
 
 
     @SideOnly(Side.CLIENT)
-    public TabulaModel getModelCache() {
+    public DCMModel getModelCache() {
         if(this.modelCache == null) {
             this.modelCache = TabulaUtils.getModel(this.fileLocation.getLocation());
         }

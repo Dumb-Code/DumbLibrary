@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import net.dumbcode.dumblibrary.client.model.tabula.TabulaModel;
+import net.dumbcode.dumblibrary.client.model.tabula.DCMModel;
 import net.dumbcode.dumblibrary.server.json.JsonAnimator;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.JsonUtils;
@@ -24,13 +24,13 @@ public abstract class JsonAnimationModule<V> {
         }
     }
 
-    public void performAnimations(TabulaModel model, Entity entity, float limbSwing, float limbSwingAmount, float ticks, float rotationYaw, float rotationPitch, float scale) {
+    public void performAnimations(DCMModel model, Entity entity, float limbSwing, float limbSwingAmount, float ticks, float rotationYaw, float rotationPitch, float scale) {
         for (V value : this.list) {
             this.performAnimation(model, entity, value, limbSwing, limbSwingAmount, ticks, rotationYaw, rotationPitch, scale);
         }
     }
 
-    protected abstract void performAnimation(TabulaModel model, Entity entity, V value, float limbSwing, float limbSwingAmount, float ticks, float rotationYaw, float rotationPitch, float scale);
+    protected abstract void performAnimation(DCMModel model, Entity entity, V value, float limbSwing, float limbSwingAmount, float ticks, float rotationYaw, float rotationPitch, float scale);
 
     public abstract V createValue(JsonObject json, JsonAnimator animator);
 }

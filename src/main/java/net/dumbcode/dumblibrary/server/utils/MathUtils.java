@@ -4,12 +4,9 @@ import com.google.common.collect.Maps;
 import lombok.Value;
 import lombok.experimental.UtilityClass;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.math.vector.Vector3f;
 
-import javax.vecmath.Point3f;
-import javax.vecmath.Vector3f;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Random;
@@ -133,8 +130,9 @@ public class MathUtils {
         return new Vector3f((float) vec.x, (float) vec.y, (float) vec.z);
     }
 
-    public static Vector3f calculateNormalF(Vector3d p0, Vector3d p1, Vector3d p2) {
-        return calculateNormalF(p0.x, p0.y, p0.z, p1.x, p1.y, p1.z, p2.x, p2.y, p2.z);
+
+    public static Vector3f calculateNormalF(Vector3f p0, Vector3f p1, Vector3f p2) {
+        return calculateNormalF(p0.x(), p0.y(), p0.z(), p1.x(), p1.y(), p1.z(), p2.x(), p2.y(), p2.z());
     }
 
     public static double horizontalDegree(double x, double z, boolean forward) {

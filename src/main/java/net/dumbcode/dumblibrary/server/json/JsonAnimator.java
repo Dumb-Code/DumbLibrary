@@ -3,8 +3,7 @@ package net.dumbcode.dumblibrary.server.json;
 import com.google.common.collect.Lists;
 import com.google.gson.*;
 import lombok.Data;
-import net.dumbcode.dumblibrary.client.model.tabula.TabulaModel;
-import net.dumbcode.dumblibrary.client.model.tabula.TabulaModelAnimator;
+import net.dumbcode.dumblibrary.client.model.tabula.DCMModel;
 import net.dumbcode.dumblibrary.server.json.objects.Constants;
 import net.dumbcode.dumblibrary.server.json.objects.JsonAnimationModule;
 import net.dumbcode.dumblibrary.server.json.objects.JsonAnimationRegistry;
@@ -31,7 +30,7 @@ public class JsonAnimator implements TabulaModelAnimator<Entity> {
 
 
     @Override
-    public void setRotationAngles(TabulaModel model, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scaleFactor, Entity entityIn) {
+    public void setRotationAngles(DCMModel model, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scaleFactor, Entity entityIn) {
         for (JsonAnimationModule animationModule : this.animationModules) {
             animationModule.performAnimations(model, entityIn, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scaleFactor);
         }

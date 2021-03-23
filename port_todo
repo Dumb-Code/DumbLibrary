@@ -2,3 +2,5 @@ Ensure that EntityComponentTypes.ITEM_RENDER works
 Make GuiFileArea actually work
 Add exporting and importing to GuiModelPoseEdit
 Make GuiModelPoseEdit rotation sliders work
+Add item overrides to DCMBakedModel
+Ensure that DCMBakedModel actually works

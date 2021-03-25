@@ -6,16 +6,15 @@ import lombok.AllArgsConstructor;
 import lombok.Value;
 import net.dumbcode.dumblibrary.server.utils.HistoryList;
 import net.dumbcode.dumblibrary.server.utils.XYZAxis;
-import net.minecraft.client.model.ModelRenderer;
-import net.minecraft.nbt.NBTBase;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
+import net.minecraft.client.renderer.model.ModelRenderer;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.INBT;
+import net.minecraft.nbt.ListNBT;
 import net.minecraft.util.math.vector.Vector3f;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.util.Constants;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
-import javax.vecmath.Vector3f;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,34 +28,34 @@ public class TaxidermyHistory {
 
     private Map<String, CubeProps> poseDataCache = null;
 
-    public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
-        nbt.setInteger("Index", this.history.getIndex());
-        NBTTagList list = new NBTTagList();
+    public CompoundNBT writeToNBT(CompoundNBT nbt) {
+        nbt.putInt("Index", this.history.getIndex());
+        ListNBT list = new ListNBT();
         for (List<Record> records : this.history.getUnindexedList()) {
-            NBTTagList taglist = new NBTTagList();
+            ListNBT taglist = new ListNBT();
             for (Record record : records) {
-                NBTTagCompound tag = new NBTTagCompound();
-                tag.setString("Part", record.getPart());
-                tag.setFloat("AngleX", record.getProps().angle.x);
-                tag.setFloat("AngleY", record.getProps().angle.y);
-                tag.setFloat("AngleZ", record.getProps().angle.z);
-                tag.setFloat("PosX", record.getProps().rotationPoint.x);
-                tag.setFloat("PosY", record.getProps().rotationPoint.y);
-                tag.setFloat("PosZ", record.getProps().rotationPoint.z);
-                taglist.appendTag(tag);
+                CompoundNBT tag = new CompoundNBT();
+                tag.putString("Part", record.getPart());
+                tag.putFloat("AngleX", record.getProps().angle.x());
+                tag.putFloat("AngleY", record.getProps().angle.y());
+                tag.putFloat("AngleZ", record.getProps().angle.z());
+                tag.putFloat("PosX", record.getProps().rotationPoint.x());
+                tag.putFloat("PosY", record.getProps().rotationPoint.y());
+                tag.putFloat("PosZ", record.getProps().rotationPoint.z());
+                taglist.add(tag);
             }
-            list.appendTag(taglist);
+            list.add(taglist);
         }
-        nbt.setTag("Records", list);
+        nbt.put("Records", list);
         return nbt;
     }
 
-    public void readFromNBT(NBTTagCompound nbt) {
+    public void readFromNBT(CompoundNBT nbt) {
         this.history.clear();
-        for (NBTBase record : nbt.getTagList("Records", Constants.NBT.TAG_LIST)) {
+        for (INBT record : nbt.getList("Records", Constants.NBT.TAG_LIST)) {
             List<Record> records = Lists.newArrayList();
-            for (NBTBase nbtBase : (NBTTagList) record) {
-                NBTTagCompound tag = (NBTTagCompound) nbtBase;
+            for (INBT nbtBase : (ListNBT) record) {
+                CompoundNBT tag = (CompoundNBT) nbtBase;
                 records.add(new Record(tag.getString("Part"), new CubeProps(
                     new Vector3f(tag.getFloat("AngleX"), tag.getFloat("AngleY"), tag.getFloat("AngleZ")),
                     new Vector3f(tag.getFloat("PosX"), tag.getFloat("PosY"), tag.getFloat("PosZ"))
@@ -64,7 +63,7 @@ public class TaxidermyHistory {
             }
             this.history.add(records);
         }
-        this.history.setIndex(nbt.getInteger("Index"));
+        this.history.setIndex(nbt.getInt("Index"));
     }
 
     public Map<String, CubeProps> getPoseData() {
@@ -86,19 +85,30 @@ public class TaxidermyHistory {
             CubeProps cube = this.poseDataCache.computeIfAbsent(entry.getKey(), s -> new CubeProps(new Vector3f(Float.NaN, Float.NaN, Float.NaN), new Vector3f(Float.NaN, Float.NaN, Float.NaN)));
             TaxidermyHistory.Edit edit = entry.getValue();
             Vector3f vec = edit.type == 0 ? cube.angle : cube.rotationPoint;
+            float x = vec.x();
+            float y = vec.y();
+            float z = vec.z();
             switch (edit.axis) {
                 case X_AXIS:
-                    vec.x = edit.value;
+                    x = edit.value;
                     break;
                 case Y_AXIS:
-                    vec.y = edit.value;
+                    y = edit.value;
                     break;
                 case Z_AXIS:
-                    vec.z = edit.value;
+                    z = edit.value;
                     break;
                 default:
                     break;
             }
+
+            Vector3f vector3f = new Vector3f(x, y, z);
+            if(edit.type == 0) {
+                cube.setAngle(vector3f);
+            } else {
+                cube.setRotationPoint(vector3f);
+            }
+
         }
         return this.poseDataCache;
     }
@@ -155,34 +165,42 @@ public class TaxidermyHistory {
 
     @AllArgsConstructor
     public static class CubeProps implements Cloneable {
-        private final Vector3f angle;
-        private final Vector3f rotationPoint;
+        private Vector3f angle;
+        private Vector3f rotationPoint;
 
-        @SideOnly(Side.CLIENT)
+        @OnlyIn(Dist.CLIENT)
         public void applyTo(ModelRenderer box) {
-            if(!Float.isNaN(this.angle.x)) {
-                box.rotateAngleX = this.angle.x;
+            if(!Float.isNaN(this.angle.x())) {
+                box.xRot = this.angle.x();
             }
-            if(!Float.isNaN(this.angle.y)) {
-                box.rotateAngleY = this.angle.y;
+            if(!Float.isNaN(this.angle.y())) {
+                box.yRot = this.angle.y();
             }
-            if(!Float.isNaN(this.angle.z)) {
-                box.rotateAngleZ= this.angle.z;
+            if(!Float.isNaN(this.angle.z())) {
+                box.zRot = this.angle.z();
             }
 
-            if(!Float.isNaN(this.rotationPoint.x)) {
-                box.rotationPointX = this.rotationPoint.x;
+            if(!Float.isNaN(this.rotationPoint.x())) {
+                box.x = this.rotationPoint.x();
             }
-            if(!Float.isNaN(this.rotationPoint.y)) {
-                box.rotationPointY = this.rotationPoint.y;
+            if(!Float.isNaN(this.rotationPoint.y())) {
+                box.y = this.rotationPoint.y();
             }
-            if(!Float.isNaN(this.rotationPoint.z)) {
-                box.rotationPointZ = this.rotationPoint.z;
+            if(!Float.isNaN(this.rotationPoint.z())) {
+                box.z = this.rotationPoint.z();
             }
         }
 
+        public void setAngle(Vector3f angle) {
+            this.angle = angle;
+        }
+
+        public void setRotationPoint(Vector3f rotationPoint) {
+            this.rotationPoint = rotationPoint;
+        }
+
         public CubeProps clone() {
-            return new CubeProps(new Vector3f(this.angle), new Vector3f(this.rotationPoint));
+            return new CubeProps(this.angle.copy(), this.rotationPoint.copy());
         }
 
     }

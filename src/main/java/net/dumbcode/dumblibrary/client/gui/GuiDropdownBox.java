@@ -67,7 +67,7 @@ public class GuiDropdownBox<T extends SelectListEntry> implements IGuiEventListe
      */
     public void render(MatrixStack stack, int mouseX, int mouseY) {
         if (this.open) {
-            this.scrollBox.render(mouseX, mouseY);
+            this.scrollBox.render(stack, mouseX, mouseY);
         }
 
         this.renderMainCell(stack, mouseX, mouseY);
@@ -97,11 +97,11 @@ public class GuiDropdownBox<T extends SelectListEntry> implements IGuiEventListe
         AbstractGui.fill(stack, this.xPos, this.yPos, this.xPos + this.width, this.yPos + this.cellHeight, this.scrollBox.getBorderColor());
         AbstractGui.fill(stack, this.xPos+1, this.yPos+1, this.xPos + this.width-1, this.yPos + this.cellHeight-1, this.scrollBox.getInsideColor());
 
-        StencilStack.pushSquareStencil(this.xPos, this.yPos, this.xPos + this.width, this.yPos + this.cellHeight);
+        StencilStack.pushSquareStencil(stack, this.xPos, this.yPos, this.xPos + this.width, this.yPos + this.cellHeight);
         if (!this.search.isEmpty()) {
             MC.font.draw(stack, this.search, this.xPos + 5, this.yPos + this.cellHeight / 2F - MC.font.lineHeight / 2F, -1);
         } else if (this.getActive() != null) {
-            this.getActive().draw(this.xPos, this.yPos, mouseX, mouseY, this.mouseOnTopCell(mouseX, mouseY));
+            this.getActive().draw(stack, this.xPos, this.yPos, mouseX, mouseY, this.mouseOnTopCell(mouseX, mouseY));
         }
         StencilStack.popStencil();
 

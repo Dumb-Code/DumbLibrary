@@ -2,7 +2,7 @@ package net.dumbcode.dumblibrary.server.json.objects.animation;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import net.dumbcode.dumblibrary.client.model.tabula.DCMModel;
+import net.dumbcode.dumblibrary.client.model.dcm.DCMModel;
 import net.dumbcode.dumblibrary.server.json.JsonAnimator;
 import net.dumbcode.dumblibrary.server.json.objects.AnimationInfoBase;
 import net.dumbcode.dumblibrary.server.json.objects.JsonAnimationModule;

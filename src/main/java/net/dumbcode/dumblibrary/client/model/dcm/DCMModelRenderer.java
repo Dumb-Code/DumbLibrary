@@ -1,11 +1,11 @@
-package net.dumbcode.dumblibrary.client.model.tabula;
+package net.dumbcode.dumblibrary.client.model.dcm;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
+import lombok.Getter;
 import lombok.Setter;
 import net.dumbcode.studio.animation.instance.AnimatedCube;
 import net.dumbcode.studio.model.CubeInfo;
-import net.minecraft.client.renderer.model.Model;
 import net.minecraft.client.renderer.model.ModelRenderer;
 
 public class DCMModelRenderer extends ModelRenderer implements AnimatedCube {
@@ -22,6 +22,9 @@ public class DCMModelRenderer extends ModelRenderer implements AnimatedCube {
 
     private ModelRenderer.ModelBox box;
 
+    @Getter
+    private final String name;
+
     @Setter
     private boolean hideButShowChildren;
 
@@ -31,6 +34,7 @@ public class DCMModelRenderer extends ModelRenderer implements AnimatedCube {
         this.texWidth = model.texWidth;
         this.texHeight = model.texHeight;
         this.info = info;
+        this.name = info.getName();
         for (CubeInfo child : info.getChildren()) {
             this.addChild(new DCMModelRenderer(model, child));
         }
@@ -85,5 +89,19 @@ public class DCMModelRenderer extends ModelRenderer implements AnimatedCube {
         if(this.hideButShowChildren) {
             this.cubes.add(this.box);
         }
+    }
+
+    public void resetRotations() {
+        float[] rotation = this.info.getRotation();
+        this.xRot = rotation[0];
+        this.yRot = rotation[1];
+        this.zRot = rotation[2];
+    }
+
+    public void resetRotationPoint() {
+        float[] position = this.info.getRotationPoint();
+        this.x = position[0];
+        this.y = position[1];
+        this.z = position[2];
     }
 }

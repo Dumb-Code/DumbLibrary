@@ -10,7 +10,7 @@ import net.minecraft.util.ResourceLocation;
 public class TabulaLivingComponentRenderer <E extends LivingEntity> extends LivingRenderer<E, EntityModel<E>> {
 
     public TabulaLivingComponentRenderer(EntityRendererManager renderManagerIn) {
-        super(renderManagerIn, ModelMissing.INSTANCE, 1f);
+        super(renderManagerIn, ModelMissing.getInstance(), 1f);
     }
 
     @Override

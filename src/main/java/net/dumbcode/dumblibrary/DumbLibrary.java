@@ -1,5 +1,6 @@
 package net.dumbcode.dumblibrary;
 
+import net.dumbcode.dumblibrary.client.model.ModelHandler;
 import net.dumbcode.dumblibrary.server.ItemComponent;
 import net.dumbcode.dumblibrary.server.ecs.EntityManager;
 import net.dumbcode.dumblibrary.server.ecs.component.RegisterStoragesEvent;
@@ -53,6 +54,8 @@ public class DumbLibrary {
     public DumbLibrary() {
         IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
         IEventBus forgeBus = MinecraftForge.EVENT_BUS;
+
+        forgeBus.addListener(ModelHandler::onModelReady);
 
         DR.register(bus);
     }

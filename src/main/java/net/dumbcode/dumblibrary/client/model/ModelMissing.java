@@ -1,8 +1,11 @@
 package net.dumbcode.dumblibrary.client.model;
 
-import net.dumbcode.dumblibrary.client.model.tabula.DCMModel;
-import net.dumbcode.dumblibrary.server.tabula.TabulaModelInformation;
-import net.minecraft.client.model.ModelRenderer;
+import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.IVertexBuilder;
+import net.dumbcode.dumblibrary.client.model.dcm.DCMModel;
+import net.dumbcode.dumblibrary.server.utils.MissingModelInfo;
+import net.minecraft.client.renderer.entity.model.EntityModel;
+import net.minecraft.client.renderer.model.ModelRenderer;
 import net.minecraft.entity.Entity;
 
 /**
@@ -10,19 +13,24 @@ import net.minecraft.entity.Entity;
  */
 public class ModelMissing extends DCMModel {
 
-    public static final ModelMissing INSTANCE = new ModelMissing();
+    private static final ModelMissing INSTANCE = new ModelMissing();
 
     private ModelRenderer cube;
 
     private ModelMissing() {
-        super(TabulaModelInformation.MISSING);
+        super(MissingModelInfo.MISSING);
         this.cube = new ModelRenderer(this, 0, 0);
         this.cube.addBox(-8F, 8F, -8F, 16, 16, 16, 0.0F);
     }
 
     @Override
-    public void render(Entity entityIn, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scale) {
-        this.cube.render(scale);
-        super.render(entityIn, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scale);
+    public void renderToBuffer(MatrixStack stack, IVertexBuilder buffer, int overlay, int light, float r, float g, float b, float opacity) {
+        this.cube.render(stack, buffer, overlay, light, r, g, b, opacity);
+        super.renderToBuffer(stack, buffer, overlay, light, r, g, b, opacity);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T extends Entity> EntityModel<T> getInstance() {
+        return (EntityModel<T>) INSTANCE;
     }
 }

@@ -7,21 +7,16 @@ import lombok.Setter;
 import net.dumbcode.dumblibrary.client.RenderUtils;
 import net.dumbcode.dumblibrary.client.StencilStack;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.gui.IGuiEventListener;
-import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.Rectangle2d;
 import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.inventory.container.PlayerContainer;
 import net.minecraft.util.math.MathHelper;
-import org.lwjgl.input.Mouse;
-import org.lwjgl.util.Rectangle;
 
-import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Supplier;
 
 @Getter
@@ -56,7 +51,7 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> implements IGuiEventListe
 
     @Getter(AccessLevel.NONE)
     @Setter(AccessLevel.NONE)
-    private int lastYClicked = -1;
+    private double lastYClicked = -1;
 
     public GuiScrollBox(int xPos, int yPos, int width, int cellHeight, int cellMax, Supplier<List<T>> listSupplier) {
         this.xPos = xPos;
@@ -79,33 +74,35 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> implements IGuiEventListe
         List<T> entries = this.listSupplier.get();
         boolean additionalRows = entries.size() > this.cellMax;
         int height = this.getTotalSize(entries.size());
-        Rectangle2D.Float scrollBar = this.getScrollBar(entries.size(), height);
+        float[] scrollBar = this.getScrollBar(entries.size(), height);
 
         if (additionalRows) {
-            this.updateScroll(entries, height, scrollBar.height, mouseY);
+            this.updateScroll(entries, height, scrollBar[3], mouseY);
         }
 
         if (!Minecraft.getInstance().getMainRenderTarget().isStencilEnabled()) {
             Minecraft.getInstance().getMainRenderTarget().enableStencil();
         }
 
-        StencilStack.pushSquareStencil(this.xPos, this.yPos, this.xPos + this.width, this.yPos + height);
+        StencilStack.pushSquareStencil(stack, this.xPos, this.yPos, this.xPos + this.width, this.yPos + height);
 
         int borderSize = 1;
         MC.textureManager.bind(PlayerContainer.BLOCK_ATLAS);
         RenderHelper.setupFor3DItems();
 
-        this.renderEntries(entries, height, scrollBar, borderSize, mouseX, mouseY);
+        this.renderEntries(stack, entries, height, scrollBar, borderSize, mouseX, mouseY);
 
         if (additionalRows) {
-            this.renderScrollBar(Objects.requireNonNull(scrollBar), borderSize, this.mouseOverScrollBar(mouseX, mouseY, height, scrollBar));
+            this.renderScrollBar(stack, scrollBar, borderSize, this.mouseOverScrollBar(mouseX, mouseY, height, scrollBar));
         }
 
         RenderHelper.turnOff();
         StencilStack.popStencil();
 
-        RenderUtils.renderBorder(this.xPos, this.yPos, this.xPos + this.width, this.yPos + height, borderSize, this.borderColor);
+        RenderUtils.renderBorder(stack, this.xPos, this.yPos, this.xPos + this.width, this.yPos + height, borderSize, this.borderColor);
     }
+
+
 
     /**
      * Checks to see if the scroll wheel has been used, and if so then scrolls the screen.
@@ -117,15 +114,11 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> implements IGuiEventListe
      */
     private void updateScroll(List<T> entries, int totalHeight, float scrollLength, int mouseY) {
         if (this.lastYClicked != -1) {
-            if (!Mouse.isButtonDown(0)) {
-                this.lastYClicked = -1;
-            } else {
-                float oldScroll = this.scroll;
-                float pixelsPerEntry = (totalHeight - scrollLength) / (entries.size() - this.cellMax);
-                this.scroll((this.lastYClicked - mouseY) / pixelsPerEntry);
-                if (oldScroll != this.scroll) {
-                    this.lastYClicked = mouseY;
-                }
+            float oldScroll = this.scroll;
+            float pixelsPerEntry = (totalHeight - scrollLength) / (entries.size() - this.cellMax);
+            this.scroll((float) ((this.lastYClicked - mouseY) / pixelsPerEntry));
+            if (oldScroll != this.scroll) {
+                this.lastYClicked = mouseY;
             }
         }
     }
@@ -140,7 +133,7 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> implements IGuiEventListe
      * @param mouseX     the mouse's x position
      * @param mouseY     the mouse's y position
      */
-    private void renderEntries(List<T> entries, int height, Rectangle2D.Float scrollBar, int borderSize, int mouseX, int mouseY) {
+    private void renderEntries(MatrixStack stack, List<T> entries, int height, float[] scrollBar, int borderSize, int mouseX, int mouseY) {
         boolean mouseOver = this.isMouseOver(mouseX, mouseY, height);
 
         List<T> sorted = new ArrayList<>(entries);
@@ -150,16 +143,16 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> implements IGuiEventListe
             int yStart = (int) (this.yPos + this.cellHeight * entries.indexOf(entry) - this.scroll * this.cellHeight);
             //Usually it would be yStart + cellHeight, however because the ystart is offsetted (due to the active selection box), it cancels out
             if (yStart + this.cellHeight >= this.yPos && yStart <= this.yPos + height) {
-                Gui.drawRect(this.xPos, yStart, this.xPos + this.width, yStart + this.cellHeight, entry == this.selectedElement ? this.cellSelectedColor : this.cellHighlightColor);
-                Gui.drawRect(this.xPos, yStart, this.xPos + this.width, yStart + borderSize, this.borderColor);
+                AbstractGui.fill(stack, this.xPos, yStart, this.xPos + this.width, yStart + this.cellHeight, entry == this.selectedElement ? this.cellSelectedColor : this.cellHighlightColor);
+                AbstractGui.fill(stack, this.xPos, yStart, this.xPos + this.width, yStart + borderSize, this.borderColor);
 
                 boolean mouseOverElement = !this.mouseOverScrollBar(mouseX, mouseY, height, scrollBar) && mouseOver && mouseY >= yStart && mouseY < yStart + this.cellHeight;
 
-                entry.draw(this.xPos, yStart, mouseX, mouseY, mouseOverElement);
+                entry.draw(stack, this.xPos, yStart, mouseX, mouseY, mouseOverElement);
 
                 //Draw highlighted section of the cell (if mouse is over)
                 if (mouseOverElement) {
-                    Gui.drawRect(this.xPos, yStart, this.xPos + this.width, yStart + this.cellHeight, this.highlightColor);
+                    AbstractGui.fill(stack, this.xPos, yStart, this.xPos + this.width, yStart + this.cellHeight, this.highlightColor);
                 }
 
                 entry.postDraw(this.xPos, yStart, mouseX, mouseY);
@@ -174,7 +167,7 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> implements IGuiEventListe
      * @param listSize the size of the entries
      * @return a rectangle of [xPosition, yPosition, xSize, ySize]
      */
-    private Rectangle2D.Float getScrollBar(int listSize, int height) {
+    private float[] getScrollBar(int listSize, int height) {
         int scrollBarWidth = 8;
         int scrollBarLeft = this.xPos + this.width - scrollBarWidth;
 
@@ -185,9 +178,9 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> implements IGuiEventListe
             if (scrollYStart < this.yPos - 1) {
                 scrollYStart = this.yPos - 1F;
             }
-            return new Rectangle2D.Float(scrollBarLeft, scrollYStart, scrollBarWidth, scrollLength);
+            return new float[] { scrollBarLeft, scrollYStart, scrollBarWidth, scrollLength };
         }
-        return new Rectangle2D.Float(0,0,0,0);
+        return new float[4];
     }
 
     /**
@@ -199,12 +192,12 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> implements IGuiEventListe
      * @param scrollBar the dimensions of the scroll bar
      * @return true if the mouse is over the scrollbar, false otherwise.
      */
-    private boolean mouseOverScrollBar(int mouseX, int mouseY, int height, Rectangle2D.Float scrollBar) {
+    private boolean mouseOverScrollBar(double mouseX, double mouseY, int height, float[] scrollBar) {
         return     mouseX - this.xPos > 0 && mouseX - this.xPos <= this.width
                 && mouseY - this.yPos > 0 && mouseY - this.yPos < height
 
-                && mouseX >= scrollBar.x && mouseX <= scrollBar.x + scrollBar.width
-                && mouseY >= scrollBar.y && mouseY <= scrollBar.y + scrollBar.height;
+                && mouseX >= scrollBar[0] && mouseX <= scrollBar[0] + scrollBar[2]
+                && mouseY >= scrollBar[1] && mouseY <= scrollBar[1] + scrollBar[3];
     }
 
     /**
@@ -214,20 +207,20 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> implements IGuiEventListe
      * @param borderSize The size of the border
      * @param mouseOver  whether the mouse is over the scroll-bar or not
      */
-    private void renderScrollBar(Rectangle2D.Float scrollBar, int borderSize, boolean mouseOver) {
-        Rectangle bar = new Rectangle((int) scrollBar.x, (int) scrollBar.y, (int) scrollBar.width, (int) scrollBar.height);
+    private void renderScrollBar(MatrixStack stack, float[] scrollBar, int borderSize, boolean mouseOver) {
+        Rectangle2d bar = new Rectangle2d((int) scrollBar[0], (int) scrollBar[1], (int) scrollBar[2], (int) scrollBar[3]);
 
         //render main bar
-        Gui.drawRect(bar.getX(), bar.getY(), bar.getX() + bar.getWidth(), bar.getY() + bar.getHeight(), this.insideColor);
+        AbstractGui.fill(stack, bar.getX(), bar.getY(), bar.getX() + bar.getWidth(), bar.getY() + bar.getHeight(), this.insideColor);
 
         //render an overlay to the bar if its overlayed
         if (mouseOver) {
-            Gui.drawRect(bar.getX(), bar.getY(), bar.getX() + bar.getWidth(), bar.getY() + bar.getHeight(), this.highlightColor);
+            AbstractGui.fill(stack, bar.getX(), bar.getY(), bar.getX() + bar.getWidth(), bar.getY() + bar.getHeight(), this.highlightColor);
         }
 
-        Gui.drawRect(bar.getX(), bar.getY(), bar.getX() + bar.getWidth(), bar.getY() + borderSize, this.borderColor);
-        Gui.drawRect(bar.getX(), bar.getY() + bar.getHeight(), bar.getX() + bar.getWidth(), bar.getY() + bar.getHeight() - borderSize, this.borderColor);
-        Gui.drawRect(bar.getX(), bar.getY(), bar.getX() + borderSize, bar.getY() + bar.getHeight(), this.borderColor);
+        AbstractGui.fill(stack, bar.getX(), bar.getY(), bar.getX() + bar.getWidth(), bar.getY() + borderSize, this.borderColor);
+        AbstractGui.fill(stack, bar.getX(), bar.getY() + bar.getHeight(), bar.getX() + bar.getWidth(), bar.getY() + bar.getHeight() - borderSize, this.borderColor);
+        AbstractGui.fill(stack, bar.getX(), bar.getY(), bar.getX() + borderSize, bar.getY() + bar.getHeight(), this.borderColor);
     }
 
     /**
@@ -256,22 +249,23 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> implements IGuiEventListe
      * @param mouseY      the mouse's y position
      * @param mouseButton the mouse button clicked.
      */
-    public void mouseClicked(double mouseX, double mouseY, int mouseButton) {
+    public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
         List<T> entries = this.listSupplier.get();
 
         boolean additionalRows = entries.size() > this.cellMax;
         int height = this.getTotalSize(entries.size());
-        Rectangle2D.Float scrollBar = this.getScrollBar(entries.size(), height);
+        float[] scrollBar = this.getScrollBar(entries.size(), height);
 
         //Scroll bar clicked
         if (additionalRows && this.mouseOverScrollBar(mouseX, mouseY, height, scrollBar)) {
             this.lastYClicked = mouseY;
-            return;
+            return true;
         }
 
         if (this.isMouseOver(mouseX, mouseY, height) && mouseY - this.yPos < height) {
             this.clickedEntry(entries, mouseX, mouseY, mouseButton);
         }
+        return true;
     }
 
     /**
@@ -281,7 +275,7 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> implements IGuiEventListe
      * @param mouseX  the mouse's x
      * @param mouseY  the mouse's y
      */
-    private void clickedEntry(List<T> entries, int mouseX, int mouseY, int mouseButton) {
+    private void clickedEntry(List<T> entries, double mouseX, double mouseY, int mouseButton) {
         for (T entry : entries) {
             if(entry.globalClicked(mouseX, mouseY, mouseButton)) {
                 return;

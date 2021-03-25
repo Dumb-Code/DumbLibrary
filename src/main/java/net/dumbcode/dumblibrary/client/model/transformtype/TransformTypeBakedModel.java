@@ -1,11 +1,11 @@
-package net.dumbcode.dumblibrary.client.model;
+package net.dumbcode.dumblibrary.client.model.transformtype;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import lombok.experimental.Delegate;
-import net.minecraft.client.renderer.block.model.IBakedModel;
-import net.minecraft.client.renderer.block.model.ItemCameraTransforms;
-import org.apache.commons.lang3.tuple.Pair;
+import net.minecraft.client.renderer.model.IBakedModel;
+import net.minecraft.client.renderer.model.ItemCameraTransforms;
+import net.minecraftforge.client.model.data.IDynamicBakedModel;
 
-import javax.vecmath.Matrix4f;
 import java.util.Map;
 
 /**
@@ -14,7 +14,7 @@ import java.util.Map;
  * @author Wyn Price
  * @see TransformTypeModelLoader
  */
-public class TransformTypeBakedModel implements IBakedModel {
+public class TransformTypeBakedModel implements IDynamicBakedModel {
 
     @Delegate(excludes = DelegateExclusions.class)
     private final IBakedModel defaultModel;
@@ -30,9 +30,8 @@ public class TransformTypeBakedModel implements IBakedModel {
     }
 
     @Override
-    public Pair<? extends IBakedModel, Matrix4f> handlePerspective(ItemCameraTransforms.TransformType cameraTransformType) {
-        //Get the override, or the default model if there is no override, and let it handle the models.
-        return this.modelOverrides.getOrDefault(cameraTransformType, this.defaultModel).handlePerspective(cameraTransformType);
+    public IBakedModel handlePerspective(ItemCameraTransforms.TransformType cameraTransformType, MatrixStack stack) {
+        return this.modelOverrides.getOrDefault(cameraTransformType, this.defaultModel).handlePerspective(cameraTransformType, stack);
     }
 
     /**
@@ -40,6 +39,6 @@ public class TransformTypeBakedModel implements IBakedModel {
      */
     @SuppressWarnings("unused")
     private interface DelegateExclusions {
-        Pair<? extends IBakedModel, Matrix4f> handlePerspective(ItemCameraTransforms.TransformType cameraTransformType);
+        IBakedModel handlePerspective(ItemCameraTransforms.TransformType cameraTransformType, MatrixStack stack);
     }
 }

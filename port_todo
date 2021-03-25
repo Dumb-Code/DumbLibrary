@@ -4,3 +4,4 @@ Add exporting and importing to GuiModelPoseEdit
 Make GuiModelPoseEdit rotation sliders work
 Add item overrides to DCMBakedModel
 Ensure that DCMBakedModel actually works
+Ensure that ModelCommandModel actually works (and add -modelBlockstateCache in the baked model)

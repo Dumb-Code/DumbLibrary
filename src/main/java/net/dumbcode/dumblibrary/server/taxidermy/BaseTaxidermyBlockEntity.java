@@ -1,7 +1,7 @@
 package net.dumbcode.dumblibrary.server.taxidermy;
 
 import lombok.Getter;
-import net.dumbcode.dumblibrary.client.model.tabula.DCMModel;
+import net.dumbcode.dumblibrary.client.model.dcm.DCMModel;
 import net.dumbcode.dumblibrary.server.SimpleBlockEntity;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;

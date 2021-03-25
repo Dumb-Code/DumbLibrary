@@ -17,9 +17,7 @@ import java.util.function.Supplier;
 @AllArgsConstructor
 public class C6SkeletalMovement {
 
-    private final int x;
-    private final int y;
-    private final int z;
+    private final BlockPos pos;
     private final String part;
     private final Vector3f rotations;
     private final Vector3f position;
@@ -27,7 +25,7 @@ public class C6SkeletalMovement {
 
     public static C6SkeletalMovement fromBytes(PacketBuffer buf) {
         return new C6SkeletalMovement(
-            buf.readInt(), buf.readInt(), buf.readInt(),
+            buf.readBlockPos(),
             buf.readUtf(),
             new Vector3f(buf.readFloat(), buf.readFloat(), buf.readFloat()),
             new Vector3f(buf.readFloat(), buf.readFloat(), buf.readFloat())
@@ -35,9 +33,7 @@ public class C6SkeletalMovement {
     }
 
     public static void toBytes(C6SkeletalMovement packet, PacketBuffer buf) {
-        buf.writeInt(packet.x);
-        buf.writeInt(packet.y);
-        buf.writeInt(packet.z);
+        buf.writeBlockPos(packet.pos);
         buf.writeUtf(packet.part);
         buf.writeFloat(packet.rotations.x());
         buf.writeFloat(packet.rotations.y());
@@ -50,14 +46,13 @@ public class C6SkeletalMovement {
     public static void handle(C6SkeletalMovement message, Supplier<NetworkEvent.Context> supplier) {
         NetworkEvent.Context context = supplier.get();
         context.enqueueWork(() -> {
-            BlockPos pos = new BlockPos(message.x, message.y, message.z);
             World world = NetworkUtils.getPlayer(supplier).getCommandSenderWorld();
-            TileEntity blockEntity = world.getBlockEntity(pos);
+            TileEntity blockEntity = world.getBlockEntity(message.pos);
             if(blockEntity instanceof BaseTaxidermyBlockEntity) {
                 BaseTaxidermyBlockEntity builder = (BaseTaxidermyBlockEntity)blockEntity;
                 builder.getHistory().add(new TaxidermyHistory.Record(message.part, new TaxidermyHistory.CubeProps(message.rotations, message.position)));
                 builder.setChanged();
-                DumbLibrary.NETWORK.send(PacketDistributor.DIMENSION.with(world::dimension), new S7HistoryRecord(pos, message.part, message.rotations, message.position));
+                DumbLibrary.NETWORK.send(PacketDistributor.DIMENSION.with(world::dimension), new S7HistoryRecord(message.pos, message.part, message.rotations, message.position));
             }
         });
     }

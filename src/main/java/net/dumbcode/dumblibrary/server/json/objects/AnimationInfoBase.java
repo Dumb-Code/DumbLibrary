@@ -3,7 +3,7 @@ package net.dumbcode.dumblibrary.server.json.objects;
 import com.google.common.collect.Lists;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import net.dumbcode.dumblibrary.client.model.tabula.DCMModel;
+import net.dumbcode.dumblibrary.client.model.dcm.DCMModel;
 import net.dumbcode.dumblibrary.server.json.JsonAnimator;
 import net.minecraft.util.JsonUtils;
 

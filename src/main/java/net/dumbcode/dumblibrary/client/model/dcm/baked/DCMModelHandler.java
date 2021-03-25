@@ -1,154 +1,124 @@
-package net.dumbcode.dumblibrary.client.model.tabula.baked;
+package net.dumbcode.dumblibrary.client.model.dcm.baked;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.gson.*;
-import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
-import lombok.Cleanup;
 import lombok.Data;
+import lombok.SneakyThrows;
 import lombok.Value;
 import net.dumbcode.dumblibrary.server.utils.StreamUtils;
 import net.dumbcode.studio.model.ModelInfo;
 import net.dumbcode.studio.model.ModelLoader;
-import net.minecraft.client.renderer.model.BlockModel;
-import net.minecraft.client.renderer.model.IUnbakedModel;
-import net.minecraft.client.renderer.model.RenderMaterial;
 import net.minecraft.client.renderer.texture.AtlasTexture;
-import net.minecraft.client.renderer.texture.MissingTextureSprite;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.resources.IResource;
 import net.minecraft.resources.IResourceManager;
 import net.minecraft.util.Direction;
 import net.minecraft.util.JSONUtils;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.resource.IResourceType;
-import net.minecraftforge.resource.ISelectiveResourceReloadListener;
-import org.apache.commons.io.IOUtils;
+import net.minecraftforge.client.model.IModelLoader;
 
-import java.io.InputStreamReader;
-import java.io.StringReader;
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Predicate;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
  * The model handler for loading .tbl models
  */
-public enum TabulaModelHandler implements ISelectiveResourceReloadListener {
+public enum DCMModelHandler implements IModelLoader<DCMModelGeometry> {
     INSTANCE;
 
     /**
      * A dummy texture layer representing the missing texture/layer
      */
-    public static final TextureLayer MISSING = new TextureLayer("missing", new RenderMaterial(AtlasTexture.LOCATION_BLOCKS, new ResourceLocation("missingno")), Predicates.alwaysTrue(), -1);
+    public static final TextureLayer MISSING = new TextureLayer("missing", "missingno", Predicates.alwaysTrue(), -1);
 
-    private static final JsonParser PARSER = new JsonParser();
-    /**
-     * regex pattern to get the layer id from the list of layer textures.
-     */
-    private static final Pattern PATTERN = Pattern.compile("layer(\\d+)$");
-    private final Set<String> namespaces = Sets.newHashSet();
-    private IResourceManager manager;
+    @Override
+    @SneakyThrows
+    public DCMModelGeometry read(JsonDeserializationContext deserializationContext, JsonObject modelContents) {
+        JsonObject json = modelContents.getAsJsonObject();
+        ModelInfo information = StreamUtils.openStream(new ResourceLocation(JSONUtils.getAsString(json, "model")), ModelLoader::loadModel);
 
-
-    public void allow(String namespace) {
-        this.namespaces.add(namespace);
-    }
-
-//    @Override
-//    public boolean accepts(ResourceLocation modelLocation) {
-//        return this.namespaces.contains(modelLocation.getNamespace()) && modelLocation.getPath().endsWith(".tbl");
-//    }
-
-    public IUnbakedModel loadModel(ResourceLocation modelLocation) throws Exception {
-        String path = modelLocation.getPath().replaceAll("\\.tbl", ".json");
-        IResource resource = this.manager.getResource(new ResourceLocation(modelLocation.getNamespace(), path));
-        @Cleanup InputStreamReader reader = new InputStreamReader(resource.getInputStream());
-        String string = IOUtils.toString(reader);
-        JsonObject json = PARSER.parse(string).getAsJsonObject();
-        ModelInfo information = StreamUtils.openStream(new ResourceLocation(JSONUtils.getAsString(json, "tabula")), ModelLoader::loadModel);
-        BlockModel modelBlock = BlockModel.fromStream(new StringReader(string));
-        List<TextureLayer> allTextures = Lists.newArrayList();
-        Set<String> layers = Sets.newHashSet();
-        JsonObject object = JSONUtils.getAsJsonObject(json, "texture_data", new JsonObject());
-        for (String key : modelBlock.textureMap.keySet()) {
-            int layer = -1;
-            Matcher matcher = PATTERN.matcher(key);
-            if (matcher.matches()) {
-                layer = Integer.parseInt(matcher.group(1));
-            }
-            Predicate<String> cubePredicate = Predicates.alwaysTrue();
-            if(object.has("layer" + layer)) {
-                JsonObject layerObject = JSONUtils.getAsJsonObject(object, "layer" + layer);
-                String type = JSONUtils.getAsString(layerObject, "type");
-                List<String> cubeNames = StreamUtils.stream(JSONUtils.getAsJsonArray(layerObject, "cubes")).map(JsonElement::getAsString).collect(Collectors.toList());
-                if(!type.equals("whitelist") && !type.equals("blacklist")) {
-                    throw new IllegalArgumentException("Don't know how to handle texture info type " + type);
-                }
-                cubePredicate = cubeNames::contains;
-                if(type.equals("blacklist")) {
-                    cubePredicate = cubePredicate.negate();
-                }
-            }
-            allTextures.add(new TextureLayer(key, new RenderMaterial(AtlasTexture.LOCATION_BLOCKS, modelBlock.textureMap.get(key).map(RenderMaterial::texture, ResourceLocation::new)), cubePredicate, layer));
-            layers.add(key);
-        }
-        Either<RenderMaterial, String> particle = modelBlock.textureMap.get("particle");
-        ResourceLocation part = particle == null ? MissingTextureSprite.getLocation() : particle.map(RenderMaterial::texture, ResourceLocation::new);
-
+        List<TextureLayer> allTextures = readLayerData(json);
         List<LightupData> lightupData = Lists.newArrayList();
 
         if (json.has("lightup_data")) {
             for (JsonElement data : JSONUtils.getAsJsonArray(json, "lightup_data")) {
-                lightupData.add(LightupData.parse(data.getAsJsonObject(), layers));
+                lightupData.add(LightupData.parse(data.getAsJsonObject()));
             }
         }
 
-        Map<Integer, Pair<List<CubeFacingValues>, Integer>> directTints = new HashMap<>();
+        Map<String, Pair<List<CubeFacingValues>, Integer>> directTints = new HashMap<>();
         if(json.has("direct_cube_tint")) {
             for (JsonElement element : JSONUtils.getAsJsonArray(json, "direct_cube_tint")) {
                 JsonObject cubeTint = element.getAsJsonObject();
-                Matcher matcher = PATTERN.matcher(JSONUtils.getAsString(cubeTint, "layer"));
-                if (matcher.matches()) {
-                    directTints.put(Integer.parseInt(matcher.group(1)), Pair.of(parseCubeFacingValues(JSONUtils.getAsJsonArray(cubeTint, "cubes")), JSONUtils.getAsInt(cubeTint, "tint")));
-                }
+                String layer = JSONUtils.getAsString(cubeTint, "layer");
+                directTints.put(layer, Pair.of(parseCubeFacingValues(JSONUtils.getAsJsonArray(cubeTint, "cubes")), JSONUtils.getAsInt(cubeTint, "tint")));
             }
         }
 
-        Map<Integer, String> renderLayerDataMap = new HashMap<>();
+        Map<String, String> renderLayerDataMap = new HashMap<>();
         JsonObject renderLayers = JSONUtils.getAsJsonObject(json, "render_layers", new JsonObject());
         for (Map.Entry<String, JsonElement> entry : renderLayers.entrySet()) {
             if(renderLayers.has(entry.getKey())) {
                 for (JsonElement element : entry.getValue().getAsJsonArray()) {
-                    Matcher matcher = PATTERN.matcher(element.getAsString());
-                    if (matcher.matches()) {
-                        renderLayerDataMap.put(Integer.parseInt(matcher.group(1)), entry.getKey());
-                    }
+                    renderLayerDataMap.put(element.getAsString(), entry.getKey());
                 }
             }
         }
 
-        return new DCMIModel(
-            Collections.unmodifiableList(allTextures), lightupData, directTints, renderLayerDataMap, part,
+        return new DCMModelGeometry(
+            Collections.unmodifiableList(allTextures), lightupData, directTints, renderLayerDataMap,
 //            PerspectiveMapWrapper.getTransforms(modelBlock.getTransforms()),
-            information, modelBlock.hasAmbientOcclusion, modelBlock.getTransforms());
+            information, JSONUtils.getAsBoolean(json, "ambientocclusion", true));
+    }
+
+    private static List<TextureLayer> readLayerData(JsonObject object) {
+        ResourceLocation resourcelocation = AtlasTexture.LOCATION_BLOCKS;
+        List<TextureLayer> textureLayers = new ArrayList<>();
+        if (object.has("textures")) {
+            JsonObject jsonobject = JSONUtils.getAsJsonObject(object, "textures");
+            int index = 0;
+            for(Map.Entry<String, JsonElement> entry : jsonobject.entrySet()) {
+                String name = entry.getKey();
+                String value = entry.getValue().getAsString();
+
+                Predicate<String> predicate = Predicates.alwaysTrue();
+                if(object.has("texture_data") && object.getAsJsonObject("texture_data").has(name)) {
+                    predicate = readLayerPredicate(object.getAsJsonObject("texture_data").getAsJsonObject(name));
+                }
+                textureLayers.add(new TextureLayer(name, value, predicate, index++));
+            }
+        }
+        return textureLayers;
+    }
+
+    private static Predicate<String> readLayerPredicate(JsonObject layerObject) {
+        String type = JSONUtils.getAsString(layerObject, "type");
+        List<String> cubeNames = StreamUtils.stream(JSONUtils.getAsJsonArray(layerObject, "cubes")).map(JsonElement::getAsString).collect(Collectors.toList());
+        if(!type.equals("whitelist") && !type.equals("blacklist")) {
+            throw new IllegalArgumentException("Don't know how to handle texture info type " + type);
+        }
+        Predicate<String> cubePredicate = cubeNames::contains;
+        if(type.equals("blacklist")) {
+            cubePredicate = cubePredicate.negate();
+        }
+        return cubePredicate;
     }
 
     @Override
-    public void onResourceManagerReload(IResourceManager resourceManager, Predicate<IResourceType> resourcePredicate) {
-        this.manager = resourceManager;
+    public void onResourceManagerReload(IResourceManager resourceManager) {
+
     }
 
     @Data
     public static class TextureLayer {
         private final String layerName;
-        private final RenderMaterial material;
+        private final String value;
         private final Predicate<String> cubePredicate;
-        private final int layer;
+        private final int index;
         private TextureAtlasSprite sprite;
     }
 
@@ -182,13 +152,14 @@ public enum TabulaModelHandler implements ISelectiveResourceReloadListener {
      */
     @Value
     public static class LightupData {
+        @Nullable
         private Set<String> layersApplied;
         private List<CubeFacingValues> entry;
         private List<SmoothFace> smoothFace;
         private float blockLight;
         private float skyLight;
 
-        public static LightupData parse(JsonObject json, Set<String> layers) {
+        public static LightupData parse(JsonObject json) {
             Set<String> layersApplied = Sets.newHashSet();
             if (json.has("layers_applied")) {
                 JsonArray arr = JSONUtils.getAsJsonArray(json, "layers_applied");
@@ -196,7 +167,7 @@ public enum TabulaModelHandler implements ISelectiveResourceReloadListener {
                     layersApplied.add(arr.get(i).getAsString());
                 }
             } else {
-                layersApplied.addAll(layers);
+                layersApplied = null;
             }
 
             List<SmoothFace> smoothFaces = new ArrayList<>();

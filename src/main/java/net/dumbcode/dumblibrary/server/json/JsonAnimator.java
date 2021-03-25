@@ -3,7 +3,7 @@ package net.dumbcode.dumblibrary.server.json;
 import com.google.common.collect.Lists;
 import com.google.gson.*;
 import lombok.Data;
-import net.dumbcode.dumblibrary.client.model.tabula.DCMModel;
+import net.dumbcode.dumblibrary.client.model.dcm.DCMModel;
 import net.dumbcode.dumblibrary.server.json.objects.Constants;
 import net.dumbcode.dumblibrary.server.json.objects.JsonAnimationModule;
 import net.dumbcode.dumblibrary.server.json.objects.JsonAnimationRegistry;

@@ -1,10 +1,9 @@
-package net.dumbcode.dumblibrary.client.model.tabula;
+package net.dumbcode.dumblibrary.client.model.dcm;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -27,8 +26,6 @@ import java.util.Map;
 @Setter
 @Accessors(chain = true)
 public class DCMModel extends EntityModel<Entity> {
-    @Setter(AccessLevel.NONE)
-    private boolean rendered = false;
     private final ModelInfo information;
     private final List<DCMModelRenderer> roots = Lists.newArrayList();
     @Getter

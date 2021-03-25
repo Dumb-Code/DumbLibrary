@@ -5,7 +5,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.client.FramebufferCache;
 import net.dumbcode.dumblibrary.client.model.ModelMissing;
-import net.dumbcode.dumblibrary.client.model.tabula.DCMModel;
+import net.dumbcode.dumblibrary.client.model.dcm.DCMModel;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderCallbackComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLayerComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLocationComponent;
@@ -42,7 +42,7 @@ public class ModelComponentRenderer extends LivingRenderer<LivingEntity, EntityM
 
 
     public ModelComponentRenderer(float shadowSize, Supplier<DCMModel> modelSupplier, RenderLocationComponent.ConfigurableLocation texture, List<Supplier<RenderLayerComponent.Layer>> layerList) {
-        super(MC.getEntityRenderDispatcher(), ModelMissing.INSTANCE, shadowSize);
+        super(MC.getEntityRenderDispatcher(), ModelMissing.getInstance(), shadowSize);
         this.modelSupplier = modelSupplier;
         this.texture = texture;
         this.layerList = layerList;
@@ -63,13 +63,6 @@ public class ModelComponentRenderer extends LivingRenderer<LivingEntity, EntityM
 
         DCMModel model = this.modelSupplier.get();
         this.model = (EntityModel<LivingEntity>)(Object)model;
-
-//        GlStateManager.pushMatrix();
-//        GlStateManager.scale(0F, 0F, 0F);
-        if(!model.isRendered()) {
-            model.renderBoxes(1/16F);
-        }
-//        GlStateManager.popMatrix();
 
         this.preCallbacks = ms -> {
             for (RenderCallbackComponent.SubCallback callback : preCallbacks) {

@@ -5,7 +5,7 @@ import com.google.common.collect.Maps;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-import net.dumbcode.dumblibrary.client.model.tabula.DCMModel;
+import net.dumbcode.dumblibrary.client.model.dcm.DCMModel;
 import net.dumbcode.dumblibrary.server.TickHandler;
 import net.dumbcode.dumblibrary.server.animation.interpolation.Interpolation;
 import net.minecraftforge.fml.common.FMLCommonHandler;

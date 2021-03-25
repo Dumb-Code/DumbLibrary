@@ -1,7 +1,8 @@
 package net.dumbcode.dumblibrary.client.gui;
 
 import net.dumbcode.dumblibrary.DumbLibrary;
-import net.dumbcode.dumblibrary.client.model.tabula.DCMModel;
+import net.dumbcode.dumblibrary.client.model.dcm.DCMModel;
+import net.dumbcode.dumblibrary.client.model.dcm.DCMModelRenderer;
 import net.dumbcode.dumblibrary.server.network.C4MoveSelectedSkeletalPart;
 import net.dumbcode.dumblibrary.server.network.C6SkeletalMovement;
 import net.dumbcode.dumblibrary.server.network.C8MoveInHistory;
@@ -9,9 +10,9 @@ import net.dumbcode.dumblibrary.server.taxidermy.BaseTaxidermyBlockEntity;
 import net.dumbcode.dumblibrary.server.taxidermy.TaxidermyHistory;
 import net.dumbcode.dumblibrary.server.utils.XYZAxis;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.vector.Vector3f;
 import net.minecraft.util.text.ITextComponent;
 
-import javax.vecmath.Vector3f;
 import java.util.Map;
 
 public class GuiTaxidermy extends GuiModelPoseEdit {
@@ -25,17 +26,17 @@ public class GuiTaxidermy extends GuiModelPoseEdit {
 
     @Override
     protected void undo() {
-        DumbLibrary.NETWORK.sendToServer(new C8MoveInHistory(this.blockEntity.getPos(), -1));
+        DumbLibrary.NETWORK.sendToServer(new C8MoveInHistory(this.blockEntity.getBlockPos(), false));
     }
 
     @Override
     protected void redo() {
-        DumbLibrary.NETWORK.sendToServer(new C8MoveInHistory(this.blockEntity.getPos(), +1));
+        DumbLibrary.NETWORK.sendToServer(new C8MoveInHistory(this.blockEntity.getBlockPos(), true));
     }
 
     @Override
     protected void reset() {
-        DumbLibrary.NETWORK.sendToServer(new C6SkeletalMovement(this.blockEntity.getPos(), TaxidermyHistory.RESET_NAME, new Vector3f(), new Vector3f()));
+        DumbLibrary.NETWORK.sendToServer(new C6SkeletalMovement(this.blockEntity.getBlockPos(), TaxidermyHistory.RESET_NAME, new Vector3f(), new Vector3f()));
     }
 
     @Override
@@ -54,21 +55,20 @@ public class GuiTaxidermy extends GuiModelPoseEdit {
     }
 
     @Override
-    protected void actualizeRotation(TabulaModelRenderer part, XYZAxis axis, float amount) {
-        DumbLibrary.NETWORK.sendToServer(new C4MoveSelectedSkeletalPart(this.blockEntity.getPos(), part.boxName, 0, axis, amount));
+    protected void actualizeRotation(DCMModelRenderer part, XYZAxis axis, float amount) {
+        DumbLibrary.NETWORK.sendToServer(new C4MoveSelectedSkeletalPart(this.blockEntity.getBlockPos(), part.getName(), axis, 0, amount));
     }
 
     @Override
-    protected void actualizePosition(TabulaModelRenderer part, XYZAxis axis, float amount) {
-        DumbLibrary.NETWORK.sendToServer(new C4MoveSelectedSkeletalPart(this.blockEntity.getPos(), part.boxName, 1, axis, amount));
+    protected void actualizePosition(DCMModelRenderer part, XYZAxis axis, float amount) {
+        DumbLibrary.NETWORK.sendToServer(new C4MoveSelectedSkeletalPart(this.blockEntity.getBlockPos(), part.getName(), axis, 1, amount));
     }
 
     @Override
-    protected void actualizeEdit(TabulaModelRenderer part) {
-        DumbLibrary.NETWORK.sendToServer(new C6SkeletalMovement(this.blockEntity.getPos(), part.boxName,
-            new Vector3f(part.rotateAngleX, part.rotateAngleY, part.rotateAngleZ), new Vector3f(part.rotationPointX, part.rotationPointY, part.rotationPointZ)
+    protected void actualizeEdit(DCMModelRenderer part) {
+        DumbLibrary.NETWORK.sendToServer(new C6SkeletalMovement(this.blockEntity.getBlockPos(), part.getName(),
+            new Vector3f(part.xRot, part.yRot, part.zRot), new Vector3f(part.x, part.y, part.z)
         ));
-
     }
 
     @Override

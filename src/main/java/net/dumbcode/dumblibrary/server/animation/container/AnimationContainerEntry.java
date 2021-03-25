@@ -2,7 +2,7 @@ package net.dumbcode.dumblibrary.server.animation.container;
 
 import com.google.common.collect.Lists;
 import lombok.Getter;
-import net.dumbcode.dumblibrary.client.model.tabula.DCMModel;
+import net.dumbcode.dumblibrary.client.model.dcm.DCMModel;
 import net.dumbcode.dumblibrary.server.animation.AnimationContainer;
 import net.dumbcode.dumblibrary.server.animation.objects.AnimatableCubeEmpty;
 import net.dumbcode.dumblibrary.server.animation.objects.AnimationLayer;

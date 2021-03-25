@@ -1,10 +1,12 @@
 package net.dumbcode.dumblibrary.client;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.gui.Gui;
 import org.lwjgl.opengl.GL11;
 
@@ -14,8 +16,8 @@ import java.util.Deque;
 public class StencilStack {
     private static final Deque<Entry> renders = new ArrayDeque<>();
 
-    public static void pushSquareStencil(int left, int top, int right, int bottom) {
-        pushStencil(() ->  Gui.drawRect(left, top, right, bottom, -1), Type.AND);
+    public static void pushSquareStencil(MatrixStack stack, int left, int top, int right, int bottom) {
+        pushStencil(() ->  AbstractGui.fill(stack, left, top, right, bottom, -1), Type.AND);
     }
 
     public static void pushStencil(Runnable renderCallback, Type type) {

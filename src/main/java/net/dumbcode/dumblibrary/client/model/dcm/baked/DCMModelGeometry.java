@@ -1,16 +1,14 @@
-package net.dumbcode.dumblibrary.client.model.tabula.baked;
+package net.dumbcode.dumblibrary.client.model.dcm.baked;
 
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.datafixers.util.Pair;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
 import lombok.With;
 import net.dumbcode.dumblibrary.server.utils.MathUtils;
 import net.dumbcode.studio.model.CubeInfo;
 import net.dumbcode.studio.model.ModelInfo;
 import net.minecraft.client.renderer.model.*;
-import net.minecraft.client.renderer.texture.AtlasTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.renderer.vertex.VertexFormat;
@@ -19,9 +17,10 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.math.vector.Vector3f;
 import net.minecraft.util.math.vector.Vector4f;
+import net.minecraftforge.client.model.IModelConfiguration;
+import net.minecraftforge.client.model.geometry.IModelGeometry;
 import net.minecraftforge.client.model.pipeline.BakedQuadBuilder;
 
-import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -34,32 +33,31 @@ import java.util.stream.Collectors;
  */
 @With
 @RequiredArgsConstructor
-public class DCMIModel implements IUnbakedModel {
+public class DCMModelGeometry implements IModelGeometry<DCMModelGeometry> {
 
-    private final Collection<TabulaModelHandler.TextureLayer> allTextures;
-    private final List<TabulaModelHandler.LightupData> lightupData;
-    private final Map<Integer, Pair<List<TabulaModelHandler.CubeFacingValues>, Integer>> directCubeTints;
-    private final Map<Integer, String> layerMap;
-    private final ResourceLocation particle;
+    private final Collection<DCMModelHandler.TextureLayer> allTextures;
+    private final List<DCMModelHandler.LightupData> lightupData;
+    private final Map<String, Pair<List<DCMModelHandler.CubeFacingValues>, Integer>> directCubeTints;
+    private final Map<String, String> layerMap;
+//    private final ResourceLocation particle;
     private final ModelInfo model;
     private final boolean ambientOcclusion;
-    private final ItemCameraTransforms cameraTransforms;
+//    private final ItemCameraTransforms cameraTransforms;
 
-    @Nullable
     @Override
-    public IBakedModel bake(ModelBakery bakery, Function<RenderMaterial, TextureAtlasSprite> texFunc, IModelTransform p_225613_3_, ResourceLocation p_225613_4_) {
+    public IBakedModel bake(IModelConfiguration owner, ModelBakery bakery, Function<RenderMaterial, TextureAtlasSprite> spriteGetter, IModelTransform modelTransform, ItemOverrideList overrides, ResourceLocation modelLocation) {
         //Create the stack an push a default matrix
         MatrixStack stack = new MatrixStack();
 
-        Collection<TabulaModelHandler.TextureLayer> textures = Lists.newArrayList(TabulaModelHandler.MISSING);
+        Collection<DCMModelHandler.TextureLayer> textures = Lists.newArrayList(DCMModelHandler.MISSING);
         //If there are not textures then just add the missing one. Maybe log?
         if (!this.allTextures.isEmpty()) {
             textures = this.allTextures;
         }
 
         //Go through all the texture layers and set the sprite to them.
-        for (TabulaModelHandler.TextureLayer texture : textures) {
-            texture.setSprite(texFunc.apply(texture.getMaterial()));
+        for (DCMModelHandler.TextureLayer texture : textures) {
+            texture.setSprite(spriteGetter.apply(owner.resolveTexture(texture.getValue())));
         }
 
 //        //If it has lightup data, then we need to make sure the vertex format has the lightmap element
@@ -76,8 +74,8 @@ public class DCMIModel implements IUnbakedModel {
         stack.scale(0.0625F, 0.0625F, 0.0625F);
 
         //Iterate through all the layers, then through every group, and on each group go through all the root cubes.
-        for (TabulaModelHandler.TextureLayer layer : textures) {
-            List<BakedQuad> quadList = !this.layerMap.containsKey(layer.getLayer()) ? allLayerQuads : quadMap.computeIfAbsent(this.layerMap.get(layer.getLayer()), l -> new ArrayList<>());
+        for (DCMModelHandler.TextureLayer layer : textures) {
+            List<BakedQuad> quadList = !this.layerMap.containsKey(layer.getLayerName()) ? allLayerQuads : quadMap.computeIfAbsent(this.layerMap.get(layer.getLayerName()), l -> new ArrayList<>());
             for (CubeInfo root : this.model.getRoots()) {
                 this.build(quadList, stack, root, layer);
             }
@@ -86,7 +84,7 @@ public class DCMIModel implements IUnbakedModel {
         quadMap.put(null, allLayerQuads);
 
         //Return the new model
-        return new DCMBakedModel(quadMap, this.ambientOcclusion, texFunc.apply(new RenderMaterial(AtlasTexture.LOCATION_BLOCKS, this.particle)), this.cameraTransforms);
+        return new DCMBakedModel(quadMap, this.ambientOcclusion, spriteGetter.apply(owner.resolveTexture("particle")), owner.getCameraTransforms());
     }
 
 
@@ -103,7 +101,7 @@ public class DCMIModel implements IUnbakedModel {
      * @param cube    The cube of which to generated the 6 quads from.
      * @param layer   The texture layer of which to use for the uv coords. If the quad has no texture on this layer then the quad isn't generated and is instead ignored.
      */
-    private void build(List<BakedQuad> outList, MatrixStack stack, CubeInfo cube, TabulaModelHandler.TextureLayer layer) {
+    private void build(List<BakedQuad> outList, MatrixStack stack, CubeInfo cube, DCMModelHandler.TextureLayer layer) {
         //Apply the matrix changes for the cube
         this.applyMatrixChanges(stack, cube);
 
@@ -213,14 +211,14 @@ public class DCMIModel implements IUnbakedModel {
      * @param facing The cubes facing
      * @return a float[2] of lightup data ranging from 0-16 on each component
      */
-    private float[] generateLightupData(TabulaModelHandler.TextureLayer layer, CubeInfo cube, Direction facing, int vertexID) {
+    private float[] generateLightupData(DCMModelHandler.TextureLayer layer, CubeInfo cube, Direction facing, int vertexID) {
         //ts is the custom block-light/skylight data
         float[] ts = new float[2];
 
         //On UP&DOWN side, directional up on the texture sheet is south for texture
-        for (TabulaModelHandler.LightupData datum : this.lightupData) {
+        for (DCMModelHandler.LightupData datum : this.lightupData) {
             if (datum.getLayersApplied().contains(layer.getLayerName())) {
-                for (TabulaModelHandler.SmoothFace face : datum.getSmoothFace()) {
+                for (DCMModelHandler.SmoothFace face : datum.getSmoothFace()) {
                     if(face.getCube().equals(cube.getName())) {
                         Direction origin = face.getSmoothFaceOrigin();
                         boolean originData = origin.getAxisDirection().getStep() > 0;
@@ -237,7 +235,7 @@ public class DCMIModel implements IUnbakedModel {
                         }
                     }
                 }
-                for (TabulaModelHandler.CubeFacingValues entry : datum.getEntry()) {
+                for (DCMModelHandler.CubeFacingValues entry : datum.getEntry()) {
                     if (entry.getCubeName().equals(cube.getName()) && entry.getFacing().contains(facing)) {
                         ts[0] = Math.max(datum.getBlockLight(), ts[0]);
                         ts[1] = Math.max(datum.getSkyLight(), ts[1]);
@@ -280,18 +278,18 @@ public class DCMIModel implements IUnbakedModel {
      * @param cube          the cubes
      * @return the build quad.
      */
-    private BakedQuad buildQuad(Vector3f[] vertices, TabulaModelHandler.TextureLayer layer, float[] uvData, CubeInfo cube, Direction cubeDirection) {
+    private BakedQuad buildQuad(Vector3f[] vertices, DCMModelHandler.TextureLayer layer, float[] uvData, CubeInfo cube, Direction cubeDirection) {
 
         Vector3f normal = MathUtils.calculateNormalF(vertices[0], vertices[1], vertices[2]);
         Direction quadFacing = Direction.getNearest(normal.x(), normal.y(), normal.z());
         BakedQuadBuilder builder = new BakedQuadBuilder();
         builder.setQuadOrientation(quadFacing);
         builder.setTexture(layer.getSprite());
-        int tint = layer.getLayer();
-        if(this.directCubeTints.containsKey(tint)) {
-            for (TabulaModelHandler.CubeFacingValues values : this.directCubeTints.get(tint).getFirst()) {
+        int tint = layer.getIndex();
+        if(this.directCubeTints.containsKey(layer.getLayerName())) {
+            for (DCMModelHandler.CubeFacingValues values : this.directCubeTints.get(layer.getLayerName()).getFirst()) {
                 if(values.getCubeName().equals(cube.getName()) && values.getFacing().contains(cubeDirection)) {
-                    tint = this.directCubeTints.get(tint).getSecond();
+                    tint = this.directCubeTints.get(layer.getLayerName()).getSecond();
                 }
             }
         }
@@ -396,15 +394,11 @@ public class DCMIModel implements IUnbakedModel {
         return false;
     }
 
-    @Override
-    public Collection<ResourceLocation> getDependencies() {
-        return Collections.emptyList();
-    }
 
     @Override
-    public Collection<RenderMaterial> getMaterials(Function<ResourceLocation, IUnbakedModel> func, Set<Pair<String, String>> p_225614_2_) {
+    public Collection<RenderMaterial> getTextures(IModelConfiguration owner, Function<ResourceLocation, IUnbakedModel> modelGetter, Set<Pair<String, String>> missingTextureErrors) {
         return this.allTextures.stream()
-            .map(TabulaModelHandler.TextureLayer::getMaterial)
+            .map(t -> owner.resolveTexture(t.getValue()))
             .collect(Collectors.toSet());
     }
 
@@ -424,28 +418,28 @@ public class DCMIModel implements IUnbakedModel {
 //        }
 //        return this.withAllTextures(textureLayers);
 //    }
-
-
-
-    /**
-     * Encodes the EnumFacing to an integer. This integer's bits are in the form: [x][y][z],
-     * where 1 represents the positive direction, and 0 is the negative direction <br>
-     * For example;
-     * <ul>
-     * <li>{@link Direction#UP} {@code -> 0b010 -> 2}</li>
-     * <li>{@link Direction#DOWN} {@code -> 0b000 -> 0}</li>
-     * <li>{@link Direction#EAST} {@code -> 0b100 -> 4}</li>
-     * <li>{@link Direction#NORTH} {@code -> 0b000 -> 0}</li>
-     * </ul>
-     * Note that this is not a {@code 1->1} function. If the {@code facing } is facing the negative direction on it's axis,
-     * then the result will just be 0.
-     *
-     * @param facing the facing
-     * @return the encoded integer
-     */
-    public int encode(Direction facing) {
-        return (Math.max(facing.getStepX(), 0) << 2) | (Math.max(facing.getStepY(), 0) << 1) | Math.max(facing.getStepZ(), 0);
-    }
-
-    @Value private static class VertexInfo { Vector4f point; int index; }
+//
+//
+//
+//    /**
+//     * Encodes the EnumFacing to an integer. This integer's bits are in the form: [x][y][z],
+//     * where 1 represents the positive direction, and 0 is the negative direction <br>
+//     * For example;
+//     * <ul>
+//     * <li>{@link Direction#UP} {@code -> 0b010 -> 2}</li>
+//     * <li>{@link Direction#DOWN} {@code -> 0b000 -> 0}</li>
+//     * <li>{@link Direction#EAST} {@code -> 0b100 -> 4}</li>
+//     * <li>{@link Direction#NORTH} {@code -> 0b000 -> 0}</li>
+//     * </ul>
+//     * Note that this is not a {@code 1->1} function. If the {@code facing } is facing the negative direction on it's axis,
+//     * then the result will just be 0.
+//     *
+//     * @param facing the facing
+//     * @return the encoded integer
+//     */
+//    public int encode(Direction facing) {
+//        return (Math.max(facing.getStepX(), 0) << 2) | (Math.max(facing.getStepY(), 0) << 1) | Math.max(facing.getStepZ(), 0);
+//    }
+//
+//    @Value private static class VertexInfo { Vector4f point; int index; }
 }

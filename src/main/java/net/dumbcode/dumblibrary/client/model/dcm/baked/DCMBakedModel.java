@@ -1,4 +1,4 @@
-package net.dumbcode.dumblibrary.client.model.tabula.baked;
+package net.dumbcode.dumblibrary.client.model.dcm.baked;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.client.renderer.RenderType;

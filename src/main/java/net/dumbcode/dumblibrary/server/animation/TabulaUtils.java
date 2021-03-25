@@ -4,7 +4,7 @@ import com.google.common.collect.Maps;
 import lombok.Cleanup;
 import lombok.experimental.UtilityClass;
 import net.dumbcode.dumblibrary.DumbLibrary;
-import net.dumbcode.dumblibrary.client.model.tabula.DCMModel;
+import net.dumbcode.dumblibrary.client.model.dcm.DCMModel;
 import net.dumbcode.dumblibrary.server.animation.objects.AnimatableCube;
 import net.dumbcode.dumblibrary.server.info.ServerAnimatableCube;
 import net.dumbcode.dumblibrary.server.tabula.TabulaJsonHandler;

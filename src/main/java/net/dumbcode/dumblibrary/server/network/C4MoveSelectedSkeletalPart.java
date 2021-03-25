@@ -15,9 +15,7 @@ import java.util.function.Supplier;
 @AllArgsConstructor
 public class C4MoveSelectedSkeletalPart {
 
-    private final int x;
-    private final int y;
-    private final int z;
+    private final BlockPos pos;
     private final String part;
     private final XYZAxis axis;
     private final int type;
@@ -26,9 +24,7 @@ public class C4MoveSelectedSkeletalPart {
 
     public static C4MoveSelectedSkeletalPart fromBytes(PacketBuffer buf) {
         return new C4MoveSelectedSkeletalPart(
-            buf.readInt(),
-            buf.readInt(),
-            buf.readInt(),
+            buf.readBlockPos(),
             buf.readUtf(),
             XYZAxis.values()[buf.readInt()],
             buf.readByte(),
@@ -37,9 +33,7 @@ public class C4MoveSelectedSkeletalPart {
     }
 
     public static void toBytes(C4MoveSelectedSkeletalPart packet, PacketBuffer buf) {
-        buf.writeInt(packet.x);
-        buf.writeInt(packet.y);
-        buf.writeInt(packet.z);
+        buf.writeBlockPos(packet.pos);
         buf.writeUtf(packet.part);
         buf.writeInt(packet.axis.ordinal());
         buf.writeByte(packet.type);
@@ -49,13 +43,13 @@ public class C4MoveSelectedSkeletalPart {
     public static void handle(C4MoveSelectedSkeletalPart message, Supplier<NetworkEvent.Context> supplier) {
         NetworkEvent.Context context = supplier.get();
         context.enqueueWork(() -> {
-            BlockPos pos = new BlockPos(message.x, message.y, message.z);
+            BlockPos pos = message.pos;
             TileEntity blockEntity = NetworkUtils.getPlayer(supplier).getCommandSenderWorld().getBlockEntity(pos);
             if(blockEntity instanceof BaseTaxidermyBlockEntity) {
                 BaseTaxidermyBlockEntity builder = (BaseTaxidermyBlockEntity)blockEntity;
                 builder.getHistory().liveEdit(message.part, message.type, message.axis, message.value);
                 builder.setChanged();
-                DumbLibrary.NETWORK.send(PacketDistributor.ALL.noArg(), new S5UpdateSkeletalBuilder(pos.getX(), pos.getY(), pos.getZ(), message.part, message.type, message.axis, message.value));
+                DumbLibrary.NETWORK.send(PacketDistributor.ALL.noArg(), new S5UpdateSkeletalBuilder(pos.getX(), pos.getY(), pos.getZ(), message.part, message.axis, message.type, message.value));
             }
         });
     }

@@ -4,7 +4,8 @@ import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.client.MutVector2f;
-import net.dumbcode.dumblibrary.client.model.tabula.DCMModel;
+import net.dumbcode.dumblibrary.client.model.dcm.DCMModel;
+import net.dumbcode.dumblibrary.client.model.dcm.DCMModelRenderer;
 import net.dumbcode.dumblibrary.server.animation.TabulaUtils;
 import net.dumbcode.dumblibrary.server.taxidermy.TaxidermyHistory;
 import net.dumbcode.dumblibrary.server.utils.XYZAxis;
@@ -12,32 +13,20 @@ import net.minecraft.client.GameSettings;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHelper;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.client.model.ModelRenderer;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.settings.GameSettings;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraftforge.fml.client.config.GuiSlider;
 import net.minecraftforge.fml.client.gui.widget.ExtendedButton;
 import net.minecraftforge.fml.client.gui.widget.Slider;
 import org.lwjgl.BufferUtils;
-import org.lwjgl.input.Keyboard;
-import org.lwjgl.input.Mouse;
-import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
-import org.lwjgl.util.glu.Project;
 
-import javax.vecmath.Matrix3f;
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector3f;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
@@ -53,7 +42,7 @@ public abstract class GuiModelPoseEdit extends Screen {
     private boolean registeredLeftClick;
     private MutVector2f lastClickPosition = new MutVector2f(0, 0);
     private IntBuffer colorBuffer = BufferUtils.createIntBuffer(1);
-    private TabulaModelRenderer selectedPart;
+    private DCMModelRenderer selectedPart;
     private boolean movedPart;
     private TranslationTextComponent undoText = new TranslationTextComponent(DumbLibrary.MODID+".gui.model_pose_edit.undo");
     private TranslationTextComponent redoText = new TranslationTextComponent(DumbLibrary.MODID+".gui.model_pose_edit.redo");
@@ -113,6 +102,7 @@ public abstract class GuiModelPoseEdit extends Screen {
 //    private GuiButton propertiesButton = new GuiButtonExt(8, 0, 0, propertiesGui.getUnformattedText());
 
     public GuiModelPoseEdit(DCMModel model, ResourceLocation texture, ITextComponent title) {
+        super(title);
         this.model = model; // TODO: child models? -> Selectable
         this.texture = texture;
         this.titleText = title;
@@ -185,9 +175,9 @@ public abstract class GuiModelPoseEdit extends Screen {
     protected abstract void exportPose();
     protected abstract void importPose();
     protected abstract TaxidermyHistory getHistory();
-    protected abstract void actualizeRotation(TabulaModelRenderer part, XYZAxis axis, float amount);
-    protected abstract void actualizePosition(TabulaModelRenderer part, XYZAxis axis, float amount);
-    protected abstract void actualizeEdit(TabulaModelRenderer part);
+    protected abstract void actualizeRotation(DCMModelRenderer part, XYZAxis axis, float amount);
+    protected abstract void actualizePosition(DCMModelRenderer part, XYZAxis axis, float amount);
+    protected abstract void actualizeEdit(DCMModelRenderer part);
     protected abstract Map<String, TaxidermyHistory.CubeProps> getPoseData();
 
     public void positionChanged(GuiNumberEntry entry, int id) {
@@ -312,7 +302,7 @@ public abstract class GuiModelPoseEdit extends Screen {
         if(selectedPart == null)
             selectionText = noPartSelectedText;
         else
-            selectionText = new TranslationTextComponent(DumbLibrary.MODID+".gui.model_pose_edit.selected_part", selectedPart.getCube().getName());
+            selectionText = new TranslationTextComponent(DumbLibrary.MODID+".gui.model_pose_edit.selected_part", selectedPart.getInfo().getName());
         drawCenteredString(stack, font, selectionText, xRotationSlider.x+xRotationSlider.getWidth()/2, baseYOffset, GuiConstants.NICE_WHITE);
         stack.popPose();
 
@@ -326,7 +316,7 @@ public abstract class GuiModelPoseEdit extends Screen {
             dMouse.set(0f, 0f);
             draggingRing = false;
         }
-        TabulaModelRenderer partBelowMouse = findPartBelowMouse();
+        DCMModelRenderer partBelowMouse = findPartBelowMouse();
         if(registeredLeftClick) {
             if(ringBelowMouse == XYZAxis.NONE) {
                 this.selectedPart = partBelowMouse;
@@ -391,19 +381,19 @@ public abstract class GuiModelPoseEdit extends Screen {
         return colorBuffer.get(0);
     }
 
-    private TabulaModelRenderer findPartBelowMouse() {
-        TabulaModelRenderer newSelection = null;
+    private DCMModelRenderer findPartBelowMouse() {
+        DCMModelRenderer newSelection = null;
         hideAllModelParts();
 
         RenderSystem.pushMatrix();
         RenderSystem.disableBlend();
         RenderSystem.disableTexture();
 
-        List<TabulaModelRenderer> boxes = new ArrayList<TabulaModelRenderer>(model.getAllCubes());
+        List<DCMModelRenderer> boxes = new ArrayList<>(model.getAllCubes());
         for (int index = 0; index < boxes.size(); index++) {
             // Render the model part with a specific color and check if the color below the mouse has changed.
             // If it did, the mouse is over this given box
-            TabulaModelRenderer box = boxes.get(index);
+            DCMModelRenderer box = boxes.get(index);
 
             // multiply by 2 because in some cases, the colors are not far enough to allow to pick the correct part
             // (a box behind another may be picked instead because the color are too close)
@@ -636,7 +626,7 @@ public abstract class GuiModelPoseEdit extends Screen {
         GuiHelper.prepareModelRendering(posX, posY, scale, cameraPitch, cameraYaw);
     }
 
-    private void actualModelRender(TabulaModelRenderer partBelowMouse) {
+    private void actualModelRender(DCMModelRenderer partBelowMouse) {
         highlight(selectedPart, 0f, 0f, 1f);
         highlight(partBelowMouse, 1f, 1f, 0f);
         resetScalings();
@@ -648,36 +638,36 @@ public abstract class GuiModelPoseEdit extends Screen {
     }
 
     private void renderRotationRing() {
-        final float ringScale = 1.5f;
-        GlStateManager.disableLighting();
-        GlStateManager.disableTexture2D();
-        GlStateManager.pushMatrix();
-        selectedPart.setParentedAngles(1f/16f);
-        GlStateManager.color(1f, 0f, 0f);
-        GlStateManager.scale(ringScale, ringScale, ringScale);
-        rotationRingModel.render(null, 0f, 0f, 0f, 0f, 0f, 1f/16f);
-        GlStateManager.popMatrix();
-
-        GlStateManager.pushMatrix();
-        selectedPart.setParentedAngles(1f/16f);
-        GlStateManager.rotate(90f, 1f, 0f, 0f);
-        GlStateManager.color(0f, 1f, 0f);
-        GlStateManager.scale(ringScale, ringScale, ringScale);
-        rotationRingModel.render(null, 0f, 0f, 0f, 0f, 0f, 1f/16f);
-        GlStateManager.popMatrix();
-
-        GlStateManager.pushMatrix();
-        selectedPart.setParentedAngles(1f/16f);
-        GlStateManager.rotate(90f, 0f, 0f, 1f);
-        GlStateManager.color(0f, 0f, 1f);
-        GlStateManager.scale(ringScale, ringScale, ringScale);
-        rotationRingModel.render(null, 0f, 0f, 0f, 0f, 0f, 1f/16f);
-        GlStateManager.popMatrix();
-        GlStateManager.enableTexture2D();
-        GlStateManager.enableLighting();
+//        final float ringScale = 1.5f;
+//        GlStateManager.disableLighting();
+//        GlStateManager.disableTexture2D();
+//        GlStateManager.pushMatrix();
+//        selectedPart.setParentedAngles(1f/16f);
+//        GlStateManager.color(1f, 0f, 0f);
+//        GlStateManager.scale(ringScale, ringScale, ringScale);
+//        rotationRingModel.render(null, 0f, 0f, 0f, 0f, 0f, 1f/16f);
+//        GlStateManager.popMatrix();
+//
+//        GlStateManager.pushMatrix();
+//        selectedPart.setParentedAngles(1f/16f);
+//        GlStateManager.rotate(90f, 1f, 0f, 0f);
+//        GlStateManager.color(0f, 1f, 0f);
+//        GlStateManager.scale(ringScale, ringScale, ringScale);
+//        rotationRingModel.render(null, 0f, 0f, 0f, 0f, 0f, 1f/16f);
+//        GlStateManager.popMatrix();
+//
+//        GlStateManager.pushMatrix();
+//        selectedPart.setParentedAngles(1f/16f);
+//        GlStateManager.rotate(90f, 0f, 0f, 1f);
+//        GlStateManager.color(0f, 0f, 1f);
+//        GlStateManager.scale(ringScale, ringScale, ringScale);
+//        rotationRingModel.render(null, 0f, 0f, 0f, 0f, 0f, 1f/16f);
+//        GlStateManager.popMatrix();
+//        GlStateManager.enableTexture2D();
+//        GlStateManager.enableLighting();
     }
 
-    private void hidePart(TabulaModelRenderer part) {
+    private void hidePart(DCMModelRenderer part) {
         if(part == null)
             return;
         part.setHideButShowChildren(true);
@@ -686,39 +676,36 @@ public abstract class GuiModelPoseEdit extends Screen {
     /**
      * Renders a single model part with the given color
      */
-    private void highlight(TabulaModelRenderer part, float red, float green, float blue) {
+    private void highlight(DCMModelRenderer part, float red, float green, float blue) {
         if(part != null) {
             hideAllModelParts();
             part.setHideButShowChildren(false);
-            GlStateManager.disableTexture2D();
-            GlStateManager.color(red, green, blue);
+            RenderSystem.disableTexture();
+            RenderSystem.color3f(red, green, blue);
             renderModel();
-            GlStateManager.enableTexture2D();
+            RenderSystem.enableTexture();
 
             resetScalings();
         }
     }
 
     private void resetScalings() {
-        for(ModelRenderer renderer : model.boxList) {
-            if(renderer instanceof TabulaModelRenderer) {
-                TabulaModelRenderer part = (TabulaModelRenderer)renderer;
-                part.setHideButShowChildren(false);
-            }
+        for(DCMModelRenderer renderer : model.getAllCubes()) {
+            renderer.setHideButShowChildren(false);
         }
     }
 
     private void renderModel() {
         setModelToPose();
 
-        mc.getTextureManager().bindTexture(this.texture);
-        model.renderBoxes(1f/16f);
+        Minecraft.getInstance().getTextureManager().bind(this.texture);
+        model.renderBoxes();
     }
 
     private void setModelToPose() {
         Map<String, TaxidermyHistory.CubeProps> poseData = this.getPoseData();
-        for(TabulaModelRenderer box : model.getAllCubes()) {
-            TaxidermyHistory.CubeProps cube = poseData.get(box.boxName);
+        for(DCMModelRenderer box : model.getAllCubes()) {
+            TaxidermyHistory.CubeProps cube = poseData.get(box.getInfo().getName());
             if(cube != null) {
                 cube.applyTo(box);
             } else {

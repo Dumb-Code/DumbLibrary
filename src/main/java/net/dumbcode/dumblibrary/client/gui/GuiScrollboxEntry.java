@@ -1,5 +1,7 @@
 package net.dumbcode.dumblibrary.client.gui;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
+
 public interface GuiScrollboxEntry {
     /**
      * Draws the element
@@ -10,12 +12,12 @@ public interface GuiScrollboxEntry {
      * @param mouseY the mouse Y position
      */
     @Deprecated
-    default void draw(int x, int y, int mouseX, int mouseY) {
+    default void draw(MatrixStack stack, int x, int y, int mouseX, int mouseY) {
 
     }
 
-    default void draw(int x, int y, int mouseX, int mouseY, boolean mouseOver) {
-        draw(x, y, mouseX, mouseY);
+    default void draw(MatrixStack stack, int x, int y, int mouseX, int mouseY, boolean mouseOver) {
+        draw(stack, x, y, mouseX, mouseY);
     }
 
 
@@ -39,11 +41,11 @@ public interface GuiScrollboxEntry {
      * @param mouseY the actual mouse's y position
      * @return true if this element should be set as the selected, false otherwise
      */
-    default boolean onClicked(int relMouseX, int relMouseY, int mouseX, int mouseY) {
+    default boolean onClicked(double relMouseX, double relMouseY, double mouseX, double mouseY) {
         return true;
     }
 
-    default boolean globalClicked(int mouseX, int mouseY, int mouseButton) {
+    default boolean globalClicked(double mouseX, double mouseY, int mouseButton) {
         return false;//return true to cancel propagation
     }
 

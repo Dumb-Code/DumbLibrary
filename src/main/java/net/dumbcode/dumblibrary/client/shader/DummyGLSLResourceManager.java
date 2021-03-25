@@ -5,10 +5,11 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.IResource;
-import net.minecraft.client.resources.IResourceManager;
-import net.minecraft.client.resources.SimpleResource;
-import net.minecraft.util.JsonUtils;
+import net.minecraft.resources.IResource;
+import net.minecraft.resources.IResourceManager;
+import net.minecraft.resources.IResourcePack;
+import net.minecraft.resources.SimpleResource;
+import net.minecraft.util.JSONUtils;
 import net.minecraft.util.ResourceLocation;
 
 import java.io.ByteArrayInputStream;
@@ -18,11 +19,15 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.function.BiPredicate;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 public class DummyGLSLResourceManager implements IResourceManager {
 
@@ -53,24 +58,24 @@ public class DummyGLSLResourceManager implements IResourceManager {
     }
 
     @Override
-    public Set<String> getResourceDomains() {
-        throw new IllegalStateException("Should not be called");
-    }
-
-    @Override
     public IResource getResource(ResourceLocation location) throws IOException {
         if(location.equals(this.jsonLocation)) {
             String code = this.getOrDownloadCode();
             //The following is to only include uniforms that are actually used by the shader. Declaring it as `uniform float x` doesn't count.
             //Note, yes this does mean that commands aren't excluded, but considering this is only to prevent minor log spam it's okay
             String string = this.createShaderJson((name, type) -> Pattern.compile("(?<!uniform " + type + " )" + name).matcher(code).find());
-            return new SimpleResource(DUMMY_PACK_NAME, location, new ByteArrayInputStream(string.replaceAll("\\Q$$shadername\\E", this.shaderName).getBytes()), null, null);
+            return new SimpleResource(DUMMY_PACK_NAME, location, new ByteArrayInputStream(string.replaceAll("\\Q$$shadername\\E", this.shaderName).getBytes()), null);
         } else if (location.equals(this.vertexLocation)) {
-            return Minecraft.getMinecraft().getResourceManager().getResource(FAKE_GLSL_FRAGMENT);
+            return Minecraft.getInstance().getResourceManager().getResource(FAKE_GLSL_FRAGMENT);
         } else if(location.equals(this.fragmentLocation)) {
-            return new SimpleResource(DUMMY_PACK_NAME, location, new ByteArrayInputStream(this.getOrDownloadCode().getBytes()), null, null);
+            return new SimpleResource(DUMMY_PACK_NAME, location, new ByteArrayInputStream(this.getOrDownloadCode().getBytes()), null);
         }
         throw new IllegalStateException("Unable to get " + location + " on dummb glsl resource manager");
+    }
+
+    @Override
+    public List<IResource> getResources(ResourceLocation location) throws IOException {
+        return Collections.singletonList(this.getResource(location));
     }
 
     private String getOrDownloadCode() throws IOException {
@@ -80,7 +85,7 @@ public class DummyGLSLResourceManager implements IResourceManager {
 
             JsonParser parser = new JsonParser();
             JsonObject root = parser.parse(new InputStreamReader((InputStream) connection.getContent())).getAsJsonObject();
-            String code = JsonUtils.getString(root, "code");
+            String code = JSONUtils.getAsString(root, "code");
 
             //Ensure the precision stuff has a ifdef GL_ES statement
             Matcher matcher = PRECISION_PATTERN.matcher(code);
@@ -142,9 +147,24 @@ public class DummyGLSLResourceManager implements IResourceManager {
         uniforms.add(json);
     }
 
+
     @Override
-    public List<IResource> getAllResources(ResourceLocation location) {
+    public Set<String> getNamespaces() {
+        throw  new IllegalStateException("Should not be called");
+    }
+
+    @Override
+    public boolean hasResource(ResourceLocation p_219533_1_) {
         throw new IllegalStateException("Should not be called");
     }
 
+    @Override
+    public Collection<ResourceLocation> listResources(String p_199003_1_, Predicate<String> p_199003_2_) {
+        throw new IllegalStateException("Should not be called");
+    }
+
+    @Override
+    public Stream<IResourcePack> listPacks() {
+        throw new IllegalStateException("Should not be called");
+    }
 }

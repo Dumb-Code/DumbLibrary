@@ -1,5 +1,6 @@
 package net.dumbcode.dumblibrary.client.shader;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import lombok.Getter;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.minecraft.client.Minecraft;
@@ -9,8 +10,9 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.client.resources.IResourceManager;
-import net.minecraft.client.shader.Framebuffer;
+import net.minecraft.client.shader.*;
 import net.minecraft.client.shader.ShaderManager;
+import net.minecraft.resources.IResourceManager;
 import org.lwjgl.opengl.GL11;
 
 import java.io.IOException;
@@ -24,10 +26,10 @@ public class GlslSandboxShader {
 
     private static final Pattern PATTERN = Pattern.compile("https?://glslsandbox\\.com/e#(\\d+.?\\d*)");
 
-    private static final VertexFormat RENDER_FORMAT = new VertexFormat().addElement(DefaultVertexFormats.POSITION_3F);
-    private static ShaderManager FLIP_SHADER;
+    private static final VertexFormat RENDER_FORMAT = DefaultVertexFormats.POSITION;
+    private static ShaderInstance FLIP_SHADER;
 
-    private final ShaderManager shaderManager;
+    private final ShaderInstance shaderManager;
     private final Framebuffer framebuffer;
 
     private long timeStarted = -1;
@@ -36,74 +38,74 @@ public class GlslSandboxShader {
     private int screenHeight = 1;
 
     private GlslSandboxShader(IResourceManager resourceManager, String programName) throws IOException {
-        this.shaderManager = new ShaderManager(resourceManager, programName);
-        this.framebuffer = new Framebuffer(1, 2, false);
+        this.shaderManager = new ShaderInstance(resourceManager, programName);
+        this.framebuffer = new Framebuffer(1, 2, false, Minecraft.ON_OSX);
     }
 
     public void init(int screenWidth, int screenHeight) {
         this.screenWidth = screenWidth;
         this.screenHeight = screenHeight;
 
-        this.framebuffer.createBindFramebuffer(screenWidth, screenHeight);
+        this.framebuffer.createBuffers(screenWidth, screenHeight, Minecraft.ON_OSX);
     }
 
     public void render(int relativeMouseX, int relativeMouseY) {
         if(this.timeStarted == -1) {
             this.timeStarted = System.currentTimeMillis();
         }
-        this.shaderManager.getShaderUniformOrDefault("time").set((System.currentTimeMillis() - this.timeStarted) / 1000F);
-        this.shaderManager.getShaderUniformOrDefault("mouse").set((float)relativeMouseX / this.screenWidth, 1F - (float)relativeMouseY / this.screenHeight);
-        this.shaderManager.getShaderUniformOrDefault("resolution").set(this.screenWidth, this.screenHeight);
-        this.shaderManager.getShaderUniformOrDefault("surfaceSize").set((float) this.screenWidth / this.screenHeight, 1);
+        this.shaderManager.safeGetUniform("time").set((System.currentTimeMillis() - this.timeStarted) / 1000F);
+        this.shaderManager.safeGetUniform("mouse").set((float)relativeMouseX / this.screenWidth, 1F - (float)relativeMouseY / this.screenHeight);
+        this.shaderManager.safeGetUniform("resolution").set(this.screenWidth, this.screenHeight);
+        this.shaderManager.safeGetUniform("surfaceSize").set((float) this.screenWidth / this.screenHeight, 1);
 
-        this.shaderManager.useShader();
-        this.framebuffer.bindFramebuffer(true);
+        this.shaderManager.apply();
+        this.framebuffer.bindWrite(Minecraft.ON_OSX);
 
-        GlStateManager.clearColor(0, 0, 0, 0);
-        GlStateManager.clear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
+        RenderSystem.clearColor(0, 0, 0, 0);
+        RenderSystem.clear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT, Minecraft.ON_OSX);
 
-        BufferBuilder buffer = Tessellator.getInstance().getBuffer();
+        BufferBuilder buffer = Tessellator.getInstance().getBuilder();
 
         buffer.begin(GL11.GL_QUADS, RENDER_FORMAT);
 
-        buffer.pos(-1, -1, 0).endVertex();
-        buffer.pos(1, -1, 0).endVertex();
-        buffer.pos(1, 1, 0).endVertex();
-        buffer.pos(-1, 1, 0).endVertex();
+        buffer.vertex(-1, -1, 0).endVertex();
+        buffer.vertex(1, -1, 0).endVertex();
+        buffer.vertex(1, 1, 0).endVertex();
+        buffer.vertex(-1, 1, 0).endVertex();
 
-        Tessellator.getInstance().draw();
+        Tessellator.getInstance().end();
 
-        this.shaderManager.endShader();
-        this.framebuffer.unbindFramebuffer();
+        this.shaderManager.clear();
+        this.framebuffer.unbindWrite();
 
-        Minecraft.getMinecraft().getFramebuffer().bindFramebuffer(true);
+        Minecraft.getInstance().getMainRenderTarget().bindWrite(Minecraft.ON_OSX);
     }
 
     public void startShader() {
-        this.framebuffer.bindFramebufferTexture();
+        this.framebuffer.bindRead();
         if(FLIP_SHADER == null) {
             try {
-                FLIP_SHADER = new ShaderManager(Minecraft.getMinecraft().getResourceManager(), DumbLibrary.MODID + ":flip");
+                FLIP_SHADER = new ShaderInstance(Minecraft.getInstance().getResourceManager(), DumbLibrary.MODID + ":flip");
             } catch (IOException e) {
                 DumbLibrary.getLogger().error("Unable to load flip shader", e);
             }
         }
         if(FLIP_SHADER != null) {
-            FLIP_SHADER.useShader();
-            FLIP_SHADER.addSamplerTexture("sampler", this.framebuffer);
+            FLIP_SHADER.apply();
+            FLIP_SHADER.setSampler("sampler", this.framebuffer::getColorTextureId);
         }
     }
 
     public void endShader() {
         if(FLIP_SHADER != null) {
-            FLIP_SHADER.endShader();
+            FLIP_SHADER.clear();
         }
-        this.framebuffer.unbindFramebufferTexture();
+        this.framebuffer.unbindRead();
     }
 
     public void dispose() {
-        this.shaderManager.deleteShader();
-        this.framebuffer.deleteFramebuffer();
+        this.shaderManager.close();
+        this.framebuffer.destroyBuffers();
     }
 
     public static GlslSandboxShader createShader(String url) {

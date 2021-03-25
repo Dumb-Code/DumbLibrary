@@ -21,6 +21,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraftforge.client.model.pipeline.LightUtil;
 import net.minecraftforge.fml.client.gui.widget.ExtendedButton;
 import net.minecraftforge.fml.client.gui.widget.Slider;
 import org.lwjgl.BufferUtils;
@@ -339,7 +340,7 @@ public abstract class GuiModelPoseEdit extends Screen {
             }
             registeredLeftClick = false;
         }
-        actualModelRender(partBelowMouse);
+        actualModelRender(stack, partBelowMouse);
         GuiHelper.cleanupModelRendering();
 
         if(partBelowMouse != null) {
@@ -626,14 +627,14 @@ public abstract class GuiModelPoseEdit extends Screen {
         GuiHelper.prepareModelRendering(posX, posY, scale, cameraPitch, cameraYaw);
     }
 
-    private void actualModelRender(DCMModelRenderer partBelowMouse) {
-        highlight(selectedPart, 0f, 0f, 1f);
-        highlight(partBelowMouse, 1f, 1f, 0f);
+    private void actualModelRender(MatrixStack stack, DCMModelRenderer partBelowMouse) {
+        highlight(stack, selectedPart, 0f, 0f, 1f);
+        highlight(stack, partBelowMouse, 1f, 1f, 0f);
         resetScalings();
         hidePart(selectedPart);
         hidePart(partBelowMouse);
         RenderSystem.color3f(1f, 1f, 1f);
-        renderModel();
+        renderModel(stack);
         resetScalings();
     }
 
@@ -676,13 +677,13 @@ public abstract class GuiModelPoseEdit extends Screen {
     /**
      * Renders a single model part with the given color
      */
-    private void highlight(DCMModelRenderer part, float red, float green, float blue) {
+    private void highlight(MatrixStack stack, DCMModelRenderer part, float red, float green, float blue) {
         if(part != null) {
             hideAllModelParts();
             part.setHideButShowChildren(false);
             RenderSystem.disableTexture();
             RenderSystem.color3f(red, green, blue);
-            renderModel();
+            renderModel(stack);
             RenderSystem.enableTexture();
 
             resetScalings();
@@ -695,11 +696,11 @@ public abstract class GuiModelPoseEdit extends Screen {
         }
     }
 
-    private void renderModel() {
+    private void renderModel(MatrixStack stack) {
         setModelToPose();
 
         Minecraft.getInstance().getTextureManager().bind(this.texture);
-        model.renderBoxes();
+        model.renderBoxes(stack, 15728880, this.texture);
     }
 
     private void setModelToPose() {

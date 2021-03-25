@@ -10,8 +10,12 @@ import lombok.experimental.Accessors;
 import net.dumbcode.dumblibrary.server.animation.EntityWithAnimation;
 import net.dumbcode.studio.model.CubeInfo;
 import net.dumbcode.studio.model.ModelInfo;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.entity.model.EntityModel;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.entity.Entity;
+import net.minecraft.util.ResourceLocation;
 
 import java.util.Collection;
 import java.util.List;
@@ -42,9 +46,9 @@ public class DCMModel extends EntityModel<Entity> {
     }
 
     @Override
-    public void renderToBuffer(MatrixStack stack, IVertexBuilder buffer, int overlay, int light, float r, float g, float b, float opacity) {
+    public void renderToBuffer(MatrixStack stack, IVertexBuilder buffer, int light, int overlay, float r, float g, float b, float opacity) {
         for (DCMModelRenderer root : this.roots) {
-            root.render(stack, buffer, overlay, light, r, g, b, opacity);
+            root.render(stack, buffer, light, overlay, r, g, b, opacity);
         }
     }
 
@@ -61,7 +65,13 @@ public class DCMModel extends EntityModel<Entity> {
 
     }
 
-    public void renderBoxes() {
+    public void renderBoxes(MatrixStack stack, int light, ResourceLocation texture) {
+        IRenderTypeBuffer.Impl buffer = Minecraft.getInstance().renderBuffers().bufferSource();
+        this.renderToBuffer(stack, buffer.getBuffer(this.renderType(texture)), light, OverlayTexture.NO_OVERLAY, 1, 1, 1, 1);
+        buffer.endBatch();
+    }
+
+    public void resetAnimations() {
 
     }
 

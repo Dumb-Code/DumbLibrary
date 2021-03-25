@@ -5,13 +5,11 @@ import lombok.Getter;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.renderer.vertex.VertexFormat;
-import net.minecraft.client.resources.IResourceManager;
-import net.minecraft.client.shader.*;
-import net.minecraft.client.shader.ShaderManager;
+import net.minecraft.client.shader.Framebuffer;
+import net.minecraft.client.shader.ShaderInstance;
 import net.minecraft.resources.IResourceManager;
 import org.lwjgl.opengl.GL11;
 

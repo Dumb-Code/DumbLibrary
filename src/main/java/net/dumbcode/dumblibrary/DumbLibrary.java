@@ -1,5 +1,6 @@
 package net.dumbcode.dumblibrary;
 
+import net.dumbcode.dumblibrary.client.BakedModelResolver;
 import net.dumbcode.dumblibrary.client.model.ModelHandler;
 import net.dumbcode.dumblibrary.server.ItemComponent;
 import net.dumbcode.dumblibrary.server.ecs.EntityManager;
@@ -56,6 +57,8 @@ public class DumbLibrary {
         IEventBus forgeBus = MinecraftForge.EVENT_BUS;
 
         forgeBus.addListener(ModelHandler::onModelReady);
+        forgeBus.addListener(BakedModelResolver::onTextureStitch);
+        forgeBus.addListener(BakedModelResolver::onModelBake);
 
         DR.register(bus);
     }

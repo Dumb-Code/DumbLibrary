@@ -3,11 +3,9 @@ package net.dumbcode.dumblibrary.client;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.AbstractGui;
-import net.minecraft.client.gui.Gui;
 import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayDeque;
@@ -22,8 +20,8 @@ public class StencilStack {
 
     public static void pushStencil(Runnable renderCallback, Type type) {
         if(renders.isEmpty()) {
-            if(!Minecraft.getMinecraft().getFramebuffer().isStencilEnabled()) {
-                Minecraft.getMinecraft().getFramebuffer().enableStencil();
+            if(!Minecraft.getInstance().getMainRenderTarget().isStencilEnabled()) {
+                Minecraft.getInstance().getMainRenderTarget().enableStencil();
             }
             GL11.glEnable(GL11.GL_STENCIL_TEST);
         } else if(renders.size() > 500) {

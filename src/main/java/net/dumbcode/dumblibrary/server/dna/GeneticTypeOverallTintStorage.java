@@ -5,8 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.dumbcode.dumblibrary.server.dna.storages.RandomUUIDStorage;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.JsonUtils;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.util.JSONUtils;
 
 @Getter
 @Setter
@@ -16,14 +16,14 @@ public class GeneticTypeOverallTintStorage extends RandomUUIDStorage {
     private TintType tintType = TintType.DIRECT;
 
     @Override
-    public NBTTagCompound serialize(NBTTagCompound nbt) {
-        nbt.setInteger("TintType", this.tintType.ordinal());
+    public CompoundNBT serialize(CompoundNBT nbt) {
+        nbt.putInt("TintType", this.tintType.ordinal());
         return super.serialize(nbt);
     }
 
     @Override
-    public void deserialize(NBTTagCompound nbt) {
-        this.tintType = TintType.values()[nbt.getInteger("TintType") % TintType.values().length];
+    public void deserialize(CompoundNBT nbt) {
+        this.tintType = TintType.values()[nbt.getInt("TintType") % TintType.values().length];
         super.deserialize(nbt);
     }
 
@@ -35,7 +35,7 @@ public class GeneticTypeOverallTintStorage extends RandomUUIDStorage {
 
     @Override
     public void deserialize(JsonObject json) {
-        this.tintType = TintType.values()[JsonUtils.getInt(json, "tint_type", 0) % TintType.values().length];
+        this.tintType = TintType.values()[JSONUtils.getAsInt(json, "tint_type", 0) % TintType.values().length];
         super.deserialize(json);
     }
 

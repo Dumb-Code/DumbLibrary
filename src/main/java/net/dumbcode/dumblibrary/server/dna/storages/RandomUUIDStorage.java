@@ -3,7 +3,7 @@ package net.dumbcode.dumblibrary.server.dna.storages;
 import com.google.gson.JsonObject;
 import lombok.Getter;
 import net.dumbcode.dumblibrary.server.dna.GeneticFactoryStorage;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 
 import java.util.UUID;
 
@@ -12,14 +12,14 @@ public class RandomUUIDStorage implements GeneticFactoryStorage {
     private UUID randomUUID = UUID.randomUUID();
 
     @Override
-    public NBTTagCompound serialize(NBTTagCompound nbt) {
-        nbt.setUniqueId("uuid", this.randomUUID);
+    public CompoundNBT serialize(CompoundNBT nbt) {
+        nbt.putUUID("uuid", this.randomUUID);
         return nbt;
     }
 
     @Override
-    public void deserialize(NBTTagCompound nbt) {
-        this.randomUUID = nbt.getUniqueId("uuid");
+    public void deserialize(CompoundNBT nbt) {
+        this.randomUUID = nbt.getUUID("uuid");
     }
 
     @Override

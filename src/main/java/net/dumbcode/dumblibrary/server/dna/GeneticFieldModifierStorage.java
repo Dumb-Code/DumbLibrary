@@ -6,8 +6,8 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.dumbcode.dumblibrary.server.attributes.ModOp;
 import net.dumbcode.dumblibrary.server.dna.storages.RandomUUIDStorage;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.JsonUtils;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.util.JSONUtils;
 
 @Getter
 @Setter
@@ -18,15 +18,15 @@ public class GeneticFieldModifierStorage extends RandomUUIDStorage {
     private float modifier = 1F;
 
     @Override
-    public NBTTagCompound serialize(NBTTagCompound nbt) {
-        nbt.setInteger("Operation", this.operation.ordinal());
-        nbt.setFloat("Modifier", this.modifier);
+    public CompoundNBT serialize(CompoundNBT nbt) {
+        nbt.putInt("Operation", this.operation.ordinal());
+        nbt.putFloat("Modifier", this.modifier);
         return super.serialize(nbt);
     }
 
     @Override
-    public void deserialize(NBTTagCompound nbt) {
-        this.operation = ModOp.values()[nbt.getInteger("Operation") % ModOp.values().length];
+    public void deserialize(CompoundNBT nbt) {
+        this.operation = ModOp.values()[nbt.getInt("Operation") % ModOp.values().length];
         this.modifier = nbt.getFloat("Modifier");
         super.deserialize(nbt);
     }
@@ -40,8 +40,8 @@ public class GeneticFieldModifierStorage extends RandomUUIDStorage {
 
     @Override
     public void deserialize(JsonObject json) {
-        this.operation = ModOp.values()[JsonUtils.getInt(json, "operation", 0) % ModOp.values().length];
-        this.modifier = JsonUtils.getFloat(json, "modifier", 1F);
+        this.operation = ModOp.values()[JSONUtils.getAsInt(json, "operation", 0) % ModOp.values().length];
+        this.modifier = JSONUtils.getAsFloat(json, "modifier", 1F);
         super.deserialize(json);
     }
 }

@@ -10,6 +10,7 @@ import net.dumbcode.dumblibrary.server.dna.datahandlers.GeneticDataHandler;
 import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentType;
+import net.minecraftforge.registries.ForgeRegistryEntry;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 
 import java.util.UUID;
@@ -18,7 +19,7 @@ import java.util.function.Supplier;
 
 @Getter
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-public class GeneticType<T extends GeneticFactoryStorage> implements IForgeRegistryEntry<GeneticType<?>> {
+public class GeneticType<T extends GeneticFactoryStorage> extends ForgeRegistryEntry<GeneticType<?>> {
     private final GeneticValueApplier<T, ComponentAccess> onChange;
     private final GeneticDataHandler dataHandler;
     private final Supplier<T> storage;

@@ -5,8 +5,8 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 import net.dumbcode.dumblibrary.server.registry.DumbRegistries;
 import net.dumbcode.dumblibrary.server.utils.JavaUtils;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.JsonUtils;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.util.JSONUtils;
 import net.minecraft.util.ResourceLocation;
 
 import javax.annotation.Nullable;
@@ -45,13 +45,13 @@ public class GeneticEntry<T extends GeneticFactoryStorage> {
         return this;
     }
 
-    public NBTTagCompound serialize(NBTTagCompound compound) {
-        compound.setString("identifier", this.identifier);
-        compound.setString("type", Objects.requireNonNull(this.type.getRegistryName()).toString());
-        compound.setFloat("base_value", this.baseValue);
-        compound.setFloat("modifier_range", this.modifierRange);
-        compound.setFloat("modifier", this.modifier);
-        JavaUtils.nullApply(this.storage, t -> compound.setTag("storage", t.serialize(new NBTTagCompound())));
+    public CompoundNBT serialize(CompoundNBT compound) {
+        compound.putString("identifier", this.identifier);
+        compound.putString("type", Objects.requireNonNull(this.type.getRegistryName()).toString());
+        compound.putFloat("base_value", this.baseValue);
+        compound.putFloat("modifier_range", this.modifierRange);
+        compound.putFloat("modifier", this.modifier);
+        JavaUtils.nullApply(this.storage, t -> compound.put("storage", t.serialize(new CompoundNBT())));
         return compound;
     }
 
@@ -65,25 +65,25 @@ public class GeneticEntry<T extends GeneticFactoryStorage> {
         return json;
     }
 
-    public static <T extends GeneticFactoryStorage> GeneticEntry<T> deserialize(NBTTagCompound compound) {
+    public static <T extends GeneticFactoryStorage> GeneticEntry<T> deserialize(CompoundNBT compound) {
         @SuppressWarnings("unchecked") GeneticType<T> type = (GeneticType<T>) Objects.requireNonNull(DumbRegistries.GENETIC_TYPE_REGISTRY.getValue(new ResourceLocation(compound.getString("type"))));
         return new GeneticEntry<>(
             type,
             compound.getString("identifier"),
-            JavaUtils.nullApply(type.getStorage().get(), t -> t.deserialize(compound.getCompoundTag("storage"))),
+            JavaUtils.nullApply(type.getStorage().get(), t -> t.deserialize(compound.getCompound("storage"))),
             compound.getFloat("base_value"),
             compound.getFloat("modifier_range")
         ).setModifier(compound.getFloat("modifier"));
     }
 
     public static <T extends GeneticFactoryStorage> GeneticEntry deserialize(JsonObject json) {
-        @SuppressWarnings("unchecked") GeneticType<T> type = (GeneticType<T>) Objects.requireNonNull(DumbRegistries.GENETIC_TYPE_REGISTRY.getValue(new ResourceLocation(JsonUtils.getString(json, "type"))));
+        @SuppressWarnings("unchecked") GeneticType<T> type = (GeneticType<T>) Objects.requireNonNull(DumbRegistries.GENETIC_TYPE_REGISTRY.getValue(new ResourceLocation(JSONUtils.getAsString(json, "type"))));
         return new GeneticEntry<>(
             type,
-            JsonUtils.getString(json, "identifier"),
-            JavaUtils.nullApply(type.getStorage().get(), t -> t.deserialize(JsonUtils.getJsonObject(json, "storage"))),
-            JsonUtils.getFloat(json, "base_value"),
-            JsonUtils.getFloat(json, "modifier_range")
-        ).setModifier(JsonUtils.getFloat(json, "modifier"));
+            JSONUtils.getAsString(json, "identifier"),
+            JavaUtils.nullApply(type.getStorage().get(), t -> t.deserialize(JSONUtils.getAsJsonObject(json, "storage"))),
+            JSONUtils.getAsFloat(json, "base_value"),
+            JSONUtils.getAsFloat(json, "modifier_range")
+        ).setModifier(JSONUtils.getAsFloat(json, "modifier"));
     }
 }

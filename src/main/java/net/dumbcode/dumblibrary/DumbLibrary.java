@@ -3,6 +3,8 @@ package net.dumbcode.dumblibrary;
 import net.dumbcode.dumblibrary.client.BakedModelResolver;
 import net.dumbcode.dumblibrary.client.model.ModelHandler;
 import net.dumbcode.dumblibrary.server.ItemComponent;
+import net.dumbcode.dumblibrary.server.dna.GeneticType;
+import net.dumbcode.dumblibrary.server.dna.GeneticTypes;
 import net.dumbcode.dumblibrary.server.ecs.EntityManager;
 import net.dumbcode.dumblibrary.server.ecs.component.RegisterStoragesEvent;
 import net.dumbcode.dumblibrary.server.network.*;
@@ -10,6 +12,8 @@ import net.dumbcode.dumblibrary.server.registry.DumbRegistries;
 import net.dumbcode.dumblibrary.server.registry.RegisterGeneticTypes;
 import net.dumbcode.dumblibrary.server.utils.InjectedUtils;
 import net.dumbcode.dumblibrary.server.utils.VoidStorage;
+import net.dumbcode.studio.model.ModelMirror;
+import net.dumbcode.studio.model.RotationOrder;
 import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
@@ -53,12 +57,17 @@ public class DumbLibrary {
     public static final ResourceLocation MODEL_MISSING = new ResourceLocation("model_missing");
 
     public DumbLibrary() {
+        RotationOrder.XYZ.applyAsGlobal();
+        ModelMirror.XY.applyAsGlobal();
+
         IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
         IEventBus forgeBus = MinecraftForge.EVENT_BUS;
 
         forgeBus.addListener(ModelHandler::onModelReady);
         forgeBus.addListener(BakedModelResolver::onTextureStitch);
         forgeBus.addListener(BakedModelResolver::onModelBake);
+
+        bus.addListener(GeneticTypes::onRegisterGenetics);
 
         DR.register(bus);
     }

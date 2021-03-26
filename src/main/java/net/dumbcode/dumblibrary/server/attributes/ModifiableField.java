@@ -1,8 +1,8 @@
 package net.dumbcode.dumblibrary.server.attributes;
 
-import net.minecraft.nbt.NBTBase;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.INBT;
+import net.minecraft.nbt.ListNBT;
 import net.minecraftforge.common.util.Constants;
 
 import java.util.*;
@@ -69,32 +69,32 @@ public class ModifiableField {
         return result;
     }
 
-    public NBTTagCompound writeToNBT() {
-        NBTTagCompound nbt = new NBTTagCompound();
+    public CompoundNBT writeToNBT() {
+        CompoundNBT nbt = new CompoundNBT();
 
-        nbt.setDouble("base_value", this.baseValue);
+        nbt.putDouble("base_value", this.baseValue);
 
-        NBTTagList nbtOperations = new NBTTagList();
+        ListNBT nbtOperations = new ListNBT();
         this.operations.forEach((uuid, modifier) -> {
-            NBTTagCompound compound = new NBTTagCompound();
-            compound.setUniqueId("uuid", uuid);
-            compound.setInteger("modifier", modifier.getOp().ordinal());
-            compound.setDouble("value", modifier.getValue());
-            nbtOperations.appendTag(compound);
+            CompoundNBT compound = new CompoundNBT();
+            compound.putUUID("uuid", uuid);
+            compound.putInt("modifier", modifier.getOp().ordinal());
+            compound.putDouble("value", modifier.getValue());
+            nbtOperations.add(compound);
         });
-        nbt.setTag("operations", nbtOperations);
+        nbt.put("operations", nbtOperations);
 
         return nbt;
     }
 
-    public void readFromNBT(NBTTagCompound nbt) {
+    public void readFromNBT(CompoundNBT nbt) {
         this.baseValue = nbt.getDouble("base_value");
         this.operations.clear();
 
-        for (NBTBase base : nbt.getTagList("operations", Constants.NBT.TAG_COMPOUND)) {
-            NBTTagCompound compound = (NBTTagCompound) base;
-            UUID uuid = compound.getUniqueId("uuid");
-            this.operations.put(uuid, new ModifiableFieldModifier(uuid, ModOp.values()[compound.getInteger("modifier")], compound.getDouble("value")));
+        for (INBT base : nbt.getList("operations", Constants.NBT.TAG_COMPOUND)) {
+            CompoundNBT compound = (CompoundNBT) base;
+            UUID uuid = compound.getUUID("uuid");
+            this.operations.put(uuid, new ModifiableFieldModifier(uuid, ModOp.values()[compound.getInt("modifier")], compound.getDouble("value")));
         }
     }
 

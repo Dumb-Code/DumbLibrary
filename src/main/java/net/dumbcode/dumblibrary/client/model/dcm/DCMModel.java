@@ -55,7 +55,7 @@ public class DCMModel extends EntityModel<Entity> {
     @Override
     public void prepareMobModel(Entity entityIn, float p_212843_2_, float p_212843_3_, float partialTickTime) {
         if(entityIn instanceof EntityWithAnimation) {
-            ((EntityWithAnimation) entityIn).getAnimationEntry().applyAnimations(partialTickTime, this);
+            ((EntityWithAnimation) entityIn).getAnimationEntry().applyAnimations(this, partialTickTime);
         }
         super.prepareMobModel(entityIn, p_212843_2_, p_212843_3_, partialTickTime);
     }

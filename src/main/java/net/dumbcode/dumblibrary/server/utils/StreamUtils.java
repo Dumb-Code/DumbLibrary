@@ -4,15 +4,12 @@ import lombok.Cleanup;
 import lombok.experimental.UtilityClass;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.ModContainer;
-import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.Loader;
-import net.minecraftforge.fml.common.ModContainer;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.fml.ModList;
+import net.minecraftforge.fml.loading.FMLEnvironment;
+import net.minecraftforge.fml.loading.moddiscovery.ModFileInfo;
 import org.apache.commons.io.IOUtils;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,7 +26,7 @@ import java.util.stream.StreamSupport;
 @UtilityClass
 public class StreamUtils {
     public static <R> R openStream(ResourceLocation location, FunctionException<InputStream, R, IOException> consumer) throws IOException {
-        if (FMLCommonHandler.instance().getSide() == Side.CLIENT) {
+        if (FMLEnvironment.dist == Dist.CLIENT) {
             return consumer.accept(openClientStream(location));
         }
         return getPath(location, path -> {
@@ -42,18 +39,18 @@ public class StreamUtils {
     }
 
     public static <R> R getPath(ResourceLocation location, boolean mustExist, FunctionException<Path, R, IOException> consumer) throws IOException {
-        ModContainer container = Loader.instance().getIndexedModList().get(location.getNamespace());
-        if (container != null) {
-            String base = "assets/" + container.getModId() + "/" + location.getPath();
-            File source = container.getSource();
+        ModFileInfo info = ModList.get().getModFileById(location.getNamespace());
+        if (info != null) {
+            String base = "assets/" + location.getNamespace() + "/" + location.getPath();
             FileSystem fs = null;
             try {
                 Path root = null;
-                if (source.isFile()) {
-                    fs = FileSystems.newFileSystem(source.toPath(), null);
+                Path source = info.getFile().getFilePath();
+                if (Files.isRegularFile(source)) {
+                    fs = FileSystems.newFileSystem(source, null);
                     root = fs.getPath("/" + base);
-                } else if (source.isDirectory()) {
-                    root = source.toPath().resolve(base);
+                } else if (Files.isDirectory(source)) {
+                    root = source.resolve(base);
                 }
 
                 if (!mustExist || (root != null && Files.exists(root))) {
@@ -74,9 +71,8 @@ public class StreamUtils {
         }
     }
 
-    @SideOnly(Side.CLIENT)
     private static InputStream openClientStream(ResourceLocation location) throws IOException {
-        return Minecraft.getMinecraft().getResourceManager().getResource(location).getInputStream();
+        return Minecraft.getInstance().getResourceManager().getResource(location).getInputStream();
     }
 
     public static <T> Stream<T> stream(Iterable<T> iterable) {

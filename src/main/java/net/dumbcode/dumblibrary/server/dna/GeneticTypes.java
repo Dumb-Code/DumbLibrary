@@ -1,7 +1,6 @@
 package net.dumbcode.dumblibrary.server.dna;
 
 import net.dumbcode.dumblibrary.DumbLibrary;
-import net.dumbcode.dumblibrary.server.attributes.ModOp;
 import net.dumbcode.dumblibrary.server.dna.datahandlers.ColouredGeneticDataHandler;
 import net.dumbcode.dumblibrary.server.dna.storages.GeneticTypeLayerColorStorage;
 import net.dumbcode.dumblibrary.server.dna.storages.RandomUUIDStorage;
@@ -12,17 +11,16 @@ import net.dumbcode.dumblibrary.server.ecs.component.impl.SleepingComponent;
 import net.dumbcode.dumblibrary.server.registry.RegisterGeneticTypes;
 import net.dumbcode.dumblibrary.server.utils.GeneticUtils;
 import net.dumbcode.dumblibrary.server.utils.InjectedUtils;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
-import net.minecraft.entity.ai.attributes.IAttributeInstance;
+import net.minecraft.entity.ai.attributes.Attributes;
+import net.minecraft.entity.ai.attributes.ModifiableAttributeInstance;
 import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.registry.GameRegistry;
+import net.minecraftforge.registries.ObjectHolder;
 
 @Mod.EventBusSubscriber(modid = DumbLibrary.MODID)
-@GameRegistry.ObjectHolder(DumbLibrary.MODID)
+@ObjectHolder(DumbLibrary.MODID)
 public class GeneticTypes {
 
     public static final GeneticType<GeneticTypeLayerColorStorage> LAYER_COLORS = InjectedUtils.injected();
@@ -31,7 +29,6 @@ public class GeneticTypes {
     public static final GeneticType<GeneticFieldModifierStorage> SIZE = InjectedUtils.injected();
     public static final GeneticType<GeneticFieldModifierStorage> NOCTURNAL_CHANCE = InjectedUtils.injected();
 
-    @SubscribeEvent
     public static void onRegisterGenetics(RegisterGeneticTypes event) {
         event.getRegistry().registerAll(
             GeneticType.<GeneticTypeLayerColorStorage>builder()
@@ -58,12 +55,12 @@ public class GeneticTypes {
             GeneticType.<RandomUUIDStorage>builder()
                 .storage(RandomUUIDStorage::new)
                 .onChange((value, rawValue, type, storage) -> {
-                    if (type instanceof EntityLivingBase) {
-                        IAttributeInstance attribute = ((EntityLivingBase) type).getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED);
+                    if (type instanceof LivingEntity) {
+                        ModifiableAttributeInstance attribute = ((LivingEntity) type).getAttribute(Attributes.MOVEMENT_SPEED);
                         if (attribute != null) {
-                            AttributeModifier modifier = new AttributeModifier(storage.getRandomUUID(), "speed_genetics", MathHelper.clamp(value / 4F, -1, 1), 1);
+                            AttributeModifier modifier = new AttributeModifier(storage.getRandomUUID(), "speed_genetics", MathHelper.clamp(value / 4F, -1, 1), AttributeModifier.Operation.MULTIPLY_BASE);
                             if (!attribute.hasModifier(modifier)) {
-                                attribute.applyModifier(modifier);
+                                attribute.addPermanentModifier(modifier);
                             }
                         }
                     }

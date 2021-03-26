@@ -5,8 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.dumbcode.dumblibrary.server.dna.GeneticFactoryStorage;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.JsonUtils;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.util.JSONUtils;
 
 @Getter
 @Setter
@@ -16,13 +16,13 @@ public class GeneticTypeLayerColorStorage implements GeneticFactoryStorage {
     private String layerName = "undefined";
 
     @Override
-    public NBTTagCompound serialize(NBTTagCompound nbt) {
-        nbt.setString("layer", this.layerName);
+    public CompoundNBT serialize(CompoundNBT nbt) {
+        nbt.putString("layer", this.layerName);
         return nbt;
     }
 
     @Override
-    public void deserialize(NBTTagCompound nbt) {
+    public void deserialize(CompoundNBT nbt) {
         this.layerName = nbt.getString("layer");
     }
 
@@ -34,6 +34,6 @@ public class GeneticTypeLayerColorStorage implements GeneticFactoryStorage {
 
     @Override
     public void deserialize(JsonObject json) {
-        this.layerName = JsonUtils.getString(json, "layer");
+        this.layerName = JSONUtils.getAsString(json, "layer");
     }
 }

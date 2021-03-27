@@ -316,7 +316,7 @@ public abstract class GuiModelPoseEdit extends Screen {
             dMouse.set(0f, 0f);
             draggingRing = false;
         }
-        DCMModelRenderer partBelowMouse = findPartBelowMouse();
+        DCMModelRenderer partBelowMouse = findPartBelowMouse(stack);
         if(registeredLeftClick) {
             if(ringBelowMouse == XYZAxis.NONE) {
                 this.selectedPart = partBelowMouse;
@@ -381,7 +381,7 @@ public abstract class GuiModelPoseEdit extends Screen {
         return colorBuffer.get(0);
     }
 
-    private DCMModelRenderer findPartBelowMouse() {
+    private DCMModelRenderer findPartBelowMouse(MatrixStack stack) {
         DCMModelRenderer newSelection = null;
         hideAllModelParts();
 
@@ -403,7 +403,7 @@ public abstract class GuiModelPoseEdit extends Screen {
             int prevColor = getColorUnderMouse();
 
             box.setHideButShowChildren(false);
-            renderModel();
+            renderModel(stack);
             box.setHideButShowChildren(true);
 
             int newColor = getColorUnderMouse();

@@ -9,7 +9,7 @@ import lombok.Value;
 import lombok.With;
 import net.dumbcode.dumblibrary.server.ecs.ComponentWriteAccess;
 import net.dumbcode.dumblibrary.server.registry.DumbRegistries;
-import net.minecraft.util.JsonUtils;
+import net.minecraft.util.JSONUtils;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.StringUtils;
 
@@ -59,11 +59,11 @@ public class EntityComponentAttacher {
     public void readFromJson(JsonArray jarr) {
         this.allPairs.clear();
         for (JsonElement element : jarr) {
-            JsonObject json = JsonUtils.getJsonObject(element, "attacherEntry");
-            EntityComponentType<?, ?> value = DumbRegistries.COMPONENT_REGISTRY.getValue(new ResourceLocation(JsonUtils.getString(json, "name")));
+            JsonObject json = JSONUtils.convertToJsonObject(element, "attacherEntry");
+            EntityComponentType<?, ?> value = DumbRegistries.COMPONENT_REGISTRY.getValue(new ResourceLocation(JSONUtils.getAsString(json, "name")));
             if(value != null) {
-                JsonObject storageObj = JsonUtils.getJsonObject(json, "storage");
-                String storageId = JsonUtils.getString(storageObj, "storage_id", "");
+                JsonObject storageObj = JSONUtils.getAsJsonObject(json, "storage");
+                String storageId = JSONUtils.getAsString(storageObj, "storage_id", "");
 
                 EntityComponentStorage<?> storage = value.constructStorage();
                 if(!StringUtils.isNullOrEmpty(storageId)) {

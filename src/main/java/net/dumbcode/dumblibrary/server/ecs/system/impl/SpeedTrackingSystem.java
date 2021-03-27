@@ -7,13 +7,14 @@ import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentTypes;
 import net.dumbcode.dumblibrary.server.ecs.component.impl.SpeedTrackingComponent;
 import net.dumbcode.dumblibrary.server.ecs.system.EntitySystem;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 public class SpeedTrackingSystem implements EntitySystem {
 
@@ -35,11 +36,11 @@ public class SpeedTrackingSystem implements EntitySystem {
     }
 
     @SubscribeEvent
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public void onClientWorldTick(TickEvent.ClientTickEvent event) {
-        World world = Minecraft.getMinecraft().world;
+        ClientWorld world = Minecraft.getInstance().level;
         if(world != null) {
-            for (Entity entity : world.loadedEntityList) {
+            for (Entity entity : world.entitiesForRendering()) {
                 if(entity instanceof ComponentAccess) {
                     ((ComponentAccess) entity).get(EntityComponentTypes.SPEED_TRACKING).ifPresent(comp -> this.updateEntity(entity, comp));
                 }
@@ -50,8 +51,8 @@ public class SpeedTrackingSystem implements EntitySystem {
 
     private void updateEntity(Entity entity, SpeedTrackingComponent component) {
         component.setPreviousSpeed(component.getSpeed());
-        double x = entity.posX - entity.lastTickPosX;
-        double z = entity.posZ - entity.lastTickPosZ;
+        double x = entity.position().x - entity.xo;
+        double z = entity.position().x - entity.zo;
         float speed = MathHelper.sqrt(x * x + z * z);
         component.setSpeed(component.getSpeed() + (speed - component.getSpeed()) * 0.1F);
     }

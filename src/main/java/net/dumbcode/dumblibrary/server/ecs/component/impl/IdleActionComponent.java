@@ -3,13 +3,13 @@ package net.dumbcode.dumblibrary.server.ecs.component.impl;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import net.dumbcode.dumblibrary.server.animation.objects.Animation;
+import net.dumbcode.dumblibrary.server.animation.Animation;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
 import net.dumbcode.dumblibrary.server.utils.CollectorUtils;
 import net.dumbcode.dumblibrary.server.utils.StreamUtils;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagString;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.StringNBT;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.util.Constants;
 
@@ -26,20 +26,20 @@ public class IdleActionComponent extends EntityComponent {
     public final List<Animation> movementAnimation = new ArrayList<>();
 
     @Override
-    public NBTTagCompound serialize(NBTTagCompound compound) {
-        compound.setString("SittingAnimation", sittingAnimation.getKey().toString());
-        compound.setTag("Movement", this.movementAnimation.stream().map(a -> a.getKey().toString()).collect(CollectorUtils.toNBTList(NBTTagString::new)));
-        compound.setTag("Animations", this.idleAnimations.stream().map(a -> a.getKey().toString()).collect(CollectorUtils.toNBTList(NBTTagString::new)));
+    public CompoundNBT serialize(CompoundNBT compound) {
+        compound.putString("SittingAnimation", sittingAnimation.getKey().toString());
+        compound.put("Movement", this.movementAnimation.stream().map(a -> a.getKey().toString()).collect(CollectorUtils.toNBTList(StringNBT::valueOf)));
+        compound.put("Animations", this.idleAnimations.stream().map(a -> a.getKey().toString()).collect(CollectorUtils.toNBTList(StringNBT::valueOf)));
         return super.serialize(compound);
     }
 
     @Override
-    public void deserialize(NBTTagCompound compound) {
+    public void deserialize(CompoundNBT compound) {
         this.sittingAnimation = new Animation(new ResourceLocation(compound.getString("SittingAnimation")));
         this.idleAnimations.clear();
-        StreamUtils.stream(compound.getTagList("Animations", Constants.NBT.TAG_STRING)).map(b -> new Animation(new ResourceLocation(((NBTTagString)b).getString()))).forEach(this.movementAnimation::add);
+        StreamUtils.stream(compound.getList("Animations", Constants.NBT.TAG_STRING)).map(b -> new Animation(new ResourceLocation(b.getAsString()))).forEach(this.movementAnimation::add);
         this.movementAnimation.clear();
-        StreamUtils.stream(compound.getTagList("Movement", Constants.NBT.TAG_STRING)).map(b -> new Animation(new ResourceLocation(((NBTTagString)b).getString()))).forEach(this.movementAnimation::add);
+        StreamUtils.stream(compound.getList("Movement", Constants.NBT.TAG_STRING)).map(b -> new Animation(new ResourceLocation(b.getAsString()))).forEach(this.movementAnimation::add);
         super.deserialize(compound);
     }
 

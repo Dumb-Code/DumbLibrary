@@ -5,3 +5,5 @@ Make GuiModelPoseEdit rotation sliders work
 Add item overrides to DCMBakedModel
 Ensure that DCMBakedModel actually works
 Ensure that ModelCommandModel actually works (and add -modelBlockstateCache in the baked model)
+Move BlockDropsSystem to be a global loot modifier
+Implement holding, speed and angle stuff on AnimationEntryData

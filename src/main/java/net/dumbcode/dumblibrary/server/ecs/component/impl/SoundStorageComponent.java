@@ -1,19 +1,18 @@
 package net.dumbcode.dumblibrary.server.ecs.component.impl;
 
-import com.google.gson.JsonObject;
 import lombok.Getter;
 import lombok.Setter;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.ECSSound;
-import net.minecraft.nbt.NBTBase;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
-import net.minecraft.nbt.NBTTagString;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.INBT;
+import net.minecraft.nbt.ListNBT;
+import net.minecraft.nbt.StringNBT;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraftforge.common.util.Constants;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -37,28 +36,28 @@ public class SoundStorageComponent extends EntityComponent {
     }
 
     @Override
-    public NBTTagCompound serialize(NBTTagCompound compound) {
-        NBTTagCompound tag = new NBTTagCompound();
+    public CompoundNBT serialize(CompoundNBT compound) {
+        CompoundNBT tag = new CompoundNBT();
         this.soundMap.forEach((sound, events) -> {
-            NBTTagList list = new NBTTagList();
+            ListNBT list = new ListNBT();
             for (SoundEvent event : events) {
-                list.appendTag(new NBTTagString(Objects.requireNonNull(event.getRegistryName()).toString()));
+                list.add(StringNBT.valueOf(Objects.requireNonNull(event.getRegistryName()).toString()));
             }
-            tag.setTag(sound.getType(), list);
+            tag.put(sound.getType(), list);
         });
-        compound.setTag("Sounds", tag);
+        compound.put("Sounds", tag);
         return super.serialize(compound);
     }
 
     @Override
-    public void deserialize(NBTTagCompound compound) {
+    public void deserialize(CompoundNBT compound) {
         this.soundMap.clear();
-        NBTTagCompound tag = compound.getCompoundTag("Sounds");
-        for (String s : tag.getKeySet()) {
-            NBTTagList list = tag.getTagList(s, Constants.NBT.TAG_STRING);
+        CompoundNBT tag = compound.getCompound("Sounds");
+        for (String s : tag.getAllKeys()) {
+            ListNBT list = tag.getList(s, Constants.NBT.TAG_STRING);
             List<SoundEvent> events = new ArrayList<>();
-            for (NBTBase base : list) {
-                events.add(ForgeRegistries.SOUND_EVENTS.getValue(new ResourceLocation(((NBTTagString)base).getString())));
+            for (INBT base : list) {
+                events.add(ForgeRegistries.SOUND_EVENTS.getValue(new ResourceLocation(base.getAsString())));
             }
             this.soundMap.put(new ECSSound(s), events.toArray(new SoundEvent[0]));
         }

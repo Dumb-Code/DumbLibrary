@@ -1,7 +1,6 @@
 package net.dumbcode.dumblibrary.server.ecs.component.impl;
 
 import com.google.gson.JsonObject;
-import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -10,10 +9,9 @@ import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.GatherEnemiesComponent;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.JsonUtils;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.util.JSONUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,20 +29,20 @@ public class CloseProximityAngryComponent extends EntityComponent implements Gat
 
 
     @Override
-    public NBTTagCompound serialize(NBTTagCompound compound) {
-        compound.setTag("Range", this.range.writeToNBT());
+    public CompoundNBT serialize(CompoundNBT compound) {
+        compound.put("Range", this.range.writeToNBT());
         return super.serialize(compound);
     }
 
     @Override
-    public void deserialize(NBTTagCompound compound) {
-        this.range.readFromNBT(compound.getCompoundTag("Range"));
+    public void deserialize(CompoundNBT compound) {
+        this.range.readFromNBT(compound.getCompound("Range"));
         super.deserialize(compound);
     }
 
     @Override
-    public void gatherEnemyPredicates(Consumer<Predicate<EntityLivingBase>> registry) {
-        registry.accept(e -> e.getUniqueID().equals(this.angryAtEntity));
+    public void gatherEnemyPredicates(Consumer<Predicate<LivingEntity>> registry) {
+        registry.accept(e -> e.getUUID().equals(this.angryAtEntity));
     }
 
     @Setter
@@ -54,7 +52,7 @@ public class CloseProximityAngryComponent extends EntityComponent implements Gat
         private float range;
 
         //TODO-stream: don't just add a blacklist class >:(
-        private List<Class<? extends EntityLiving>> blackListClasses = new ArrayList<>();
+        private List<Class<? extends LivingEntity>> blackListClasses = new ArrayList<>();
 
         @Override
         public void constructTo(CloseProximityAngryComponent component) {
@@ -70,7 +68,7 @@ public class CloseProximityAngryComponent extends EntityComponent implements Gat
         }
 
         @SuppressWarnings("unchecked")
-        public Storage add(Class<? extends EntityLiving>... classes) {
+        public Storage add(Class<? extends LivingEntity>... classes) {
             Collections.addAll(this.blackListClasses, classes);
             return this;
         }
@@ -82,7 +80,7 @@ public class CloseProximityAngryComponent extends EntityComponent implements Gat
 
         @Override
         public void readJson(JsonObject json) {
-            this.range = JsonUtils.getFloat(json, "range");
+            this.range = JSONUtils.getAsFloat(json, "range");
         }
     }
 }

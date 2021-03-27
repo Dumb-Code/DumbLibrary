@@ -3,7 +3,7 @@ package net.dumbcode.dumblibrary.server.ecs.blocks.components;
 import lombok.Getter;
 import lombok.Setter;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -14,7 +14,7 @@ public class BlockPlaceableComponent extends EntityComponent {
     private PlaceablePredicate predicate = (world, pos, state) -> true;
 
     public interface PlaceablePredicate {
-        boolean canPlace(World world, BlockPos pos, IBlockState state);
+        boolean canPlace(World world, BlockPos pos, BlockState state);
     }
 
 }

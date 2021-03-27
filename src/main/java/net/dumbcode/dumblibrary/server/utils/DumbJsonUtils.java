@@ -2,35 +2,34 @@ package net.dumbcode.dumblibrary.server.utils;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import net.minecraft.potion.PotionEffect;
-import net.minecraft.util.JsonUtils;
+import net.minecraft.potion.EffectInstance;
+import net.minecraft.util.JSONUtils;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.Objects;
 
 public class DumbJsonUtils {
 
-    public static PotionEffect readPotionEffect(JsonElement element) {
+    public static EffectInstance readPotionEffect(JsonElement element) {
         JsonObject obj = element.getAsJsonObject();
-        return new PotionEffect(
-                Objects.requireNonNull(ForgeRegistries.POTIONS.getValue(new ResourceLocation(JsonUtils.getString(obj, "potion")))),
-                JsonUtils.getInt(obj, "duration"),
-                JsonUtils.getInt(obj, "amplifier"),
-                JsonUtils.getBoolean(obj, "ambient"),
-                JsonUtils.getBoolean(obj, "show_particles")
+        return new EffectInstance(
+            Objects.requireNonNull(ForgeRegistries.POTIONS.getValue(new ResourceLocation(JSONUtils.getAsString(obj, "potion")))),
+            JSONUtils.getAsInt(obj, "duration"),
+            JSONUtils.getAsInt(obj, "amplifier"),
+            JSONUtils.getAsBoolean(obj, "ambient"),
+            JSONUtils.getAsBoolean(obj, "show_particles")
         );
     }
 
-    public static JsonObject writePotionEffect(PotionEffect effect) {
+    public static JsonObject writePotionEffect(EffectInstance effect) {
         JsonObject obj = new JsonObject();
 
-        obj.addProperty("potion", Objects.requireNonNull(effect.getPotion().getRegistryName()).toString());
+        obj.addProperty("potion", Objects.requireNonNull(effect.getEffect().getRegistryName()).toString());
         obj.addProperty("duration", effect.getDuration());
         obj.addProperty("amplifier", effect.getAmplifier());
-        obj.addProperty("ambient", effect.getIsAmbient());
-        obj.addProperty("show_particles", effect.doesShowParticles());
-
+        obj.addProperty("ambient", effect.isAmbient());
+        obj.addProperty("show_particles", effect.isVisible());
 
         return obj;
     }

@@ -2,18 +2,18 @@ package net.dumbcode.dumblibrary.server.ecs.blocks;
 
 import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.ecs.GroupedComponentAccess;
-import net.minecraft.block.properties.IProperty;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.BlockState;
+import net.minecraft.state.Property;
 
 import java.util.Arrays;
 import java.util.Optional;
 
 public interface BlockPropertyAccess {
 
-    IProperty<? extends ComponentAccess>[] getComponentProperties();
+    Property<? extends ComponentAccess>[] getComponentProperties();
 
-    static Optional<ComponentAccess> getAccessFromState(IBlockState state) {
-        return state.getBlock() instanceof BlockPropertyAccess ?
+    static Optional<ComponentAccess> getAccessFromState(BlockState state) {
+        return state != null && state.getBlock() instanceof BlockPropertyAccess ?
                 Optional.of(new GroupedComponentAccess(
                         Arrays.stream(((BlockPropertyAccess) state.getBlock())
                                 .getComponentProperties())

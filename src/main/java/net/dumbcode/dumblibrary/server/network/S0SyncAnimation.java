@@ -1,7 +1,7 @@
 package net.dumbcode.dumblibrary.server.network;
 
 import lombok.AllArgsConstructor;
-import net.dumbcode.dumblibrary.server.animation.objects.AnimationEntry;
+import net.dumbcode.dumblibrary.server.animation.Animation;
 import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentTypes;
 import net.minecraft.entity.Entity;
@@ -14,16 +14,16 @@ import java.util.function.Supplier;
 public class S0SyncAnimation {
 
     private int entityid;
-    private AnimationEntry entry;
+    private Animation entry;
     private int channel;
 
     public static S0SyncAnimation fromBytes(PacketBuffer buf) {
-        return new S0SyncAnimation(buf.readInt(), AnimationEntry.deserialize(buf), buf.readInt());
+        return new S0SyncAnimation(buf.readInt(), new Animation(buf.readResourceLocation()), buf.readInt());
     }
 
     public static void toBytes(S0SyncAnimation packet, PacketBuffer buf) {
         buf.writeInt(packet.entityid);
-        packet.entry.serialize(buf);
+        buf.writeResourceLocation(packet.entry.getKey());
         buf.writeInt(packet.channel);
     }
 

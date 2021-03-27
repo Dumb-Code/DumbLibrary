@@ -8,7 +8,7 @@ import net.dumbcode.dumblibrary.server.ecs.system.EntitySystem;
 import net.minecraft.entity.Entity;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 //TODO: remove this, it's not really needed
 public class ItemDropSystem implements EntitySystem {
@@ -31,7 +31,7 @@ public class ItemDropSystem implements EntitySystem {
 
             for (EntityComponent component : access.getAllComponents()) {
                 if(component instanceof ItemDropComponent) {
-                    ((ItemDropComponent) component).collectItems(access, stack -> entity.entityDropItem(stack, 0F));
+                    ((ItemDropComponent) component).collectItems(access, stack -> entity.spawnAtLocation(stack, 0F));
                 }
             }
 

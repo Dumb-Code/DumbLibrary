@@ -1,7 +1,6 @@
 package net.dumbcode.dumblibrary.server.ecs.component.impl;
 
 import com.google.gson.JsonObject;
-import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -11,9 +10,9 @@ import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderFlattenedLayerComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.impl.data.FlattenedLayerProperty;
 import net.dumbcode.dumblibrary.server.utils.IndexedObject;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.JsonUtils;
-import net.minecraftforge.fml.common.network.ByteBufUtils;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.network.PacketBuffer;
+import net.minecraft.util.JSONUtils;
 
 import java.util.function.Consumer;
 
@@ -35,34 +34,34 @@ public class EyesClosedComponent extends EntityComponent implements RenderFlatte
     }
 
     @Override
-    public NBTTagCompound serialize(NBTTagCompound compound) {
-        compound.setString("on_texture", this.eyesOnTexture);
-        compound.setString("off_texture", this.eyesOffTexture);
+    public CompoundNBT serialize(CompoundNBT compound) {
+        compound.putString("on_texture", this.eyesOnTexture);
+        compound.putString("off_texture", this.eyesOffTexture);
 
-        compound.setInteger("blink_tick_time", this.blinkTicksLeft);
+        compound.putInt("blink_tick_time", this.blinkTicksLeft);
         return super.serialize(compound);
     }
 
     @Override
-    public void deserialize(NBTTagCompound compound) {
+    public void deserialize(CompoundNBT compound) {
         this.eyesOnTexture = compound.getString("on_texture");
         this.eyesOffTexture = compound.getString("off_texture");
 
-        this.blinkTicksLeft = compound.getInteger("blink_tick_time");
+        this.blinkTicksLeft = compound.getInt("blink_tick_time");
         super.deserialize(compound);
     }
 
     @Override
-    public void serialize(ByteBuf buf) {
-        ByteBufUtils.writeUTF8String(buf, this.eyesOnTexture);
-        ByteBufUtils.writeUTF8String(buf, this.eyesOffTexture);
+    public void serialize(PacketBuffer buf) {
+        buf.writeUtf(this.eyesOnTexture);
+        buf.writeUtf(this.eyesOffTexture);
 
         buf.writeInt(this.blinkTicksLeft);
         super.serialize(buf);
     }
 
     @Override
-    public void serializeSync(ByteBuf buf) {
+    public void serializeSync(PacketBuffer buf) {
         buf.writeInt(this.blinkTicksLeft);
     }
 
@@ -86,16 +85,16 @@ public class EyesClosedComponent extends EntityComponent implements RenderFlatte
     }
 
     @Override
-    public void deserialize(ByteBuf buf) {
-        this.eyesOnTexture = ByteBufUtils.readUTF8String(buf);
-        this.eyesOffTexture = ByteBufUtils.readUTF8String(buf);
+    public void deserialize(PacketBuffer buf) {
+        this.eyesOnTexture = buf.readUtf();
+        this.eyesOffTexture = buf.readUtf();
 
         this.blinkTicksLeft = buf.readInt();
         super.deserialize(buf);
     }
 
     @Override
-    public void deserializeSync(ByteBuf buf) {
+    public void deserializeSync(PacketBuffer buf) {
         this.blinkTicksLeft = buf.readInt();
     }
 
@@ -120,8 +119,8 @@ public class EyesClosedComponent extends EntityComponent implements RenderFlatte
 
         @Override
         public void readJson(JsonObject json) {
-            this.eyesOnTexture = JsonUtils.getString(json, "on_texture");
-            this.eyesOffTexture = JsonUtils.getString(json, "off_texture");
+            this.eyesOnTexture = JSONUtils.getAsString(json, "on_texture");
+            this.eyesOffTexture = JSONUtils.getAsString(json, "off_texture");
         }
     }
 }

@@ -7,8 +7,9 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.JsonUtils;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.network.PacketBuffer;
+import net.minecraft.util.JSONUtils;
 
 @Getter
 public class BlinkingComponent extends EntityComponent {
@@ -17,28 +18,28 @@ public class BlinkingComponent extends EntityComponent {
     private int tickTimeClose;
 
     @Override
-    public NBTTagCompound serialize(NBTTagCompound compound) {
-        compound.setInteger("tick_time_on", this.tickTimeOpen);
-        compound.setInteger("tick_time_off", this.tickTimeClose);
+    public CompoundNBT serialize(CompoundNBT compound) {
+        compound.putInt("tick_time_on", this.tickTimeOpen);
+        compound.putInt("tick_time_off", this.tickTimeClose);
         return super.serialize(compound);
     }
 
     @Override
-    public void deserialize(NBTTagCompound compound) {
-        this.tickTimeOpen = compound.getInteger("tick_time_on");
-        this.tickTimeClose = compound.getInteger("tick_time_off");
+    public void deserialize(CompoundNBT compound) {
+        this.tickTimeOpen = compound.getInt("tick_time_on");
+        this.tickTimeClose = compound.getInt("tick_time_off");
         super.deserialize(compound);
     }
 
     @Override
-    public void serialize(ByteBuf buf) {
+    public void serialize(PacketBuffer buf) {
         buf.writeInt(this.tickTimeOpen);
         buf.writeInt(this.tickTimeClose);
         super.serialize(buf);
     }
 
     @Override
-    public void deserialize(ByteBuf buf) {
+    public void deserialize(PacketBuffer buf) {
         this.tickTimeOpen = buf.readInt();
         this.tickTimeClose = buf.readInt();
         super.deserialize(buf);
@@ -65,8 +66,8 @@ public class BlinkingComponent extends EntityComponent {
 
         @Override
         public void readJson(JsonObject json) {
-            this.tickTimeOpen = JsonUtils.getInt(json, "tick_time_on");
-            this.tickTimeClose = JsonUtils.getInt(json, "tick_time_off");
+            this.tickTimeOpen = JSONUtils.getAsInt(json, "tick_time_on");
+            this.tickTimeClose = JSONUtils.getAsInt(json, "tick_time_off");
         }
     }
 }

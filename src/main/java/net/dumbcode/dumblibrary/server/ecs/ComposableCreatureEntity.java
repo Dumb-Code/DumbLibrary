@@ -1,20 +1,22 @@
 package net.dumbcode.dumblibrary.server.ecs;
 
-import io.netty.buffer.ByteBuf;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentMap;
-import net.minecraft.entity.EntityCreature;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
+import net.minecraft.entity.CreatureEntity;
+import net.minecraft.entity.EntityType;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.ListNBT;
+import net.minecraft.network.PacketBuffer;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
 
-public abstract class ComposableCreatureEntity extends EntityCreature implements ComponentMapWriteAccess, IEntityAdditionalSpawnData {
+public abstract class ComposableCreatureEntity extends CreatureEntity implements ComponentMapWriteAccess, IEntityAdditionalSpawnData {
     private final EntityComponentMap components = new EntityComponentMap();
 
-    public ComposableCreatureEntity(World world) {
-        super(world);
+    protected ComposableCreatureEntity(EntityType<? extends CreatureEntity> type, World world) {
+        super(type, world);
         this.attachComponents();
+
     }
 
 
@@ -26,30 +28,30 @@ public abstract class ComposableCreatureEntity extends EntityCreature implements
         return this.components;
     }
 
-    @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound compound) {
-        compound = super.writeToNBT(compound);
-        compound.setTag("components", this.components.serialize(new NBTTagList()));
 
-        return compound;
+    @Override
+    public void addAdditionalSaveData(CompoundNBT compound) {
+        super.addAdditionalSaveData(compound);
+        compound.put("components", this.components.serialize(new ListNBT()));
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound compound) {
-        super.readFromNBT(compound);
+    public void readAdditionalSaveData(CompoundNBT compound) {
+        super.readAdditionalSaveData(compound);
 
-        NBTTagList componentList = compound.getTagList("components", Constants.NBT.TAG_COMPOUND);
+        ListNBT componentList = compound.getList("components", Constants.NBT.TAG_COMPOUND);
         this.components.deserialize(componentList);
         this.finalizeComponents();
     }
 
+
     @Override
-    public void writeSpawnData(ByteBuf buf) {
+    public void writeSpawnData(PacketBuffer buf) {
         this.components.serialize(buf);
     }
 
     @Override
-    public void readSpawnData(ByteBuf buf) {
+    public void readSpawnData(PacketBuffer buf) {
         this.components.deserialize(buf);
         this.finalizeComponents();
     }

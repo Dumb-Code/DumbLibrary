@@ -26,7 +26,7 @@ public class BlinkingSystem implements EntitySystem {
     @Override
     public void update(World world) {
         for (int i = 0; i < this.entities.length; i++) {
-            int ticksExisted = this.entities[i].ticksExisted;
+            int ticksExisted = this.entities[i].tickCount;
             BlinkingComponent component = this.blinkingComponents[i];
             if(ticksExisted % (component.getTickTimeOpen() + component.getTickTimeClose()) == component.getTickTimeOpen()) {
                 this.eyesClosed[i].blink(component.getTickTimeClose());

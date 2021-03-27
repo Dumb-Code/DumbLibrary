@@ -1,12 +1,11 @@
 package net.dumbcode.dumblibrary.server.ecs.component;
 
-import io.netty.buffer.ByteBuf;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.server.registry.DumbRegistries;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.ListNBT;
+import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.common.network.ByteBufUtils;
 
 import javax.annotation.Nullable;
 import java.util.LinkedHashMap;
@@ -34,19 +33,19 @@ public class EntityComponentMap extends LinkedHashMap<EntityComponentType<?, ?>,
         return Optional.empty();
     }
 
-    public NBTTagList serialize(NBTTagList list) {
+    public ListNBT serialize(ListNBT list) {
         for (Map.Entry<EntityComponentType<?, ?>, EntityComponent> entry : this.entrySet()) {
-            NBTTagCompound componentTag = entry.getValue().serialize(new NBTTagCompound());
-            componentTag.setString("identifier", entry.getKey().getIdentifier().toString());
-            list.appendTag(componentTag);
+            CompoundNBT componentTag = entry.getValue().serialize(new CompoundNBT());
+            componentTag.putString("identifier", entry.getKey().getIdentifier().toString());
+            list.add(componentTag);
         }
         return list;
     }
 
-    public void deserialize(NBTTagList list) {
+    public void deserialize(ListNBT list) {
         this.clear();
-        for (int i = 0; i < list.tagCount(); i++) {
-            NBTTagCompound componentTag = list.getCompoundTagAt(i);
+        for (int i = 0; i < list.size(); i++) {
+            CompoundNBT componentTag = list.getCompound(i);
             ResourceLocation identifier = new ResourceLocation(componentTag.getString("identifier"));
             EntityComponentType<?, ?> componentType = DumbRegistries.COMPONENT_REGISTRY.getValue(identifier);
             if (componentType != null) {
@@ -59,19 +58,19 @@ public class EntityComponentMap extends LinkedHashMap<EntityComponentType<?, ?>,
         }
     }
 
-    public void serialize(ByteBuf buf) {
+    public void serialize(PacketBuffer buf) {
         buf.writeShort(this.size());
         for (Map.Entry<EntityComponentType<?, ?>, EntityComponent> entry : this.entrySet()) {
-            ByteBufUtils.writeRegistryEntry(buf, entry.getKey());
+            buf.writeRegistryId(entry.getKey());
             entry.getValue().serialize(buf);
         }
     }
 
-    public void deserialize(ByteBuf buf) {
+    public void deserialize(PacketBuffer buf) {
         this.clear();
         short size = buf.readShort();
         for (int i = 0; i < size; i++) {
-            EntityComponentType<?, ?> type = ByteBufUtils.readRegistryEntry(buf, DumbRegistries.COMPONENT_REGISTRY);
+            EntityComponentType<?, ?> type = buf.readRegistryIdSafe(EntityComponentType.getWildcardType());
             EntityComponent component = type.constructEmpty();
             component.deserialize(buf);
             this.put(type, component);

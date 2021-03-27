@@ -11,9 +11,9 @@ import net.dumbcode.dumblibrary.server.ecs.item.ItemComponentAccessCreatable;
 import net.dumbcode.dumblibrary.server.utils.CollectorUtils;
 import net.dumbcode.dumblibrary.server.utils.StreamUtils;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.ShapedRecipes;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.JsonUtils;
+import net.minecraft.item.crafting.ShapedRecipe;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.util.JSONUtils;
 import net.minecraftforge.common.util.Constants;
 
 import java.util.ArrayList;
@@ -33,16 +33,16 @@ public class BlockDropsComponent extends EntityComponent {
     }
 
     @Override
-    public NBTTagCompound serialize(NBTTagCompound compound) {
-        compound.setTag("stacks", this.stackList.stream().map(Supplier::get).map(ItemStack::serializeNBT).collect(CollectorUtils.toNBTTagList()));
+    public CompoundNBT serialize(CompoundNBT compound) {
+        compound.put("stacks", this.stackList.stream().map(Supplier::get).map(ItemStack::serializeNBT).collect(CollectorUtils.toNBTTagList()));
         return super.serialize(compound);
     }
 
     @Override
-    public void deserialize(NBTTagCompound compound) {
+    public void deserialize(CompoundNBT compound) {
         super.deserialize(compound);
         this.stackList.clear();
-        StreamUtils.stream(compound.getTagList("stacks", Constants.NBT.TAG_COMPOUND)).map(base -> new ItemStack((NBTTagCompound) base)).<Supplier<ItemStack>>map(stack -> () -> stack).forEach(this.stackList::add);
+        StreamUtils.stream(compound.getList("stacks", Constants.NBT.TAG_COMPOUND)).map(base -> ItemStack.of((CompoundNBT) base)).<Supplier<ItemStack>>map(stack -> () -> stack).forEach(this.stackList::add);
     }
 
     @Accessors(chain = true)
@@ -67,13 +67,13 @@ public class BlockDropsComponent extends EntityComponent {
         public void readJson(JsonObject json) {
             this.stackList.clear();
 
-            StreamUtils.stream(JsonUtils.getJsonArray(json, "stacks"))
+            StreamUtils.stream(JSONUtils.getAsJsonArray(json, "stacks"))
                     .filter(JsonElement::isJsonObject)
                     .map(JsonElement::getAsJsonObject)
                     .map(BlockDropsComponent::deserializeItem)
                     .forEach(this.stackList::add);
 
-            StreamUtils.stream(JsonUtils.getJsonArray(json, "creatables"))
+            StreamUtils.stream(JSONUtils.getAsJsonArray(json, "creatables"))
                     .filter(JsonElement::isJsonObject)
                     .map(elem -> {
                         ItemComponentAccessCreatable creatable = new ItemComponentAccessCreatable();
@@ -91,15 +91,12 @@ public class BlockDropsComponent extends EntityComponent {
     }
 
     private static ItemStack deserializeItem(JsonObject json) {
-        return ShapedRecipes.deserializeItem(json, true);
+        return ShapedRecipe.itemFromJson(json);
     }
 
     private static JsonObject serializeItem(ItemStack stack) {
         JsonObject obj = new JsonObject();
         obj.addProperty("item", Objects.requireNonNull(stack.getItem().getRegistryName()).toString());
-        if(stack.getItem().getHasSubtypes()) {
-            obj.addProperty("data", stack.getItemDamage());
-        }
         obj.addProperty("count", stack.getCount());
         return obj;
     }

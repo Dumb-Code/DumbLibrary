@@ -1,13 +1,12 @@
 package net.dumbcode.dumblibrary.server.ecs.component.impl;
 
 import com.google.gson.JsonObject;
-import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.dumbcode.dumblibrary.client.component.ModelComponentRenderer;
 import net.dumbcode.dumblibrary.client.model.dcm.DCMModel;
-import net.dumbcode.dumblibrary.server.animation.TabulaUtils;
+import net.dumbcode.dumblibrary.server.animation.DCMUtils;
 import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
@@ -18,12 +17,11 @@ import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLocationC
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLocationComponent.ConfigurableLocation;
 import net.dumbcode.dumblibrary.server.utils.IndexedObject;
 import net.minecraft.entity.Entity;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.JsonUtils;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.network.PacketBuffer;
+import net.minecraft.util.JSONUtils;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,12 +35,12 @@ public class ModelComponent extends EntityComponent implements RenderCallbackCom
     @Getter
     private final ConfigurableLocation fileLocation = new ConfigurableLocation();
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     private DCMModel modelCache;
 
     private float shadowSize;
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     private ModelComponentRenderer renderer;
 
     @Override
@@ -51,32 +49,32 @@ public class ModelComponent extends EntityComponent implements RenderCallbackCom
     }
 
     @Override
-    public NBTTagCompound serialize(NBTTagCompound compound) {
-        compound.setFloat("ShadowSize", this.shadowSize);
+    public CompoundNBT serialize(CompoundNBT compound) {
+        compound.putFloat("ShadowSize", this.shadowSize);
         return super.serialize(compound);
     }
 
     @Override
-    public void serialize(ByteBuf buf) {
+    public void serialize(PacketBuffer buf) {
         buf.writeFloat(this.shadowSize);
     }
 
     @Override
-    public void deserialize(NBTTagCompound compound) {
+    public void deserialize(CompoundNBT compound) {
         super.deserialize(compound);
         this.shadowSize = compound.getFloat("ShadowSize");
     }
 
     @Override
-    public void deserialize(ByteBuf buf) {
+    public void deserialize(PacketBuffer buf) {
         this.shadowSize = buf.readFloat();
     }
 
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public DCMModel getModelCache() {
         if(this.modelCache == null) {
-            this.modelCache = TabulaUtils.getModel(this.fileLocation.getLocation());
+            this.modelCache = DCMUtils.getModel(this.fileLocation.getLocation());
         }
         return this.modelCache;
     }
@@ -92,7 +90,7 @@ public class ModelComponent extends EntityComponent implements RenderCallbackCom
             }
         }
 
-        if(entity instanceof Entity && ((Entity) entity).world != null && ((Entity) entity).world.isRemote) {
+        if(entity instanceof Entity && ((Entity) entity).level != null && ((Entity) entity).level.isClientSide) {
             this.createRenderer(entity);
         }
     }
@@ -129,7 +127,7 @@ public class ModelComponent extends EntityComponent implements RenderCallbackCom
 
         @Override
         public void readJson(JsonObject json) {
-            this.shadowSize = JsonUtils.getFloat(json, "shadow_size");
+            this.shadowSize = JSONUtils.getAsFloat(json, "shadow_size");
         }
     }
 }

@@ -4,11 +4,13 @@ import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 import lombok.Getter;
 import lombok.Setter;
+import net.dumbcode.dumblibrary.server.animation.AnimatedReferenceCube;
+import net.dumbcode.dumblibrary.server.info.ServerAnimatableCube;
 import net.dumbcode.studio.animation.instance.AnimatedCube;
 import net.dumbcode.studio.model.CubeInfo;
 import net.minecraft.client.renderer.model.ModelRenderer;
 
-public class DCMModelRenderer extends ModelRenderer implements AnimatedCube {
+public class DCMModelRenderer extends ModelRenderer implements AnimatedReferenceCube {
 
     private float texWidth = 64.0F;
     private float texHeight = 32.0F;
@@ -28,21 +30,29 @@ public class DCMModelRenderer extends ModelRenderer implements AnimatedCube {
     @Setter
     private boolean hideButShowChildren;
 
-    public DCMModelRenderer(DCMModel model, CubeInfo info) {
+    private final DCMModelRenderer parent;
+
+    public DCMModelRenderer(DCMModel model, DCMModelRenderer parent, CubeInfo info) {
         super(model);
         model.getCubeNameMap().put(info.getName(), this);
+        this.parent = parent;
         this.texWidth = model.texWidth;
         this.texHeight = model.texHeight;
         this.info = info;
         this.name = info.getName();
         for (CubeInfo child : info.getChildren()) {
-            this.addChild(new DCMModelRenderer(model, child));
+            this.addChild(new DCMModelRenderer(model, this, child));
         }
     }
 
     @Override
     public CubeInfo getInfo() {
         return this.info;
+    }
+
+    @Override
+    public DCMModelRenderer getParent() {
+        return this.parent;
     }
 
     @Override
@@ -53,10 +63,20 @@ public class DCMModelRenderer extends ModelRenderer implements AnimatedCube {
     }
 
     @Override
+    public float[] getRotation() {
+        return new float[] { this.xRot, this.yRot, this.zRot };
+    }
+
+    @Override
     public void setPosition(float x, float y, float z) {
         this.x = x;
         this.y = y;
         this.z = z;
+    }
+
+    @Override
+    public float[] getPosition() {
+        return new float[] { this.x, this.y, this.z };
     }
 
     @Override
@@ -66,7 +86,12 @@ public class DCMModelRenderer extends ModelRenderer implements AnimatedCube {
         this.growZ = z;
         this.growDirty = true;
     }
-    
+
+    @Override
+    public float[] getCubeGrow() {
+        return new float[] { this.growX, this.growY, this.growZ };
+    }
+
     @Override
     public void render(MatrixStack stack, IVertexBuilder buffer, int light, int overlay, float r, float g, float b, float a) {
         if(this.growDirty) {

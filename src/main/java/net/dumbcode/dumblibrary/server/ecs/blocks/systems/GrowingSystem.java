@@ -1,49 +1,51 @@
 package net.dumbcode.dumblibrary.server.ecs.blocks.systems;
 
-import com.google.common.base.Optional;
 import net.dumbcode.dumblibrary.server.ecs.blocks.BlockPropertyAccess;
 import net.dumbcode.dumblibrary.server.ecs.blocks.components.GrowingComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentTypes;
 import net.dumbcode.dumblibrary.server.ecs.system.EntitySystem;
-import net.minecraft.block.properties.IProperty;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.BlockState;
+import net.minecraft.state.Property;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
+import net.minecraft.world.chunk.ChunkSection;
+import net.minecraft.world.server.ChunkHolder;
+import net.minecraft.world.server.ChunkManager;
+import net.minecraft.world.server.ServerChunkProvider;
+import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.event.entity.player.BonemealEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 
-import java.util.Random;
+import java.util.*;
 
 public class GrowingSystem implements EntitySystem {
     int updateLCG = new Random().nextInt();
 
     @Override
     public void update(World world) {
-        int speed = world.getGameRules().getInt("randomTickSpeed");
-        world.getPersistentChunkIterable(((WorldServer)world).getPlayerChunkMap().getChunkIterator()).forEachRemaining(chunk -> {
-            int chunkX = chunk.x * 16;
-            int chunkZ = chunk.z * 16;
-            for (ExtendedBlockStorage storage : chunk.getBlockStorageArray()) {
-                if (storage != Chunk.NULL_BLOCK_STORAGE) {
-                    for (int tick = 0; tick < speed; ++tick) {
-                        //Match math on server world
-                        this.updateLCG = this.updateLCG * 3 + 1013904223;
-                        int update = this.updateLCG >> 2;
-                        int xPos = update & 15;
-                        int zPos = update >> 8 & 15;
-                        int yPos = update >> 16 & 15;
+        if(world instanceof ServerWorld) {
+            ChunkManager chunkMap = ((ServerChunkProvider) world.getChunkSource()).chunkMap;
+            List<ChunkHolder> chunks = new ArrayList<>(chunkMap.visibleChunkMap.values());
+            Collections.shuffle(chunks);
+            for (ChunkHolder holder : chunks) {
+                Chunk chunk = holder.getTickingChunk();
+                for (ChunkSection section : chunk.getSections()) {
+                    if(section != Chunk.EMPTY_SECTION) {
+                        int x = chunk.getPos().getMinBlockX();
+                        int y = section.bottomBlockY();
+                        int z = chunk.getPos().getMinBlockZ();
+                        BlockPos randomPos = world.getBlockRandomPos(x, y, z, 15);
+                        BlockState state = section.getBlockState(randomPos.getX() - x, randomPos.getY() - y, randomPos.getZ() - z);
 
-                        IBlockState iblockstate = storage.get(xPos, yPos, zPos);
-                        BlockPropertyAccess.getAccessFromState(iblockstate)
-                                .flatMap(EntityComponentTypes.BLOCK_GROWING)
-                                .ifPresent(component -> this.growComponent(component, component.getBlockProperty(), world, iblockstate, new BlockPos(xPos + chunkX, yPos + storage.getYLocation(), zPos + chunkZ)));
+                        BlockPropertyAccess.getAccessFromState(state)
+                            .flatMap(EntityComponentTypes.BLOCK_GROWING)
+                            .ifPresent(component -> this.growComponent(component, component.getBlockProperty(), world, state, randomPos));
+
                     }
                 }
             }
-        });
+        }
     }
 
     @SubscribeEvent
@@ -52,15 +54,15 @@ public class GrowingSystem implements EntitySystem {
                 .flatMap(EntityComponentTypes.BLOCK_GROWING)
                 .ifPresent(component -> {
                     this.growComponent(component, component.getBlockProperty(), event.getWorld(), event.getBlock(), event.getPos());
-                    event.getWorld().playEvent(2005, event.getPos(), 0);
+                    event.getWorld().blockEvent(event.getPos(), event.getBlock().getBlock(), 2005 , 0);
                 });
     }
 
-    private <T extends Comparable<T>> void growComponent(GrowingComponent component, IProperty<T> property, World world, IBlockState iblockstate, BlockPos pos) {
-        Optional<T> value = property != null ? property.parseValue(component.getGrowTo(world.rand)) : Optional.absent();
+    private <T extends Comparable<T>> void growComponent(GrowingComponent component, Property<T> property, World world, BlockState iblockstate, BlockPos pos) {
+        Optional<T> value = property != null ? property.getValue(component.getGrowTo(world.random)) : Optional.empty();
         if(value.isPresent()) {
-            IBlockState toState = iblockstate.withProperty(property, value.get());
-            world.setBlockState(pos, toState);
+            BlockState toState = iblockstate.setValue(property, value.get());
+            world.setBlock(pos, toState, 3);
         }
     }
 }

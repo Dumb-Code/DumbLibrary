@@ -7,8 +7,8 @@ import lombok.experimental.Accessors;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.JsonUtils;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.util.JSONUtils;
 import net.minecraft.util.ResourceLocation;
 
 
@@ -21,13 +21,13 @@ public class ItemRenderModelComponent extends EntityComponent {
     private ResourceLocation location = DumbLibrary.MODEL_MISSING; //MRL locations are in the form `namespace:path#varient
 
     @Override
-    public NBTTagCompound serialize(NBTTagCompound compound) {
-        compound.setString(MODEL_KEY, this.location.toString());
+    public CompoundNBT serialize(CompoundNBT compound) {
+        compound.putString(MODEL_KEY, this.location.toString());
         return super.serialize(compound);
     }
 
     @Override
-    public void deserialize(NBTTagCompound compound) {
+    public void deserialize(CompoundNBT compound) {
         super.deserialize(compound);
         this.location = new ResourceLocation(compound.getString(MODEL_KEY));
     }
@@ -46,7 +46,7 @@ public class ItemRenderModelComponent extends EntityComponent {
 
         @Override
         public void readJson(JsonObject json) {
-            this.location = new ResourceLocation(JsonUtils.getString(json, MODEL_KEY));
+            this.location = new ResourceLocation(JSONUtils.getAsString(json, MODEL_KEY));
         }
 
         @Override

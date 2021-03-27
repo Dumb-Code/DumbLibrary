@@ -14,8 +14,8 @@ import net.dumbcode.dumblibrary.server.ecs.component.additionals.GatherGeneticsC
 import net.dumbcode.dumblibrary.server.utils.CollectorUtils;
 import net.dumbcode.dumblibrary.server.utils.JavaUtils;
 import net.dumbcode.dumblibrary.server.utils.StreamUtils;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.JsonUtils;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.util.JSONUtils;
 import net.minecraftforge.common.util.Constants;
 
 import javax.annotation.Nullable;
@@ -46,16 +46,16 @@ public class GeneticComponent extends EntityComponent implements FinalizableComp
     }
 
     @Override
-    public NBTTagCompound serialize(NBTTagCompound compound) {
-        compound.setTag("genetics", this.genetics.stream().map(e -> e.serialize(new NBTTagCompound())).collect(CollectorUtils.toNBTTagList()));
+    public CompoundNBT serialize(CompoundNBT compound) {
+        compound.put("genetics", this.genetics.stream().map(e -> e.serialize(new CompoundNBT())).collect(CollectorUtils.toNBTTagList()));
         return super.serialize(compound);
     }
 
     @Override
-    public void deserialize(NBTTagCompound compound) {
+    public void deserialize(CompoundNBT compound) {
         this.genetics.clear();
-        StreamUtils.stream(compound.getTagList("genetics", Constants.NBT.TAG_COMPOUND))
-            .map(b -> GeneticEntry.deserialize((NBTTagCompound) b))
+        StreamUtils.stream(compound.getList("genetics", Constants.NBT.TAG_COMPOUND))
+            .map(b -> GeneticEntry.deserialize((CompoundNBT) b))
             .forEach(this.genetics::add);
         super.deserialize(compound);
     }
@@ -81,7 +81,7 @@ public class GeneticComponent extends EntityComponent implements FinalizableComp
 
     public static class Storage implements EntityComponentStorage<GeneticComponent> {
 
-        private final List<GeneticEntry> baseEntries = new ArrayList<>();
+        private final List<GeneticEntry<?>> baseEntries = new ArrayList<>();
 
         public <T extends GeneticFactoryStorage> Storage addGeneticEntry(GeneticType<T> type, String identifier,  float baseValue, float modifierRange) {
             return this.addGeneticEntry(type, identifier, baseValue, modifierRange, t -> {});
@@ -103,8 +103,8 @@ public class GeneticComponent extends EntityComponent implements FinalizableComp
         @Override
         public void readJson(JsonObject json) {
             this.baseEntries.clear();
-            StreamUtils.stream(JsonUtils.getJsonArray(json, "genetics"))
-                .map(b -> GeneticEntry.deserialize(JsonUtils.getJsonObject(b, "genetic_list_entry")))
+            StreamUtils.stream(JSONUtils.getAsJsonArray(json, "genetics"))
+                .map(b -> GeneticEntry.deserialize(JSONUtils.convertToJsonObject(b, "genetic_list_entry")))
                 .forEach(this.baseEntries::add);
         }
 

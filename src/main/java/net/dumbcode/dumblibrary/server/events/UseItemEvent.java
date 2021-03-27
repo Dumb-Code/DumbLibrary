@@ -2,9 +2,9 @@ package net.dumbcode.dumblibrary.server.events;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.minecraft.item.EnumAction;
 import net.minecraft.item.ItemStack;
-import net.minecraftforge.fml.common.eventhandler.Event;
+import net.minecraft.item.UseAction;
+import net.minecraftforge.eventbus.api.Event;
 
 @Getter
 public class UseItemEvent extends Event {
@@ -30,11 +30,11 @@ public class UseItemEvent extends Event {
     @Setter
     public static class Action extends UseItemEvent {
 
-        private EnumAction action;
+        private UseAction action;
 
         public Action(ItemStack stack) {
             super(stack);
-            this.action = EnumAction.NONE;
+            this.action = UseAction.NONE;
         }
     }
 }

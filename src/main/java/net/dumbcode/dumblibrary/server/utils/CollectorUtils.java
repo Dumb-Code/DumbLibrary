@@ -6,8 +6,8 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import net.minecraft.nbt.NBTBase;
-import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.INBT;
+import net.minecraft.nbt.ListNBT;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -33,19 +33,19 @@ public class CollectorUtils {
         );
     }
 
-    public static Collector<NBTBase, NBTTagList, NBTTagList> toNBTTagList() {
+    public static Collector<INBT, ListNBT, ListNBT> toNBTTagList() {
         return new CollectorImpl<>(
-                NBTTagList::new,
-                NBTTagList::appendTag,
-                (list1, list2) -> { list2.forEach(list1::appendTag); return list1; }
+            ListNBT::new,
+            ListNBT::add,
+            (list1, list2) -> { list1.addAll(list2); return list1; }
         );
     }
 
-    public static <T> Collector<T, NBTTagList, NBTTagList> toNBTList(Function<T, ? extends NBTBase> func) {
+    public static <T> Collector<T, ListNBT, ListNBT> toNBTList(Function<T, ? extends INBT> func) {
         return new CollectorImpl<>(
-            NBTTagList::new,
-            (nbtBases, s) -> nbtBases.appendTag(func.apply(s)),
-            (list1, list2) -> {list2.forEach(list1::appendTag); return list1; }
+            ListNBT::new,
+            (nbtBases, s) -> nbtBases.add(func.apply(s)),
+            (list1, list2) -> { list1.addAll(list2); return list1; }
         );
     }
 

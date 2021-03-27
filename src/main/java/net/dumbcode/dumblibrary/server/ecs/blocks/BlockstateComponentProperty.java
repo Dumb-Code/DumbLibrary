@@ -1,11 +1,10 @@
 package net.dumbcode.dumblibrary.server.ecs.blocks;
 
-import com.google.common.base.Optional;
 import lombok.Value;
 import net.dumbcode.dumblibrary.server.ecs.ComponentMapWriteAccess;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentAttacher;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentMap;
-import net.minecraft.block.properties.IProperty;
+import net.minecraft.state.Property;
 
 import java.util.*;
 
@@ -13,15 +12,13 @@ import java.util.*;
  * The blockstate property used to hold the {@link net.dumbcode.dumblibrary.server.ecs.ComponentAccess} for the ecs.
  * @author Wyn Price
  */
-public class BlockstateComponentProperty implements IProperty<BlockstateComponentProperty.Entry> {
+public class BlockstateComponentProperty extends Property<BlockstateComponentProperty.Entry> {
 
-    private final String name;
     private final List<Entry> entries = new ArrayList<>();
     private final Map<String, Entry> stringToEntries = new HashMap<>();
 
     public BlockstateComponentProperty(String name, EntityComponentAttacher baseAttacher, Map<String, EntityComponentAttacher> stateOverrides) {
-
-        this.name = name;
+        super(name, BlockstateComponentProperty.Entry.class);
         if(stateOverrides.isEmpty()) {
             throw new IllegalArgumentException("Need to have at least one property for a state");
         } else {
@@ -40,13 +37,9 @@ public class BlockstateComponentProperty implements IProperty<BlockstateComponen
         this.entries.sort(Comparator.comparing(Entry::getName));
     }
 
-    @Override
-    public String getName() {
-        return this.name;
-    }
 
     @Override
-    public Collection<Entry> getAllowedValues() {
+    public Collection<Entry> getPossibleValues() {
         return this.entries;
     }
 
@@ -56,8 +49,8 @@ public class BlockstateComponentProperty implements IProperty<BlockstateComponen
     }
 
     @Override
-    public Optional<Entry> parseValue(String value) {
-        return Optional.fromNullable(this.stringToEntries.get(value));
+    public Optional<Entry> getValue(String value) {
+        return Optional.ofNullable(this.stringToEntries.get(value));
     }
 
     @Override

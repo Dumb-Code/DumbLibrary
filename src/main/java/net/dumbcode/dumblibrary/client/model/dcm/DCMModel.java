@@ -41,7 +41,7 @@ public class DCMModel extends EntityModel<Entity> {
         this.texHeight = information.getTextureHeight();
 
         for (CubeInfo root : information.getRoots()) {
-            this.roots.add(new DCMModelRenderer(this, root));
+            this.roots.add(new DCMModelRenderer(this, null, root));
         }
     }
 

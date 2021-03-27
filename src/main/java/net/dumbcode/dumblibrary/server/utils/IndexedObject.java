@@ -4,9 +4,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.netty.buffer.ByteBuf;
 import lombok.Value;
-import net.minecraft.nbt.NBTBase;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.JsonUtils;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.INBT;
+import net.minecraft.util.JSONUtils;
 
 import java.util.Comparator;
 import java.util.List;
@@ -27,16 +27,16 @@ public class IndexedObject<T> {
             .collect(Collectors.toList());
     }
 
-    public static <T> NBTTagCompound serializeNBT(IndexedObject<T> object, Function<T, NBTBase> objectSerializer) {
-        NBTTagCompound tag = new NBTTagCompound();
-        tag.setFloat("index", object.index);
-        tag.setTag("object", objectSerializer.apply(object.object));
+    public static <T> CompoundNBT serializeNBT(IndexedObject<T> object, Function<T, INBT> objectSerializer) {
+        CompoundNBT tag = new CompoundNBT();
+        tag.putFloat("index", object.index);
+        tag.put("object", objectSerializer.apply(object.object));
         return tag;
     }
 
-    public static <T> IndexedObject<T> deserializeNBT(NBTTagCompound tag, Function<NBTBase, T> deserailizer) {
+    public static <T> IndexedObject<T> deserializeNBT(CompoundNBT tag, Function<INBT, T> deserailizer) {
         return new IndexedObject<>(
-            deserailizer.apply(tag.getTag("object")),
+            deserailizer.apply(tag.get("object")),
             tag.getFloat("index")
         );
     }
@@ -51,7 +51,7 @@ public class IndexedObject<T> {
     public static <T> IndexedObject<T> deserializeJson(JsonObject json, Function<JsonElement, T> deserailizer) {
         return new IndexedObject<>(
             deserailizer.apply(json.get("object")),
-            JsonUtils.getFloat(json, "index")
+            JSONUtils.getAsFloat(json, "index")
         );
     }
 

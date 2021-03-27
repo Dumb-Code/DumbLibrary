@@ -1,22 +1,20 @@
 package net.dumbcode.dumblibrary.server.ecs.system.impl;
 
-import com.google.common.base.Predicate;
 import net.dumbcode.dumblibrary.server.ecs.ComposableCreatureEntity;
 import net.dumbcode.dumblibrary.server.ecs.EntityFamily;
 import net.dumbcode.dumblibrary.server.ecs.EntityManager;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentTypes;
 import net.dumbcode.dumblibrary.server.ecs.component.impl.CloseProximityAngryComponent;
-import net.dumbcode.dumblibrary.server.ecs.component.impl.EyesClosedComponent;
 import net.dumbcode.dumblibrary.server.ecs.system.EntitySystem;
+import net.minecraft.entity.CreatureEntity;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityCreature;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.MultiPartEntityPart;
-import net.minecraft.util.EntitySelectors;
+import net.minecraft.util.EntityPredicates;
 import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
 
 import java.util.List;
+import java.util.function.Predicate;
 
 public class CloseProximityAngrySystem implements EntitySystem {
 
@@ -37,15 +35,16 @@ public class CloseProximityAngrySystem implements EntitySystem {
             CloseProximityAngryComponent component = this.components[i];
 
             double range = component.getRange().getValue();
-            Predicate<Entity> withinRange = EntitySelectors.withinRange(entity.posX, entity.posY, entity.posZ, range);
+            Vector3d position = entity.position();
+            Predicate<Entity> withinRange = EntityPredicates.withinDistance(position.x, position.y, position.z, range);
 
-            List<Entity> entities = world.getEntitiesInAABBexcluding(entity, new AxisAlignedBB(entity.getPosition()).grow(range, range, range),
-                e -> withinRange.test(e) && !(e instanceof ComposableCreatureEntity) && e instanceof EntityCreature
+            List<Entity> entities = world.getEntities(entity, new AxisAlignedBB(entity.blockPosition()).inflate(range, range, range),
+                e -> withinRange.test(e) && !(e instanceof ComposableCreatureEntity) && e instanceof CreatureEntity
             );
             if(entities.isEmpty()) {
                 component.setAngryAtEntity(null);
             } else {
-                component.setAngryAtEntity(entities.get(0).getUniqueID());
+                component.setAngryAtEntity(entities.get(0).getUUID());
             }
         }
     }

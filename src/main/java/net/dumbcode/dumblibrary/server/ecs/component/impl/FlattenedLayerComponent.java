@@ -3,7 +3,6 @@ package net.dumbcode.dumblibrary.server.ecs.component.impl;
 import com.google.common.collect.Lists;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -20,14 +19,12 @@ import net.dumbcode.dumblibrary.server.utils.BuilderNode;
 import net.dumbcode.dumblibrary.server.utils.CollectorUtils;
 import net.dumbcode.dumblibrary.server.utils.IndexedObject;
 import net.dumbcode.dumblibrary.server.utils.StreamUtils;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.texture.TextureManager;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagString;
-import net.minecraft.util.JsonUtils;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.StringNBT;
+import net.minecraft.network.PacketBuffer;
+import net.minecraft.util.JSONUtils;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.util.Constants;
-import net.minecraftforge.fml.common.network.ByteBufUtils;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -133,43 +130,43 @@ public class FlattenedLayerComponent extends EntityComponent implements RenderLa
     }
 
     @Override
-    public void serialize(ByteBuf buf) {
+    public void serialize(PacketBuffer buf) {
         super.serialize(buf);
         buf.writeShort(this.staticLayers.size());
         for (IndexedObject<FlattenedLayerProperty.Static> layer : this.staticLayers) {
-            IndexedObject.serializeByteBuf(buf, layer, aStatic -> ByteBufUtils.writeUTF8String(buf, aStatic.getValue()));
+            IndexedObject.serializeByteBuf(buf, layer, aStatic -> buf.writeUtf(aStatic.getValue()));
         }
         buf.writeFloat(this.index);
     }
 
     @Override
-    public void deserialize(ByteBuf buf) {
+    public void deserialize(PacketBuffer buf) {
         super.deserialize(buf);
         this.staticLayers.clear();
 
         int size = buf.readShort();
         for (int i = 0; i < size; i++) {
-            this.staticLayers.add(IndexedObject.deserializeByteBuf(buf, () -> new FlattenedLayerProperty.Static(ByteBufUtils.readUTF8String(buf))));
+            this.staticLayers.add(IndexedObject.deserializeByteBuf(buf, () -> new FlattenedLayerProperty.Static(buf.readUtf())));
         }
         this.index = buf.readFloat();
     }
 
     @Override
-    public NBTTagCompound serialize(NBTTagCompound compound) {
-        compound.setTag("layers",
+    public CompoundNBT serialize(CompoundNBT compound) {
+        compound.put("layers",
             this.staticLayers.stream()
-                .map(io -> IndexedObject.serializeNBT(io, aStatic -> new NBTTagString(aStatic.getValue())))
+                .map(io -> IndexedObject.serializeNBT(io, aStatic -> StringNBT.valueOf(aStatic.getValue())))
                 .collect(CollectorUtils.toNBTTagList())
         );
-        compound.setFloat("Index", this.index);
+        compound.putFloat("Index", this.index);
         return super.serialize(compound);
     }
 
     @Override
-    public void deserialize(NBTTagCompound compound) {
+    public void deserialize(CompoundNBT compound) {
         this.staticLayers.clear();
-        StreamUtils.stream(compound.getTagList("layers", Constants.NBT.TAG_COMPOUND))
-            .map(t -> IndexedObject.deserializeNBT((NBTTagCompound)t, b -> new FlattenedLayerProperty.Static(((NBTTagString) b).getString())))
+        StreamUtils.stream(compound.getList("layers", Constants.NBT.TAG_COMPOUND))
+            .map(t -> IndexedObject.deserializeNBT((CompoundNBT)t, b -> new FlattenedLayerProperty.Static(b.getAsString())))
             .forEach(this.staticLayers::add);
         this.index = compound.getFloat("Index");
         super.deserialize(compound);
@@ -207,10 +204,10 @@ public class FlattenedLayerComponent extends EntityComponent implements RenderLa
         @Override
         public void readJson(JsonObject json) {
             this.staticLayers.clear();
-            StreamUtils.stream(JsonUtils.getJsonArray(json, "layers"))
+            StreamUtils.stream(JSONUtils.getAsJsonArray(json, "layers"))
                 .map(e -> IndexedObject.deserializeJson(e.getAsJsonObject(), b -> new FlattenedLayerProperty.Static(b.getAsString())))
                 .forEach(this.staticLayers::add);
-            this.index = JsonUtils.getFloat(json, "index");
+            this.index = JSONUtils.getAsFloat(json, "index");
         }
     }
 }

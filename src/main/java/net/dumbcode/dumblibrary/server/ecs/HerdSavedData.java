@@ -4,14 +4,13 @@ import com.google.common.collect.Lists;
 import lombok.Getter;
 import net.dumbcode.dumblibrary.server.ecs.component.impl.HerdComponent;
 import net.dumbcode.dumblibrary.server.utils.WorldUtils;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.world.World;
+import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.storage.WorldSavedData;
-import net.minecraftforge.common.DimensionManager;
 
 import java.io.File;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 public class HerdSavedData extends WorldSavedData {
@@ -30,84 +29,80 @@ public class HerdSavedData extends WorldSavedData {
         herd.herdUUID = this.herdUUID;
         herd.setHerdData(this);
         this.members.add(uuid);
-        this.markDirty();
+        this.setDirty();
     }
 
     public void removeMember(UUID uuid, HerdComponent herd) {
         herd.herdUUID = null;
         herd.clearHerd();
         this.members.remove(uuid);
-        this.markDirty();
+        this.setDirty();
     }
 
 
     public void addEnemy(UUID uuid) {
         this.enemies.add(uuid);
-        this.markDirty();
+        this.setDirty();
     }
 
     public void removeEnemy(UUID uuid) {
         this.enemies.remove(uuid);
-        this.markDirty();
+        this.setDirty();
     }
 
     public void pickNewLeader(World world) {
         if(!this.members.isEmpty()) {
-            WorldUtils.getEntityFromUUID(world, this.members.get(0)).ifPresent(e -> this.leader = e.getUniqueID());
+            WorldUtils.getEntityFromUUID(world, this.members.get(0)).ifPresent(e -> this.leader = e.getUUID());
         }
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound nbt) {
-        this.leader = nbt.getUniqueId("leader");
+    public void load(CompoundNBT nbt) {
+        this.leader = nbt.getUUID("leader");
 
-        loadList(nbt.getCompoundTag("members"), this.members);
-        loadList(nbt.getCompoundTag("enemies"), this.enemies);
+        loadList(nbt.getCompound("members"), this.members);
+        loadList(nbt.getCompound("enemies"), this.enemies);
     }
 
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound compound) {
-        compound.setUniqueId("leader", this.leader);
+    public CompoundNBT save(CompoundNBT compound) {
+        compound.putUUID("leader", this.leader);
 
-        compound.setTag("members", saveList(this.members));
-        compound.setTag("enemies", saveList(this.enemies));
+        compound.put("members", saveList(this.members));
+        compound.put("enemies", saveList(this.enemies));
 
         return compound;
     }
 
 
-    public static NBTTagCompound saveList(List<UUID> list) {
-        NBTTagCompound nbt = new NBTTagCompound();
-        nbt.setInteger("size", list.size());
+
+    public static CompoundNBT saveList(List<UUID> list) {
+        CompoundNBT nbt = new CompoundNBT();
+        nbt.putInt("size", list.size());
         for (int i = 0; i < list.size(); i++) {
-            nbt.setUniqueId(String.valueOf(i), list.get(i));
+            nbt.putUUID(String.valueOf(i), list.get(i));
         }
         return nbt;
     }
 
-    public static void loadList(NBTTagCompound nbt, List<UUID> list) {
+    public static void loadList(CompoundNBT nbt, List<UUID> list) {
         list.clear();
-        for (int i = 0; i < nbt.getInteger("size"); i++) {
-            list.add(nbt.getUniqueId(String.valueOf(i)));
+        for (int i = 0; i < nbt.getInt("size"); i++) {
+            list.add(nbt.getUUID(String.valueOf(i)));
         }
     }
 
-    public static HerdSavedData getData(UUID herdUUID) {
-        World world = DimensionManager.getWorld(0);
+    public static HerdSavedData getData(ServerWorld world, UUID herdUUID) {
         String identifier = "herd_data/" + herdUUID.toString().replaceAll("-", "");
         ensureHerdFolder(world, identifier);
 
-        HerdSavedData data = (HerdSavedData) Objects.requireNonNull(world.getMapStorage()).getOrLoadData(HerdSavedData.class, identifier);
-        if(data == null) {
-            data = new HerdSavedData(identifier);
-            world.getMapStorage().setData(identifier, data);
-        }
+        HerdSavedData data = world.getDataStorage().computeIfAbsent(() -> new HerdSavedData(identifier), identifier);
         data.herdUUID = herdUUID;
         return data;
     }
 
-    private static void ensureHerdFolder(World world, String identifier) {
-        File file = world.getSaveHandler().getMapFileFromName(identifier).getParentFile();
+    private static void ensureHerdFolder(ServerWorld world, String identifier) {
+        File file = world.getDataStorage().getDataFile(identifier).getParentFile();
         if(!file.exists()) {
             file.mkdirs();
         }

@@ -5,7 +5,6 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.relauncher.ReflectionHelper;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -106,14 +105,19 @@ public class SimpleComponentType<T extends EntityComponent, S extends EntityComp
             Preconditions.checkNotNull(this.identifier, "Component identifier must be set");
             if(this.constructor == null) {
                 DumbLibrary.getLogger().warn("No constructor set, trying to set to empty constructor of type {}", this.type.getName());
-                Constructor<T> cons = ReflectionHelper.findConstructor(this.type);
-                this.constructor = () -> {
-                    try {
-                        return cons.newInstance();
-                    } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-                        throw new IllegalStateException("Unable to construct component of class " + this.type.getName() + ", with component type " + this.identifier, e);
-                    }
-                };
+                try {
+                    Constructor<T> cons = this.type.getConstructor();
+                    this.constructor = () -> {
+                        try {
+                            return cons.newInstance();
+                        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+                            throw new IllegalStateException("Unable to construct component of class " + this.type.getName() + ", with component type " + this.identifier, e);
+                        }
+                    };
+                } catch (NoSuchMethodException e) {
+                    throw new IllegalStateException("Unable to create empty constructor for " + this.type.getSimpleName(), e);
+                }
+
             }
             return new SimpleComponentType<>(this.constructor, this.storageConstructor, this.identifier, this.defaultAttach, this.type);
         }

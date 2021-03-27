@@ -9,9 +9,9 @@ import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentAttacher;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.JsonUtils;
+import net.minecraft.util.JSONUtils;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.Objects;
 import java.util.function.Supplier;
@@ -20,11 +20,11 @@ import java.util.function.Supplier;
 @Setter
 @Accessors(chain = true)
 public class ItemComponentAccessCreatable {
-    private Supplier<Item> item = () -> DumbLibrary.COMPONENT_ITEM;
+    private Supplier<Item> item = DumbLibrary.COMPONENT_ITEM;
     private EntityComponentAttacher attacher = new EntityComponentAttacher();
 
     public JsonObject serialize(JsonObject json) {
-        if(this.item.get() != DumbLibrary.COMPONENT_ITEM) {
+        if(this.item.get() != DumbLibrary.COMPONENT_ITEM.get()) {
             json.addProperty("item", Objects.requireNonNull(this.item.get().getRegistryName()).toString());
         }
         json.add("component", this.attacher.writeToJson(new JsonArray()));
@@ -32,10 +32,10 @@ public class ItemComponentAccessCreatable {
     }
 
     public void deserialize(JsonObject json) {
-        this.item = () -> JsonUtils.isString(json, "item") ? ForgeRegistries.ITEMS.getValue(new ResourceLocation(JsonUtils.getString(json, "item"))) : DumbLibrary.COMPONENT_ITEM;
+        this.item = () -> JSONUtils.isStringValue(json, "item") ? ForgeRegistries.ITEMS.getValue(new ResourceLocation(JSONUtils.getAsString(json, "item"))) : DumbLibrary.COMPONENT_ITEM.get();
 
         this.attacher = new EntityComponentAttacher();
-        this.attacher.readFromJson(JsonUtils.getJsonArray(json, "component"));
+        this.attacher.readFromJson(JSONUtils.getAsJsonArray(json, "component"));
     }
 
     public Supplier<ItemStack> getStack() {

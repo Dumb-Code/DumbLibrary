@@ -13,10 +13,13 @@ import net.dumbcode.dumblibrary.server.ecs.component.FinalizableComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.CanBreedComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.GatherEnemiesComponent;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.ai.attributes.Attributes;
+import net.minecraft.entity.ai.attributes.ModifiableAttributeInstance;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.World;
+import net.minecraft.world.server.ServerWorld;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -32,20 +35,20 @@ public class HerdComponent extends EntityComponent implements FinalizableCompone
     private HerdSavedData herdData;
 
     @Override
-    public NBTTagCompound serialize(NBTTagCompound compound) {
+    public CompoundNBT serialize(CompoundNBT compound) {
         if(this.herdUUID != null) {
-            compound.setUniqueId("uuid", this.herdUUID);
+            compound.putUUID("uuid", this.herdUUID);
         }
 
-        compound.setString("herd_type_id", this.herdTypeID.toString());
+        compound.putString("herd_type_id", this.herdTypeID.toString());
 
         return compound;
     }
 
     @Override
-    public void deserialize(NBTTagCompound compound) {
-        if(compound.hasUniqueId("uuid")) {
-            this.herdUUID = compound.getUniqueId("uuid");
+    public void deserialize(CompoundNBT compound) {
+        if(compound.hasUUID("uuid")) {
+            this.herdUUID = compound.getUUID("uuid");
         } else {
             this.herdUUID = null;
         }
@@ -56,8 +59,11 @@ public class HerdComponent extends EntityComponent implements FinalizableCompone
     @Override
     public void finalizeComponent(ComponentAccess entity) {
         if(entity instanceof Entity) {
-            if(entity instanceof EntityLivingBase) {
-                ((EntityLivingBase)entity).getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(120.0D);
+            if(entity instanceof LivingEntity) {
+                ModifiableAttributeInstance attribute = ((LivingEntity) entity).getAttribute(Attributes.FOLLOW_RANGE);
+                if(attribute != null) {
+                    attribute.setBaseValue(120.0D);
+                }
             }
         }
 
@@ -76,9 +82,9 @@ public class HerdComponent extends EntityComponent implements FinalizableCompone
         this.herdUUID = herdData.getHerdUUID();
     }
 
-    public Optional<HerdSavedData> getHerdData() {
-        if(this.herdData == null && this.herdUUID != null) {
-            this.herdData = HerdSavedData.getData(this.herdUUID);
+    public Optional<HerdSavedData> getHerdData(World world) {
+        if(this.herdData == null && this.herdUUID != null && world instanceof ServerWorld) {
+            this.herdData = HerdSavedData.getData((ServerWorld) world, this.herdUUID);
         }
         return Optional.ofNullable(this.herdData);
     }
@@ -89,8 +95,8 @@ public class HerdComponent extends EntityComponent implements FinalizableCompone
     }
 
     @Override
-    public void gatherEnemyPredicates(Consumer<Predicate<EntityLivingBase>> registry) {
-        registry.accept(e -> this.getHerdData().map(h -> h.getEnemies().contains(e.getUniqueID())).orElse(false));
+    public void gatherEnemyPredicates(Consumer<Predicate<LivingEntity>> registry) {
+        registry.accept(e -> this.getHerdData(e.level).map(h -> h.getEnemies().contains(e.getUUID())).orElse(false));
     }
 
     @Accessors(chain = true)

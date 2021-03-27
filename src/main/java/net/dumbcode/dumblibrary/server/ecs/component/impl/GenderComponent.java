@@ -1,12 +1,12 @@
 package net.dumbcode.dumblibrary.server.ecs.component.impl;
 
-import io.netty.buffer.ByteBuf;
 import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentTypes;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.CanBreedComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLocationComponent;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.network.PacketBuffer;
 
 import java.util.Random;
 
@@ -14,24 +14,24 @@ public class GenderComponent extends EntityComponent implements RenderLocationCo
     public boolean male = new Random().nextBoolean();
 
     @Override
-    public NBTTagCompound serialize(NBTTagCompound compound) {
-        compound.setBoolean("male", this.male);
+    public CompoundNBT serialize(CompoundNBT compound) {
+        compound.putBoolean("male", this.male);
         return super.serialize(compound);
     }
 
     @Override
-    public void deserialize(NBTTagCompound compound) {
+    public void deserialize(CompoundNBT compound) {
         super.deserialize(compound);
         this.male = compound.getBoolean("male");
     }
 
     @Override
-    public void serialize(ByteBuf buf) {
+    public void serialize(PacketBuffer buf) {
         buf.writeBoolean(this.male);
     }
 
     @Override
-    public void deserialize(ByteBuf buf) {
+    public void deserialize(PacketBuffer buf) {
         this.male = buf.readBoolean();
     }
 

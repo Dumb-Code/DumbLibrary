@@ -1,7 +1,6 @@
 package net.dumbcode.dumblibrary.server.ecs.component.impl;
 
 import com.google.gson.JsonObject;
-import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -12,9 +11,9 @@ import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
 import net.dumbcode.dumblibrary.server.ecs.component.FinalizableComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderCallbackComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.ScaleAdjustmentComponent;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.JsonUtils;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.network.PacketBuffer;
+import net.minecraft.util.JSONUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,15 +42,15 @@ public class RenderAdjustmentsComponent extends EntityComponent implements Rende
     }
 
     @Override
-    public NBTTagCompound serialize(NBTTagCompound compound) {
-        compound.setFloat("sx", this.defaultScale[0]);
-        compound.setFloat("sy", this.defaultScale[1]);
-        compound.setFloat("sz", this.defaultScale[2]);
+    public CompoundNBT serialize(CompoundNBT compound) {
+        compound.putFloat("sx", this.defaultScale[0]);
+        compound.putFloat("sy", this.defaultScale[1]);
+        compound.putFloat("sz", this.defaultScale[2]);
         return super.serialize(compound);
     }
 
     @Override
-    public void deserialize(NBTTagCompound compound) {
+    public void deserialize(CompoundNBT compound) {
         super.deserialize(compound);
         this.defaultScale[0] = compound.getFloat("sx");
         this.defaultScale[1] = compound.getFloat("sy");
@@ -59,14 +58,14 @@ public class RenderAdjustmentsComponent extends EntityComponent implements Rende
     }
 
     @Override
-    public void serialize(ByteBuf buf) {
+    public void serialize(PacketBuffer buf) {
         buf.writeFloat(this.defaultScale[0]);
         buf.writeFloat(this.defaultScale[1]);
         buf.writeFloat(this.defaultScale[2]);
     }
 
     @Override
-    public void deserialize(ByteBuf buf) {
+    public void deserialize(PacketBuffer buf) {
         this.defaultScale[0] = buf.readFloat();
         this.defaultScale[1] = buf.readFloat();
         this.defaultScale[2] = buf.readFloat();
@@ -75,9 +74,13 @@ public class RenderAdjustmentsComponent extends EntityComponent implements Rende
 
     @Override
     public void addCallbacks(List<SubCallback> preRenderCallbacks, List<MainCallback> renderCallbacks, List<SubCallback> postRenderCallback) {
-        preRenderCallbacks.add((context1, entity1, x, y, z, entityYaw, partialTicks) -> {
+//        preRenderCallbacks.add((context1, entity1, x, y, z, entityYaw, partialTicks) -> {
+//            float[] scale = this.getScale();
+//            GlStateManager.scale(scale[0], scale[1], scale[2]);
+//        });
+        preRenderCallbacks.add((context, entity, entityYaw, partialTicks, stack, buffer, light) -> {
             float[] scale = this.getScale();
-            GlStateManager.scale(scale[0], scale[1], scale[2]);
+            stack.scale(scale[0], scale[1], scale[2]);
         });
     }
 
@@ -109,9 +112,9 @@ public class RenderAdjustmentsComponent extends EntityComponent implements Rende
 
         @Override
         public void readJson(JsonObject json) {
-            this.scaleX = JsonUtils.getFloat(json, "sx");
-            this.scaleY = JsonUtils.getFloat(json, "sy");
-            this.scaleZ = JsonUtils.getFloat(json, "sz");
+            this.scaleX = JSONUtils.getAsFloat(json, "sx");
+            this.scaleY = JSONUtils.getAsFloat(json, "sy");
+            this.scaleZ = JSONUtils.getAsFloat(json, "sz");
         }
 
         @Override

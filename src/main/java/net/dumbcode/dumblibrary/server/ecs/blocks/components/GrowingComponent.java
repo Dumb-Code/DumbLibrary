@@ -10,8 +10,8 @@ import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
 import net.dumbcode.dumblibrary.server.ecs.component.FinalizableComponent;
 import net.dumbcode.dumblibrary.server.utils.CollectorUtils;
 import net.dumbcode.dumblibrary.server.utils.StreamUtils;
-import net.minecraft.block.properties.IProperty;
-import net.minecraft.util.JsonUtils;
+import net.minecraft.state.Property;
+import net.minecraft.util.JSONUtils;
 
 import java.util.Arrays;
 import java.util.Random;
@@ -19,7 +19,7 @@ import java.util.Random;
 public class GrowingComponent extends EntityComponent implements FinalizableComponent {
 
     private String[] growTo;
-    @Getter private IProperty<?> blockProperty;
+    @Getter private Property<?> blockProperty;
 
     public String getGrowTo(Random rand) {
         return this.growTo[rand.nextInt(this.growTo.length)];
@@ -44,7 +44,7 @@ public class GrowingComponent extends EntityComponent implements FinalizableComp
 
         @Override
         public void readJson(JsonObject json) {
-            this.growTo = StreamUtils.stream(JsonUtils.getJsonArray(json, "grow_to"))
+            this.growTo = StreamUtils.stream(JSONUtils.getAsJsonArray(json, "grow_to"))
                     .filter(e -> e.isJsonPrimitive() && e.getAsJsonPrimitive().isString())
                     .map(e -> e.getAsJsonPrimitive().getAsString())
                     .toArray(String[]::new);

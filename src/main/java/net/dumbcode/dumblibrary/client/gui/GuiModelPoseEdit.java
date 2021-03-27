@@ -6,7 +6,7 @@ import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.client.MutVector2f;
 import net.dumbcode.dumblibrary.client.model.dcm.DCMModel;
 import net.dumbcode.dumblibrary.client.model.dcm.DCMModelRenderer;
-import net.dumbcode.dumblibrary.server.animation.TabulaUtils;
+import net.dumbcode.dumblibrary.server.animation.DCMUtils;
 import net.dumbcode.dumblibrary.server.taxidermy.TaxidermyHistory;
 import net.dumbcode.dumblibrary.server.utils.XYZAxis;
 import net.minecraft.client.GameSettings;
@@ -21,7 +21,6 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraftforge.client.model.pipeline.LightUtil;
 import net.minecraftforge.fml.client.gui.widget.ExtendedButton;
 import net.minecraftforge.fml.client.gui.widget.Slider;
 import org.lwjgl.BufferUtils;
@@ -107,7 +106,7 @@ public abstract class GuiModelPoseEdit extends Screen {
         this.model = model; // TODO: child models? -> Selectable
         this.texture = texture;
         this.titleText = title;
-        this.rotationRingModel = TabulaUtils.getModel(GuiConstants.ROTATION_RING_LOCATION);
+        this.rotationRingModel = DCMUtils.getModel(GuiConstants.ROTATION_RING_LOCATION);
         this.cameraPitch = cameraPitch;
         this.cameraYaw = cameraYaw;
         this.zoom = zoom;

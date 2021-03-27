@@ -1,23 +1,27 @@
 package net.dumbcode.dumblibrary.server.ecs.system.impl;
 
-import net.dumbcode.dumblibrary.server.animation.objects.AnimationEntry;
 import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.ecs.EntityFamily;
 import net.dumbcode.dumblibrary.server.ecs.EntityManager;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentTypes;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.ECSSounds;
-import net.dumbcode.dumblibrary.server.ecs.component.impl.*;
+import net.dumbcode.dumblibrary.server.ecs.component.impl.AnimationComponent;
+import net.dumbcode.dumblibrary.server.ecs.component.impl.EyesClosedComponent;
+import net.dumbcode.dumblibrary.server.ecs.component.impl.SleepingComponent;
+import net.dumbcode.dumblibrary.server.ecs.component.impl.SoundStorageComponent;
 import net.dumbcode.dumblibrary.server.ecs.system.EntitySystem;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.world.ClientWorld;
+import net.minecraft.entity.CreatureEntity;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityCreature;
+import net.minecraft.pathfinding.Path;
 import net.minecraft.util.SoundCategory;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 public class SleepingSystem implements EntitySystem {
 
@@ -28,7 +32,7 @@ public class SleepingSystem implements EntitySystem {
     private Entity[] entities = new Entity[0];
     private SleepingComponent[] sleepingComponents = new SleepingComponent[0];
     private EyesClosedComponent[] eyesClosedComponents = new EyesClosedComponent[0];
-    private AnimationComponent<?>[] animationComponents = new AnimationComponent[0];
+    private AnimationComponent[] animationComponents = new AnimationComponent[0];
     private SoundStorageComponent[] soundStorageComponents = new SoundStorageComponent[0];
 
     @Override
@@ -43,7 +47,7 @@ public class SleepingSystem implements EntitySystem {
 
     @Override
     public void update(World world) {
-        long time = world.getWorldTime() % 24000;
+        long time = world.dayTime() % 24000;
         for (int i = 0; i < this.entities.length; i++) {
             Entity entity = this.entities[i];
             SleepingComponent component = this.sleepingComponents[i];
@@ -66,8 +70,8 @@ public class SleepingSystem implements EntitySystem {
                  }
 
                 //TODO-stream: remove
-                if(entity instanceof EntityCreature) {
-                    ((EntityCreature) entity).getNavigator().setPath(null, 0);
+                if(entity instanceof CreatureEntity) {
+                    ((CreatureEntity) entity).getNavigation().moveTo((Path) null, 0);
                 }
 
             } else {
@@ -76,21 +80,22 @@ public class SleepingSystem implements EntitySystem {
                 }
             }
 
-            if(soundStorageComponent != null && entity.world.rand.nextInt(500) < component.snoringTicks++) {
+            if(soundStorageComponent != null && entity.level.random.nextInt(500) < component.snoringTicks++) {
                 component.snoringTicks -= 75;
+                Vector3d d = entity.position();
                 soundStorageComponent.getSound(ECSSounds.SNORING).ifPresent(e ->
-                    entity.world.playSound(null, entity.posX, entity.posY, entity.posZ, e, SoundCategory.AMBIENT, 1F, (entity.world.rand.nextFloat() - entity.world.rand.nextFloat()) * 0.2F + 1.0F)
+                    entity.level.playSound(null, d.x, d.y, d.z, e, SoundCategory.AMBIENT, 1F, (entity.level.random.nextFloat() - entity.level.random.nextFloat()) * 0.2F + 1.0F)
                 );
             }
         }
     }
 
     @SubscribeEvent
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public void onClientWorldTick(TickEvent.ClientTickEvent event) {
-        World world = Minecraft.getMinecraft().world;
+        ClientWorld world = Minecraft.getInstance().level;
         if(world != null) {
-            for (Entity entity : world.loadedEntityList) {
+            for (Entity entity : world.entitiesForRendering()) {
                 if(entity instanceof ComponentAccess) {
                     ((ComponentAccess) entity).get(EntityComponentTypes.SLEEPING).ifPresent(comp -> this.ensureAnimation(entity, comp, ((ComponentAccess) entity).getOrNull(EntityComponentTypes.ANIMATION)));
                 }
@@ -101,13 +106,13 @@ public class SleepingSystem implements EntitySystem {
 
     //TODO-stream: maybe every few ticks the animations that are playing should be synced.
     //or maybe if an entity can't be found or the animation player isn't ready it ticks untill it is then runs the command.
-    private void ensureAnimation(Entity entity, SleepingComponent component, AnimationComponent<?> animationComponent) {
+    private void ensureAnimation(Entity entity, SleepingComponent component, AnimationComponent animationComponent) {
         if(component.isSleeping()) {
             if(animationComponent != null && !animationComponent.isChannelActive(SLEEPING_CHANNEL)) {
-                animationComponent.playAnimation((ComponentAccess) entity, component.getSleepingAnimation().createEntry().withHold(true).withSpeed(1.5F), SLEEPING_CHANNEL);
+                animationComponent.playAnimation(component.getSleepingAnimation(), SLEEPING_CHANNEL).holdForever().withSpeed(1.5F);
             }
         } else if(animationComponent != null && animationComponent.isChannelActive(SLEEPING_CHANNEL)) {
-            animationComponent.stopAnimation(entity, SLEEPING_CHANNEL);
+            animationComponent.stopAnimation(SLEEPING_CHANNEL);
         }
     }
 }

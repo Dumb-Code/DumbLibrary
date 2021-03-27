@@ -11,16 +11,16 @@ import net.dumbcode.dumblibrary.server.ecs.system.RegisterSystemsEvent;
 import net.dumbcode.dumblibrary.server.ecs.system.impl.*;
 import net.dumbcode.dumblibrary.server.utils.InjectedUtils;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.registry.GameRegistry;
+import net.minecraftforge.registries.ObjectHolder;
 
 @Mod.EventBusSubscriber(modid = DumbLibrary.MODID)
-@GameRegistry.ObjectHolder(DumbLibrary.MODID)
+@ObjectHolder(DumbLibrary.MODID)
 public class EntityComponentTypes {
     public static final EntityComponentType<GenderComponent,?> GENDER = InjectedUtils.injected();
     public static final EntityComponentType<HerdComponent, HerdComponent.Storage> HERD = InjectedUtils.injected();
-    public static final EntityComponentType<AnimationComponent<?>,?> ANIMATION = InjectedUtils.injected();
+    public static final EntityComponentType<AnimationComponent,?> ANIMATION = InjectedUtils.injected();
     public static final EntityComponentType<ModelComponent, ModelComponent.Storage> MODEL = InjectedUtils.injected();
     public static final EntityComponentType<RenderAdjustmentsComponent, RenderAdjustmentsComponent.Storage> RENDER_ADJUSTMENTS = InjectedUtils.injected();
     public static final EntityComponentType<SpeedTrackingComponent, ?> SPEED_TRACKING = InjectedUtils.injected();
@@ -173,7 +173,6 @@ public class EntityComponentTypes {
     @SubscribeEvent
     public static void register(RegisterSystemsEvent event) {
         event.registerSystem(new HerdSystem());
-        event.registerSystem(new AnimationSystem());
         event.registerSystem(new ItemDropSystem());
         event.registerSystem(new SpeedTrackingSystem());
         event.registerSystem(new FamilySystem());

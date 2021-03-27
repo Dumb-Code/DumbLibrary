@@ -8,10 +8,11 @@ import net.dumbcode.dumblibrary.server.network.S2SyncComponent;
 import net.dumbcode.dumblibrary.server.registry.DumbRegistries;
 import net.dumbcode.dumblibrary.server.utils.TaskScheduler;
 import net.minecraft.entity.Entity;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.fml.network.PacketDistributor;
 
 import javax.annotation.Nullable;
 
@@ -22,24 +23,24 @@ public abstract class EntityComponent {
     @Nullable private SaveableEntityStorage storage;
     @Nullable private String storageID;
 
-    public NBTTagCompound serialize(NBTTagCompound compound) {
+    public CompoundNBT serialize(CompoundNBT compound) {
         if(this.storage != null) {
-            NBTTagCompound storageTag = new NBTTagCompound();
+            CompoundNBT storageTag = new CompoundNBT();
             if(this.storageID != null) {
-                storageTag.setString("storage_id", this.storageID);
+                storageTag.putString("storage_id", this.storageID);
             }
             this.storage.writeNBT(storageTag);
-            compound.setTag("storage", storageTag);
+            compound.put("storage", storageTag);
         }
         return compound;
     }
 
-    public void deserialize(NBTTagCompound compound) {
+    public void deserialize(CompoundNBT compound) {
         ResourceLocation identifier = new ResourceLocation(compound.getString("identifier"));
         this.type = DumbRegistries.COMPONENT_REGISTRY.getValue(identifier);
-        if(compound.hasKey("storage", Constants.NBT.TAG_COMPOUND)) {
-            NBTTagCompound storageTag = compound.getCompoundTag("storage");
-            if(storageTag.hasKey("storage_id", Constants.NBT.TAG_STRING)) {
+        if(compound.contains("storage", Constants.NBT.TAG_COMPOUND)) {
+            CompoundNBT storageTag = compound.getCompound("storage");
+            if(storageTag.contains("storage_id", Constants.NBT.TAG_STRING)) {
                 String tagStorageId = storageTag.getString("storage_id");
                 EntityComponentType.StorageOverride override = EntityComponentType.StorageOverride.overrides.get(this.type).get(tagStorageId);
                 if(override == null) {
@@ -57,23 +58,23 @@ public abstract class EntityComponent {
         }
     }
 
-    public void serialize(ByteBuf buf) {
+    public void serialize(PacketBuffer buf) {
     }
 
-    public void serializeSync(ByteBuf buf) {
+    public void serializeSync(PacketBuffer buf) {
         this.serialize(buf);
     }
 
     public final byte[] serializeSync() {
-        ByteBuf buffer = Unpooled.buffer();
+        PacketBuffer buffer = new PacketBuffer(Unpooled.buffer());
         this.serializeSync(buffer);
         return buffer.array();
     }
 
-    public void deserialize(ByteBuf buf) {
+    public void deserialize(PacketBuffer buf) {
     }
 
-    public void deserializeSync(ByteBuf buf) {
+    public void deserializeSync(PacketBuffer buf) {
         this.deserialize(buf);
     }
 
@@ -83,8 +84,8 @@ public abstract class EntityComponent {
 
     public void setResync(ComponentAccess access) {
         this.syncer = () -> {
-            if(access instanceof Entity && !((Entity) access).world.isRemote) {
-                DumbLibrary.NETWORK.sendToDimension(new S2SyncComponent(((Entity) access).getEntityId(), this.type, this), ((Entity) access).world.provider.getDimension());
+            if(access instanceof Entity && !((Entity) access).level.isClientSide) {
+                DumbLibrary.NETWORK.send(PacketDistributor.DIMENSION.with(() -> ((Entity) access).level.dimension()), new S2SyncComponent(((Entity) access).getId(), this.type, this.serializeSync()));
             }
         };
     }

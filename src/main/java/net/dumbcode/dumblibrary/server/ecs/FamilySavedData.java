@@ -3,14 +3,12 @@ package net.dumbcode.dumblibrary.server.ecs;
 import com.google.common.collect.Lists;
 import lombok.Getter;
 import lombok.Setter;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.world.World;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.storage.WorldSavedData;
-import net.minecraftforge.common.DimensionManager;
 
 import java.io.File;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 @Getter
@@ -29,42 +27,37 @@ public class FamilySavedData extends WorldSavedData {
     }
 
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound compound) {
+    public CompoundNBT save(CompoundNBT compound) {
         if(this.parentOne != null) {
-            compound.setUniqueId("parent_1", this.parentOne);
+            compound.putUUID("parent_1", this.parentOne);
         }
         if(this.parentTwo != null) {
-            compound.setUniqueId("parent_2", this.parentTwo);
+            compound.putUUID("parent_2", this.parentTwo);
         }
-        compound.setTag("children", HerdSavedData.saveList(this.children));
-        compound.setTag("enemies", HerdSavedData.saveList(this.enemies));
+        compound.put("children", HerdSavedData.saveList(this.children));
+        compound.put("enemies", HerdSavedData.saveList(this.enemies));
         return compound;
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound nbt) {
-        this.parentOne = nbt.hasUniqueId("parent_1") ? nbt.getUniqueId("parent_1") : null;
-        this.parentTwo = nbt.hasUniqueId("parent_2") ? nbt.getUniqueId("parent_2") : null;
-        HerdSavedData.loadList(nbt.getCompoundTag("children"), this.children);
-        HerdSavedData.loadList(nbt.getCompoundTag("enemies"), this.enemies);
+    public void load(CompoundNBT nbt) {
+        this.parentOne = nbt.hasUUID("parent_1") ? nbt.getUUID("parent_1") : null;
+        this.parentTwo = nbt.hasUUID("parent_2") ? nbt.getUUID("parent_2") : null;
+        HerdSavedData.loadList(nbt.getCompound("children"), this.children);
+        HerdSavedData.loadList(nbt.getCompound("enemies"), this.enemies);
     }
 
-    public static FamilySavedData getData(UUID familyUUID) {
-        World world = DimensionManager.getWorld(0);
+    public static FamilySavedData getData(ServerWorld world, UUID familyUUID) {
         String identifier = "family_data/" + familyUUID.toString().replaceAll("-", "");
-        ensurefamilyFolder(world, identifier);
+        ensureFamilyFolder(world, identifier);
 
-        FamilySavedData data = (FamilySavedData) Objects.requireNonNull(world.getMapStorage()).getOrLoadData(FamilySavedData.class, identifier);
-        if(data == null) {
-            data = new FamilySavedData(identifier);
-            world.getMapStorage().setData(identifier, data);
-        }
+        FamilySavedData data = world.getDataStorage().computeIfAbsent(() -> new FamilySavedData(identifier), identifier);
         data.familyUUID = familyUUID;
         return data;
     }
 
-    private static void ensurefamilyFolder(World world, String identifier) {
-        File file = world.getSaveHandler().getMapFileFromName(identifier).getParentFile();
+    private static void ensureFamilyFolder(ServerWorld world, String identifier) {
+        File file = world.getDataStorage().getDataFile(identifier).getParentFile();
         if(!file.exists()) {
             file.mkdirs();
         }

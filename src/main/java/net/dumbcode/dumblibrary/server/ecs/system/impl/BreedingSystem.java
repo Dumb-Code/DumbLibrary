@@ -44,7 +44,7 @@ public class BreedingSystem implements EntitySystem {
                 int searchRadXZ = 20;
                 int searchRadY = 5;
                 ComponentAccess mate = null;
-                List<Entity> entities = world.getEntitiesInAABBexcluding(entity, new AxisAlignedBB(-searchRadXZ, -searchRadY, -searchRadXZ, searchRadXZ, searchRadY, searchRadXZ).offset(entity.getPositionVector()), e -> e instanceof ComponentAccess);
+                List<Entity> entities = world.getEntities(entity, new AxisAlignedBB(-searchRadXZ, -searchRadY, -searchRadXZ, searchRadXZ, searchRadY, searchRadXZ).move(entity.position()), e -> e instanceof ComponentAccess);
                 for (Entity otherEntity : entities) {
                     ComponentAccess oca = (ComponentAccess) otherEntity;
                     if(oca.contains(EntityComponentTypes.BREEDING) && canBreedComponents.stream().allMatch(c -> c.canBreedWith(oca))) {

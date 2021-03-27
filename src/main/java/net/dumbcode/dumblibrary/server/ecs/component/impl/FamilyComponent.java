@@ -10,16 +10,14 @@ import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentTypes;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.CanBreedComponent;
-import net.dumbcode.dumblibrary.server.ecs.component.additionals.GatherEnemiesComponent;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.JsonUtils;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.util.JSONUtils;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.World;
+import net.minecraft.world.server.ServerWorld;
 
 import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
 
 
 public class FamilyComponent extends EntityComponent implements CanBreedComponent {
@@ -28,24 +26,24 @@ public class FamilyComponent extends EntityComponent implements CanBreedComponen
     private boolean mateForLife;
     private FamilySavedData dataCache;
 
-    public FamilySavedData getDataCache() {
+    public FamilySavedData getDataCache(ServerWorld world) {
         if(this.dataCache == null) {
-            this.dataCache = FamilySavedData.getData(this.familyUUID);
+            this.dataCache = FamilySavedData.getData(world, this.familyUUID);
         }
         return this.dataCache;
     }
 
     @Override
-    public NBTTagCompound serialize(NBTTagCompound compound) {
-        compound.setUniqueId("family_uuid", this.familyUUID);
-        compound.setString("family_type", this.familyTypeId.toString());
-        compound.setBoolean("mate_for_life", this.mateForLife);
+    public CompoundNBT serialize(CompoundNBT compound) {
+        compound.putUUID("family_uuid", this.familyUUID);
+        compound.putString("family_type", this.familyTypeId.toString());
+        compound.putBoolean("mate_for_life", this.mateForLife);
         return super.serialize(compound);
     }
 
     @Override
-    public void deserialize(NBTTagCompound compound) {
-        this.familyUUID = compound.getUniqueId("family_uuid");
+    public void deserialize(CompoundNBT compound) {
+        this.familyUUID = compound.getUUID("family_uuid");
         this.familyTypeId = new ResourceLocation(compound.getString("family_type"));
         this.mateForLife = compound.getBoolean("mate_for_life");
         super.deserialize(compound);
@@ -57,7 +55,8 @@ public class FamilyComponent extends EntityComponent implements CanBreedComponen
             if(this.mateForLife && !this.familyUUID.equals(f.familyUUID)) {
                 return false;
             }
-            return !this.getDataCache().getChildren().contains(((Entity)otherEntity).getUniqueID());
+            Entity entity = (Entity) otherEntity;
+            return !this.getDataCache((ServerWorld) entity.level).getChildren().contains(entity.getUUID());
         }).orElse(true);
     }
 
@@ -80,7 +79,7 @@ public class FamilyComponent extends EntityComponent implements CanBreedComponen
 
         @Override
         public void readJson(JsonObject json) {
-            this.familyType = new ResourceLocation(JsonUtils.getString(json, "family_type"));
+            this.familyType = new ResourceLocation(JSONUtils.getAsString(json, "family_type"));
         }
     }
 }

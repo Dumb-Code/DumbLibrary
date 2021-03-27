@@ -6,12 +6,12 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
-import net.dumbcode.dumblibrary.server.utils.DumbJsonUtils;
 import net.dumbcode.dumblibrary.server.utils.CollectorUtils;
+import net.dumbcode.dumblibrary.server.utils.DumbJsonUtils;
 import net.dumbcode.dumblibrary.server.utils.StreamUtils;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.potion.PotionEffect;
-import net.minecraft.util.JsonUtils;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.potion.EffectInstance;
+import net.minecraft.util.JSONUtils;
 import net.minecraftforge.common.util.Constants;
 
 import java.util.ArrayList;
@@ -21,34 +21,34 @@ import java.util.stream.Collectors;
 @Getter
 public class ItemEatenComponent extends EntityComponent {
 
-    private final List<PotionEffect> potionEffectList = new ArrayList<>();
+    private final List<EffectInstance> potionEffectList = new ArrayList<>();
     private boolean ignoreHunger;
     private int duration;
     private int fillAmount;
     private float saturation;
 
-    public List<PotionEffect> getPotionEffectList() {
-        return this.potionEffectList.stream().map(PotionEffect::new).collect(Collectors.toList());
+    public List<EffectInstance> getPotionEffectList() {
+        return this.potionEffectList.stream().map(EffectInstance::new).collect(Collectors.toList());
     }
 
     @Override
-    public NBTTagCompound serialize(NBTTagCompound compound) {
-        compound.setTag("effects", this.potionEffectList.stream().map(effect -> effect.writeCustomPotionEffectToNBT(new NBTTagCompound())).collect(CollectorUtils.toNBTTagList()));
-        compound.setBoolean("ignore_hunger", this.ignoreHunger);
-        compound.setInteger("duration", this.duration);
-        compound.setInteger("fill_amount", this.fillAmount);
-        compound.setFloat("saturation", this.saturation);
+    public CompoundNBT serialize(CompoundNBT compound) {
+        compound.put("effects", this.potionEffectList.stream().map(effect -> effect.save(new CompoundNBT())).collect(CollectorUtils.toNBTTagList()));
+        compound.putBoolean("ignore_hunger", this.ignoreHunger);
+        compound.putInt("duration", this.duration);
+        compound.putInt("fill_amount", this.fillAmount);
+        compound.putFloat("saturation", this.saturation);
         return super.serialize(compound);
     }
 
     @Override
-    public void deserialize(NBTTagCompound compound) {
+    public void deserialize(CompoundNBT compound) {
         super.deserialize(compound);
         this.potionEffectList.clear();
-        StreamUtils.stream(compound.getTagList("effects", Constants.NBT.TAG_COMPOUND)).map(tag -> PotionEffect.readCustomPotionEffectFromNBT((NBTTagCompound) tag)).forEach(this.potionEffectList::add);
+        StreamUtils.stream(compound.getList("effects", Constants.NBT.TAG_COMPOUND)).map(tag -> EffectInstance.load((CompoundNBT) tag)).forEach(this.potionEffectList::add);
         this.ignoreHunger = compound.getBoolean("ignore_hunger");
-        this.duration = compound.getInteger("duration");
-        this.fillAmount = compound.getInteger("fill_amount");
+        this.duration = compound.getInt("duration");
+        this.fillAmount = compound.getInt("fill_amount");
         this.saturation = compound.getFloat("saturation");
     }
 
@@ -57,7 +57,7 @@ public class ItemEatenComponent extends EntityComponent {
     @Setter
     public static class Storage implements EntityComponentStorage<ItemEatenComponent> {
 
-        private List<PotionEffect> potionEffectList = new ArrayList<>();
+        private List<EffectInstance> potionEffectList = new ArrayList<>();
         private boolean ignoreHunger = true;
         private int duration = 32;
         private int fillAmount;
@@ -73,14 +73,14 @@ public class ItemEatenComponent extends EntityComponent {
 
         @Override
         public void readJson(JsonObject json) {
-            StreamUtils.stream(JsonUtils.getJsonArray(json, "effects"))
+            StreamUtils.stream(JSONUtils.getAsJsonArray(json, "effects"))
                     .map(DumbJsonUtils::readPotionEffect)
                     .forEach(this.potionEffectList::add);
 
-            this.ignoreHunger = JsonUtils.getBoolean(json, "ignore_hunger");
-            this.duration = JsonUtils.getInt(json, "duration");
-            this.fillAmount = JsonUtils.getInt(json, "fill_amount");
-            this.saturation = JsonUtils.getFloat(json, "saturation");
+            this.ignoreHunger = JSONUtils.getAsBoolean(json, "ignore_hunger");
+            this.duration = JSONUtils.getAsInt(json, "duration");
+            this.fillAmount = JSONUtils.getAsInt(json, "fill_amount");
+            this.saturation = JSONUtils.getAsFloat(json, "saturation");
         }
 
         @Override

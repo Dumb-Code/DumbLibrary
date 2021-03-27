@@ -105,7 +105,7 @@ public class SplitNetworkHandler {
         BUFFER_MAP.remove(collectionID);
     }
 
-    public static <T> void registerMessage(int index, Class<T> messageType, BiConsumer<T, PacketBuffer> encoder, Function<PacketBuffer, T> decoder, BiConsumer<T, Supplier<NetworkEvent.Context>> messageConsumer) {
+    public static <T> void registerMessage(Class<T> messageType, BiConsumer<T, PacketBuffer> encoder, Function<PacketBuffer, T> decoder, BiConsumer<T, Supplier<NetworkEvent.Context>> messageConsumer) {
         byte id = (byte) ids++;
         Entry<T> entry = new Entry<>(id, encoder, decoder, messageConsumer);
         CLASS_TO_ENTRY.put(messageType, entry);

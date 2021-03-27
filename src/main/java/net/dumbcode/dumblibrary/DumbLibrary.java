@@ -49,7 +49,7 @@ public class DumbLibrary {
     @CapabilityInject(EntityManager.class)
     public static final Capability<EntityManager> ENTITY_MANAGER = InjectedUtils.injected();
 
-    private static final String PROTOCOL_VERSION = "1 debug";
+    private static final String PROTOCOL_VERSION = "1";
     public static final SimpleChannel NETWORK = NetworkRegistry.newSimpleChannel(
         new ResourceLocation(MODID, "main"), () -> PROTOCOL_VERSION,
         PROTOCOL_VERSION::equals, PROTOCOL_VERSION::equals
@@ -67,6 +67,7 @@ public class DumbLibrary {
         forgeBus.addListener(ModelHandler::onModelReady);
         forgeBus.addListener(BakedModelResolver::onTextureStitch);
         forgeBus.addListener(BakedModelResolver::onModelBake);
+        forgeBus.addListener(this::preInit);
 
         bus.addListener(GeneticTypes::onRegisterGenetics);
 

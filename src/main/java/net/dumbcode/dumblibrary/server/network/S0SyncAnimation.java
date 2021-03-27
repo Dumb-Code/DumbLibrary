@@ -33,11 +33,7 @@ public class S0SyncAnimation {
             Entity entity = NetworkUtils.getPlayer(supplier).getCommandSenderWorld().getEntity(message.entityid);
             if (entity instanceof ComponentAccess) {
                 ((ComponentAccess) entity).get(EntityComponentTypes.ANIMATION).ifPresent(c -> {
-                    if(c.isReadyForAnimations()) {
-                        c.playAnimation((ComponentAccess) entity, message.entry, message.channel);
-                    } else {
-                        c.proposeAnimation((ComponentAccess) entity, message.entry, message.channel, 10);
-                    }
+                    c.playAnimation(message.entry, message.channel);
                 });
             }
         });

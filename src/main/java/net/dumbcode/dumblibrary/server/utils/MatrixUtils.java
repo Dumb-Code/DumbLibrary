@@ -1,8 +1,7 @@
 package net.dumbcode.dumblibrary.server.utils;
 
-import javax.vecmath.AxisAngle4f;
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Vector3f;
+import net.minecraft.util.math.vector.Matrix4f;
+import net.minecraft.util.math.vector.Vector3f;
 
 public class MatrixUtils {
 
@@ -15,8 +14,8 @@ public class MatrixUtils {
     public static void translate(Matrix4f matrix, float... floats) {
         Matrix4f translation = new Matrix4f();
         translation.setIdentity();
-        translation.setTranslation(new Vector3f(floats[0], floats[1], floats[2]));
-        matrix.mul(translation);
+        translation.setTranslation(floats[0], floats[1], floats[2]);
+        matrix.multiply(translation);
     }
 
     /**
@@ -31,8 +30,8 @@ public class MatrixUtils {
     public static void rotate(Matrix4f matrix, float angle, float x, float y, float z) {
         Matrix4f rotation = new Matrix4f();
         rotation.setIdentity();
-        rotation.setRotation(new AxisAngle4f(x, y, z, angle));
-        matrix.mul(rotation);
+        rotation.multiply(new Vector3f(x, y, z).rotation(angle));
+        matrix.multiply(rotation);
     }
 
     /**
@@ -42,12 +41,7 @@ public class MatrixUtils {
      * @param floats an array of length 3, defined as [x, y, z]
      */
     public static void scale(Matrix4f matrix, float... floats) {
-        Matrix4f scale = new Matrix4f();
-        scale.m00 = floats[0];
-        scale.m11 = floats[1];
-        scale.m22 = floats[2];
-        scale.m33 = 1;
-        matrix.mul(scale);
+        matrix.multiply(Matrix4f.createScaleMatrix(floats[0], floats[1], floats[2]));
     }
 
 }

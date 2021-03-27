@@ -1,37 +1,35 @@
 package net.dumbcode.dumblibrary.server.network;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import lombok.Value;
 import net.dumbcode.dumblibrary.DumbLibrary;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
-import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
-import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraftforge.fml.network.PacketDistributor;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class SplitNetworkHandler {
     private static final Map<Short, byte[][]> BUFFER_MAP = new HashMap<>();
 
     private static int ids;
-    private static final BiMap<Byte, Class<? extends IMessage>> DESC_TO_CLASS = HashBiMap.create();
-    private static final BiMap<Class<? extends IMessage>, Byte> CLASS_TO_DESC = DESC_TO_CLASS.inverse();
+//    private static final BiMap<Byte, Class<?>> DESC_TO_CLASS = HashBiMap.create();
+//    private static final BiMap<Class<?>, Byte> CLASS_TO_DESC = DESC_TO_CLASS.inverse();
 
-    private static final Map<Byte, IMessageHandler> DESC_TO_HANDLER = new HashMap<>();
+    private static final Map<Class<?>, Entry<?>> CLASS_TO_ENTRY = new HashMap<>();
+    private static final Map<Byte, Entry<?>> DESC_TO_ENTRY = new HashMap<>();
 
-    public static void sendSplitMessage(IMessage message, BiConsumer<SimpleNetworkWrapper, IMessage> messageSender) {
+    public static void sendSplitMessage(Object message, PacketDistributor.PacketTarget target) {
         ByteBuf buffer = Unpooled.buffer();
         int startIndex = buffer.writerIndex();
-        message.toBytes(buffer);
+        encode(message, buffer);
         int endIndex = buffer.writerIndex();
 
         byte[] data = new byte[endIndex - startIndex];
@@ -40,7 +38,7 @@ public class SplitNetworkHandler {
 
         int total = data.length/30000 + 1;
 
-        Byte packetDesc = CLASS_TO_DESC.get(message.getClass());
+        Entry<?> packetDesc = CLASS_TO_ENTRY.get(message.getClass());
         DumbLibrary.getLogger().info("Splitting up packet (len={}) of class {} (id={}) into {} chunks", data.length, message.getClass().getSimpleName(), packetDesc, total);
         if(packetDesc == null) {
             throw new IllegalArgumentException("Tried to split up packet of class " + message.getClass() + ", but it wasn't registered");
@@ -49,9 +47,16 @@ public class SplitNetworkHandler {
         for (int i = 0; i < total; i++) {
             byte[] outData = new byte[i+1 == total ? data.length%30000 : 30000];
             System.arraycopy(data, 30000*i, outData, 0, outData.length);
-            messageSender.accept(DumbLibrary.NETWORK, new B13SplitNetworkPacket(packetDesc, (short) collectionID, (byte) i, (byte) total, outData));
+            DumbLibrary.NETWORK.send(target, new B13SplitNetworkPacket(packetDesc.id, (short) collectionID, (byte) i, (byte) total, outData));
         }
     }
+
+    @SuppressWarnings("unchecked")
+    private static <T> void encode(T obj, ByteBuf buf) {
+        Entry<T> entry = (Entry<T>) CLASS_TO_ENTRY.get(obj.getClass());
+        entry.encoder.accept(obj, new PacketBuffer(buf));
+    }
+
 
     public static void handleSplitMessage(byte descriptor, short collectionID, byte index, byte total, byte[] data, PlayerEntity player, NetworkEvent.Context context) {
         byte[][] abyte = BUFFER_MAP.computeIfAbsent(collectionID, aShort -> new byte[total][]);
@@ -62,8 +67,9 @@ public class SplitNetworkHandler {
 
         boolean gotAll = true;
         for (byte[] aByte : abyte) {
-            if(aByte == null) {
+            if (aByte == null) {
                 gotAll = false;
+                break;
             }
         }
 
@@ -74,8 +80,8 @@ public class SplitNetworkHandler {
                 System.arraycopy(abyte[i], 0, outData, i * 30000, abyte[i].length);
             }
             BUFFER_MAP.remove(collectionID);
-            if(player instanceof EntityPlayerMP) {
-                DumbLibrary.NETWORK.sendTo(new B14ReleaseCollection(collectionID), (EntityPlayerMP) player);
+            if(player instanceof ServerPlayerEntity) {
+                DumbLibrary.NETWORK.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player), new B14ReleaseCollection(collectionID));
             } else {
                 DumbLibrary.NETWORK.sendToServer(new B14ReleaseCollection(collectionID));
             }
@@ -85,26 +91,28 @@ public class SplitNetworkHandler {
             buffer.writeBytes(outData);
             buffer.readerIndex(start);
 
-            try {
-                IMessage iMessage = DESC_TO_CLASS.get(descriptor).newInstance();
-                iMessage.fromBytes(buffer);
-                DESC_TO_HANDLER.get(descriptor).onMessage(iMessage, context);
-            } catch (InstantiationException | IllegalAccessException e) {
-                DumbLibrary.getLogger().warn("Unable to create constructor for split network", e);
-            }
+            handle(DESC_TO_ENTRY.get(descriptor), buffer, () -> context);
+
         }
+    }
+
+    private static <T> void handle(Entry<T> entry, ByteBuf buf, Supplier<NetworkEvent.Context> supplier) {
+        T apply = entry.decoder.apply(new PacketBuffer(buf));
+        entry.messageConsumer.accept(apply, supplier);
     }
 
     public static void releaseCollection(short collectionID) {
         BUFFER_MAP.remove(collectionID);
-
     }
 
-    public static <T extends IMessage> void registerPacket(Class<T> clazz, IMessageHandler<T, ?> handler) {
+    public static <T> void registerMessage(int index, Class<T> messageType, BiConsumer<T, PacketBuffer> encoder, Function<PacketBuffer, T> decoder, BiConsumer<T, Supplier<NetworkEvent.Context>> messageConsumer) {
         byte id = (byte) ids++;
-        DESC_TO_CLASS.put(id, clazz);
-        DESC_TO_HANDLER.put(id, handler);
+        Entry<T> entry = new Entry<>(id, encoder, decoder, messageConsumer);
+        CLASS_TO_ENTRY.put(messageType, entry);
+        DESC_TO_ENTRY.put(id, entry);
     }
+
+
 
     private static int getNextCollection() {
         if(BUFFER_MAP.isEmpty()) {
@@ -121,5 +129,13 @@ public class SplitNetworkHandler {
             }
         }
         throw new IllegalArgumentException("All 32767 split network collections have been sent out. This should be impossible. Please make sure you are not creating a packet leak");
+    }
+
+    @Value
+    private static class Entry<T> {
+        byte id;
+        BiConsumer<T, PacketBuffer> encoder;
+        Function<PacketBuffer, T> decoder;
+        BiConsumer<T, Supplier<NetworkEvent.Context>> messageConsumer;
     }
 }

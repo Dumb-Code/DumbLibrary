@@ -1,15 +1,16 @@
 package net.dumbcode.dumblibrary.server.utils;
 
-import net.minecraftforge.fml.relauncher.FMLLaunchHandler;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 
 import java.util.function.Supplier;
 
+@Deprecated
 public class SidedExecutor {
 
     private SidedExecutor() {
     }
 
-    public static final boolean CLIENT = FMLLaunchHandler.side().isClient();
+    public static final boolean CLIENT = FMLEnvironment.dist.isClient();
 
     public static void runClient(Supplier<Runnable> clientRun) {
         runSided(clientRun, () -> () -> {});

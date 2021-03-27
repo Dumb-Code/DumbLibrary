@@ -1,8 +1,8 @@
 package net.dumbcode.dumblibrary.server.utils;
 
+import net.minecraft.client.renderer.chunk.ChunkRenderCache;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.ChunkCache;
-import net.minecraft.world.IBlockAccess;
+import net.minecraft.world.IBlockDisplayReader;
 import net.minecraft.world.World;
 
 import java.util.ArrayDeque;
@@ -55,11 +55,11 @@ public class BlockStateWorker {
         }
     }
 
-    public Future<List<BlockPos>> runTask(World world, BlockPos center, int radii, BiPredicate<IBlockAccess, BlockPos> predicate) {
+    public Future<List<BlockPos>> runTask(World world, BlockPos center, int radii, BiPredicate<IBlockDisplayReader, BlockPos> predicate) {
         return this.runTask(world, center, radii, radii, radii, predicate);
     }
 
-    public Future<List<BlockPos>> runTask(World world, BlockPos center, int xRadii, int yRadii, int zRadii, BiPredicate<IBlockAccess, BlockPos> predicate) {
+    public Future<List<BlockPos>> runTask(World world, BlockPos center, int xRadii, int yRadii, int zRadii, BiPredicate<IBlockDisplayReader, BlockPos> predicate) {
         CompletableFuture<List<BlockPos>> future = new CompletableFuture<>();
         synchronized (this.newTasks) {
             this.newTasks.add(new Task(world, center, xRadii, yRadii, zRadii, predicate, future));
@@ -69,8 +69,8 @@ public class BlockStateWorker {
 
 
     private static class Task {
-        private final ChunkCache world;
-        private final BiPredicate<IBlockAccess, BlockPos> predicate;
+        private final ChunkRenderCache world;
+        private final BiPredicate<IBlockDisplayReader, BlockPos> predicate;
         private final CompletableFuture<List<BlockPos>> completableFuture;
         private final BlockPos min;
         private final BlockPos max;
@@ -81,14 +81,14 @@ public class BlockStateWorker {
         private int y;
         private int z;
 
-        private Task(World world, BlockPos center, int xRadii, int yRadii, int zRadii, BiPredicate<IBlockAccess, BlockPos> predicate, CompletableFuture<List<BlockPos>> completableFuture) {
+        private Task(World world, BlockPos center, int xRadii, int yRadii, int zRadii, BiPredicate<IBlockDisplayReader, BlockPos> predicate, CompletableFuture<List<BlockPos>> completableFuture) {
             this.predicate = predicate;
             this.completableFuture = completableFuture;
 
-            this.min = center.add(-xRadii, -yRadii, -zRadii);
-            this.max = center.add(xRadii, yRadii, zRadii);
+            this.min = center.offset(-xRadii, -yRadii, -zRadii);
+            this.max = center.offset(xRadii, yRadii, zRadii);
 
-            this.world = new ChunkCache(world, this.min, this.max, 1);
+            this.world = ChunkRenderCache.createIfNotEmpty(world, this.max, this.max, 0);
 
             this.x = this.min.getX();
             this.y = this.min.getY();

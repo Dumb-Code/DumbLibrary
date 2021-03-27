@@ -1,66 +1,67 @@
 package net.dumbcode.dumblibrary.server;
 
-import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.server.events.UseItemEvent;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.item.EnumAction;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.item.UseAction;
+import net.minecraft.particles.ItemParticleData;
+import net.minecraft.particles.ParticleTypes;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
+import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.MinecraftForge;
 
 public class ItemComponent extends Item {
 
+    public ItemComponent(Properties p_i48487_1_) {
+        super(p_i48487_1_);
+    }
+
     @Override
-    public int getMaxItemUseDuration(ItemStack stack) {
+    public int getUseDuration(ItemStack stack) {
         UseItemEvent.Duration event = new UseItemEvent.Duration(stack);
         MinecraftForge.EVENT_BUS.post(event);
         return event.getDuration();
     }
 
     @Override
-    public EnumAction getItemUseAction(ItemStack stack) {
+    public UseAction getUseAnimation(ItemStack stack) {
         UseItemEvent.Action event = new UseItemEvent.Action(stack);
         MinecraftForge.EVENT_BUS.post(event);
         return event.getAction();
     }
 
     @Override
-    public void onUsingTick(ItemStack stack, EntityLivingBase player, int count) {
-        if (!stack.isEmpty() && player.isHandActive() && count <= 25 && count % 4 == 0) {
-            this.updateEatingParticles(stack, player, 5);
+    public void onUseTick(World world, LivingEntity entity, ItemStack stack, int count) {
+        if (!stack.isEmpty() && entity.isUsingItem() && count <= 25 && count % 4 == 0) {
+            this.updateEatingParticles(stack, entity, 5);
         }
-        super.onUsingTick(stack, player, count);
+        super.onUseTick(world, entity, stack, count);
     }
+
 
     @Override
-    public ItemStack onItemUseFinish(ItemStack stack, World worldIn, EntityLivingBase entityLiving) {
-        if (!stack.isEmpty() && entityLiving.isHandActive()) {
+    public ItemStack finishUsingItem(ItemStack stack, World world, LivingEntity entityLiving) {
+        if (!stack.isEmpty() && entityLiving.isUsingItem()) {
             this.updateEatingParticles(stack, entityLiving, 16);
         }
-        return super.onItemUseFinish(stack, worldIn, entityLiving);
+        return super.finishUsingItem(stack, world, entityLiving);
     }
 
-    private void updateEatingParticles(ItemStack stack, EntityLivingBase entity, int particleCount) {
-        //Copied vanilla code
-        if(!entity.world.isRemote && stack.getItemUseAction() == EnumAction.EAT) {
+    private void updateEatingParticles(ItemStack stack, LivingEntity entity, int particleCount) {
+        //Copied vanilla code from LivingEntity#spawnItemParticles
+        if(!entity.level.isClientSide && stack.getUseAnimation() == UseAction.EAT) {
             for (int i = 0; i < particleCount; ++i) {
-
-                Vec3d vec3d = new Vec3d(((double)entity.getRNG().nextFloat() - 0.5D) * 0.1D, Math.random() * 0.1D + 0.1D, 0.0D);
-                vec3d = vec3d.rotatePitch(-entity.rotationPitch * 0.017453292F);
-                vec3d = vec3d.rotateYaw(-entity.rotationYaw * 0.017453292F);
-                Vec3d speed = new Vec3d(vec3d.x, vec3d.y, vec3d.z);
-
-                double d0 = (double)(-entity.getRNG().nextFloat()) * 0.6D - 0.3D;
-                Vec3d vec3d1 = new Vec3d(((double)entity.getRNG().nextFloat() - 0.5D) * 0.3D, d0, 0.6D);
-                vec3d1 = vec3d1.rotatePitch(-entity.rotationPitch * 0.017453292F);
-                vec3d1 = vec3d1.rotateYaw(-entity.rotationYaw * 0.017453292F);
-                vec3d1 = vec3d1.add(entity.posX, entity.posY + (double)entity.getEyeHeight(), entity.posZ);
-                Vec3d pos = new Vec3d(vec3d1.x, vec3d1.y + 0.05D, vec3d1.z);
-
-
-                DumbLibrary.NETWORK.sendToDimension(new S1PlayItemCrackParticle(pos, speed, stack), entity.world.provider.getDimension());
+                Vector3d vector3d = new Vector3d(((double) random.nextFloat() - 0.5D) * 0.1D, Math.random() * 0.1D + 0.1D, 0.0D);
+                vector3d = vector3d.xRot(-entity.xRot * ((float) Math.PI / 180F));
+                vector3d = vector3d.yRot(-entity.yRot * ((float) Math.PI / 180F));
+                double d0 = (double) (-random.nextFloat()) * 0.6D - 0.3D;
+                Vector3d vector3d1 = new Vector3d(((double) random.nextFloat() - 0.5D) * 0.3D, d0, 0.6D);
+                vector3d1 = vector3d1.xRot(-entity.xRot * ((float) Math.PI / 180F));
+                vector3d1 = vector3d1.yRot(-entity.yRot * ((float) Math.PI / 180F));
+                vector3d1 = vector3d1.add(entity.getX(), entity.getEyeY(), entity.getZ());
+                ((ServerWorld) entity.level).sendParticles(new ItemParticleData(ParticleTypes.ITEM, stack), vector3d1.x, vector3d1.y, vector3d1.z, 1, vector3d.x, vector3d.y + 0.05D, vector3d.z, 0.0D);
             }
         }
     }

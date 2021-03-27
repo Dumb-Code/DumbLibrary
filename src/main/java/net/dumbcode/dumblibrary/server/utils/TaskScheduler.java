@@ -6,13 +6,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.minecraft.client.Minecraft;
-import net.minecraft.util.Util;
 import net.minecraft.world.World;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.commons.lang3.Validate;
 
 import java.util.ArrayDeque;
@@ -20,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 
@@ -29,18 +27,22 @@ public class TaskScheduler {
     private static final List<Scheduled> scheduledTasks = new ArrayList<>();
 
     @SubscribeEvent
-    @SideOnly(Side.CLIENT)
     public static void clientUpdate(TickEvent.ClientTickEvent event) {
-        update(Minecraft.getMinecraft().world);
+        if(event.phase == TickEvent.Phase.START) {
+            update(Minecraft.getInstance().level);
+
+        }
     }
 
     @SubscribeEvent
     public static void worldUpdate(TickEvent.WorldTickEvent event) {
-        update(event.world);
+        if(event.phase == TickEvent.Phase.START) {
+            update(event.world);
+        }
     }
 
     public static void update(World world) {
-        if(world == null || (!world.isRemote && SidedExecutor.CLIENT)) {
+        if(world == null || (!world.isClientSide && SidedExecutor.CLIENT)) {
             return;
         }
         synchronized (tasksToAdd) {
@@ -50,7 +52,11 @@ public class TaskScheduler {
         }
         scheduledTasks.removeIf(t -> {
             if(t.ticksLeft-- == 0) {
-                Util.runTask(t.task, DumbLibrary.getLogger());
+                try {
+                    t.task.get();
+                } catch (InterruptedException | ExecutionException e) {
+                    DumbLibrary.getLogger().error("Unable to process Scheduled Task", e);
+                }
                 return true;
             }
             return false;

@@ -7,7 +7,7 @@ import net.dumbcode.dumblibrary.server.json.JsonAnimator;
 import net.dumbcode.dumblibrary.server.json.objects.AnimationInfoBase;
 import net.dumbcode.dumblibrary.server.json.objects.JsonAnimationModule;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.JsonUtils;
+import net.minecraft.util.JSONUtils;
 
 public class Facing extends JsonAnimationModule<Facing.Info> {
 
@@ -31,7 +31,7 @@ public class Facing extends JsonAnimationModule<Facing.Info> {
 
         protected Info(JsonObject json, JsonAnimator animator) {
             super(json, animator);
-            this.divisor = JsonUtils.getFloat(json, "divisor");
+            this.divisor = JSONUtils.getAsFloat(json, "divisor");
         }
     }
 }

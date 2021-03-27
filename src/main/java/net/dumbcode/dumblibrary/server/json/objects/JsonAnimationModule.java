@@ -7,7 +7,7 @@ import com.google.gson.JsonObject;
 import net.dumbcode.dumblibrary.client.model.dcm.DCMModel;
 import net.dumbcode.dumblibrary.server.json.JsonAnimator;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.JsonUtils;
+import net.minecraft.util.JSONUtils;
 
 import java.util.List;
 
@@ -20,7 +20,7 @@ public abstract class JsonAnimationModule<V> {
         this.animator = animator;
         String name = this.getClass().toString();
         for (JsonElement jsonElement : array) {
-            list.add(this.createValue(JsonUtils.getJsonObject(jsonElement, name), animator));
+            list.add(this.createValue(JSONUtils.convertToJsonObject(jsonElement, name), animator));
         }
     }
 

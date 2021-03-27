@@ -3,26 +3,31 @@ package net.dumbcode.dumblibrary.server.taxidermy;
 import lombok.Getter;
 import net.dumbcode.dumblibrary.client.model.dcm.DCMModel;
 import net.dumbcode.dumblibrary.server.SimpleBlockEntity;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.block.BlockState;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.ResourceLocation;
 
-import javax.vecmath.Vector3f;
 import java.util.Map;
 
 public abstract class BaseTaxidermyBlockEntity extends SimpleBlockEntity {
 
     @Getter private final TaxidermyHistory history = new TaxidermyHistory();
 
-    @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound compound) {
-        compound.setTag("History", this.history.writeToNBT(new NBTTagCompound()));
-        return super.writeToNBT(compound);
+    public BaseTaxidermyBlockEntity(TileEntityType<?> type) {
+        super(type);
     }
 
     @Override
-    public void readFromNBT(NBTTagCompound compound) {
-        this.history.readFromNBT(compound.getCompoundTag("History"));
-        super.readFromNBT(compound);
+    public CompoundNBT save(CompoundNBT compound) {
+        compound.put("History", this.history.writeToNBT(new CompoundNBT()));
+        return super.save(compound);
+    }
+
+    @Override
+    public void load(BlockState state, CompoundNBT compound) {
+        this.history.readFromNBT(compound.getCompound("History"));
+        super.load(state, compound);
     }
 
     public Map<String, TaxidermyHistory.CubeProps> getPoseData() {

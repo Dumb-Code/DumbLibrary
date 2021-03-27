@@ -1,53 +1,46 @@
 package net.dumbcode.dumblibrary.server;
 
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.NetworkManager;
-import net.minecraft.network.play.server.SPacketUpdateTileEntity;
+import net.minecraft.network.play.server.SUpdateTileEntityPacket;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.tileentity.TileEntityType;
 
 public class SimpleBlockEntity extends TileEntity {
-    @Override
-    public SPacketUpdateTileEntity getUpdatePacket() {
-        NBTTagCompound nbt = new NBTTagCompound();
-        this.writeToNBT(nbt);
-        int metadata = getBlockMetadata();
-        return new SPacketUpdateTileEntity(this.pos, metadata, nbt);
+
+    public SimpleBlockEntity(TileEntityType<?> type) {
+        super(type);
     }
 
     @Override
-    public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
-        this.readFromNBT(pkt.getNbtCompound());
+    public SUpdateTileEntityPacket getUpdatePacket() {
+        CompoundNBT nbt = new CompoundNBT();
+        this.save(nbt);
+        return new SUpdateTileEntityPacket(this.worldPosition, 0, nbt);
     }
 
     @Override
-    public NBTTagCompound getUpdateTag() {
-        NBTTagCompound nbt = new NBTTagCompound();
-        this.writeToNBT(nbt);
+    public void onDataPacket(NetworkManager net, SUpdateTileEntityPacket pkt) {
+        this.load(this.level.getBlockState(this.worldPosition), pkt.getTag());
+    }
+
+    @Override
+    public CompoundNBT getUpdateTag() {
+        CompoundNBT nbt = new CompoundNBT();
+        this.save(nbt);
         return nbt;
-    }
-
-    @Override
-    public void handleUpdateTag(NBTTagCompound tag) {
-        this.readFromNBT(tag);
     }
 
     public void syncToClient() {
-        if(!this.world.isRemote) {
-            for (EntityPlayer entity : this.world.playerEntities) {
-                SPacketUpdateTileEntity packet = this.getUpdatePacket();
+        if(this.level != null && !this.level.isClientSide) {
+            for (PlayerEntity player : this.level.players()) {
+                SUpdateTileEntityPacket packet = this.getUpdatePacket();
                 if(packet != null) {
-                    ((EntityPlayerMP)entity).connection.sendPacket(packet);
+                    ((ServerPlayerEntity)player).connection.send(packet);
                 }
             }
         }
-    }
-
-    @Override
-    public NBTTagCompound getTileData() {
-        NBTTagCompound nbt = new NBTTagCompound();
-        this.writeToNBT(nbt);
-        return nbt;
     }
 }

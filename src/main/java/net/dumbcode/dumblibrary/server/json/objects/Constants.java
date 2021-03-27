@@ -3,7 +3,7 @@ package net.dumbcode.dumblibrary.server.json.objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gson.*;
-import net.minecraft.util.JsonUtils;
+import net.minecraft.util.JSONUtils;
 
 import java.lang.reflect.Type;
 import java.util.List;
@@ -22,15 +22,15 @@ public class Constants {
         public Constants deserialize(JsonElement element, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
             Constants constants = new Constants();
             if (!element.isJsonArray()) {
-                throw new JsonSyntaxException("Expected a Json array, found " + JsonUtils.toString(element));
+                throw new JsonSyntaxException("Expected a Json array, found " + element);
             }
             for (JsonElement jsonElement : element.getAsJsonArray()) {
-                JsonObject json = JsonUtils.getJsonObject(jsonElement, "constants");
+                JsonObject json = JSONUtils.convertToJsonObject(jsonElement, "constants");
                 List<String> names = Lists.newArrayList();
-                for (JsonElement nameElement : JsonUtils.getJsonArray(json, "names")) {
-                    names.add(JsonUtils.getString(nameElement, "names"));
+                for (JsonElement nameElement : JSONUtils.getAsJsonArray(json, "names")) {
+                    names.add(JSONUtils.convertToString(nameElement, "names"));
                 }
-                constants.map.put(JsonUtils.getString(json, "key"), names);
+                constants.map.put(JSONUtils.getAsString(json, "key"), names);
             }
             return constants;
         }

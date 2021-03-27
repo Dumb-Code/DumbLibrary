@@ -31,7 +31,7 @@ public class S3StopAnimation {
         Entity entity = world.getEntity(message.entityid);
         if (entity instanceof ComponentAccess) {
             ((ComponentAccess) entity).get(EntityComponentTypes.ANIMATION).ifPresent(c -> {
-                c.stopAnimation(entity, message.channel);
+                c.stopAnimation(message.channel);
             });
         }
     }

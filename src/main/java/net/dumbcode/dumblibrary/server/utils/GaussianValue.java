@@ -3,8 +3,8 @@ package net.dumbcode.dumblibrary.server.utils;
 import com.google.gson.JsonObject;
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.JsonUtils;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.util.JSONUtils;
 
 import java.util.Random;
 
@@ -17,14 +17,14 @@ public class GaussianValue {
         return (float) (this.mean + random.nextGaussian() * this.deviation);
     }
 
-    public static NBTTagCompound writeToNBT(GaussianValue value) {
-        NBTTagCompound nbt = new NBTTagCompound();
-        nbt.setFloat("mean", value.mean);
-        nbt.setFloat("deviation", value.deviation);
+    public static CompoundNBT writeToNBT(GaussianValue value) {
+        CompoundNBT nbt = new CompoundNBT();
+        nbt.putFloat("mean", value.mean);
+        nbt.putFloat("deviation", value.deviation);
         return nbt;
     }
 
-    public static GaussianValue readFromNBT(NBTTagCompound nbt) {
+    public static GaussianValue readFromNBT(CompoundNBT nbt) {
         return new GaussianValue(nbt.getFloat("mean"), nbt.getFloat("deviation"));
     }
 
@@ -36,7 +36,7 @@ public class GaussianValue {
     }
 
     public static GaussianValue readFromJson(JsonObject json) {
-        return new GaussianValue(JsonUtils.getFloat(json, "mean"), JsonUtils.getFloat(json, "deviation"));
+        return new GaussianValue(JSONUtils.getAsFloat(json, "mean"), JSONUtils.getAsFloat(json, "deviation"));
     }
 
     public static void writeToBuf(GaussianValue value, ByteBuf buf) {

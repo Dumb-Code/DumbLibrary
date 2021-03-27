@@ -5,10 +5,11 @@ import com.google.gson.JsonParseException;
 import lombok.Cleanup;
 import lombok.experimental.UtilityClass;
 import net.dumbcode.dumblibrary.DumbLibrary;
-import net.minecraft.util.JsonUtils;
+import net.dumbcode.dumblibrary.server.utils.StreamUtils;
+import net.minecraft.util.JSONUtils;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.common.crafting.CraftingHelper;
-import net.minecraftforge.fml.common.Loader;
+import net.minecraftforge.fml.ModList;
+import net.minecraftforge.fml.loading.moddiscovery.ModInfo;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 import org.apache.commons.io.FilenameUtils;
@@ -37,36 +38,39 @@ public class JsonUtil {
      * @param folderNames folder name(s) to get files from
      * @param <T>         Type of registry
      */
-    public static <T extends IForgeRegistryEntry.Impl<T>> void registerModJsons(IForgeRegistry<T> registry, Gson gson, String modid, String... folderNames) {
-        Loader.instance().getIndexedModList().forEach((s, mod) ->
-        {
-            Loader.instance().setActiveModContainer(mod);
-            Arrays.stream(folderNames).forEach(name ->
-                    CraftingHelper.findFiles(mod, "assets/" + mod.getModId() + "/" + modid + "/" + name, null,
-                            (root, file) ->
-                            {
-                                if (!"json".equals(FilenameUtils.getExtension(file.toString()))) {
-                                    return true;
-                                }
-                                String relative = root.relativize(file).toString();
-                                ResourceLocation key = new ResourceLocation(mod.getModId(), FilenameUtils.removeExtension(relative).replaceAll("\\\\", "/"));
+    public static <T extends IForgeRegistryEntry<T>> void registerModJsons(IForgeRegistry<T> registry, Gson gson, String modid, String... folderNames) {
+        for (String name : folderNames) {
+            for (ModInfo mod : ModList.get().getMods()) {
+                try {
+                    StreamUtils.getPath(new ResourceLocation(mod.getModId(), modid + "/" + name), root -> {
+                        try (Stream<Path> stream = Files.walk(root, 5)) {
+                            stream
+                                .filter(Files::isRegularFile)
+                                .filter(f -> "json".equals(FilenameUtils.getExtension(f.toString())))
+                                .forEach(file -> {
+                                    String relative = root.relativize(file).toString();
+                                    ResourceLocation key = new ResourceLocation(mod.getModId(), FilenameUtils.removeExtension(relative).replaceAll("\\\\", "/"));
 
-                                try {
-                                    @Cleanup BufferedReader reader = Files.newBufferedReader(file);
-                                    T value = JsonUtils.fromJson(gson, reader, registry.getRegistrySuperType());
-                                    if (value == null) {
-                                        return false;
-                                    } else {
-                                        registry.register(value.setRegistryName(key));
+                                    try {
+                                        @Cleanup BufferedReader reader = Files.newBufferedReader(file);
+                                        T value = JSONUtils.fromJson(gson, reader, registry.getRegistrySuperType());
+                                        if (value != null) {
+                                            registry.register(value.setRegistryName(key));
+                                        }
+                                    } catch (JsonParseException | IOException e) {
+                                        DumbLibrary.getLogger().error("Parsing error loading json: " + key, e);
                                     }
-                                } catch (JsonParseException | IOException e) {
-                                    DumbLibrary.getLogger().error("Parsing error loading json: " + key, e);
-                                    return false;
-                                }
-                                return true;
-                            }, true, true));
-        });
-        Loader.instance().setActiveModContainer(Loader.instance().getIndexedModList().get(modid));
+                                });
+                        } catch (IOException e) {
+                            DumbLibrary.getLogger().error("Unable to stream paths", e);
+                        }
+                        return null;
+                    });
+                } catch (IOException e) {
+                    DumbLibrary.getLogger().error("Unable to begin streaming paths", e);
+                }
+            }
+        }
     }
 
     /**
@@ -78,7 +82,7 @@ public class JsonUtil {
      * @param folderNames folder name(s) you want to get files from
      * @param <T>         Type of registry
      */
-    public static <T extends IForgeRegistryEntry.Impl<T>> void registerLocalJsons(IForgeRegistry<T> registry, Gson gson, String modid, String... folderNames) {
+    public static <T extends IForgeRegistryEntry<T>> void registerLocalJsons(IForgeRegistry<T> registry, Gson gson, String modid, String... folderNames) {
         Arrays.stream(folderNames).forEach(name ->
         {
             try (Stream<Path> paths = Files.walk(Paths.get(".", FOLDER_NAME, modid, name))) {
@@ -92,7 +96,7 @@ public class JsonUtil {
                     BufferedReader reader = null;
                     try {
                         reader = Files.newBufferedReader(path);
-                        T value = JsonUtils.fromJson(gson, reader, registry.getRegistrySuperType());
+                        T value = JSONUtils.fromJson(gson, reader, registry.getRegistrySuperType());
                         if (value == null) {
                             return;
                         } else {

@@ -1,15 +1,15 @@
 package net.dumbcode.dumblibrary.server.utils;
 
-import net.minecraft.nbt.NBTBase;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.INBT;
+import net.minecraft.nbt.ListNBT;
 import net.minecraftforge.common.util.Constants;
 
 import javax.annotation.Nullable;
 import java.util.Iterator;
 
 public class ItemStackUtils {
-    public static boolean compareControlledNbt(@Nullable NBTBase controlled, @Nullable NBTBase tested) {
+    public static boolean compareControlledNbt(@Nullable INBT controlled, @Nullable INBT tested) {
         if(controlled == null) {
             return true;
         }
@@ -23,13 +23,13 @@ public class ItemStackUtils {
         switch (controlled.getId()) {
             case Constants.NBT.TAG_END: return true;
             case Constants.NBT.TAG_LIST:
-                NBTTagList controlledList = (NBTTagList) controlled;
-                NBTTagList testedList = (NBTTagList) tested;
-                if(controlledList.tagCount() != testedList.tagCount() || controlledList.getTagType() != testedList.getTagType()) {
+                ListNBT controlledList = (ListNBT) controlled;
+                ListNBT testedList = (ListNBT) tested;
+                if(controlledList.size() != testedList.size() || controlledList.getType() != testedList.getType()) {
                     return false;
                 }
-                Iterator<NBTBase> citer = controlledList.iterator();
-                Iterator<NBTBase> titer = testedList.iterator();
+                Iterator<INBT> citer = controlledList.iterator();
+                Iterator<INBT> titer = testedList.iterator();
                 while (citer.hasNext() && titer.hasNext()) {
                     if(!compareControlledNbt(citer.next(), titer.next())) {
                         return false;
@@ -37,10 +37,10 @@ public class ItemStackUtils {
                 }
                 return true;
             case Constants.NBT.TAG_COMPOUND:
-                NBTTagCompound controlledTag = (NBTTagCompound) controlled;
-                NBTTagCompound testedTag = (NBTTagCompound) tested;
-                for (String key : controlledTag.getKeySet()) {
-                    if(!compareControlledNbt(controlledTag.getTag(key), testedTag.getTag(key))) {
+                CompoundNBT controlledTag = (CompoundNBT) controlled;
+                CompoundNBT testedTag = (CompoundNBT) tested;
+                for (String key : controlledTag.getAllKeys()) {
+                    if(!compareControlledNbt(controlledTag.get(key), testedTag.get(key))) {
                         return false;
                     }
                 }

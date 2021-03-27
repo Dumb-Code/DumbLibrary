@@ -3,6 +3,7 @@ package net.dumbcode.dumblibrary;
 import net.dumbcode.dumblibrary.client.BakedModelResolver;
 import net.dumbcode.dumblibrary.client.model.ModelHandler;
 import net.dumbcode.dumblibrary.server.ItemComponent;
+import net.dumbcode.dumblibrary.server.ItemComponentHandler;
 import net.dumbcode.dumblibrary.server.dna.GeneticType;
 import net.dumbcode.dumblibrary.server.dna.GeneticTypes;
 import net.dumbcode.dumblibrary.server.ecs.EntityManager;
@@ -43,7 +44,7 @@ public class DumbLibrary {
     private static final Logger logger = LogManager.getLogger(MODID);
 
     private static final DeferredRegister<Item> DR = DeferredRegister.create(ForgeRegistries.ITEMS, MODID);
-    public static final RegistryObject<Item> COMPONENT_ITEM = DR.register("component_item", ItemComponent::new);
+    public static final RegistryObject<Item> COMPONENT_ITEM = DR.register("component_item", () -> new ItemComponent(new Item.Properties()));
 
     @CapabilityInject(EntityManager.class)
     public static final Capability<EntityManager> ENTITY_MANAGER = InjectedUtils.injected();

@@ -8,7 +8,7 @@ import net.dumbcode.dumblibrary.server.json.objects.Constants;
 import net.dumbcode.dumblibrary.server.json.objects.JsonAnimationModule;
 import net.dumbcode.dumblibrary.server.json.objects.JsonAnimationRegistry;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.JsonUtils;
+import net.minecraft.util.JSONUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.lang.reflect.Type;
@@ -21,7 +21,7 @@ import java.util.function.BiFunction;
  * @author Wyn Price
  */
 @Data
-public class JsonAnimator implements TabulaModelAnimator<Entity> {
+public class JsonAnimator {
 
     private final float globalSpeed;
     private final float globalDegree;
@@ -29,7 +29,6 @@ public class JsonAnimator implements TabulaModelAnimator<Entity> {
     private final List<JsonAnimationModule> animationModules;
 
 
-    @Override
     public void setRotationAngles(DCMModel model, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scaleFactor, Entity entityIn) {
         for (JsonAnimationModule animationModule : this.animationModules) {
             animationModule.performAnimations(model, entityIn, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scaleFactor);
@@ -40,28 +39,28 @@ public class JsonAnimator implements TabulaModelAnimator<Entity> {
         @Override
         public JsonAnimator deserialize(JsonElement element, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
             if (!element.isJsonObject()) {
-                throw new JsonParseException("Expected a json object, found " + JsonUtils.toString(element));
+                throw new JsonParseException("Expected a json object, found " + element);
             }
             JsonObject json = element.getAsJsonObject();
             List<JsonAnimationModule> animationList = Lists.newArrayList();
             List<Pair<JsonArray, BiFunction<JsonArray, JsonAnimator, JsonAnimationModule>>> factoryList = Lists.newArrayList();
-            for (JsonElement jsonElement : JsonUtils.getJsonArray(json, "animation_tasks")) {
+            for (JsonElement jsonElement : JSONUtils.getAsJsonArray(json, "animation_tasks")) {
                 if (!element.isJsonObject()) {
-                    throw new JsonParseException("Expected a json object, found " + JsonUtils.toString(element));
+                    throw new JsonParseException("Expected a json object, found " + element);
                 }
                 JsonObject factoryObject = jsonElement.getAsJsonObject();
-                String type = JsonUtils.getString(factoryObject, "type");
+                String type = JSONUtils.getAsString(factoryObject, "type");
                 if (!JsonAnimationRegistry.INSTANCE.factoryMap.containsKey(type)) {
                     throw new JsonParseException("Illegal type: " + type);
                 }
-                factoryList.add(Pair.of(JsonUtils.getJsonArray(factoryObject, "array"), JsonAnimationRegistry.INSTANCE.factoryMap.get(type)));
+                factoryList.add(Pair.of(JSONUtils.getAsJsonArray(factoryObject, "array"), JsonAnimationRegistry.INSTANCE.factoryMap.get(type)));
             }
 
             return new JsonAnimator(
-                    JsonUtils.getFloat(json, "global_speed"),
-                    JsonUtils.getFloat(json, "global_degree"),
-                    context.deserialize(JsonUtils.getJsonArray(json, "constants"), Constants.class),
-                    animationList
+                JSONUtils.getAsFloat(json, "global_speed"),
+                JSONUtils.getAsFloat(json, "global_degree"),
+                context.deserialize(JSONUtils.getAsJsonArray(json, "constants"), Constants.class),
+                animationList
             );
         }
     }

@@ -7,3 +7,4 @@ Ensure that DCMBakedModel actually works
 Ensure that ModelCommandModel actually works (and add -modelBlockstateCache in the baked model)
 Move BlockDropsSystem to be a global loot modifier
 Implement holding, speed and angle stuff on AnimationEntryData
+Finish ItemComponent#updateEatingParticles

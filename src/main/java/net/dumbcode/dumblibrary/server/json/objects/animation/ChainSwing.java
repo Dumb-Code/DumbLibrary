@@ -7,7 +7,7 @@ import net.dumbcode.dumblibrary.server.json.JsonAnimator;
 import net.dumbcode.dumblibrary.server.json.objects.AnimationInfoBase;
 import net.dumbcode.dumblibrary.server.json.objects.JsonAnimationModule;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.JsonUtils;
+import net.minecraft.util.JSONUtils;
 
 public class ChainSwing extends JsonAnimationModule<ChainSwing.Info> {
 
@@ -32,9 +32,9 @@ public class ChainSwing extends JsonAnimationModule<ChainSwing.Info> {
 
         protected Info(JsonObject json, JsonAnimator animator) {
             super(json, animator);
-            this.speed = JsonUtils.getFloat(json, "speed");
-            this.degree = JsonUtils.getFloat(json, "degree");
-            this.rootOffset = JsonUtils.getFloat(json, "root_offset");
+            this.speed = JSONUtils.getAsFloat(json, "speed");
+            this.degree = JSONUtils.getAsFloat(json, "degree");
+            this.rootOffset = JSONUtils.getAsFloat(json, "root_offset");
         }
     }
 }

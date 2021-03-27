@@ -28,7 +28,7 @@ public class InlineTranslation {
             String key = matcher.group(1).replaceAll("\\\\(?=\\{)", "");
             Object[] args = Arrays.stream(matcher.group(2).split("(?<!\\\\),")).map(s -> decode(s.replaceAll("\\\\(?=[],])", ""))).toArray();
 
-            String translated = I18n.format(key, args);
+            String translated = I18n.get(key, args);
 
             out = out.substring(0, matcher.start() - offset) + translated + out.substring(matcher.end() - offset);
             offset += matcher.group(0).length() - translated.length();

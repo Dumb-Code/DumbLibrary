@@ -37,7 +37,7 @@ public class S2SyncComponent {
         context.enqueueWork(() -> {
             Entity entity = NetworkUtils.getPlayer(supplier).getCommandSenderWorld().getEntity(message.entityid);
             if (entity instanceof ComponentAccess) {
-                ((ComponentAccess) entity).get(message.type).ifPresent(c -> c.deserializeSync(Unpooled.wrappedBuffer(message.data)));
+                ((ComponentAccess) entity).get(message.type).ifPresent(c -> c.deserializeSync(new PacketBuffer(Unpooled.wrappedBuffer(message.data))));
             }
         });
     }

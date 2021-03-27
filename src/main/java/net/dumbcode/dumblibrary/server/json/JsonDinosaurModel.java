@@ -2,7 +2,7 @@ package net.dumbcode.dumblibrary.server.json;
 
 import com.google.gson.*;
 import lombok.Data;
-import net.minecraft.util.JsonUtils;
+import net.minecraft.util.JSONUtils;
 
 import java.lang.reflect.Type;
 
@@ -17,13 +17,13 @@ public class JsonDinosaurModel {
         @Override
         public JsonDinosaurModel deserialize(JsonElement element, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
             if (!element.isJsonObject()) {
-                throw new JsonParseException("Expected Json Object, found " + JsonUtils.toString(element));
+                throw new JsonParseException("Expected Json Object, found " + element);
             }
             JsonObject json = element.getAsJsonObject();
             return new JsonDinosaurModel(
-                    JsonUtils.getString(json, "head_cuboid"),
-                    context.deserialize(JsonUtils.getJsonObject(json, "animator"), JsonAnimator.class),
-                    JsonUtils.getFloat(json, "shadow_size"));
+                JSONUtils.getAsString(json, "head_cuboid"),
+                context.deserialize(JSONUtils.getAsJsonObject(json, "animator"), JsonAnimator.class),
+                JSONUtils.getAsFloat(json, "shadow_size"));
         }
     }
 

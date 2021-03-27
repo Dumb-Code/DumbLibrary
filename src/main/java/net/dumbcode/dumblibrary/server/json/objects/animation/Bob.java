@@ -3,11 +3,12 @@ package net.dumbcode.dumblibrary.server.json.objects.animation;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import net.dumbcode.dumblibrary.client.model.dcm.DCMModel;
+import net.dumbcode.dumblibrary.client.model.dcm.DCMModelRenderer;
 import net.dumbcode.dumblibrary.server.json.JsonAnimator;
 import net.dumbcode.dumblibrary.server.json.objects.AnimationInfoBase;
 import net.dumbcode.dumblibrary.server.json.objects.JsonAnimationModule;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.JsonUtils;
+import net.minecraft.util.JSONUtils;
 
 public class Bob extends JsonAnimationModule<Bob.Info> {
 
@@ -17,7 +18,7 @@ public class Bob extends JsonAnimationModule<Bob.Info> {
 
     @Override
     public void performAnimation(DCMModel model, Entity entity, Info info, float limbSwing, float limbSwingAmount, float ticks, float rotationYaw, float rotationPitch, float scale) {
-        for (TabulaModelRenderer renderer : info.getRenderers(model)) {
+        for (DCMModelRenderer renderer : info.getRenderers(model)) {
 //            model.bob(renderer, info.speed * this.animator.getGlobalSpeed(), info.degree * this.animator.getGlobalDegree(), false, limbSwing, limbSwingAmount);
         }
     }
@@ -34,8 +35,8 @@ public class Bob extends JsonAnimationModule<Bob.Info> {
 
         protected Info(JsonObject json, JsonAnimator animator) {
             super(json, animator);
-            this.speed = JsonUtils.getFloat(json, "speed");
-            this.degree = JsonUtils.getFloat(json, "degree");
+            this.speed = JSONUtils.getAsFloat(json, "speed");
+            this.degree = JSONUtils.getAsFloat(json, "degree");
         }
     }
 

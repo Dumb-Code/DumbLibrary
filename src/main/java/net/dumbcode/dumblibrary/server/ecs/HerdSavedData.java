@@ -8,6 +8,7 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.storage.WorldSavedData;
+import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
 import java.io.File;
 import java.util.List;
@@ -92,17 +93,17 @@ public class HerdSavedData extends WorldSavedData {
         }
     }
 
-    public static HerdSavedData getData(ServerWorld world, UUID herdUUID) {
+    public static HerdSavedData getData(UUID herdUUID) {
         String identifier = "herd_data/" + herdUUID.toString().replaceAll("-", "");
-        ensureHerdFolder(world, identifier);
+        ensureHerdFolder(identifier);
 
-        HerdSavedData data = world.getDataStorage().computeIfAbsent(() -> new HerdSavedData(identifier), identifier);
+        HerdSavedData data = ServerLifecycleHooks.getCurrentServer().overworld().getDataStorage().computeIfAbsent(() -> new HerdSavedData(identifier), identifier);
         data.herdUUID = herdUUID;
         return data;
     }
 
-    private static void ensureHerdFolder(ServerWorld world, String identifier) {
-        File file = world.getDataStorage().getDataFile(identifier).getParentFile();
+    private static void ensureHerdFolder(String identifier) {
+        File file = ServerLifecycleHooks.getCurrentServer().overworld().getDataStorage().getDataFile(identifier).getParentFile();
         if(!file.exists()) {
             file.mkdirs();
         }

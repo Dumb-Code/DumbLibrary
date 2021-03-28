@@ -1,12 +1,11 @@
-package net.dumbcode.dumblibrary.server.animation;
+package net.dumbcode.dumblibrary.server.utils;
 
 import com.google.common.collect.Maps;
 import lombok.experimental.UtilityClass;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.client.model.dcm.DCMModel;
+import net.dumbcode.dumblibrary.server.animation.AnimatedReferenceCube;
 import net.dumbcode.dumblibrary.server.info.ServerAnimatableCube;
-import net.dumbcode.dumblibrary.server.utils.MissingModelInfo;
-import net.dumbcode.dumblibrary.server.utils.StreamUtils;
 import net.dumbcode.studio.model.CubeInfo;
 import net.dumbcode.studio.model.ModelInfo;
 import net.dumbcode.studio.model.ModelLoader;

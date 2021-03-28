@@ -6,7 +6,7 @@ import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.client.MutVector2f;
 import net.dumbcode.dumblibrary.client.model.dcm.DCMModel;
 import net.dumbcode.dumblibrary.client.model.dcm.DCMModelRenderer;
-import net.dumbcode.dumblibrary.server.animation.DCMUtils;
+import net.dumbcode.dumblibrary.server.utils.DCMUtils;
 import net.dumbcode.dumblibrary.server.taxidermy.TaxidermyHistory;
 import net.dumbcode.dumblibrary.server.utils.XYZAxis;
 import net.minecraft.client.GameSettings;

@@ -82,9 +82,9 @@ public class HerdComponent extends EntityComponent implements FinalizableCompone
         this.herdUUID = herdData.getHerdUUID();
     }
 
-    public Optional<HerdSavedData> getHerdData(World world) {
-        if(this.herdData == null && this.herdUUID != null && world instanceof ServerWorld) {
-            this.herdData = HerdSavedData.getData((ServerWorld) world, this.herdUUID);
+    public Optional<HerdSavedData> getHerdData() {
+        if(this.herdData == null && this.herdUUID != null) {
+            this.herdData = HerdSavedData.getData(this.herdUUID);
         }
         return Optional.ofNullable(this.herdData);
     }
@@ -96,7 +96,7 @@ public class HerdComponent extends EntityComponent implements FinalizableCompone
 
     @Override
     public void gatherEnemyPredicates(Consumer<Predicate<LivingEntity>> registry) {
-        registry.accept(e -> this.getHerdData(e.level).map(h -> h.getEnemies().contains(e.getUUID())).orElse(false));
+        registry.accept(e -> this.getHerdData().map(h -> h.getEnemies().contains(e.getUUID())).orElse(false));
     }
 
     @Accessors(chain = true)

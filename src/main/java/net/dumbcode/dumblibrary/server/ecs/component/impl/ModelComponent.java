@@ -6,7 +6,7 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.dumbcode.dumblibrary.client.component.ModelComponentRenderer;
 import net.dumbcode.dumblibrary.client.model.dcm.DCMModel;
-import net.dumbcode.dumblibrary.server.animation.DCMUtils;
+import net.dumbcode.dumblibrary.server.utils.DCMUtils;
 import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;

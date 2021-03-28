@@ -4,5 +4,5 @@ import net.dumbcode.studio.model.ModelInfo;
 import net.dumbcode.studio.model.RotationOrder;
 
 public class MissingModelInfo {
-    public static final ModelInfo MISSING = new ModelInfo(-1, "???", 64, 64, RotationOrder.ZYX);
+    public static final ModelInfo MISSING = new ModelInfo("???", 64, 64, RotationOrder.ZYX);
 }

@@ -6,6 +6,7 @@ import lombok.Setter;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.storage.WorldSavedData;
+import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
 import java.io.File;
 import java.util.List;
@@ -47,17 +48,17 @@ public class FamilySavedData extends WorldSavedData {
         HerdSavedData.loadList(nbt.getCompound("enemies"), this.enemies);
     }
 
-    public static FamilySavedData getData(ServerWorld world, UUID familyUUID) {
+    public static FamilySavedData getData(UUID familyUUID) {
         String identifier = "family_data/" + familyUUID.toString().replaceAll("-", "");
-        ensureFamilyFolder(world, identifier);
+        ensureFamilyFolder(identifier);
 
-        FamilySavedData data = world.getDataStorage().computeIfAbsent(() -> new FamilySavedData(identifier), identifier);
+        FamilySavedData data = ServerLifecycleHooks.getCurrentServer().overworld().getDataStorage().computeIfAbsent(() -> new FamilySavedData(identifier), identifier);
         data.familyUUID = familyUUID;
         return data;
     }
 
-    private static void ensureFamilyFolder(ServerWorld world, String identifier) {
-        File file = world.getDataStorage().getDataFile(identifier).getParentFile();
+    private static void ensureFamilyFolder(String identifier) {
+        File file = ServerLifecycleHooks.getCurrentServer().overworld().getDataStorage().getDataFile(identifier).getParentFile();
         if(!file.exists()) {
             file.mkdirs();
         }

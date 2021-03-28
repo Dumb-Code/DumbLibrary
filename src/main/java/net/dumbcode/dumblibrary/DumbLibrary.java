@@ -10,6 +10,7 @@ import net.dumbcode.dumblibrary.server.ecs.EntityManager;
 import net.dumbcode.dumblibrary.server.ecs.component.RegisterStoragesEvent;
 import net.dumbcode.dumblibrary.server.network.*;
 import net.dumbcode.dumblibrary.server.registry.DumbRegistries;
+import net.dumbcode.dumblibrary.server.registry.DumbRegistryHandler;
 import net.dumbcode.dumblibrary.server.registry.RegisterGeneticTypes;
 import net.dumbcode.dumblibrary.server.utils.InjectedUtils;
 import net.dumbcode.dumblibrary.server.utils.VoidStorage;
@@ -17,6 +18,7 @@ import net.dumbcode.studio.model.ModelMirror;
 import net.dumbcode.studio.model.RotationOrder;
 import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Util;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
@@ -64,12 +66,13 @@ public class DumbLibrary {
         IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
         IEventBus forgeBus = MinecraftForge.EVENT_BUS;
 
-        forgeBus.addListener(ModelHandler::onModelReady);
-        forgeBus.addListener(BakedModelResolver::onTextureStitch);
-        forgeBus.addListener(BakedModelResolver::onModelBake);
-        forgeBus.addListener(this::preInit);
+        bus.addListener(ModelHandler::onModelReady);
+        bus.addListener(BakedModelResolver::onTextureStitch);
+        bus.addListener(BakedModelResolver::onModelBake);
+        bus.addListener(this::preInit);
+        bus.addListener(DumbRegistryHandler::onRegisteryRegister);
 
-        bus.addListener(GeneticTypes::onRegisterGenetics);
+        forgeBus.addListener(GeneticTypes::onRegisterGenetics);
 
         DR.register(bus);
     }

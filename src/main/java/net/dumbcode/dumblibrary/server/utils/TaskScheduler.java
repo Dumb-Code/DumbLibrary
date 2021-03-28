@@ -12,6 +12,8 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.apache.commons.lang3.Validate;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +31,12 @@ public class TaskScheduler {
     @SubscribeEvent
     public static void clientUpdate(TickEvent.ClientTickEvent event) {
         if(event.phase == TickEvent.Phase.START) {
+            Method[] methods = Minecraft.class.getDeclaredMethods();
+            for (Method method : methods) {
+                System.out.println(method.getName());
+            }
+            Minecraft.getInstance();
+
             update(Minecraft.getInstance().level);
 
         }

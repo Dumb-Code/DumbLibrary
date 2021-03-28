@@ -8,3 +8,4 @@ Ensure that ModelCommandModel actually works (and add -modelBlockstateCache in t
 Move BlockDropsSystem to be a global loot modifier
 Implement holding, speed and angle stuff on AnimationEntryData
 Finish ItemComponent#updateEatingParticles
+Move GuiDropdownBox to be a Button instead of a wigdit

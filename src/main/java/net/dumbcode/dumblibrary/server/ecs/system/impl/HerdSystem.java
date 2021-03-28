@@ -56,7 +56,7 @@ public class HerdSystem implements EntitySystem {
             ComponentAccess ca = (ComponentAccess) foundEntity;
             Optional<HerdComponent> component = ca.get(EntityComponentTypes.HERD);
 
-            component.flatMap(h -> h.getHerdData(entity.level)).ifPresent(d -> d.addMember(entity.getUUID(), herd));
+            component.flatMap(HerdComponent::getHerdData).ifPresent(d -> d.addMember(entity.getUUID(), herd));
         }
     }
 
@@ -65,7 +65,7 @@ public class HerdSystem implements EntitySystem {
 
         herd.herdUUID = UUID.randomUUID();
 
-        herd.getHerdData(entity.level).ifPresent(d -> {
+        herd.getHerdData().ifPresent(d -> {
             d.addMember(entity.getUUID(), herd);
             d.leader = entity.getUUID();
         });
@@ -73,7 +73,7 @@ public class HerdSystem implements EntitySystem {
 
     //Currently, this moves all the entities 30 blocks away to where the leader is. This could maybe be changed.
     private void moveAsHeard(Entity entity, HerdComponent herd) {
-        herd.getHerdData(entity.level).ifPresent(d -> {
+        herd.getHerdData().ifPresent(d -> {
             if(d.leader.equals(entity.getUUID()) && d.tryMoveCooldown-- <= 0) {
                 for (UUID uuid : d.getMembers()) {
                     WorldUtils.getEntityFromUUID(entity.level, uuid)
@@ -81,7 +81,7 @@ public class HerdSystem implements EntitySystem {
                         .map(e -> Pair.of(e, ((ComponentAccess)e).get(EntityComponentTypes.HERD)))
                         .ifPresent(pair -> pair.getRight().ifPresent(h -> {
                             ((CreatureEntity) entity).getNavigation().moveTo(pair.getLeft(), 0.1F);
-                            h.getHerdData(entity.level).ifPresent(hsd -> hsd.tryMoveCooldown = 120);
+                            h.getHerdData().ifPresent(hsd -> hsd.tryMoveCooldown = 120);
                         }));
                 }
             }
@@ -93,7 +93,7 @@ public class HerdSystem implements EntitySystem {
         Entity entity = event.getEntity();
         if(entity instanceof ComponentAccess) {
             Optional<HerdComponent> component = ((ComponentAccess) entity).get(EntityComponentTypes.HERD);
-            component.flatMap(h -> h.getHerdData(entity.level)).ifPresent(hsd -> {
+            component.flatMap(HerdComponent::getHerdData).ifPresent(hsd -> {
                 if(entity.getUUID().equals(hsd.leader)) {
                     hsd.pickNewLeader(entity.level);
                 }
@@ -102,7 +102,7 @@ public class HerdSystem implements EntitySystem {
         }
         Entity source = event.getSource().getDirectEntity();
         if(source instanceof ComponentAccess) {
-            ((ComponentAccess) source).get(EntityComponentTypes.HERD).flatMap(h -> h.getHerdData(entity.level)).ifPresent(h -> h.removeEnemy(entity.getUUID()));
+            ((ComponentAccess) source).get(EntityComponentTypes.HERD).flatMap(HerdComponent::getHerdData).ifPresent(h -> h.removeEnemy(entity.getUUID()));
         }
     }
 
@@ -111,7 +111,7 @@ public class HerdSystem implements EntitySystem {
         Entity entity = event.getEntity();
         Entity source = event.getSource().getDirectEntity();
         if(source !=  null && entity instanceof ComponentAccess) {
-            ((ComponentAccess) entity).get(EntityComponentTypes.HERD).flatMap(h -> h.getHerdData(entity.level)).ifPresent(d -> {
+            ((ComponentAccess) entity).get(EntityComponentTypes.HERD).flatMap(HerdComponent::getHerdData).ifPresent(d -> {
                 if(!d.getMembers().contains(source.getUUID())) {
                     d.addEnemy(source.getUUID());
                 }

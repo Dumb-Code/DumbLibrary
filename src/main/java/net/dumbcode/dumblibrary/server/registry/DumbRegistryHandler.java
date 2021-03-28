@@ -12,10 +12,8 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.RegistryBuilder;
 
-@Mod.EventBusSubscriber(modid = DumbLibrary.MODID)
 public class DumbRegistryHandler {
 
-    @SubscribeEvent
     public static void onRegisteryRegister(RegistryEvent.NewRegistry event) {
         new RegistryBuilder<GeneticType<?>>()
             .setType(GeneticType.getWildcardType())

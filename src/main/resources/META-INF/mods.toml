@@ -1,8 +1,8 @@
 modLoader="javafml"
-loaderVersion="[28,)"
+loaderVersion="[36,)"
 license="All right reserved"
 [[mods]]
-modId="dumblibraray"
+modId="dumblibrary"
 version="${file.jarVersion}"
 displayName="Dumb Library"
 authors="Wyn Price"

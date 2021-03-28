@@ -14,7 +14,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.JSONUtils;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 
 import java.util.UUID;
@@ -26,9 +25,9 @@ public class FamilyComponent extends EntityComponent implements CanBreedComponen
     private boolean mateForLife;
     private FamilySavedData dataCache;
 
-    public FamilySavedData getDataCache(ServerWorld world) {
+    public FamilySavedData getDataCache() {
         if(this.dataCache == null) {
-            this.dataCache = FamilySavedData.getData(world, this.familyUUID);
+            this.dataCache = FamilySavedData.getData(this.familyUUID);
         }
         return this.dataCache;
     }
@@ -56,7 +55,7 @@ public class FamilyComponent extends EntityComponent implements CanBreedComponen
                 return false;
             }
             Entity entity = (Entity) otherEntity;
-            return !this.getDataCache((ServerWorld) entity.level).getChildren().contains(entity.getUUID());
+            return !this.getDataCache().getChildren().contains(entity.getUUID());
         }).orElse(true);
     }
 

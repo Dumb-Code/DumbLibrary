@@ -7,7 +7,7 @@ import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.server.animation.AnimatedReferenceCube;
 import net.dumbcode.dumblibrary.server.animation.Animation;
 import net.dumbcode.dumblibrary.server.animation.AnimationContainer;
-import net.dumbcode.dumblibrary.server.animation.DCMUtils;
+import net.dumbcode.dumblibrary.server.utils.DCMUtils;
 import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentTypes;

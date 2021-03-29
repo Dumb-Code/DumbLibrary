@@ -12,12 +12,15 @@ import net.dumbcode.dumblibrary.server.utils.XYZAxis;
 import net.minecraft.client.GameSettings;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHelper;
+import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.vector.Quaternion;
+import net.minecraft.util.math.vector.Vector3f;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TranslationTextComponent;
@@ -307,7 +310,8 @@ public abstract class GuiModelPoseEdit extends Screen {
         stack.popPose();
 
         setModelToPose();
-        prepareModelRendering(width/8*3, height/2, 30f);
+        RenderSystem.pushMatrix();
+        MatrixStack modelRendering = prepareModelRendering(width / 8 * 3, height / 2, 30f);
         XYZAxis ringBelowMouse = findRingBelowMouse();
         if(draggingRing) {
             if(ringBelowMouse != XYZAxis.NONE) {
@@ -316,7 +320,7 @@ public abstract class GuiModelPoseEdit extends Screen {
             dMouse.set(0f, 0f);
             draggingRing = false;
         }
-        DCMModelRenderer partBelowMouse = findPartBelowMouse(stack);
+        DCMModelRenderer partBelowMouse = findPartBelowMouse(modelRendering);
         if(registeredLeftClick) {
             if(ringBelowMouse == XYZAxis.NONE) {
                 this.selectedPart = partBelowMouse;
@@ -339,11 +343,12 @@ public abstract class GuiModelPoseEdit extends Screen {
             }
             registeredLeftClick = false;
         }
-        actualModelRender(stack, partBelowMouse);
-        GuiHelper.cleanupModelRendering();
+        actualModelRender(modelRendering, partBelowMouse);
+
+        RenderSystem.popMatrix();
 
         if(partBelowMouse != null) {
-//            drawHoveringText(partBelowMouse.boxName, mouseX, mouseY);
+            AbstractGui.drawString(stack, Minecraft.getInstance().font, partBelowMouse.getName(), mouseX, mouseY, -1);
         }
     }
     private XYZAxis findRingBelowMouse() {
@@ -598,7 +603,7 @@ public abstract class GuiModelPoseEdit extends Screen {
             }
             currentSelectedRing = XYZAxis.NONE;
         }
-        return false;
+        return super.mouseReleased(mouseX, mouseY, button);
     }
 
     @Override
@@ -621,9 +626,16 @@ public abstract class GuiModelPoseEdit extends Screen {
     }
 
 
-    private void prepareModelRendering(int posX, int posY, float scale) {
+    private MatrixStack prepareModelRendering(int posX, int posY, float scale) {
         scale *= zoom;
-        GuiHelper.prepareModelRendering(posX, posY, scale, cameraPitch, cameraYaw);
+        RenderSystem.translatef((float)posX, (float)posY, 1050.0F);
+        RenderSystem.scalef(1.0F, 1.0F, -1.0F);
+        MatrixStack matrixstack = new MatrixStack();
+        matrixstack.translate(0.0D, 0.0D, 1000.0D);
+        matrixstack.scale(scale, scale, scale);
+        matrixstack.mulPose(Vector3f.XP.rotationDegrees(cameraPitch));
+        matrixstack.mulPose(Vector3f.YP.rotationDegrees(cameraYaw));
+        return matrixstack;
     }
 
     private void actualModelRender(MatrixStack stack, DCMModelRenderer partBelowMouse) {

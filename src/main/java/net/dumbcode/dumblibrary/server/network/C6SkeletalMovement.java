@@ -55,5 +55,6 @@ public class C6SkeletalMovement {
                 DumbLibrary.NETWORK.send(PacketDistributor.DIMENSION.with(world::dimension), new S7HistoryRecord(message.pos, message.part, message.rotations, message.position));
             }
         });
+        context.setPacketHandled(true);
     }
 }

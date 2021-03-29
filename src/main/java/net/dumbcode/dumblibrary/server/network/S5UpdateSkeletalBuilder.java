@@ -55,5 +55,6 @@ public class S5UpdateSkeletalBuilder {
                 builder.setChanged();
             }
         });
+        context.setPacketHandled(true);
     }
 }

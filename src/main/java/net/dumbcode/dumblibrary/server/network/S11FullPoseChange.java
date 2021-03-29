@@ -60,5 +60,6 @@ public class S11FullPoseChange {
                 builder.setChanged();
             }
         });
+        context.setPacketHandled(true);
     }
 }

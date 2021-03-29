@@ -50,5 +50,6 @@ public class S7HistoryRecord {
                 builder.getHistory().add(new TaxidermyHistory.Record(message.part, new TaxidermyHistory.CubeProps(message.rotations, message.position)));
             }
         });
+        context.setPacketHandled(true);
     }
 }

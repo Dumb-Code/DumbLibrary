@@ -30,18 +30,20 @@ public class GrowingSystem implements EntitySystem {
             Collections.shuffle(chunks);
             for (ChunkHolder holder : chunks) {
                 Chunk chunk = holder.getTickingChunk();
-                for (ChunkSection section : chunk.getSections()) {
-                    if(section != Chunk.EMPTY_SECTION) {
-                        int x = chunk.getPos().getMinBlockX();
-                        int y = section.bottomBlockY();
-                        int z = chunk.getPos().getMinBlockZ();
-                        BlockPos randomPos = world.getBlockRandomPos(x, y, z, 15);
-                        BlockState state = section.getBlockState(randomPos.getX() - x, randomPos.getY() - y, randomPos.getZ() - z);
+                if (chunk != null) {
+                    for (ChunkSection section : chunk.getSections()) {
+                        if (section != Chunk.EMPTY_SECTION) {
+                            int x = chunk.getPos().getMinBlockX();
+                            int y = section.bottomBlockY();
+                            int z = chunk.getPos().getMinBlockZ();
+                            BlockPos randomPos = world.getBlockRandomPos(x, y, z, 15);
+                            BlockState state = section.getBlockState(randomPos.getX() - x, randomPos.getY() - y, randomPos.getZ() - z);
 
-                        BlockPropertyAccess.getAccessFromState(state)
-                            .flatMap(EntityComponentTypes.BLOCK_GROWING)
-                            .ifPresent(component -> this.growComponent(component, component.getBlockProperty(), world, state, randomPos));
+                            BlockPropertyAccess.getAccessFromState(state)
+                                .flatMap(EntityComponentTypes.BLOCK_GROWING)
+                                .ifPresent(component -> this.growComponent(component, component.getBlockProperty(), world, state, randomPos));
 
+                        }
                     }
                 }
             }

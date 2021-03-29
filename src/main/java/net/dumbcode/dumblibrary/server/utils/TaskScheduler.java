@@ -31,14 +31,7 @@ public class TaskScheduler {
     @SubscribeEvent
     public static void clientUpdate(TickEvent.ClientTickEvent event) {
         if(event.phase == TickEvent.Phase.START) {
-            Method[] methods = Minecraft.class.getDeclaredMethods();
-            for (Method method : methods) {
-                System.out.println(method.getName());
-            }
-            Minecraft.getInstance();
-
             update(Minecraft.getInstance().level);
-
         }
     }
 

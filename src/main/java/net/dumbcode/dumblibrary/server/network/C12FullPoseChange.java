@@ -63,5 +63,6 @@ public class C12FullPoseChange {
                 DumbLibrary.NETWORK.send(PacketDistributor.ALL.noArg(), new S11FullPoseChange(message.pos, message.pose));
             }
         });
+        context.setPacketHandled(true);
     }
 }

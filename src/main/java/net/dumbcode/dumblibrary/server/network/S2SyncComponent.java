@@ -40,5 +40,6 @@ public class S2SyncComponent {
                 ((ComponentAccess) entity).get(message.type).ifPresent(c -> c.deserializeSync(new PacketBuffer(Unpooled.wrappedBuffer(message.data))));
             }
         });
+        context.setPacketHandled(true);
     }
 }

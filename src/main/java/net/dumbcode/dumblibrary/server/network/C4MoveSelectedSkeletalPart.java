@@ -52,5 +52,6 @@ public class C4MoveSelectedSkeletalPart {
                 DumbLibrary.NETWORK.send(PacketDistributor.ALL.noArg(), new S5UpdateSkeletalBuilder(pos.getX(), pos.getY(), pos.getZ(), message.part, message.axis, message.type, message.value));
             }
         });
+        context.setPacketHandled(true);
     }
 }

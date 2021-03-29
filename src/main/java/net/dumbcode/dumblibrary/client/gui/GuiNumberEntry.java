@@ -7,6 +7,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.IGuiEventListener;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
+import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.fml.client.gui.widget.ExtendedButton;
@@ -14,7 +15,7 @@ import net.minecraftforge.fml.client.gui.widget.ExtendedButton;
 import java.util.function.Consumer;
 import java.util.function.ObjIntConsumer;
 
-public class GuiNumberEntry implements IGuiEventListener {
+public class GuiNumberEntry extends Widget {
 
     private static final int BUTTON_WIDTH = 20;
     private static final int PADDING = 3;
@@ -45,9 +46,10 @@ public class GuiNumberEntry implements IGuiEventListener {
     @Setter
     private boolean syncedSinceEdit = true;
 
-    public GuiNumberEntry(int id, double currentValue, double defaultScale, int decimalPlace, int x, int y, int width, int height, Consumer<Button> buttonConsumer, ObjIntConsumer<GuiNumberEntry> listener) {
-        this.id = id;
+    public GuiNumberEntry(int id, double currentValue, double defaultScale, int decimalPlace, int x, int y, int width, int height, Consumer<Widget> widgetConsumer, ObjIntConsumer<GuiNumberEntry> listener) {
+        super(x, y, width, height, new StringTextComponent(""));
 
+        this.id = id;
         this.decimalPlace = decimalPlace;
         this.defaultScale = defaultScale;
         this.value = currentValue;
@@ -62,8 +64,9 @@ public class GuiNumberEntry implements IGuiEventListener {
         this.bottomButton = new ExtendedButton(x + width/2 - BUTTON_WIDTH, y, BUTTON_WIDTH, height/2, new StringTextComponent("-"), b -> this.addScaled(-1));
         this.listener = listener;
 
-        buttonConsumer.accept(this.topButton);
-        buttonConsumer.accept(this.topButton);
+        widgetConsumer.accept(this.topButton);
+        widgetConsumer.accept(this.bottomButton);
+        widgetConsumer.accept(this.textField);
 
         this.onChange(false, true);
 

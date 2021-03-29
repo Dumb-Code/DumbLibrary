@@ -21,5 +21,6 @@ public class B14ReleaseCollection {
 
     public static void handle(B14ReleaseCollection message, Supplier<NetworkEvent.Context> supplier) {
         supplier.get().enqueueWork(() -> SplitNetworkHandler.releaseCollection(message.collectionID));
+        supplier.get().setPacketHandled(true);
     }
 }

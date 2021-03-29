@@ -39,5 +39,6 @@ public class S9UpdateHistoryIndex {
                 }
             }
         });
+        context.setPacketHandled(true);
     }
 }

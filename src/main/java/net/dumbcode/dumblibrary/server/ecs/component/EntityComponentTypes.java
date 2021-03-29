@@ -15,7 +15,6 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.ObjectHolder;
 
-@Mod.EventBusSubscriber(modid = DumbLibrary.MODID)
 @ObjectHolder(DumbLibrary.MODID)
 public class EntityComponentTypes {
     public static final EntityComponentType<GenderComponent,?> GENDER = InjectedUtils.injected();
@@ -45,8 +44,6 @@ public class EntityComponentTypes {
     public static final EntityComponentType<ItemRenderModelComponent, ItemRenderModelComponent.Storage> ITEM_RENDER = InjectedUtils.injected();
     public static final EntityComponentType<ItemEatenComponent, ItemEatenComponent.Storage> ITEM_EATEN = InjectedUtils.injected();
 
-
-    @SubscribeEvent
     public static void onRegisterComponents(RegisterComponentsEvent event) {
         event.getRegistry().registerAll(
             SimpleComponentType.builder(GenderComponent.class)
@@ -170,8 +167,7 @@ public class EntityComponentTypes {
         );
     }
 
-    @SubscribeEvent
-    public static void register(RegisterSystemsEvent event) {
+    public static void registerSystems(RegisterSystemsEvent event) {
         event.registerSystem(new HerdSystem());
         event.registerSystem(new ItemDropSystem());
         event.registerSystem(new SpeedTrackingSystem());

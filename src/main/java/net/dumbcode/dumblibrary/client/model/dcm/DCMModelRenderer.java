@@ -43,6 +43,16 @@ public class DCMModelRenderer extends ModelRenderer implements AnimatedReference
         for (CubeInfo child : info.getChildren()) {
             this.addChild(new DCMModelRenderer(model, this, child));
         }
+
+        float[] position = info.getRotationPoint();
+        this.x = position[0];
+        this.y = position[1];
+        this.z = position[2];
+
+        float[] rotation = info.getRotation();
+        this.xRot = rotation[0];
+        this.yRot = rotation[1];
+        this.zRot = rotation[2];
     }
 
     @Override
@@ -96,7 +106,7 @@ public class DCMModelRenderer extends ModelRenderer implements AnimatedReference
     public void render(MatrixStack stack, IVertexBuilder buffer, int light, int overlay, float r, float g, float b, float a) {
         if(this.growDirty) {
             this.box = new ModelRenderer.ModelBox(
-                this.info.getTextureOffset()[0], this.info.getTextureOffset()[0],
+                this.info.getTextureOffset()[0], this.info.getTextureOffset()[1],
                 this.info.getOffset()[0], this.info.getOffset()[1], this.info.getOffset()[2],
                 this.info.getDimensions()[0], this.info.getDimensions()[1], this.info.getDimensions()[2],
                 this.growX, this.growY, this.growZ,

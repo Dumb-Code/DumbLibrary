@@ -37,5 +37,6 @@ public class S0SyncAnimation {
                 });
             }
         });
+        context.setPacketHandled(true);
     }
 }

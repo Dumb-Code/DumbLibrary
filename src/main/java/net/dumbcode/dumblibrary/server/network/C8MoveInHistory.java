@@ -43,5 +43,6 @@ public class C8MoveInHistory {
 
             }
         });
+        context.setPacketHandled(true);
     }
 }

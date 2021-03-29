@@ -27,12 +27,16 @@ public class S3StopAnimation {
     }
 
     public static void handle(S3StopAnimation message, Supplier<NetworkEvent.Context> supplier) {
-        World world = NetworkUtils.getPlayer(supplier).getCommandSenderWorld();
-        Entity entity = world.getEntity(message.entityid);
-        if (entity instanceof ComponentAccess) {
-            ((ComponentAccess) entity).get(EntityComponentTypes.ANIMATION).ifPresent(c -> {
-                c.stopAnimation(message.channel);
-            });
-        }
+        NetworkEvent.Context context = supplier.get();
+        context.enqueueWork(() -> {
+            World world = NetworkUtils.getPlayer(supplier).getCommandSenderWorld();
+            Entity entity = world.getEntity(message.entityid);
+            if (entity instanceof ComponentAccess) {
+                ((ComponentAccess) entity).get(EntityComponentTypes.ANIMATION).ifPresent(c -> {
+                    c.stopAnimation(message.channel);
+                });
+            }
+        });
+        context.setPacketHandled(true);
     }
 }

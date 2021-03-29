@@ -33,6 +33,6 @@ public class B13SplitNetworkPacket {
     public static void handle(B13SplitNetworkPacket message, Supplier<NetworkEvent.Context> supplier) {
         NetworkEvent.Context context = supplier.get();
         SplitNetworkHandler.handleSplitMessage(message.descriptor, message.collectionID, message.packetID, message.total, message.data, NetworkUtils.getPlayer(supplier), context);
-
+        context.setPacketHandled(true);
     }
 }

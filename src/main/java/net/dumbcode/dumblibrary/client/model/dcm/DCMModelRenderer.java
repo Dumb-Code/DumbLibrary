@@ -5,12 +5,20 @@ import com.mojang.blaze3d.vertex.IVertexBuilder;
 import lombok.Getter;
 import lombok.Setter;
 import net.dumbcode.dumblibrary.server.animation.AnimatedReferenceCube;
-import net.dumbcode.dumblibrary.server.info.ServerAnimatableCube;
-import net.dumbcode.studio.animation.instance.AnimatedCube;
 import net.dumbcode.studio.model.CubeInfo;
+import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.model.ModelRenderer;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import org.lwjgl.opengl.GL11;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class DCMModelRenderer extends ModelRenderer implements AnimatedReferenceCube {
+
+    private final DCMModel model;
 
     private float texWidth = 64.0F;
     private float texHeight = 32.0F;
@@ -31,9 +39,12 @@ public class DCMModelRenderer extends ModelRenderer implements AnimatedReference
     private boolean hideButShowChildren;
 
     private final DCMModelRenderer parent;
+    @Getter
+    private final List<DCMModelRenderer> childCubes = new ArrayList<>();
 
     public DCMModelRenderer(DCMModel model, DCMModelRenderer parent, CubeInfo info) {
         super(model);
+        this.model = model;
         model.getCubeNameMap().put(info.getName(), this);
         this.parent = parent;
         this.texWidth = model.texWidth;
@@ -41,7 +52,9 @@ public class DCMModelRenderer extends ModelRenderer implements AnimatedReference
         this.info = info;
         this.name = info.getName();
         for (CubeInfo child : info.getChildren()) {
-            this.addChild(new DCMModelRenderer(model, this, child));
+            DCMModelRenderer renderer = new DCMModelRenderer(model, this, child);
+            this.addChild(renderer);
+            this.childCubes.add(renderer);
         }
 
         float[] position = info.getRotationPoint();

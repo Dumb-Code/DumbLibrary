@@ -2,6 +2,8 @@ package net.dumbcode.dumblibrary.client.gui;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.IVertexBuilder;
+import io.netty.util.internal.IntegerHolder;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.client.MutVector2f;
 import net.dumbcode.dumblibrary.client.model.dcm.DCMModel;
@@ -10,6 +12,7 @@ import net.dumbcode.dumblibrary.server.utils.DCMUtils;
 import net.dumbcode.dumblibrary.server.taxidermy.TaxidermyHistory;
 import net.dumbcode.dumblibrary.server.utils.XYZAxis;
 import net.minecraft.client.GameSettings;
+import net.minecraft.client.MainWindow;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHelper;
 import net.minecraft.client.gui.AbstractGui;
@@ -17,9 +20,12 @@ import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.client.gui.widget.button.Button;
+import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.vector.Quaternion;
 import net.minecraft.util.math.vector.Vector3f;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.Style;
@@ -32,7 +38,7 @@ import org.lwjgl.opengl.GL12;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -158,19 +164,18 @@ public abstract class GuiModelPoseEdit extends Screen {
             p_onPress_1_ -> {}, slider -> this.sliderChanged(slider.getValue(), XYZAxis.Z_AXIS)
         ));
 
-        this.addWidget(xPosition = new GuiNumberEntry(
+        this.addButton(xPosition = new GuiNumberEntry(
             0, 0, 1/4F, 2, width - 168, zRotationSlider.y+zRotationSlider.getHeight()+15,
-            66, 20, this::addButton, this::positionChanged));
+            66, 20, this::positionChanged));
 
-        this.addWidget(yPosition = new GuiNumberEntry(
+        this.addButton(yPosition = new GuiNumberEntry(
             1, 0, 1/4F, 2, width - 101, zRotationSlider.y+zRotationSlider.getHeight()+15,
-            66, 20, this::addButton, this::positionChanged));
+            66, 20, this::positionChanged));
 
-        this.addWidget(zPosition = new GuiNumberEntry(
+        this.addButton(zPosition = new GuiNumberEntry(
             2, 0, 1/4F, 2, width - 34, zRotationSlider.y+zRotationSlider.getHeight()+15,
-            66, 20, this::addButton, this::positionChanged));
+            66, 20, this::positionChanged));
     }
-
 
     protected abstract void undo();
     protected abstract void redo();
@@ -256,6 +261,17 @@ public abstract class GuiModelPoseEdit extends Screen {
 
     @Override
     public void render(MatrixStack stack, int mouseX, int mouseY, float partialTicks) {
+        this.onFrame(mouseX, mouseY);
+
+        this.setBlitOffset(-1000);
+        this.renderBackground(stack);
+        this.setBlitOffset(0);
+
+        this.renderModelUI(stack, mouseX, mouseY);
+        this.renderUI(stack, mouseX, mouseY, partialTicks);
+    }
+
+    private void onFrame(int mouseX, int mouseY) {
         GuiNumberEntry mouseOver = null;
         if(xPosition.mouseOver(mouseX, mouseY)) {
             mouseOver = xPosition;
@@ -269,11 +285,54 @@ public abstract class GuiModelPoseEdit extends Screen {
             mouseOverEntry.setSyncedSinceEdit(true);
         }
         mouseOverEntry = mouseOver;
+    }
 
+    private void renderModelUI(MatrixStack stack, int mouseX, int mouseY) {
+        setModelToPose();
+        RenderSystem.pushMatrix();
+        MatrixStack modelRendering = prepareModelRendering(width / 8 * 3, height / 2, 30f);
+        XYZAxis ringBelowMouse = findRingBelowMouse();
+        if(draggingRing) {
+            if(ringBelowMouse != XYZAxis.NONE) {
+                handleRingDrag(dMouse.x, dMouse.y);
+            }
+            dMouse.set(0f, 0f);
+            draggingRing = false;
+        }
+        DCMModelRenderer partBelowMouse = findPartBelowMouse(modelRendering);
 
-        stack.pushPose();
-        // ensures that the buttons show above the model
-        stack.translate(0f, 0f, 1000f);
+        if(registeredLeftClick) {
+            if(ringBelowMouse == XYZAxis.NONE) {
+                this.selectedPart = partBelowMouse;
+                this.currentSelectedRing = XYZAxis.NONE;
+                if(selectedPart != null) {
+                    xRotationSlider.setValue(MathHelper.wrapDegrees(Math.toDegrees(selectedPart.xRot)));
+                    yRotationSlider.setValue(MathHelper.wrapDegrees(Math.toDegrees(selectedPart.yRot)));
+                    zRotationSlider.setValue(MathHelper.wrapDegrees(Math.toDegrees(selectedPart.zRot)));
+
+                    xPosition.setValue(selectedPart.xRot, false);
+                    yPosition.setValue(selectedPart.yRot, false);
+                    zPosition.setValue(selectedPart.zRot, false);
+
+                    prevXSlider = xRotationSlider.getValue();
+                    prevYSlider = yRotationSlider.getValue();
+                    prevZSlider = zRotationSlider.getValue();
+                }
+            } else {
+                this.currentSelectedRing = ringBelowMouse;
+            }
+            registeredLeftClick = false;
+        }
+        actualModelRender(modelRendering, partBelowMouse);
+
+        RenderSystem.popMatrix();
+
+        if(partBelowMouse != null) {
+            Minecraft.getInstance().font.draw(stack, partBelowMouse.getName(), mouseX, mouseY, -1);
+        }
+    }
+
+    private void renderUI(MatrixStack stack, int mouseX, int mouseY, float partialTicks) {
         super.render(stack, mouseX, mouseY, partialTicks);
         TaxidermyHistory history = getHistory();
         FontRenderer font = Minecraft.getInstance().font;
@@ -307,49 +366,7 @@ public abstract class GuiModelPoseEdit extends Screen {
         else
             selectionText = new TranslationTextComponent(DumbLibrary.MODID+".gui.model_pose_edit.selected_part", selectedPart.getInfo().getName());
         drawCenteredString(stack, font, selectionText, xRotationSlider.x+xRotationSlider.getWidth()/2, baseYOffset, GuiConstants.NICE_WHITE);
-        stack.popPose();
 
-        setModelToPose();
-        RenderSystem.pushMatrix();
-        MatrixStack modelRendering = prepareModelRendering(width / 8 * 3, height / 2, 30f);
-        XYZAxis ringBelowMouse = findRingBelowMouse();
-        if(draggingRing) {
-            if(ringBelowMouse != XYZAxis.NONE) {
-                handleRingDrag(dMouse.x, dMouse.y);
-            }
-            dMouse.set(0f, 0f);
-            draggingRing = false;
-        }
-        DCMModelRenderer partBelowMouse = findPartBelowMouse(modelRendering);
-        if(registeredLeftClick) {
-            if(ringBelowMouse == XYZAxis.NONE) {
-                this.selectedPart = partBelowMouse;
-                this.currentSelectedRing = XYZAxis.NONE;
-                if(selectedPart != null) {
-                    xRotationSlider.setValue(MathHelper.wrapDegrees(Math.toDegrees(selectedPart.xRot)));
-                    yRotationSlider.setValue(MathHelper.wrapDegrees(Math.toDegrees(selectedPart.yRot)));
-                    zRotationSlider.setValue(MathHelper.wrapDegrees(Math.toDegrees(selectedPart.zRot)));
-
-                    xPosition.setValue(selectedPart.xRot, false);
-                    yPosition.setValue(selectedPart.yRot, false);
-                    zPosition.setValue(selectedPart.zRot, false);
-
-                    prevXSlider = xRotationSlider.getValue();
-                    prevYSlider = yRotationSlider.getValue();
-                    prevZSlider = zRotationSlider.getValue();
-                }
-            } else {
-                this.currentSelectedRing = ringBelowMouse;
-            }
-            registeredLeftClick = false;
-        }
-        actualModelRender(modelRendering, partBelowMouse);
-
-        RenderSystem.popMatrix();
-
-        if(partBelowMouse != null) {
-            AbstractGui.drawString(stack, Minecraft.getInstance().font, partBelowMouse.getName(), mouseX, mouseY, -1);
-        }
     }
     private XYZAxis findRingBelowMouse() {
         if(selectedPart == null)
@@ -381,72 +398,71 @@ public abstract class GuiModelPoseEdit extends Screen {
 //            x = y = 0;
 //        }
         colorBuffer.rewind();
+        MainWindow window = Minecraft.getInstance().getWindow();
         MouseHelper handler = Minecraft.getInstance().mouseHandler;
-        GL11.glReadPixels((int) handler.xpos(), (int)handler.ypos(), 1, 1, GL12.GL_BGRA, GL12.GL_UNSIGNED_INT_8_8_8_8_REV, colorBuffer);
+        GL11.glReadPixels((int) handler.xpos(), window.getHeight()-(int)handler.ypos(), 1, 1, GL12.GL_BGRA, GL12.GL_UNSIGNED_INT_8_8_8_8_REV, colorBuffer);
         return colorBuffer.get(0);
     }
 
     private DCMModelRenderer findPartBelowMouse(MatrixStack stack) {
-        DCMModelRenderer newSelection = null;
-        hideAllModelParts();
-
         RenderSystem.pushMatrix();
         RenderSystem.disableBlend();
+        RenderSystem.enableDepthTest();
         RenderSystem.disableTexture();
 
-        List<DCMModelRenderer> boxes = new ArrayList<>(model.getAllCubes());
-        for (int index = 0; index < boxes.size(); index++) {
-            // Render the model part with a specific color and check if the color below the mouse has changed.
-            // If it did, the mouse is over this given box
-            DCMModelRenderer box = boxes.get(index);
+        Map<Integer, DCMModelRenderer> cubeMap = new HashMap<>();
+        BufferBuilder buffer = Tessellator.getInstance().getBuilder();
+        buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.NEW_ENTITY);
+        recurseUnderMouse(buffer, cubeMap, new IntegerHolder(), stack, model.getRoots());
+        Tessellator.getInstance().end();
 
-            // multiply by 2 because in some cases, the colors are not far enough to allow to pick the correct part
-            // (a box behind another may be picked instead because the color are too close)
-            float color = index*2 / 255f; // TODO: 128 boxes MAX - can be done by having the int id as the color index, or a random color. Maybe make it so it splits 0 - 0xFFFFFF by the model box size and sets that as the color
-
-            RenderSystem.color3f(color, color, color);
-            int prevColor = getColorUnderMouse();
-
-            box.setHideButShowChildren(false);
-            renderModel(stack);
-            box.setHideButShowChildren(true);
-
-            int newColor = getColorUnderMouse();
-
-            if (newColor != prevColor) {
-                newSelection = box;
-            }
-        }
         RenderSystem.color3f(1f, 1f, 1f);
-        RenderSystem.enableTexture();
         RenderSystem.enableBlend();
+        RenderSystem.enableTexture();
         RenderSystem.popMatrix();
-        return newSelection;
+
+        return cubeMap.get(getColorUnderMouse() & 0xFFFFFF);
+    }
+
+    private void recurseUnderMouse(IVertexBuilder buffer, Map<Integer, DCMModelRenderer> cubeMap, IntegerHolder idx, MatrixStack stack, List<DCMModelRenderer> cubes) {
+        for (DCMModelRenderer cube : cubes) {
+            stack.pushPose();
+
+            int id = idx.value++*3;
+            int r = id & 255;
+            int g = Math.floorDiv(id, 255) & 255;
+            int b = Math.floorDiv(id, 255*255) & 255;
+
+            cubeMap.put((r << 16) | (g << 8) | b, cube);
+
+            cube.translateAndRotate(stack);
+            cube.compile(stack.last(), buffer, 15728880, OverlayTexture.NO_OVERLAY, r / 255F , g / 255F, b / 255F, 1);
+
+            recurseUnderMouse(buffer, cubeMap, idx, stack, cube.getChildCubes());
+
+            stack.popPose();
+        }
     }
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
-        super.mouseClicked(mouseX, mouseY, mouseButton);
-        if(onSliders(mouseX, mouseY) || xPosition.mouseOver(mouseX, mouseY) || yPosition.mouseOver(mouseX, mouseY) || zPosition.mouseOver(mouseX, mouseY))
-            return false;
+        MouseHelper handler = Minecraft.getInstance().mouseHandler;
+        lastClickPosition.set((float) handler.xpos(), (float) handler.ypos());
+        if(super.mouseClicked(mouseX, mouseY, mouseButton)) {
+            return true;
+        }
         if(mouseButton == 0) {
             registeredLeftClick = true;
         }
-        MouseHelper handler = Minecraft.getInstance().mouseHandler;
-        lastClickPosition.set((float) handler.xpos(), (float) handler.xpos());
-        return true;
+        return false;
     }
 
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int mouseButton, double dragX, double dragY) {
-        if(onButtons(mouseX, mouseY)) {
-            return false;
-        }
-        if(onSliders(mouseX, mouseY)) {
-            if(mouseButton == 0 && !movedPart) {
-                movedPart = true;
+        for (Widget button : this.buttons) {
+            if(button.isMouseOver(mouseX, mouseY)) {
+                return false;
             }
-            return false;
         }
         MouseHelper handler = Minecraft.getInstance().mouseHandler;
         float dx = (float) (handler.xpos() - lastClickPosition.x);
@@ -469,7 +485,7 @@ public abstract class GuiModelPoseEdit extends Screen {
             }
         }
         lastClickPosition.set((float)handler.xpos(), (float)handler.ypos());
-        return false;
+        return true;
     }
 
     private boolean onSliders(double mouseX, double mouseY) {
@@ -628,10 +644,9 @@ public abstract class GuiModelPoseEdit extends Screen {
 
     private MatrixStack prepareModelRendering(int posX, int posY, float scale) {
         scale *= zoom;
-        RenderSystem.translatef((float)posX, (float)posY, 1050.0F);
+        RenderSystem.translatef((float)posX, (float)posY, -500);
         RenderSystem.scalef(1.0F, 1.0F, -1.0F);
         MatrixStack matrixstack = new MatrixStack();
-        matrixstack.translate(0.0D, 0.0D, 1000.0D);
         matrixstack.scale(scale, scale, scale);
         matrixstack.mulPose(Vector3f.XP.rotationDegrees(cameraPitch));
         matrixstack.mulPose(Vector3f.YP.rotationDegrees(cameraYaw));
@@ -709,7 +724,6 @@ public abstract class GuiModelPoseEdit extends Screen {
 
     private void renderModel(MatrixStack stack) {
         setModelToPose();
-
         Minecraft.getInstance().getTextureManager().bind(this.texture);
         model.renderBoxes(stack, 15728880, this.texture);
     }

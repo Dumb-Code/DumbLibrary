@@ -66,6 +66,11 @@ public class DCMModelRenderer extends ModelRenderer implements AnimatedReference
         this.xRot = rotation[0];
         this.yRot = rotation[1];
         this.zRot = rotation[2];
+
+        float[] cubeGrow = info.getCubeGrow();
+        this.growX = cubeGrow[0];
+        this.growY = cubeGrow[1];
+        this.growZ = cubeGrow[2];
     }
 
     @Override

@@ -16,10 +16,8 @@ import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.fml.client.gui.widget.ExtendedButton;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.ObjIntConsumer;
 
 public class GuiNumberEntry extends Widget implements INestedGuiEventHandler {
@@ -58,6 +56,8 @@ public class GuiNumberEntry extends Widget implements INestedGuiEventHandler {
     @Getter @Setter
     private boolean dragging;
 
+    private boolean ignoreChange = false;
+
     private final List<Widget> children;
 
     public GuiNumberEntry(int id, double currentValue, double defaultScale, int decimalPlace, int x, int y, int width, int height, ObjIntConsumer<GuiNumberEntry> listener) {
@@ -74,6 +74,13 @@ public class GuiNumberEntry extends Widget implements INestedGuiEventHandler {
         this.height = height;
 
         this.textField = new TextFieldWidget(Minecraft.getInstance().font, x-width/2, y-height/2, width-BUTTON_WIDTH-PADDING, height, new StringTextComponent(""));
+        this.textField.setResponder(s -> {
+            try {
+                this.value = Double.parseDouble(s);
+                this.onChange(true, false);
+            } catch (NumberFormatException ignored) {
+            }
+        });
         this.topButton = new ExtendedButton(x + width/2 - BUTTON_WIDTH, y-height/2, BUTTON_WIDTH, height/2, new StringTextComponent("+"), b -> this.addScaled(1));
         this.bottomButton = new ExtendedButton(x + width/2 - BUTTON_WIDTH, y, BUTTON_WIDTH, height/2, new StringTextComponent("-"), b -> this.addScaled(-1));
         this.listener = listener;
@@ -154,7 +161,7 @@ public class GuiNumberEntry extends Widget implements INestedGuiEventHandler {
     }
 
     private void onChange(boolean updateListener, boolean updateTextField) {
-        if(updateListener) {
+        if(updateListener && !this.ignoreChange) {
             this.ticksSinceChanged = 0;
             this.syncedSinceEdit = false;
             this.listener.accept(this, this.id);
@@ -162,7 +169,9 @@ public class GuiNumberEntry extends Widget implements INestedGuiEventHandler {
         if(updateTextField && !this.textField.isFocused()) {
             double pow = Math.pow(10, this.decimalPlace);
             double val = Math.round(this.value * pow) / pow;
+            this.ignoreChange = true;
             this.textField.setValue(MathUtils.ensureTrailingZeros(val, this.decimalPlace));
+            this.ignoreChange = false;
         }
     }
 

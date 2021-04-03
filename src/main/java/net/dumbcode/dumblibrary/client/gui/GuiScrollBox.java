@@ -108,11 +108,15 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> extends Widget {
      */
     private void updateScroll(List<T> entries, int totalHeight, float scrollLength, int mouseY) {
         if (this.lastYClicked != -1) {
-            float oldScroll = this.scroll;
-            float pixelsPerEntry = (totalHeight - scrollLength) / (entries.size() - this.cellMax);
-            this.scroll((float) ((this.lastYClicked - mouseY) / pixelsPerEntry));
-            if (oldScroll != this.scroll) {
-                this.lastYClicked = mouseY;
+            if(!Minecraft.getInstance().mouseHandler.isLeftPressed()) {
+                this.lastYClicked = -1;
+            } else {
+                float oldScroll = this.scroll;
+                float pixelsPerEntry = (totalHeight - scrollLength) / (entries.size() - this.cellMax);
+                this.scroll((float) ((this.lastYClicked - mouseY) / pixelsPerEntry));
+                if (oldScroll != this.scroll) {
+                    this.lastYClicked = mouseY;
+                }
             }
         }
     }

@@ -15,12 +15,12 @@ import net.minecraft.client.GameSettings;
 import net.minecraft.client.MainWindow;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHelper;
-import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
@@ -41,6 +41,7 @@ import java.nio.IntBuffer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 
 public abstract class GuiModelPoseEdit extends Screen {
@@ -48,7 +49,8 @@ public abstract class GuiModelPoseEdit extends Screen {
     private final DCMModel model;
     private final ResourceLocation texture;
     private final ITextComponent titleText;
-    private boolean registeredLeftClick;
+    private boolean shouldSelectMouseUnderPart;
+    private boolean ignoreClick;
     private MutVector2f lastClickPosition = new MutVector2f(0, 0);
     private IntBuffer colorBuffer = BufferUtils.createIntBuffer(1);
     private DCMModelRenderer selectedPart;
@@ -83,9 +85,6 @@ public abstract class GuiModelPoseEdit extends Screen {
 //            .root(new File(Minecraft.getMinecraft().gameDir, "dinosaur_poses"))
 //            .extension("ProjectNublar Dinosaur Pose (.dpose)", true, "*.dpose");
 
-    private double prevXSlider;
-    private double prevYSlider;
-    private double prevZSlider;
 
     public static final String PREFIX_KEY = DumbLibrary.MODID + ".gui.model_pose_edit.rotation_slider.prefix";
     public static final String SUFFIX_KEY = DumbLibrary.MODID + ".gui.model_pose_edit.rotation_slider.suffix";
@@ -103,7 +102,6 @@ public abstract class GuiModelPoseEdit extends Screen {
     private Button resetButton;
     private Button exportButton;
     private Button importButton;
-    private Button propertiesButton;
 
     private GuiNumberEntry mouseOverEntry;
 
@@ -132,37 +130,33 @@ public abstract class GuiModelPoseEdit extends Screen {
         this.addButton(redoButton = new ExtendedButton(buttonWidth, height-21, buttonWidth, 20, redoText, b -> this.redo()));
         //Reset
         this.addButton(resetButton = new ExtendedButton(buttonWidth*2, height-21, buttonWidth, 20, resetText, b -> this.reset()));
-        //Properties
-        this.addButton(propertiesButton = new ExtendedButton(width-201, height-43, 200, 20, propertiesGui, p_onPress_1_ -> {
-            //this.mc.displayGuiScreen(new GuiSkeletalProperties(this, this.builder));
-        }));
 
         //Rotation slider X
-        this.addButton(xRotationSlider = new Slider(
+        this.addButton(xRotationSlider = new WrappedSlider(
             width-201, baseYOffset+font.lineHeight+2, 200, 20,
             new TranslationTextComponent(PREFIX_KEY, "X"),
             new TranslationTextComponent(SUFFIX_KEY),
             -180.0, 180.0, 0.0, true, true,
-            p_onPress_1_ -> {}, slider -> this.sliderChanged(slider.getValue(), XYZAxis.X_AXIS)
-        ));
+            slider -> this.sliderChanged(slider.getValue(), XYZAxis.X_AXIS),
+            this::actualizeEdit));
 
         //Rotation slider Y
-        this.addButton(yRotationSlider = new Slider(
+        this.addButton(yRotationSlider = new WrappedSlider(
             width-201, baseYOffset+font.lineHeight+27, 200, 20,
             new TranslationTextComponent(PREFIX_KEY, "Y"),
             new TranslationTextComponent(SUFFIX_KEY),
             -180.0, 180.0, 0.0, true, true,
-            p_onPress_1_ -> {}, slider -> this.sliderChanged(slider.getValue(), XYZAxis.Y_AXIS)
-        ));
+            slider -> this.sliderChanged(slider.getValue(), XYZAxis.Y_AXIS),
+            this::actualizeEdit));
 
         //Rotation slider Z
-        this.addButton(zRotationSlider = new Slider(
+        this.addButton(zRotationSlider = new WrappedSlider(
             width-201, baseYOffset+font.lineHeight+52, 200, 20,
             new TranslationTextComponent(PREFIX_KEY, "Z"),
             new TranslationTextComponent(SUFFIX_KEY),
             -180.0, 180.0, 0.0, true, true,
-            p_onPress_1_ -> {}, slider -> this.sliderChanged(slider.getValue(), XYZAxis.Z_AXIS)
-        ));
+            slider -> this.sliderChanged(slider.getValue(), XYZAxis.Z_AXIS),
+            this::actualizeEdit));
 
         this.addButton(xPosition = new GuiNumberEntry(
             0, 0, 1/4F, 2, width - 168, zRotationSlider.y+zRotationSlider.getHeight()+15,
@@ -194,6 +188,12 @@ public abstract class GuiModelPoseEdit extends Screen {
         }
     }
 
+    public void actualizeEdit() {
+        if(selectedPart != null) {
+            actualizeEdit(selectedPart);
+        }
+    }
+
     public void sliderChanged(double value, XYZAxis axis) {
         if(currentSelectedRing != XYZAxis.NONE)
             return;
@@ -219,19 +219,6 @@ public abstract class GuiModelPoseEdit extends Screen {
         xRotationSlider.updateSlider();
         yRotationSlider.updateSlider();
         zRotationSlider.updateSlider();
-
-        if(xRotationSlider.getValue() != prevXSlider) {
-            sliderChanged(xRotationSlider.getValue(), XYZAxis.X_AXIS);
-            prevXSlider = xRotationSlider.getValue();
-        }
-        if(yRotationSlider.getValue() != prevYSlider) {
-            sliderChanged(yRotationSlider.getValue(), XYZAxis.Y_AXIS);
-            prevYSlider = yRotationSlider.getValue();
-        }
-        if(zRotationSlider.getValue() != prevZSlider) {
-            sliderChanged(zRotationSlider.getValue(), XYZAxis.Z_AXIS);
-            prevZSlider = zRotationSlider.getValue();
-        }
     }
 
     @Override
@@ -284,6 +271,7 @@ public abstract class GuiModelPoseEdit extends Screen {
             actualizeEdit(selectedPart);
             mouseOverEntry.setSyncedSinceEdit(true);
         }
+
         mouseOverEntry = mouseOver;
     }
 
@@ -301,7 +289,7 @@ public abstract class GuiModelPoseEdit extends Screen {
         }
         DCMModelRenderer partBelowMouse = findPartBelowMouse(modelRendering);
 
-        if(registeredLeftClick) {
+        if(shouldSelectMouseUnderPart) {
             if(ringBelowMouse == XYZAxis.NONE) {
                 this.selectedPart = partBelowMouse;
                 this.currentSelectedRing = XYZAxis.NONE;
@@ -310,18 +298,14 @@ public abstract class GuiModelPoseEdit extends Screen {
                     yRotationSlider.setValue(MathHelper.wrapDegrees(Math.toDegrees(selectedPart.yRot)));
                     zRotationSlider.setValue(MathHelper.wrapDegrees(Math.toDegrees(selectedPart.zRot)));
 
-                    xPosition.setValue(selectedPart.xRot, false);
-                    yPosition.setValue(selectedPart.yRot, false);
-                    zPosition.setValue(selectedPart.zRot, false);
-
-                    prevXSlider = xRotationSlider.getValue();
-                    prevYSlider = yRotationSlider.getValue();
-                    prevZSlider = zRotationSlider.getValue();
+                    xPosition.setValue(selectedPart.x, false);
+                    yPosition.setValue(selectedPart.y, false);
+                    zPosition.setValue(selectedPart.z, false);
                 }
             } else {
                 this.currentSelectedRing = ringBelowMouse;
             }
-            registeredLeftClick = false;
+            shouldSelectMouseUnderPart = false;
         }
         actualModelRender(modelRendering, partBelowMouse);
 
@@ -413,7 +397,15 @@ public abstract class GuiModelPoseEdit extends Screen {
         Map<Integer, DCMModelRenderer> cubeMap = new HashMap<>();
         BufferBuilder buffer = Tessellator.getInstance().getBuilder();
         buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.NEW_ENTITY);
-        recurseUnderMouse(buffer, cubeMap, new IntegerHolder(), stack, model.getRoots());
+        IntegerHolder idx = new IntegerHolder();
+        renderRecursively(buffer, stack, model.getRoots(), cube -> {
+            int id = idx.value++*3;
+            int r = id & 255;
+            int g = Math.floorDiv(id, 255) & 255;
+            int b = Math.floorDiv(id, 255*255) & 255;
+            cubeMap.put((r << 16) | (g << 8) | b, cube);
+            return new int[] { r, g, b };
+        });
         Tessellator.getInstance().end();
 
         RenderSystem.color3f(1f, 1f, 1f);
@@ -424,21 +416,16 @@ public abstract class GuiModelPoseEdit extends Screen {
         return cubeMap.get(getColorUnderMouse() & 0xFFFFFF);
     }
 
-    private void recurseUnderMouse(IVertexBuilder buffer, Map<Integer, DCMModelRenderer> cubeMap, IntegerHolder idx, MatrixStack stack, List<DCMModelRenderer> cubes) {
+    private void renderRecursively(IVertexBuilder buffer, MatrixStack stack, List<DCMModelRenderer> cubes, Function<DCMModelRenderer, int[]> colorGetter) {
         for (DCMModelRenderer cube : cubes) {
             stack.pushPose();
 
-            int id = idx.value++*3;
-            int r = id & 255;
-            int g = Math.floorDiv(id, 255) & 255;
-            int b = Math.floorDiv(id, 255*255) & 255;
-
-            cubeMap.put((r << 16) | (g << 8) | b, cube);
+            int[] color = colorGetter.apply(cube);
 
             cube.translateAndRotate(stack);
-            cube.compile(stack.last(), buffer, 15728880, OverlayTexture.NO_OVERLAY, r / 255F , g / 255F, b / 255F, 1);
+            cube.compile(stack.last(), buffer, 15728880, OverlayTexture.NO_OVERLAY, color[0] / 255F , color[1] / 255F, color[2] / 255F, 1);
 
-            recurseUnderMouse(buffer, cubeMap, idx, stack, cube.getChildCubes());
+            renderRecursively(buffer, stack, cube.getChildCubes(), colorGetter);
 
             stack.popPose();
         }
@@ -449,20 +436,22 @@ public abstract class GuiModelPoseEdit extends Screen {
         MouseHelper handler = Minecraft.getInstance().mouseHandler;
         lastClickPosition.set((float) handler.xpos(), (float) handler.ypos());
         if(super.mouseClicked(mouseX, mouseY, mouseButton)) {
+            ignoreClick = true;
             return true;
-        }
-        if(mouseButton == 0) {
-            registeredLeftClick = true;
         }
         return false;
     }
 
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int mouseButton, double dragX, double dragY) {
+        ignoreClick = true;
         for (Widget button : this.buttons) {
             if(button.isMouseOver(mouseX, mouseY)) {
                 return false;
             }
+        }
+        if(xRotationSlider.dragging || yRotationSlider.dragging || zRotationSlider.dragging) {
+            return false;
         }
         MouseHelper handler = Minecraft.getInstance().mouseHandler;
         float dx = (float) (handler.xpos() - lastClickPosition.x);
@@ -486,22 +475,6 @@ public abstract class GuiModelPoseEdit extends Screen {
         }
         lastClickPosition.set((float)handler.xpos(), (float)handler.ypos());
         return true;
-    }
-
-    private boolean onSliders(double mouseX, double mouseY) {
-        if(GuiConstants.mouseOn(xRotationSlider, mouseX, mouseY))
-            return true;
-        if(GuiConstants.mouseOn(yRotationSlider, mouseX, mouseY))
-            return true;
-        return GuiConstants.mouseOn(zRotationSlider, mouseX, mouseY);
-    }
-
-    private boolean onButtons(double mouseX, double mouseY) {
-        for (Widget button : this.buttons) {
-            if(button != xRotationSlider && button != yRotationSlider && button != zRotationSlider && GuiConstants.mouseOn(button, mouseX, mouseY))
-                return true;
-        }
-        return false;
     }
 
     /**
@@ -609,6 +582,10 @@ public abstract class GuiModelPoseEdit extends Screen {
 
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        if(button == 0 && !ignoreClick) {
+            shouldSelectMouseUnderPart = true;
+        }
+        ignoreClick = false;
         if(button == 0) {
             if(movedPart) {
                 movedPart = false;
@@ -654,14 +631,21 @@ public abstract class GuiModelPoseEdit extends Screen {
     }
 
     private void actualModelRender(MatrixStack stack, DCMModelRenderer partBelowMouse) {
-        highlight(stack, selectedPart, 0f, 0f, 1f);
-        highlight(stack, partBelowMouse, 1f, 1f, 0f);
-        resetScalings();
-        hidePart(selectedPart);
-        hidePart(partBelowMouse);
-        RenderSystem.color3f(1f, 1f, 1f);
-        renderModel(stack);
-        resetScalings();
+        RenderSystem.enableLighting();
+        setModelToPose();
+        Minecraft instance = Minecraft.getInstance();
+        IRenderTypeBuffer.Impl impl = instance.renderBuffers().bufferSource();
+        IVertexBuilder buffer = impl.getBuffer(this.model.renderType(this.texture));
+        this.renderRecursively(buffer, stack, this.model.getRoots(), cube -> {
+            if(cube == partBelowMouse) {
+                return new int[] { 127, 127, 255 };
+            }
+            if(cube == this.selectedPart) {
+                return new int[] { 255, 127, 127 };
+            }
+            return new int[] { 255, 255, 255 };
+        });
+        impl.endBatch();
     }
 
     private void renderRotationRing() {
@@ -694,40 +678,6 @@ public abstract class GuiModelPoseEdit extends Screen {
 //        GlStateManager.enableLighting();
     }
 
-    private void hidePart(DCMModelRenderer part) {
-        if(part == null)
-            return;
-        part.setHideButShowChildren(true);
-    }
-
-    /**
-     * Renders a single model part with the given color
-     */
-    private void highlight(MatrixStack stack, DCMModelRenderer part, float red, float green, float blue) {
-        if(part != null) {
-            hideAllModelParts();
-            part.setHideButShowChildren(false);
-            RenderSystem.disableTexture();
-            RenderSystem.color3f(red, green, blue);
-            renderModel(stack);
-            RenderSystem.enableTexture();
-
-            resetScalings();
-        }
-    }
-
-    private void resetScalings() {
-        for(DCMModelRenderer renderer : model.getAllCubes()) {
-            renderer.setHideButShowChildren(false);
-        }
-    }
-
-    private void renderModel(MatrixStack stack) {
-        setModelToPose();
-        Minecraft.getInstance().getTextureManager().bind(this.texture);
-        model.renderBoxes(stack, 15728880, this.texture);
-    }
-
     private void setModelToPose() {
         Map<String, TaxidermyHistory.CubeProps> poseData = this.getPoseData();
         for(DCMModelRenderer box : model.getAllCubes()) {
@@ -739,9 +689,5 @@ public abstract class GuiModelPoseEdit extends Screen {
                 box.resetRotationPoint();
             }
         }
-    }
-
-    private void hideAllModelParts() {
-        model.getAllCubes().forEach(r -> r.setHideButShowChildren(true));
     }
 }

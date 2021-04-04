@@ -39,7 +39,7 @@ public class SplitNetworkHandler {
         int total = data.length/30000 + 1;
 
         Entry<?> packetDesc = CLASS_TO_ENTRY.get(message.getClass());
-        DumbLibrary.getLogger().info("Splitting up packet (len={}) of class {} (id={}) into {} chunks", data.length, message.getClass().getSimpleName(), packetDesc, total);
+        DumbLibrary.getLogger().info("Splitting up packet (len={}) of class {} (id={}) into {} chunks", data.length, message.getClass().getSimpleName(), packetDesc.getId(), total);
         if(packetDesc == null) {
             throw new IllegalArgumentException("Tried to split up packet of class " + message.getClass() + ", but it wasn't registered");
         }

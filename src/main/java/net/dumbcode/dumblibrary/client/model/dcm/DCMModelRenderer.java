@@ -122,7 +122,7 @@ public class DCMModelRenderer extends ModelRenderer implements AnimatedReference
 
     @Override
     public void render(MatrixStack stack, IVertexBuilder buffer, int light, int overlay, float r, float g, float b, float a) {
-        if(this.growDirty) {
+        if(this.growDirty || true) {
             this.box = new ModelRenderer.ModelBox(
                 this.info.getTextureOffset()[0], this.info.getTextureOffset()[1],
                 this.info.getOffset()[0], this.info.getOffset()[1], this.info.getOffset()[2],
@@ -134,6 +134,36 @@ public class DCMModelRenderer extends ModelRenderer implements AnimatedReference
             this.growDirty = false;
             this.cubes.clear();
             this.cubes.add(this.box);
+
+            //Vertices on the X and Y axis are now flipped. We need to unflip them.
+            for (int i = 0; i < 4; i+=2) {
+                ModelRenderer.TexturedQuad top = this.box.polygons[i];
+                ModelRenderer.TexturedQuad bottom = this.box.polygons[i+1];
+
+                for (int v = 0; v < 4; v++) {
+                    ModelRenderer.PositionTextureVertex topVertex = top.vertices[v];
+                    ModelRenderer.PositionTextureVertex bottomVertex = bottom.vertices[v];
+
+                    top.vertices[v] = top.vertices[v].remap(bottomVertex.u, bottomVertex.v);
+                    bottom.vertices[v] = bottom.vertices[v].remap(topVertex.u, topVertex.v);
+                }
+            }
+
+            //We also need to rotate all the vertices twice.
+            for (int v = 0; v < 6; v++) {
+                ModelRenderer.TexturedQuad quad = this.box.polygons[v];
+                PositionTextureVertex v0 = quad.vertices[0];
+                PositionTextureVertex v1 = quad.vertices[1];
+                PositionTextureVertex v2 = quad.vertices[2];
+                PositionTextureVertex v3 = quad.vertices[3];
+
+                quad.vertices[0] = v0.remap(v2.u, v2.v);
+                quad.vertices[1] = v1.remap(v3.u, v3.v);
+                quad.vertices[2] = v2.remap(v0.u, v0.v);
+                quad.vertices[3] = v3.remap(v1.u, v1.v);
+            }
+
+
         }
         if(this.hideButShowChildren) {
             this.cubes.clear();

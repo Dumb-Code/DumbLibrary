@@ -30,6 +30,7 @@ public class GuiDropdownBox<T extends SelectListEntry> extends Widget {
     @Setter(AccessLevel.NONE)
     private final Supplier<List<T>> listSupplier;
 
+
     public GuiDropdownBox(int xPos, int yPos, int width, int cellHeight, int cellMax, Supplier<List<T>> listSupplier) {
         super(xPos, yPos, width, cellHeight, new StringTextComponent(""));
         this.scrollBox = new GuiScrollBox<>(this.x, this.y + cellHeight, width, cellHeight, cellMax, this::getSearchedList);
@@ -106,13 +107,13 @@ public class GuiDropdownBox<T extends SelectListEntry> extends Widget {
                 this.open = !this.open;
                 this.scrollBox.setHeight(this.open ? this.scrollBox.getTotalSize() : 0);
             }
-            return true;
+            return false;
         }
         if (mouseButton == 0) {
             if (this.isMouseOver(mouseX, mouseY)) {
                 this.open = !this.open;
                 this.scrollBox.setHeight(this.open ? this.scrollBox.getTotalSize() : 0);
-                return true;
+                return false;
             }
         }
         this.open = false;

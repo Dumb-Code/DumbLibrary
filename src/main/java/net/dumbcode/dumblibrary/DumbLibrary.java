@@ -12,6 +12,7 @@ import net.dumbcode.dumblibrary.server.registry.DumbRegistries;
 import net.dumbcode.dumblibrary.server.registry.DumbRegistryHandler;
 import net.dumbcode.dumblibrary.server.registry.RegisterGeneticTypes;
 import net.dumbcode.dumblibrary.server.utils.InjectedUtils;
+import net.dumbcode.dumblibrary.server.utils.MouseUtils;
 import net.dumbcode.dumblibrary.server.utils.VoidStorage;
 import net.dumbcode.studio.model.ModelMirror;
 import net.dumbcode.studio.model.RotationOrder;
@@ -73,6 +74,7 @@ public class DumbLibrary {
 
         forgeBus.addListener(GeneticTypes::onRegisterGenetics);
         forgeBus.addListener(EntityComponentTypes::registerSystems);
+        forgeBus.addListener(MouseUtils::onMouseEvent);
 
         DR.register(bus);
     }

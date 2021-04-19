@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 import net.dumbcode.dumblibrary.client.RenderUtils;
 import net.dumbcode.dumblibrary.client.StencilStack;
+import net.dumbcode.dumblibrary.server.utils.MouseUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.gui.widget.Widget;
@@ -108,7 +109,7 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> extends Widget {
      */
     private void updateScroll(List<T> entries, int totalHeight, float scrollLength, int mouseY) {
         if (this.lastYClicked != -1) {
-            if(!Minecraft.getInstance().mouseHandler.isLeftPressed()) {
+            if(!MouseUtils.isLeftPressed()) {
                 this.lastYClicked = -1;
             } else {
                 float oldScroll = this.scroll;
@@ -258,12 +259,8 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> extends Widget {
         //Scroll bar clicked
         if (additionalRows && this.mouseOverScrollBar(mouseX, mouseY, height, scrollBar)) {
             this.lastYClicked = mouseY;
-            return true;
-        }
-
-        if (this.isMouseOver(mouseX, mouseY, height) && mouseY - this.y < height) {
+        } else if (this.isMouseOver(mouseX, mouseY, height) && mouseY - this.y < height) {
             this.clickedEntry(entries, mouseX, mouseY, mouseButton);
-            return true;
         }
         return false;
     }

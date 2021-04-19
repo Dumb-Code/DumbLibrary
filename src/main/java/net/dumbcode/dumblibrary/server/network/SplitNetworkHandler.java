@@ -43,7 +43,7 @@ public class SplitNetworkHandler {
         if(packetDesc == null) {
             throw new IllegalArgumentException("Tried to split up packet of class " + message.getClass() + ", but it wasn't registered");
         }
-        int collectionID = getNextCollection();
+        int collectionID = getNextCollection(message.getClass());
         for (int i = 0; i < total; i++) {
             byte[] outData = new byte[i+1 == total ? data.length%30000 : 30000];
             System.arraycopy(data, 30000*i, outData, 0, outData.length);
@@ -114,21 +114,23 @@ public class SplitNetworkHandler {
 
 
 
-    private static int getNextCollection() {
+    private static int getNextCollection(Class<?> aClass) {
         if(BUFFER_MAP.isEmpty()) {
             return 0;
         }
-        int[] ints = BUFFER_MAP.keySet().stream().mapToInt(value -> value).sorted().toArray();
-        if(ints[0] > 0) {
-            return 0;
-        }
-        int previous = 0;
-        for (int i : ints) {
-            if (i - previous > 1) {
-                return previous + 1;
+        int[] ints = BUFFER_MAP.keySet().stream().mapToInt(Short::intValue).sorted().toArray();
+        for (int i = 0; i < ints.length; i++) {
+            if(i != ints[0]) {
+                return i;
             }
         }
-        throw new IllegalArgumentException("All 32767 split network collections have been sent out. This should be impossible. Please make sure you are not creating a packet leak");
+        if(ints.length > 500) {
+            DumbLibrary.getLogger().error("Potential packet leak detected for class {}", aClass);
+        }
+        if(ints.length >= Short.MAX_VALUE) {
+            throw new IllegalArgumentException("All 32767 split network collections have been sent out. This should be impossible. Please make sure you are not creating a packet leak");
+        }
+        return ints.length;
     }
 
     @Value

@@ -10,6 +10,8 @@ import net.minecraft.util.math.vector.Matrix4f;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.math.vector.Vector3f;
 
+import java.util.Arrays;
+
 public class RenderUtils {
     public static void drawCubeoid(MatrixStack stack, Vector3d si, Vector3d ei, IVertexBuilder buff) {
         Matrix4f pose = stack.last().pose();
@@ -84,6 +86,13 @@ public class RenderUtils {
         buff.vertex(pose, ulbx, ulby, ulbz).uv(lu, lv+tw).normal(normal, -zNorm.x(), -zNorm.y(), -zNorm.z()).endVertex();
     }
 
+    public static void renderBoxLines(MatrixStack stack, IVertexBuilder buff, Vector3f[] points, Direction... blocked) { //todo: color params
+        renderBoxLines(
+            stack, buff,
+            Arrays.stream(points).map(Vector3d::new).toArray(Vector3d[]::new),
+            blocked
+        );
+    }
     public static void renderBoxLines(MatrixStack stack, IVertexBuilder buff, Vector3d[] points, Direction... blocked) { //todo: color params
         renderLineSegment(stack, buff, points, blocked, 0b100, 0b101, 0b111, 0b110);
         renderLineSegment(stack, buff, points, blocked, 0b000, 0b001, 0b011, 0b010);
@@ -121,7 +130,7 @@ public class RenderUtils {
 //    }
 //
 //    public static void drawTextureAtlasSprite(double x, double y, TextureAtlasSprite sprite, double width, double height, double minU, double minV, double maxU, double maxV, IVertexBuilder buff) {
-////        bufferbuilder.begin(7, DefaultVertexFormats.POSITION_TEX);
+//        bufferbuilder.begin(7, DefaultVertexFormats.POSITION_TEX);
 //        buff.pos(x, y + height, 0).uv(sprite.getInterpolatedU(minU), sprite.getInterpolatedV(maxV)).endVertex();
 //        buff.pos(x + width, y + height, 0).uv(sprite.getInterpolatedU(maxU), sprite.getInterpolatedV(maxV)).endVertex();
 //        buff.pos(x + width, y, 0).uv(sprite.getInterpolatedU(maxU), sprite.getInterpolatedV(minV)).endVertex();

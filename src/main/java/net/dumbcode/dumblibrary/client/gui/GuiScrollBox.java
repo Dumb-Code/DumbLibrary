@@ -154,7 +154,7 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> extends Widget {
                     AbstractGui.fill(stack, this.x, yStart, this.x + this.width, yStart + this.cellHeight, this.highlightColor);
                 }
 
-                entry.postDraw(this.x, yStart, mouseX, mouseY);
+                entry.postDraw(stack, this.x, yStart, mouseX, mouseY);
             }
         }
     }

@@ -29,7 +29,7 @@ public interface GuiScrollboxEntry {
      * @param mouseX the mouse X position
      * @param mouseY the mouse Y position
      */
-    default void postDraw(int x, int y, int mouseX, int mouseY) {
+    default void postDraw(MatrixStack stack, int x, int y, int mouseX, int mouseY) {
     }
 
     /**

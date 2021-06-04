@@ -29,8 +29,7 @@ public class ModelMissing extends DCMModel {
         super.renderToBuffer(stack, buffer, overlay, light, r, g, b, opacity);
     }
 
-    @SuppressWarnings("unchecked")
-    public static <T extends Entity> EntityModel<T> getInstance() {
-        return (EntityModel<T>) INSTANCE;
+    public static DCMModel getInstance() {
+        return INSTANCE;
     }
 }

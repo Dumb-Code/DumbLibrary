@@ -1,20 +1,19 @@
 package net.dumbcode.dumblibrary.client.model.dcm;
 
+import com.google.common.util.concurrent.AtomicDoubleArray;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
+import io.netty.util.internal.IntegerHolder;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import net.dumbcode.dumblibrary.server.animation.AnimatedReferenceCube;
 import net.dumbcode.studio.model.CubeInfo;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.model.ModelRenderer;
-import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class DCMModelRenderer extends ModelRenderer implements AnimatedReferenceCube {
 
@@ -122,7 +121,7 @@ public class DCMModelRenderer extends ModelRenderer implements AnimatedReference
 
     @Override
     public void render(MatrixStack stack, IVertexBuilder buffer, int light, int overlay, float r, float g, float b, float a) {
-        if(this.growDirty || true) {
+        if(this.growDirty) {
             this.box = new ModelRenderer.ModelBox(
                 this.info.getTextureOffset()[0], this.info.getTextureOffset()[1],
                 this.info.getOffset()[0], this.info.getOffset()[1], this.info.getOffset()[2],
@@ -168,7 +167,19 @@ public class DCMModelRenderer extends ModelRenderer implements AnimatedReference
         if(this.hideButShowChildren) {
             this.cubes.clear();
         }
-        super.render(stack, buffer, light, overlay, r, g, b, a);
+
+        AtomicInteger atomLight = new AtomicInteger(light);
+        AtomicInteger atomOverlay = new AtomicInteger(overlay);
+        AtomicDoubleArray colors = new AtomicDoubleArray(new double[]{ r, g, b, a });
+
+        if(this.model.getOnRenderCallback() != null) {
+            this.model.getOnRenderCallback().onFrame(this, atomLight, atomOverlay, colors);
+        }
+
+        super.render(stack, buffer,
+            atomLight.get(), atomOverlay.get(),
+            (float) colors.get(0), (float) colors.get(1), (float) colors.get(2), (float) colors.get(3)
+        );
         if(this.hideButShowChildren) {
             this.cubes.add(this.box);
         }

@@ -52,7 +52,7 @@ public class RenderUtils {
 //    }
 
     //ulf, ulb, urf, urb, dlf, dlb, drf, drb
-    public static void drawSpacedCube(MatrixStack stack, IVertexBuilder buff, float ulfx, float ulfy, float ulfz, float ulbx, float ulby, float ulbz, float urfx, float urfy, float urfz, float urbx, float urby, float urbz, float dlfx, float dlfy, float dlfz, float dlbx, float dlby, float dlbz, float drfx, float drfy, float drfz, float drbx, float drby, float drbz, float uu, float uv, float du, float dv, float lu, float lv, float ru, float rv, float fu, float fv,float bu, float bv, float tw,float th, float td) {
+    public static void drawSpacedCube(MatrixStack stack, IVertexBuilder buff, float r, float g, float b, float a, int light, int overlay, float ulfx, float ulfy, float ulfz, float ulbx, float ulby, float ulbz, float urfx, float urfy, float urfz, float urbx, float urby, float urbz, float dlfx, float dlfy, float dlfz, float dlbx, float dlby, float dlbz, float drfx, float drfy, float drfz, float drbx, float drby, float drbz, float uu, float uv, float du, float dv, float lu, float lv, float ru, float rv, float fu, float fv,float bu, float bv, float tw,float th, float td) {
         Vector3f xNorm = MathUtils.calculateNormalF(urfx, urfy, urfz, drfx, drfy, drfz, dlfx, dlfy, dlfz);
         Vector3f yNorm = MathUtils.calculateNormalF(ulfx, ulfy, ulfz, ulbx, ulby, ulbz, urbx, urby, urbz);
         Vector3f zNorm = MathUtils.calculateNormalF(drfx, drfy, drfz, urfx, urfy, urfz, urbx, urby, urbz);
@@ -60,30 +60,30 @@ public class RenderUtils {
         Matrix4f pose = stack.last().pose();
         Matrix3f normal = stack.last().normal();
 
-        buff.vertex(pose, urfx, urfy, urfz).uv(fu, fv).normal(normal, xNorm.x(), xNorm.y(), xNorm.z()).endVertex();
-        buff.vertex(pose, drfx, drfy, drfz).uv(fu, fv+th).normal(normal, xNorm.x(), xNorm.y(), xNorm.z()).endVertex();
-        buff.vertex(pose, dlfx, dlfy, dlfz).uv(fu+td, fv+th).normal(normal, xNorm.x(), xNorm.y(), xNorm.z()).endVertex();
-        buff.vertex(pose, ulfx, ulfy, ulfz).uv(fu+td, fv).normal(normal, xNorm.x(), xNorm.y(), xNorm.z()).endVertex();
-        buff.vertex(pose, drbx, drby, drbz).uv(bu, bv).normal(normal, -xNorm.x(), -xNorm.y(), -xNorm.z()).endVertex();
-        buff.vertex(pose, urbx, urby, urbz).uv(bu, bv+th).normal(normal, -xNorm.x(), -xNorm.y(), -xNorm.z()).endVertex();
-        buff.vertex(pose, ulbx, ulby, ulbz).uv(bu+td, bv+th).normal(normal, -xNorm.x(), -xNorm.y(), -xNorm.z()).endVertex();
-        buff.vertex(pose, dlbx, dlby, dlbz).uv(bu+td, bv).normal(normal, -xNorm.x(), -xNorm.y(), -xNorm.z()).endVertex();
-        buff.vertex(pose, ulfx, ulfy, ulfz).uv(uu, uv).normal(normal, yNorm.x(), yNorm.y(), yNorm.z()).endVertex();
-        buff.vertex(pose, ulbx, ulby, ulbz).uv(uu, uv+tw).normal(normal, yNorm.x(), yNorm.y(), yNorm.z()).endVertex();
-        buff.vertex(pose, urbx, urby, urbz).uv(uu+td, uv+tw).normal(normal, yNorm.x(), yNorm.y(), yNorm.z()).endVertex();
-        buff.vertex(pose, urfx, urfy, urfz).uv(uu+td, uv).normal(normal, yNorm.x(), yNorm.y(), yNorm.z()).endVertex();
-        buff.vertex(pose, dlbx, dlby, dlbz).uv(du, dv).normal(normal, -yNorm.x(), -yNorm.y(), -yNorm.z()).endVertex();
-        buff.vertex(pose, dlfx, dlfy, dlfz).uv(du, dv+tw).normal(normal, -yNorm.x(), -yNorm.y(), -yNorm.z()).endVertex();
-        buff.vertex(pose, drfx, drfy, drfz).uv(du+td, dv+tw).normal(normal, -yNorm.x(), -yNorm.y(), -yNorm.z()).endVertex();
-        buff.vertex(pose, drbx, drby, drbz).uv(du+td, dv).normal(normal, -yNorm.x(), -yNorm.y(), -yNorm.z()).endVertex();
-        buff.vertex(pose, drfx, drfy, drfz).uv(ru, rv).normal(normal, zNorm.x(), zNorm.y(), zNorm.z()).endVertex();
-        buff.vertex(pose, urfx, urfy, urfz).uv(ru+th, rv).normal(normal, zNorm.x(), zNorm.y(), zNorm.z()).endVertex();
-        buff.vertex(pose, urbx, urby, urbz).uv(ru+th, rv+tw).normal(normal, zNorm.x(), zNorm.y(), zNorm.z()).endVertex();
-        buff.vertex(pose, drbx, drby, drbz).uv(ru, rv+tw).normal(normal, zNorm.x(), zNorm.y(), zNorm.z()).endVertex();
-        buff.vertex(pose, ulfx, ulfy, ulfz).uv(lu, lv).normal(normal, -zNorm.x(), -zNorm.y(), -zNorm.z()).endVertex();
-        buff.vertex(pose, dlfx, dlfy, dlfz).uv(lu+th, lv).normal(normal, -zNorm.x(), -zNorm.y(), -zNorm.z()).endVertex();
-        buff.vertex(pose, dlbx, dlby, dlbz).uv(lu+th, lv+tw).normal(normal, -zNorm.x(), -zNorm.y(), -zNorm.z()).endVertex();
-        buff.vertex(pose, ulbx, ulby, ulbz).uv(lu, lv+tw).normal(normal, -zNorm.x(), -zNorm.y(), -zNorm.z()).endVertex();
+        buff.vertex(pose, urfx, urfy, urfz).color(r, g, b, a).uv(fu, fv).overlayCoords(overlay).uv2(light).normal(normal, xNorm.x(), xNorm.y(), xNorm.z()).endVertex();
+        buff.vertex(pose, drfx, drfy, drfz).color(r, g, b, a).uv(fu, fv+th).overlayCoords(overlay).uv2(light).normal(normal, xNorm.x(), xNorm.y(), xNorm.z()).endVertex();
+        buff.vertex(pose, dlfx, dlfy, dlfz).color(r, g, b, a).uv(fu+td, fv+th).overlayCoords(overlay).uv2(light).normal(normal, xNorm.x(), xNorm.y(), xNorm.z()).endVertex();
+        buff.vertex(pose, ulfx, ulfy, ulfz).color(r, g, b, a).uv(fu+td, fv).overlayCoords(overlay).uv2(light).normal(normal, xNorm.x(), xNorm.y(), xNorm.z()).endVertex();
+        buff.vertex(pose, drbx, drby, drbz).color(r, g, b, a).uv(bu, bv).overlayCoords(overlay).uv2(light).normal(normal, -xNorm.x(), -xNorm.y(), -xNorm.z()).endVertex();
+        buff.vertex(pose, urbx, urby, urbz).color(r, g, b, a).uv(bu, bv+th).overlayCoords(overlay).uv2(light).normal(normal, -xNorm.x(), -xNorm.y(), -xNorm.z()).endVertex();
+        buff.vertex(pose, ulbx, ulby, ulbz).color(r, g, b, a).uv(bu+td, bv+th).overlayCoords(overlay).uv2(light).normal(normal, -xNorm.x(), -xNorm.y(), -xNorm.z()).endVertex();
+        buff.vertex(pose, dlbx, dlby, dlbz).color(r, g, b, a).uv(bu+td, bv).overlayCoords(overlay).uv2(light).normal(normal, -xNorm.x(), -xNorm.y(), -xNorm.z()).endVertex();
+        buff.vertex(pose, ulfx, ulfy, ulfz).color(r, g, b, a).uv(uu, uv).overlayCoords(overlay).uv2(light).normal(normal, yNorm.x(), yNorm.y(), yNorm.z()).endVertex();
+        buff.vertex(pose, ulbx, ulby, ulbz).color(r, g, b, a).uv(uu, uv+tw).overlayCoords(overlay).uv2(light).normal(normal, yNorm.x(), yNorm.y(), yNorm.z()).endVertex();
+        buff.vertex(pose, urbx, urby, urbz).color(r, g, b, a).uv(uu+td, uv+tw).overlayCoords(overlay).uv2(light).normal(normal, yNorm.x(), yNorm.y(), yNorm.z()).endVertex();
+        buff.vertex(pose, urfx, urfy, urfz).color(r, g, b, a).uv(uu+td, uv).overlayCoords(overlay).uv2(light).normal(normal, yNorm.x(), yNorm.y(), yNorm.z()).endVertex();
+        buff.vertex(pose, dlbx, dlby, dlbz).color(r, g, b, a).uv(du, dv).overlayCoords(overlay).uv2(light).normal(normal, -yNorm.x(), -yNorm.y(), -yNorm.z()).endVertex();
+        buff.vertex(pose, dlfx, dlfy, dlfz).color(r, g, b, a).uv(du, dv+tw).overlayCoords(overlay).uv2(light).normal(normal, -yNorm.x(), -yNorm.y(), -yNorm.z()).endVertex();
+        buff.vertex(pose, drfx, drfy, drfz).color(r, g, b, a).uv(du+td, dv+tw).overlayCoords(overlay).uv2(light).normal(normal, -yNorm.x(), -yNorm.y(), -yNorm.z()).endVertex();
+        buff.vertex(pose, drbx, drby, drbz).color(r, g, b, a).uv(du+td, dv).overlayCoords(overlay).uv2(light).normal(normal, -yNorm.x(), -yNorm.y(), -yNorm.z()).endVertex();
+        buff.vertex(pose, drfx, drfy, drfz).color(r, g, b, a).uv(ru, rv).overlayCoords(overlay).uv2(light).normal(normal, zNorm.x(), zNorm.y(), zNorm.z()).endVertex();
+        buff.vertex(pose, urfx, urfy, urfz).color(r, g, b, a).uv(ru+th, rv).overlayCoords(overlay).uv2(light).normal(normal, zNorm.x(), zNorm.y(), zNorm.z()).endVertex();
+        buff.vertex(pose, urbx, urby, urbz).color(r, g, b, a).uv(ru+th, rv+tw).overlayCoords(overlay).uv2(light).normal(normal, zNorm.x(), zNorm.y(), zNorm.z()).endVertex();
+        buff.vertex(pose, drbx, drby, drbz).color(r, g, b, a).uv(ru, rv+tw).overlayCoords(overlay).uv2(light).normal(normal, zNorm.x(), zNorm.y(), zNorm.z()).endVertex();
+        buff.vertex(pose, ulfx, ulfy, ulfz).color(r, g, b, a).uv(lu, lv).overlayCoords(overlay).uv2(light).normal(normal, -zNorm.x(), -zNorm.y(), -zNorm.z()).endVertex();
+        buff.vertex(pose, dlfx, dlfy, dlfz).color(r, g, b, a).uv(lu+th, lv).overlayCoords(overlay).uv2(light).normal(normal, -zNorm.x(), -zNorm.y(), -zNorm.z()).endVertex();
+        buff.vertex(pose, dlbx, dlby, dlbz).color(r, g, b, a).uv(lu+th, lv+tw).overlayCoords(overlay).uv2(light).normal(normal, -zNorm.x(), -zNorm.y(), -zNorm.z()).endVertex();
+        buff.vertex(pose, ulbx, ulby, ulbz).color(r, g, b, a).uv(lu, lv+tw).overlayCoords(overlay).uv2(light).normal(normal, -zNorm.x(), -zNorm.y(), -zNorm.z()).endVertex();
     }
 
     public static void renderBoxLines(MatrixStack stack, IVertexBuilder buff, Vector3f[] points, Direction... blocked) { //todo: color params

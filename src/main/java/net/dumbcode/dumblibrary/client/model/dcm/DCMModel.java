@@ -2,6 +2,7 @@ package net.dumbcode.dumblibrary.client.model.dcm;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.util.concurrent.AtomicDoubleArray;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 import lombok.Getter;
@@ -20,6 +21,9 @@ import net.minecraft.util.ResourceLocation;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
+import java.util.function.IntConsumer;
 
 /**
  * The ModelBase handler for a tabula model
@@ -34,6 +38,10 @@ public class DCMModel extends EntityModel<Entity> {
     private final List<DCMModelRenderer> roots = Lists.newArrayList();
     @Getter
     private final Map<String, DCMModelRenderer> cubeNameMap = Maps.newHashMap();
+
+    @Accessors(chain = true)
+    private RenderCallbackConsumer onRenderCallback;
+
 
     public DCMModel(ModelInfo information) {
         this.information = information;
@@ -65,10 +73,15 @@ public class DCMModel extends EntityModel<Entity> {
 
     }
 
+    @Deprecated
     public void renderBoxes(MatrixStack stack, int light, ResourceLocation texture) {
         IRenderTypeBuffer.Impl buffer = Minecraft.getInstance().renderBuffers().bufferSource();
         this.renderToBuffer(stack, buffer.getBuffer(this.renderType(texture)), light, OverlayTexture.NO_OVERLAY, 1, 1, 1, 1);
         buffer.endBatch();
+    }
+
+    public void renderBoxes(MatrixStack stack, int light, IVertexBuilder buff) {
+        this.renderToBuffer(stack, buff, light, OverlayTexture.NO_OVERLAY, 1, 1, 1, 1);
     }
 
     public void resetAnimations() {
@@ -85,5 +98,9 @@ public class DCMModel extends EntityModel<Entity> {
 
     public DCMModelRenderer getCube(String cubeName) {
         return this.cubeNameMap.get(cubeName);
+    }
+
+    public interface RenderCallbackConsumer {
+        void onFrame(DCMModelRenderer cube, AtomicInteger light, AtomicInteger overlay, AtomicDoubleArray color);
     }
 }

@@ -73,15 +73,14 @@ public class DCMModel extends EntityModel<Entity> {
 
     }
 
-    @Deprecated
-    public void renderBoxes(MatrixStack stack, int light, ResourceLocation texture) {
+    public void renderImmediate(MatrixStack stack, int light, ResourceLocation texture) {
         IRenderTypeBuffer.Impl buffer = Minecraft.getInstance().renderBuffers().bufferSource();
         this.renderToBuffer(stack, buffer.getBuffer(this.renderType(texture)), light, OverlayTexture.NO_OVERLAY, 1, 1, 1, 1);
         buffer.endBatch();
     }
 
-    public void renderBoxes(MatrixStack stack, int light, IVertexBuilder buff) {
-        this.renderToBuffer(stack, buff, light, OverlayTexture.NO_OVERLAY, 1, 1, 1, 1);
+    public void renderBoxes(MatrixStack stack, int light, IRenderTypeBuffer buffs, ResourceLocation texture) {
+        this.renderToBuffer(stack, buffs.getBuffer(this.renderType(texture)), light, OverlayTexture.NO_OVERLAY, 1, 1, 1, 1);
     }
 
     public void resetAnimations() {

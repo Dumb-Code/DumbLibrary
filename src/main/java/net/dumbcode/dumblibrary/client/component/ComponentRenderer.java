@@ -20,7 +20,7 @@ public class ComponentRenderer<E extends Entity & ComponentAccess> extends Entit
 
     private final Map<E, RenderComponentContext> contextMap = new MapMaker().weakKeys().makeMap(); //We use MapMaker so we can have weak keys, with identity checks rather than #hashCode checks
 
-    protected ComponentRenderer(EntityRendererManager manager) {
+    public ComponentRenderer(EntityRendererManager manager) {
         super(manager);
     }
 

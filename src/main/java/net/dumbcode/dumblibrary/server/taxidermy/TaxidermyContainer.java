@@ -2,10 +2,12 @@ package net.dumbcode.dumblibrary.server.taxidermy;
 
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.inventory.container.Container;
 import net.minecraft.inventory.container.INamedContainerProvider;
 import net.minecraft.inventory.container.SimpleNamedContainerProvider;
 import net.minecraft.util.text.StringTextComponent;
+import net.minecraftforge.fml.network.NetworkHooks;
 
 public class TaxidermyContainer extends Container {
 
@@ -23,6 +25,10 @@ public class TaxidermyContainer extends Container {
 
     public BaseTaxidermyBlockEntity getBlockEntity() {
         return blockEntity;
+    }
+
+    public static void open(ServerPlayerEntity player, BaseTaxidermyBlockEntity blockEntity) {
+        NetworkHooks.openGui(player, create(blockEntity), blockEntity.getBlockPos());
     }
 
     public static INamedContainerProvider create(BaseTaxidermyBlockEntity blockEntity) {

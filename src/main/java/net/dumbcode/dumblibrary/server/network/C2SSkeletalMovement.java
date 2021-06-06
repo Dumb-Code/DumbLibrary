@@ -15,7 +15,7 @@ import net.minecraftforge.fml.network.PacketDistributor;
 import java.util.function.Supplier;
 
 @AllArgsConstructor
-public class C6SkeletalMovement {
+public class C2SSkeletalMovement {
 
     private final BlockPos pos;
     private final String part;
@@ -23,8 +23,8 @@ public class C6SkeletalMovement {
     private final Vector3f position;
 
 
-    public static C6SkeletalMovement fromBytes(PacketBuffer buf) {
-        return new C6SkeletalMovement(
+    public static C2SSkeletalMovement fromBytes(PacketBuffer buf) {
+        return new C2SSkeletalMovement(
             buf.readBlockPos(),
             buf.readUtf(),
             new Vector3f(buf.readFloat(), buf.readFloat(), buf.readFloat()),
@@ -32,7 +32,7 @@ public class C6SkeletalMovement {
         );
     }
 
-    public static void toBytes(C6SkeletalMovement packet, PacketBuffer buf) {
+    public static void toBytes(C2SSkeletalMovement packet, PacketBuffer buf) {
         buf.writeBlockPos(packet.pos);
         buf.writeUtf(packet.part);
         buf.writeFloat(packet.rotations.x());
@@ -43,7 +43,7 @@ public class C6SkeletalMovement {
         buf.writeFloat(packet.position.z());
     }
 
-    public static void handle(C6SkeletalMovement message, Supplier<NetworkEvent.Context> supplier) {
+    public static void handle(C2SSkeletalMovement message, Supplier<NetworkEvent.Context> supplier) {
         NetworkEvent.Context context = supplier.get();
         context.enqueueWork(() -> {
             World world = NetworkUtils.getPlayer(supplier).getCommandSenderWorld();
@@ -52,7 +52,7 @@ public class C6SkeletalMovement {
                 BaseTaxidermyBlockEntity builder = (BaseTaxidermyBlockEntity)blockEntity;
                 builder.getHistory().add(new TaxidermyHistory.Record(message.part, new TaxidermyHistory.CubeProps(message.rotations, message.position)));
                 builder.setChanged();
-                DumbLibrary.NETWORK.send(PacketDistributor.DIMENSION.with(world::dimension), new S7HistoryRecord(message.pos, message.part, message.rotations, message.position));
+                DumbLibrary.NETWORK.send(PacketDistributor.DIMENSION.with(world::dimension), new S2CHistoryRecord(message.pos, message.part, message.rotations, message.position));
             }
         });
         context.setPacketHandled(true);

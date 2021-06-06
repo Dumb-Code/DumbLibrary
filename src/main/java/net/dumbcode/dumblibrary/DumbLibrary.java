@@ -87,18 +87,18 @@ public class DumbLibrary {
         bus.post(new RegisterGeneticTypes(DumbRegistries.GENETIC_TYPE_REGISTRY));
         ObjectHolderRegistry.applyObjectHolders();
 
-        NETWORK.registerMessage(0, S0SyncAnimation.class, S0SyncAnimation::toBytes, S0SyncAnimation::fromBytes, S0SyncAnimation::handle);
-        NETWORK.registerMessage(2, S2SyncComponent.class, S2SyncComponent::toBytes, S2SyncComponent::fromBytes, S2SyncComponent::handle);
-        NETWORK.registerMessage(3, S3StopAnimation.class, S3StopAnimation::toBytes, S3StopAnimation::fromBytes, S3StopAnimation::handle);
+        NETWORK.registerMessage(0, S2CSyncAnimation.class, S2CSyncAnimation::toBytes, S2CSyncAnimation::fromBytes, S2CSyncAnimation::handle);
+        NETWORK.registerMessage(2, S2CSyncComponent.class, S2CSyncComponent::toBytes, S2CSyncComponent::fromBytes, S2CSyncComponent::handle);
+        NETWORK.registerMessage(3, S2CStopAnimation.class, S2CStopAnimation::toBytes, S2CStopAnimation::fromBytes, S2CStopAnimation::handle);
 
-        NETWORK.registerMessage(4, C4MoveSelectedSkeletalPart.class, C4MoveSelectedSkeletalPart::toBytes, C4MoveSelectedSkeletalPart::fromBytes, C4MoveSelectedSkeletalPart::handle);
-        NETWORK.registerMessage(5, S5UpdateSkeletalBuilder.class, S5UpdateSkeletalBuilder::toBytes, S5UpdateSkeletalBuilder::fromBytes, S5UpdateSkeletalBuilder::handle);
-        NETWORK.registerMessage(6, C6SkeletalMovement.class, C6SkeletalMovement::toBytes, C6SkeletalMovement::fromBytes, C6SkeletalMovement::handle);
-        NETWORK.registerMessage(7, S7HistoryRecord.class, S7HistoryRecord::toBytes, S7HistoryRecord::fromBytes, S7HistoryRecord::handle);
-        NETWORK.registerMessage(8, C8MoveInHistory.class, C8MoveInHistory::toBytes, C8MoveInHistory::fromBytes, C8MoveInHistory::handle);
-        NETWORK.registerMessage(9, S9UpdateHistoryIndex.class, S9UpdateHistoryIndex::toBytes, S9UpdateHistoryIndex::fromBytes, S9UpdateHistoryIndex::handle);
-        NETWORK.registerMessage(11, S11FullPoseChange.class, S11FullPoseChange::toBytes, S11FullPoseChange::fromBytes, S11FullPoseChange::handle);
-        NETWORK.registerMessage(12, C12FullPoseChange.class, C12FullPoseChange::toBytes, C12FullPoseChange::fromBytes, C12FullPoseChange::handle);
+        NETWORK.registerMessage(4, C2SMoveSelectedSkeletalPart.class, C2SMoveSelectedSkeletalPart::toBytes, C2SMoveSelectedSkeletalPart::fromBytes, C2SMoveSelectedSkeletalPart::handle);
+        NETWORK.registerMessage(5, S2CUpdateSkeletalBuilder.class, S2CUpdateSkeletalBuilder::toBytes, S2CUpdateSkeletalBuilder::fromBytes, S2CUpdateSkeletalBuilder::handle);
+        NETWORK.registerMessage(6, C2SSkeletalMovement.class, C2SSkeletalMovement::toBytes, C2SSkeletalMovement::fromBytes, C2SSkeletalMovement::handle);
+        NETWORK.registerMessage(7, S2CHistoryRecord.class, S2CHistoryRecord::toBytes, S2CHistoryRecord::fromBytes, S2CHistoryRecord::handle);
+        NETWORK.registerMessage(8, C2SMoveInHistory.class, C2SMoveInHistory::toBytes, C2SMoveInHistory::fromBytes, C2SMoveInHistory::handle);
+        NETWORK.registerMessage(9, S2CUpdateHistoryIndex.class, S2CUpdateHistoryIndex::toBytes, S2CUpdateHistoryIndex::fromBytes, S2CUpdateHistoryIndex::handle);
+        NETWORK.registerMessage(11, S2CFullPoseChange.class, S2CFullPoseChange::toBytes, S2CFullPoseChange::fromBytes, S2CFullPoseChange::handle);
+        NETWORK.registerMessage(12, C2SFullPoseChange.class, C2SFullPoseChange::toBytes, C2SFullPoseChange::fromBytes, C2SFullPoseChange::handle);
 
         NETWORK.registerMessage(13, B13SplitNetworkPacket.class, B13SplitNetworkPacket::toBytes, B13SplitNetworkPacket::fromBytes, B13SplitNetworkPacket::handle);
         NETWORK.registerMessage(14, B14ReleaseCollection.class, B14ReleaseCollection::toBytes, B14ReleaseCollection::fromBytes, B14ReleaseCollection::handle);

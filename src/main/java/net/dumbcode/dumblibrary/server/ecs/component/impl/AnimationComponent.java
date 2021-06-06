@@ -13,8 +13,8 @@ import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentTypes;
 import net.dumbcode.dumblibrary.server.ecs.component.FinalizableComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderCallbackComponent;
-import net.dumbcode.dumblibrary.server.network.S0SyncAnimation;
-import net.dumbcode.dumblibrary.server.network.S3StopAnimation;
+import net.dumbcode.dumblibrary.server.network.S2CSyncAnimation;
+import net.dumbcode.dumblibrary.server.network.S2CStopAnimation;
 import net.dumbcode.dumblibrary.server.utils.SidedExecutor;
 import net.dumbcode.studio.animation.info.AnimationEntryData;
 import net.dumbcode.studio.animation.info.AnimationInfo;
@@ -127,8 +127,8 @@ public class AnimationComponent extends EntityComponent implements RenderCallbac
                 ModelComponent component = entity.get(EntityComponentTypes.MODEL).orElseThrow(() -> new IllegalStateException("Animation component needs a model component"));
                 SidedExecutor.getClient(() -> () -> component.getModelCache().getAllCubes(), Collections.emptyList());
             } else {
-                this.startSyncer = (data, channel) -> DumbLibrary.NETWORK.send(PacketDistributor.DIMENSION.with(e.level::dimension), new S0SyncAnimation(e.getId(), data.getAnimation(), channel));
-                this.stopSyncer = channel -> DumbLibrary.NETWORK.send(PacketDistributor.DIMENSION.with(e.level::dimension), new S3StopAnimation(e.getId(), channel));
+                this.startSyncer = (data, channel) -> DumbLibrary.NETWORK.send(PacketDistributor.DIMENSION.with(e.level::dimension), new S2CSyncAnimation(e.getId(), data.getAnimation(), channel));
+                this.stopSyncer = channel -> DumbLibrary.NETWORK.send(PacketDistributor.DIMENSION.with(e.level::dimension), new S2CStopAnimation(e.getId(), channel));
                 Map<String, AnimatedReferenceCube> cubes = DCMUtils.getServersideCubes(entity.get(EntityComponentTypes.MODEL).map(com -> com.getFileLocation().getLocation()).orElse(DCMUtils.MISSING));
             }
         } else {

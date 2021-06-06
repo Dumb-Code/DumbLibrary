@@ -2,7 +2,6 @@ package net.dumbcode.dumblibrary.server.network;
 
 import com.google.common.collect.Lists;
 import lombok.AllArgsConstructor;
-import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.server.taxidermy.BaseTaxidermyBlockEntity;
 import net.dumbcode.dumblibrary.server.taxidermy.TaxidermyHistory;
 import net.minecraft.network.PacketBuffer;
@@ -11,7 +10,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3f;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.network.NetworkEvent;
-import net.minecraftforge.fml.network.PacketDistributor;
 
 import java.util.HashMap;
 import java.util.List;
@@ -19,12 +17,12 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 @AllArgsConstructor
-public class C12FullPoseChange {
+public class S2CFullPoseChange {
 
     private final BlockPos pos;
     private final Map<String, Vector3f> pose;
 
-    public static C12FullPoseChange fromBytes(PacketBuffer buf) {
+    public static S2CFullPoseChange fromBytes(PacketBuffer buf) {
         int count = buf.readInt();
         Map<String, Vector3f> pose = new HashMap<>();
         for (int i = 0; i < count; i++) {
@@ -34,10 +32,10 @@ public class C12FullPoseChange {
             float rz = buf.readFloat();
             pose.put(name, new Vector3f(rx, ry, rz));
         }
-        return new C12FullPoseChange(buf.readBlockPos(), pose);
+        return new S2CFullPoseChange(buf.readBlockPos(), pose);
     }
 
-    public static void toBytes(C12FullPoseChange packet, PacketBuffer buf) {
+    public static void toBytes(S2CFullPoseChange packet, PacketBuffer buf) {
         buf.writeInt(packet.pose.size());
         for (Map.Entry<String, Vector3f> entry : packet.pose.entrySet()) {
             buf.writeUtf(entry.getKey());
@@ -49,7 +47,7 @@ public class C12FullPoseChange {
         buf.writeBlockPos(packet.pos);
     }
 
-    public static void handle(C12FullPoseChange message, Supplier<NetworkEvent.Context> supplier) {
+    public static void handle(S2CFullPoseChange message, Supplier<NetworkEvent.Context> supplier) {
         NetworkEvent.Context context = supplier.get();
         context.enqueueWork(() -> {
             World world = NetworkUtils.getPlayer(supplier).getCommandSenderWorld();
@@ -60,7 +58,6 @@ public class C12FullPoseChange {
 //                message.pose.forEach((s, v) -> records.add(new TaxidermyHistory.Record(s, v)));
                 builder.getHistory().addGroupedRecord(records);
                 builder.setChanged();
-                DumbLibrary.NETWORK.send(PacketDistributor.ALL.noArg(), new S11FullPoseChange(message.pos, message.pose));
             }
         });
         context.setPacketHandled(true);

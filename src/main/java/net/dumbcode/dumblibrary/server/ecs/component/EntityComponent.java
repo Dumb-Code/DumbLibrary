@@ -1,10 +1,9 @@
 package net.dumbcode.dumblibrary.server.ecs.component;
 
-import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
-import net.dumbcode.dumblibrary.server.network.S2SyncComponent;
+import net.dumbcode.dumblibrary.server.network.S2CSyncComponent;
 import net.dumbcode.dumblibrary.server.registry.DumbRegistries;
 import net.dumbcode.dumblibrary.server.utils.TaskScheduler;
 import net.minecraft.entity.Entity;
@@ -85,7 +84,7 @@ public abstract class EntityComponent {
     public void setResync(ComponentAccess access) {
         this.syncer = () -> {
             if(access instanceof Entity && !((Entity) access).level.isClientSide) {
-                DumbLibrary.NETWORK.send(PacketDistributor.DIMENSION.with(() -> ((Entity) access).level.dimension()), new S2SyncComponent(((Entity) access).getId(), this.type, this.serializeSync()));
+                DumbLibrary.NETWORK.send(PacketDistributor.DIMENSION.with(() -> ((Entity) access).level.dimension()), new S2CSyncComponent(((Entity) access).getId(), this.type, this.serializeSync()));
             }
         };
     }

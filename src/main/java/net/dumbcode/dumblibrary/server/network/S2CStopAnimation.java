@@ -11,22 +11,22 @@ import net.minecraftforge.fml.network.NetworkEvent;
 import java.util.function.Supplier;
 
 @AllArgsConstructor
-public class S3StopAnimation {
+public class S2CStopAnimation {
 
     private final int entityid;
     private final int channel;
 
 
-    public static S3StopAnimation fromBytes(PacketBuffer buf) {
-        return new S3StopAnimation(buf.readInt(), buf.readInt());
+    public static S2CStopAnimation fromBytes(PacketBuffer buf) {
+        return new S2CStopAnimation(buf.readInt(), buf.readInt());
     }
 
-    public static void toBytes(S3StopAnimation packet, PacketBuffer buf) {
+    public static void toBytes(S2CStopAnimation packet, PacketBuffer buf) {
         buf.writeInt(packet.entityid);
         buf.writeInt(packet.channel);
     }
 
-    public static void handle(S3StopAnimation message, Supplier<NetworkEvent.Context> supplier) {
+    public static void handle(S2CStopAnimation message, Supplier<NetworkEvent.Context> supplier) {
         NetworkEvent.Context context = supplier.get();
         context.enqueueWork(() -> {
             World world = NetworkUtils.getPlayer(supplier).getCommandSenderWorld();

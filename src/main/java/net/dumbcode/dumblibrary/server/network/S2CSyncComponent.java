@@ -11,28 +11,28 @@ import net.minecraftforge.fml.network.NetworkEvent;
 import java.util.function.Supplier;
 
 @AllArgsConstructor
-public class S2SyncComponent {
+public class S2CSyncComponent {
 
     private final int entityid;
     private final EntityComponentType<?, ?> type;
     private final byte[] data;
 
 
-    public static S2SyncComponent fromBytes(PacketBuffer buf) {
-        return new S2SyncComponent(
+    public static S2CSyncComponent fromBytes(PacketBuffer buf) {
+        return new S2CSyncComponent(
             buf.readInt(),
             buf.readRegistryIdSafe(EntityComponentType.class),
             buf.readByteArray()
         );
     }
 
-    public static void toBytes(S2SyncComponent packet, PacketBuffer buf) {
+    public static void toBytes(S2CSyncComponent packet, PacketBuffer buf) {
         buf.writeInt(packet.entityid);
         buf.writeRegistryId(packet.type);
         buf.writeByteArray(packet.data);
     }
 
-    public static void handle(S2SyncComponent message, Supplier<NetworkEvent.Context> supplier) {
+    public static void handle(S2CSyncComponent message, Supplier<NetworkEvent.Context> supplier) {
         NetworkEvent.Context context = supplier.get();
         context.enqueueWork(() -> {
             Entity entity = NetworkUtils.getPlayer(supplier).getCommandSenderWorld().getEntity(message.entityid);

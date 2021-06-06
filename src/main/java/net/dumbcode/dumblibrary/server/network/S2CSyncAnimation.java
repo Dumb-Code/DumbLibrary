@@ -11,23 +11,23 @@ import net.minecraftforge.fml.network.NetworkEvent;
 import java.util.function.Supplier;
 
 @AllArgsConstructor
-public class S0SyncAnimation {
+public class S2CSyncAnimation {
 
     private int entityid;
     private Animation entry;
     private int channel;
 
-    public static S0SyncAnimation fromBytes(PacketBuffer buf) {
-        return new S0SyncAnimation(buf.readInt(), new Animation(buf.readResourceLocation()), buf.readInt());
+    public static S2CSyncAnimation fromBytes(PacketBuffer buf) {
+        return new S2CSyncAnimation(buf.readInt(), new Animation(buf.readResourceLocation()), buf.readInt());
     }
 
-    public static void toBytes(S0SyncAnimation packet, PacketBuffer buf) {
+    public static void toBytes(S2CSyncAnimation packet, PacketBuffer buf) {
         buf.writeInt(packet.entityid);
         buf.writeResourceLocation(packet.entry.getKey());
         buf.writeInt(packet.channel);
     }
 
-    public static void handle(S0SyncAnimation message, Supplier<NetworkEvent.Context> supplier) {
+    public static void handle(S2CSyncAnimation message, Supplier<NetworkEvent.Context> supplier) {
         NetworkEvent.Context context = supplier.get();
         context.enqueueWork(() -> {
             Entity entity = NetworkUtils.getPlayer(supplier).getCommandSenderWorld().getEntity(message.entityid);

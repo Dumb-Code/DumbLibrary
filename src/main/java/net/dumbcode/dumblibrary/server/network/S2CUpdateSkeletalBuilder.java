@@ -7,15 +7,14 @@ import net.minecraft.network.PacketBuffer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.network.NetworkEvent;
+import sun.jvm.hotspot.opto.Block;
 
 import java.util.function.Supplier;
 
 @AllArgsConstructor
 public class S2CUpdateSkeletalBuilder {
 
-    private final int x;
-    private final int y;
-    private final int z;
+    private final BlockPos pos;
     private final String part;
     private final XYZAxis axis;
     private final int type;
@@ -24,9 +23,7 @@ public class S2CUpdateSkeletalBuilder {
 
     public static S2CUpdateSkeletalBuilder fromBytes(PacketBuffer buf) {
         return new S2CUpdateSkeletalBuilder(
-            buf.readInt(),
-            buf.readInt(),
-            buf.readInt(),
+            buf.readBlockPos(),
             buf.readUtf(),
             XYZAxis.values()[buf.readInt()],
             buf.readByte(),
@@ -35,9 +32,7 @@ public class S2CUpdateSkeletalBuilder {
     }
 
     public static void toBytes(S2CUpdateSkeletalBuilder packet, PacketBuffer buf) {
-        buf.writeInt(packet.x);
-        buf.writeInt(packet.y);
-        buf.writeInt(packet.z);
+        buf.writeBlockPos(packet.pos);
         buf.writeUtf(packet.part);
         buf.writeInt(packet.axis.ordinal());
         buf.writeByte(packet.type);
@@ -47,7 +42,7 @@ public class S2CUpdateSkeletalBuilder {
     public static void handle(S2CUpdateSkeletalBuilder message, Supplier<NetworkEvent.Context> supplier) {
         NetworkEvent.Context context = supplier.get();
         context.enqueueWork(() -> {
-            BlockPos pos = new BlockPos(message.x, message.y, message.z);
+            BlockPos pos = message.pos;
             TileEntity blockEntity = NetworkUtils.getPlayer(supplier).getCommandSenderWorld().getBlockEntity(pos);
             if(blockEntity instanceof BaseTaxidermyBlockEntity) {
                 BaseTaxidermyBlockEntity builder = (BaseTaxidermyBlockEntity)blockEntity;

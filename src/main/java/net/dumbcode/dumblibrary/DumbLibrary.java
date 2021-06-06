@@ -11,13 +11,19 @@ import net.dumbcode.dumblibrary.server.network.*;
 import net.dumbcode.dumblibrary.server.registry.DumbRegistries;
 import net.dumbcode.dumblibrary.server.registry.DumbRegistryHandler;
 import net.dumbcode.dumblibrary.server.registry.RegisterGeneticTypes;
+import net.dumbcode.dumblibrary.server.taxidermy.BaseTaxidermyBlockEntity;
+import net.dumbcode.dumblibrary.server.taxidermy.TaxidermyContainer;
 import net.dumbcode.dumblibrary.server.utils.InjectedUtils;
 import net.dumbcode.dumblibrary.server.utils.MouseUtils;
 import net.dumbcode.dumblibrary.server.utils.VoidStorage;
 import net.dumbcode.studio.model.ModelMirror;
 import net.dumbcode.studio.model.RotationOrder;
+import net.minecraft.inventory.container.Container;
+import net.minecraft.inventory.container.ContainerType;
 import net.minecraft.item.Item;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
@@ -27,6 +33,7 @@ import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.network.IContainerFactory;
 import net.minecraftforge.fml.network.NetworkRegistry;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
 import net.minecraftforge.registries.DeferredRegister;
@@ -34,6 +41,8 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.ObjectHolderRegistry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.util.function.Supplier;
 
 @Mod(DumbLibrary.MODID)
 @Mod.EventBusSubscriber(modid = DumbLibrary.MODID)
@@ -44,8 +53,19 @@ public class DumbLibrary {
 
     private static final Logger logger = LogManager.getLogger(MODID);
 
-    private static final DeferredRegister<Item> DR = DeferredRegister.create(ForgeRegistries.ITEMS, MODID);
-    public static final RegistryObject<Item> COMPONENT_ITEM = DR.register("component_item", () -> new ItemComponent(new Item.Properties()));
+    private static final DeferredRegister<Item> DRI = DeferredRegister.create(ForgeRegistries.ITEMS, MODID);
+    public static final RegistryObject<Item> COMPONENT_ITEM = DRI.register("component_item", () -> new ItemComponent(new Item.Properties()));
+
+    private static final DeferredRegister<ContainerType<?>> DRC = DeferredRegister.create(ForgeRegistries.CONTAINERS, MODID);
+    public static final RegistryObject<ContainerType<TaxidermyContainer>> TAXIDERMY_CONTAINER = DRC.register("taxidermy_container", create((windowId, inv, data) -> {
+        BlockPos blockPos = data.readBlockPos();
+        TileEntity entity = inv.player.level.getBlockEntity(blockPos);
+        if(entity instanceof BaseTaxidermyBlockEntity) {
+            return new TaxidermyContainer((BaseTaxidermyBlockEntity) entity, windowId);
+        }
+        String teClazz = entity == null ? "@null" : entity.getClass().getSimpleName();
+        throw new IllegalStateException("Illegal point, tried to open tracking beacon at " + blockPos + " but found tileentity of " + teClazz);
+    }));
 
     @CapabilityInject(EntityManager.class)
     public static final Capability<EntityManager> ENTITY_MANAGER = InjectedUtils.injected();
@@ -76,7 +96,7 @@ public class DumbLibrary {
         forgeBus.addListener(EntityComponentTypes::registerSystems);
         forgeBus.addListener(MouseUtils::onMouseEvent);
 
-        DR.register(bus);
+        DRI.register(bus);
     }
 
     public void preInit(FMLCommonSetupEvent event) {
@@ -127,5 +147,8 @@ public class DumbLibrary {
         return logger;
     }
 
+    private static <T extends Container> Supplier<ContainerType<T>> create(IContainerFactory<T> factory) {
+        return () -> new ContainerType<>(factory);
+    }
 
 }

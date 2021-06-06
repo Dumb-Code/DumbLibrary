@@ -3,7 +3,9 @@ package net.dumbcode.dumblibrary.server.network;
 import lombok.AllArgsConstructor;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.server.taxidermy.BaseTaxidermyBlockEntity;
+import net.dumbcode.dumblibrary.server.taxidermy.TaxidermyContainer;
 import net.dumbcode.dumblibrary.server.taxidermy.TaxidermyHistory;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
@@ -17,7 +19,6 @@ import java.util.function.Supplier;
 @AllArgsConstructor
 public class C2SSkeletalMovement {
 
-    private final BlockPos pos;
     private final String part;
     private final Vector3f rotations;
     private final Vector3f position;
@@ -25,7 +26,6 @@ public class C2SSkeletalMovement {
 
     public static C2SSkeletalMovement fromBytes(PacketBuffer buf) {
         return new C2SSkeletalMovement(
-            buf.readBlockPos(),
             buf.readUtf(),
             new Vector3f(buf.readFloat(), buf.readFloat(), buf.readFloat()),
             new Vector3f(buf.readFloat(), buf.readFloat(), buf.readFloat())
@@ -33,7 +33,6 @@ public class C2SSkeletalMovement {
     }
 
     public static void toBytes(C2SSkeletalMovement packet, PacketBuffer buf) {
-        buf.writeBlockPos(packet.pos);
         buf.writeUtf(packet.part);
         buf.writeFloat(packet.rotations.x());
         buf.writeFloat(packet.rotations.y());
@@ -46,13 +45,13 @@ public class C2SSkeletalMovement {
     public static void handle(C2SSkeletalMovement message, Supplier<NetworkEvent.Context> supplier) {
         NetworkEvent.Context context = supplier.get();
         context.enqueueWork(() -> {
-            World world = NetworkUtils.getPlayer(supplier).getCommandSenderWorld();
-            TileEntity blockEntity = world.getBlockEntity(message.pos);
-            if(blockEntity instanceof BaseTaxidermyBlockEntity) {
-                BaseTaxidermyBlockEntity builder = (BaseTaxidermyBlockEntity)blockEntity;
+            ServerPlayerEntity sender = context.getSender();
+            World world = sender.level;
+            if(sender.containerMenu instanceof TaxidermyContainer) {
+                BaseTaxidermyBlockEntity builder = ((TaxidermyContainer) sender.containerMenu).getBlockEntity();
                 builder.getHistory().add(new TaxidermyHistory.Record(message.part, new TaxidermyHistory.CubeProps(message.rotations, message.position)));
                 builder.setChanged();
-                DumbLibrary.NETWORK.send(PacketDistributor.DIMENSION.with(world::dimension), new S2CHistoryRecord(message.pos, message.part, message.rotations, message.position));
+                DumbLibrary.NETWORK.send(PacketDistributor.DIMENSION.with(world::dimension), new S2CHistoryRecord(builder.getBlockPos(), message.part, message.rotations, message.position));
             }
         });
         context.setPacketHandled(true);

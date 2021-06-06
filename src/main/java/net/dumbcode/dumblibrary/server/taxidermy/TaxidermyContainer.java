@@ -32,6 +32,6 @@ public class TaxidermyContainer extends Container {
     }
 
     public static INamedContainerProvider create(BaseTaxidermyBlockEntity blockEntity) {
-        return new SimpleNamedContainerProvider((id, inv, p) -> new TaxidermyContainer(blockEntity, id), new StringTextComponent(""))
+        return new SimpleNamedContainerProvider((id, inv, p) -> new TaxidermyContainer(blockEntity, id), new StringTextComponent(""));
     }
 }

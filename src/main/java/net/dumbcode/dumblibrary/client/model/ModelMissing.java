@@ -29,7 +29,7 @@ public class ModelMissing extends DCMModel {
         super.renderToBuffer(stack, buffer, overlay, light, r, g, b, opacity);
     }
 
-    public static DCMModel getInstance() {
-        return INSTANCE;
+    public static <T extends EntityModel<?>> T getInstance() {
+        return (T) INSTANCE;
     }
 }

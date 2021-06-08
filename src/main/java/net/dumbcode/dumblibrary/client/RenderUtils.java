@@ -4,6 +4,10 @@ import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 import net.dumbcode.dumblibrary.server.utils.MathUtils;
 import net.minecraft.client.gui.AbstractGui;
+import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.vector.Matrix3f;
 import net.minecraft.util.math.vector.Matrix4f;
@@ -160,5 +164,27 @@ public class RenderUtils {
         buffer.vertex(pose, right, top, zLevel).uv(maxU, minV).endVertex();
 
 //        Tessellator.getInstance().draw();
+    }
+
+    public static void draw256Texture(MatrixStack stack, int x, int y, int u, int v, int sizeX, int sizeU) {
+        AbstractGui.blit(stack, x, y, 0, u, v, sizeX, sizeU, 256, 256);
+    }
+
+    public static void drawTextureAtlasSprite(MatrixStack stack, double x, double y, TextureAtlasSprite sprite, double width, double height) {
+        drawTextureAtlasSprite(stack, x, y, sprite, width, height, 0F, 0F, 16F, 16F);
+    }
+
+    public static void drawTextureAtlasSprite(MatrixStack stack, double x, double y, TextureAtlasSprite sprite, double width, double height, double minU, double minV, double maxU, double maxV) {
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder bufferbuilder = tessellator.getBuilder();
+
+        Matrix4f pose = stack.last().pose();
+
+        bufferbuilder.begin(7, DefaultVertexFormats.POSITION_TEX);
+        bufferbuilder.vertex(pose, (float) x, (float) (y + height), 0).uv(sprite.getU(minU), sprite.getV(maxV)).endVertex();
+        bufferbuilder.vertex(pose, (float) (x + width), (float) (y + height), 0).uv(sprite.getU(maxU), sprite.getV(maxV)).endVertex();
+        bufferbuilder.vertex(pose, (float) (x + width), (float) y, 0).uv(sprite.getU(maxU), sprite.getV(minV)).endVertex();
+        bufferbuilder.vertex(pose, (float) x, (float) y, 0).uv(sprite.getU(minU), sprite.getV(minV)).endVertex();
+        tessellator.end();
     }
 }

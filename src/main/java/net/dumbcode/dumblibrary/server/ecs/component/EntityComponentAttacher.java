@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 @Getter
 public class EntityComponentAttacher {
@@ -90,7 +91,7 @@ public class EntityComponentAttacher {
         return null;
     }
 
-        @Nonnull
+    @Nonnull
     @SuppressWarnings("unchecked")
     public <T extends EntityComponent, S extends EntityComponentStorage<T>> S getStorage(EntityComponentType<T, S> type) {
         for (ComponentPair<?,?> allPair : this.allPairs) {
@@ -103,11 +104,15 @@ public class EntityComponentAttacher {
         }
         throw new IllegalArgumentException("Requested storage on component " + type.getIdentifier() + " but component was not attached");
     }
+    @Nonnull
+    public <T extends EntityComponent, S extends EntityComponentStorage<T>> S getStorage(Supplier<? extends EntityComponentType<T, ? extends S>> supplier) {
+        return this.getStorage(supplier.get());
+    }
 
     @Nonnull
     @SuppressWarnings("unchecked")
     public <T extends EntityComponent, S extends EntityComponentStorage<T>> S getStorage(EntityComponentType<T, ?> type, EntityComponentType.StorageOverride<T, S> storage) {
-        for (ComponentPair allPair : this.allPairs) {
+        for (ComponentPair<?, ?> allPair : this.allPairs) {
             if (allPair.type == type) {
                 if (allPair.storage == null) {
                     throw new IllegalArgumentException("Requested storage on " + type.getIdentifier() + " but none were found");

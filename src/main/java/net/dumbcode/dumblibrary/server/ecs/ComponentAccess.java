@@ -8,6 +8,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 /**
  * The base interface for accessing the components. This is implemented by ALL objects wanting to use the ecs model.
@@ -26,6 +27,9 @@ public interface ComponentAccess {
      */
     @Nullable
     <T extends EntityComponent, S extends EntityComponentStorage<T>> T getOrNull(EntityComponentType<T, S> type);
+    default <T extends EntityComponent, S extends EntityComponentStorage<T>> T getOrNull(Supplier<? extends EntityComponentType<T, ? extends S>> supplier) {
+        return this.getOrNull(supplier.get());
+    }
 
     /**
      * Gets the specified component, throwing an exception if it cannot be found.
@@ -43,6 +47,10 @@ public interface ComponentAccess {
         }
         return component;
     }
+    @Nonnull
+    default <T extends EntityComponent, S extends EntityComponentStorage<T>> T getOrExcept(Supplier<? extends EntityComponentType<T, ? extends S>> supplier) throws ComponentNotFoundException {
+        return this.getOrExcept(supplier.get());
+    }
 
     /**
      * Gets an optional of the specified component
@@ -54,6 +62,10 @@ public interface ComponentAccess {
     @Nonnull
     default <T extends EntityComponent, S extends EntityComponentStorage<T>> Optional<T> get(EntityComponentType<T, S> type) {
         return Optional.ofNullable(this.getOrNull(type));
+    }
+    @Nonnull
+    default <T extends EntityComponent, S extends EntityComponentStorage<T>> Optional<T> get(Supplier<? extends EntityComponentType<T, ? extends S>> supplier) {
+        return Optional.ofNullable(this.getOrNull(supplier.get()));
     }
 
     /**
@@ -70,6 +82,9 @@ public interface ComponentAccess {
      */
     default boolean contains(EntityComponentType<?, ?> type) {
         return this.getOrNull(type) != null;
+    }
+    default boolean contains(Supplier<? extends EntityComponentType<?, ?>> supplier) {
+        return this.contains(supplier.get());
     }
 
     /**

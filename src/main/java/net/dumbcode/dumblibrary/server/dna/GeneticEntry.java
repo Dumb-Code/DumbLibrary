@@ -12,6 +12,7 @@ import net.minecraft.util.ResourceLocation;
 import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.Random;
+import java.util.function.Supplier;
 
 @Data
 @Accessors(chain = true)
@@ -28,6 +29,9 @@ public class GeneticEntry<T extends GeneticFactoryStorage> {
         this(schemaEntry.getType(), schemaEntry.getIdentifier(), schemaEntry.getStorage(), schemaEntry.getBaseValue(), schemaEntry.getModifierRange());
     }
 
+    public GeneticEntry(Supplier<? extends GeneticType<T>> type, String identifier, T storage, float baseValue, float modifierRange) {
+        this(type.get(), identifier, storage, baseValue, modifierRange);
+    }
     public GeneticEntry(GeneticType<T> type, String identifier, T storage, float baseValue, float modifierRange) {
         this.type = type;
         this.identifier = identifier;

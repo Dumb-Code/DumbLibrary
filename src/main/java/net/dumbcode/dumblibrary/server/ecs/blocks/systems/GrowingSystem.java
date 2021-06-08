@@ -40,7 +40,7 @@ public class GrowingSystem implements EntitySystem {
                             BlockState state = section.getBlockState(randomPos.getX() - x, randomPos.getY() - y, randomPos.getZ() - z);
 
                             BlockPropertyAccess.getAccessFromState(state)
-                                .flatMap(EntityComponentTypes.BLOCK_GROWING)
+                                .flatMap(EntityComponentTypes.BLOCK_GROWING.get())
                                 .ifPresent(component -> this.growComponent(component, component.getBlockProperty(), world, state, randomPos));
 
                         }
@@ -53,7 +53,7 @@ public class GrowingSystem implements EntitySystem {
     @SubscribeEvent
     public void onBoneMealEvent(BonemealEvent event) {
         BlockPropertyAccess.getAccessFromState(event.getBlock())
-                .flatMap(EntityComponentTypes.BLOCK_GROWING)
+                .flatMap(EntityComponentTypes.BLOCK_GROWING.get())
                 .ifPresent(component -> {
                     this.growComponent(component, component.getBlockProperty(), event.getWorld(), event.getBlock(), event.getPos());
                     event.getWorld().blockEvent(event.getPos(), event.getBlock().getBlock(), 2005 , 0);

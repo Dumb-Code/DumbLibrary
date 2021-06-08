@@ -29,11 +29,11 @@ public class GeneticType<T extends GeneticFactoryStorage> extends ForgeRegistryE
         return (Class<GeneticType<?>>) (Class<?>) GeneticType.class;
     }
 
-    public static <E extends EntityComponent> GeneticType<GeneticFieldModifierStorage> simpleFieldModifierType(EntityComponentType<E, ?> componentType, Function<E, ModifiableField> func, String name) {
+    public static <E extends EntityComponent> GeneticType<GeneticFieldModifierStorage> simpleFieldModifierType(EntityComponentType<E, ?> componentType, Function<E, ModifiableField> func) {
         return GeneticType.<GeneticFieldModifierStorage>builder()
             .storage(GeneticFieldModifierStorage::new)
             .onChange(componentType, func, (value, rawValue, field, storage) -> field.addModifer(storage.getRandomUUID(), storage.getOperation(), value*storage.getModifier()))
-            .build(name);
+            .build();
     }
 
     public static <T extends GeneticFactoryStorage> GeneticTypeBuilder<T> builder() {
@@ -72,10 +72,8 @@ public class GeneticType<T extends GeneticFactoryStorage> extends ForgeRegistryE
             return this;
         }
 
-        public GeneticType<T> build(String registryName) {
-            GeneticType<T> type = new GeneticType<>(this.onChange, this.dataHandler, this.storageCreator);
-            type.setRegistryName(registryName);
-            return type;
+        public GeneticType<T> build() {
+            return new GeneticType<>(this.onChange, this.dataHandler, this.storageCreator);
         }
     }
 }

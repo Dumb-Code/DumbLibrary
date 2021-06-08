@@ -7,7 +7,9 @@ import net.minecraft.block.BlockState;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.function.Supplier;
 
 public enum BlockstateManager {
     INSTANCE;
@@ -40,4 +42,8 @@ public enum BlockstateManager {
         return new EntityFamily<>(blockstates.toArray(new BlockState[0]), state -> BlockPropertyAccess.getAccessFromState(state).orElseThrow(NullPointerException::new));
     }
 
+    @SafeVarargs
+    public final EntityFamily<BlockState> resolveFamily(Supplier<? extends EntityComponentType<?, ?>>... types) {
+        return this.resolveFamily(Arrays.stream(types).map(Supplier::get).toArray(EntityComponentType<?, ?>[]::new));
+    }
 }

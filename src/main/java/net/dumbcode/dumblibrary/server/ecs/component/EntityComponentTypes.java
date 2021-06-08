@@ -12,160 +12,41 @@ import net.dumbcode.dumblibrary.server.ecs.system.impl.*;
 import net.dumbcode.dumblibrary.server.utils.InjectedUtils;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ObjectHolder;
 
-@ObjectHolder(DumbLibrary.MODID)
 public class EntityComponentTypes {
-    public static final EntityComponentType<GenderComponent,?> GENDER = InjectedUtils.injected();
-    public static final EntityComponentType<HerdComponent, HerdComponent.Storage> HERD = InjectedUtils.injected();
-    public static final EntityComponentType<AnimationComponent,?> ANIMATION = InjectedUtils.injected();
-    public static final EntityComponentType<ModelComponent, ModelComponent.Storage> MODEL = InjectedUtils.injected();
-    public static final EntityComponentType<RenderAdjustmentsComponent, RenderAdjustmentsComponent.Storage> RENDER_ADJUSTMENTS = InjectedUtils.injected();
-    public static final EntityComponentType<SpeedTrackingComponent, ?> SPEED_TRACKING = InjectedUtils.injected();
-    public static final EntityComponentType<GeneticComponent, GeneticComponent.Storage> GENETICS = InjectedUtils.injected();
-    public static final EntityComponentType<GeneticLayerComponent, GeneticLayerComponent.Storage> GENETIC_LAYER_COLORS = InjectedUtils.injected();
-    public static final EntityComponentType<FlattenedLayerComponent, FlattenedLayerComponent.Storage> FLATTENED_LAYER = InjectedUtils.injected();
-    public static final EntityComponentType<EyesClosedComponent, EyesClosedComponent.Storage> EYES_CLOSED = InjectedUtils.injected();
-    public static final EntityComponentType<BlinkingComponent, BlinkingComponent.Storage> BLINKING = InjectedUtils.injected();
-    public static final EntityComponentType<FamilyComponent, FamilyComponent.Storage> FAMILY = InjectedUtils.injected();
-    public static final EntityComponentType<BreedingComponent, BreedingComponent.Storage> BREEDING = InjectedUtils.injected();
-    public static final EntityComponentType<SleepingComponent, SleepingComponent.Storage> SLEEPING = InjectedUtils.injected();
-    public static final EntityComponentType<CloseProximityAngryComponent, CloseProximityAngryComponent.Storage> CLOSE_PROXIMITY_ANGRY = InjectedUtils.injected();
-    public static final EntityComponentType<SoundStorageComponent, SoundStorageComponent.Storage> SOUND_STORAGE = InjectedUtils.injected();
-    public static final EntityComponentType<IdleActionComponent, IdleActionComponent.Storage> IDLE_ACTION = InjectedUtils.injected();
 
-    public static final EntityComponentType<GrowingComponent, GrowingComponent.Storage> BLOCK_GROWING = InjectedUtils.injected();
-    public static final EntityComponentType<FlowerWorldgenComponent, FlowerWorldgenComponent.Storage> FLOWER_WORLDGEN = InjectedUtils.injected();
-    public static final EntityComponentType<BlockTouchEffectComponent, BlockTouchEffectComponent.Storage> BLOCK_TOUCH_EFFECT = InjectedUtils.injected();
-    public static final EntityComponentType<BlockDropsComponent, BlockDropsComponent.Storage> BLOCK_DROPS = InjectedUtils.injected();
-    public static final EntityComponentType<BlockPlaceableComponent, ?> BLOCK_PLACEABLE = InjectedUtils.injected();
+    public static final DeferredRegister<EntityComponentType<?, ?>> REGISTER = DeferredRegister.create(EntityComponentType.getWildcardType(), DumbLibrary.MODID);
 
-    public static final EntityComponentType<ItemRenderModelComponent, ItemRenderModelComponent.Storage> ITEM_RENDER = InjectedUtils.injected();
-    public static final EntityComponentType<ItemEatenComponent, ItemEatenComponent.Storage> ITEM_EATEN = InjectedUtils.injected();
+    public static final RegistryObject<EntityComponentType<GenderComponent,?>> GENDER = REGISTER.register("gender", () -> SimpleComponentType.of(GenderComponent.class, GenderComponent::new));
+    public static final RegistryObject<EntityComponentType<HerdComponent, HerdComponent.Storage>> HERD = REGISTER.register("herd", () -> SimpleComponentType.of(HerdComponent.class, HerdComponent::new, HerdComponent.Storage::new));
+    public static final RegistryObject<EntityComponentType<AnimationComponent,?>> ANIMATION = REGISTER.register("animation", () -> SimpleComponentType.of(AnimationComponent.class, AnimationComponent::new));
+    public static final RegistryObject<EntityComponentType<ModelComponent, ModelComponent.Storage>> MODEL = REGISTER.register("model", () -> SimpleComponentType.of(ModelComponent.class, ModelComponent::new, ModelComponent.Storage::new));
+    public static final RegistryObject<EntityComponentType<RenderAdjustmentsComponent, RenderAdjustmentsComponent.Storage>> RENDER_ADJUSTMENTS = REGISTER.register("render_adjustments", () -> SimpleComponentType.of(RenderAdjustmentsComponent.class, RenderAdjustmentsComponent::new, RenderAdjustmentsComponent.Storage::new));
+    public static final RegistryObject<EntityComponentType<SpeedTrackingComponent, ?>> SPEED_TRACKING = REGISTER.register("speed_tracking", () -> SimpleComponentType.of(SpeedTrackingComponent.class, SpeedTrackingComponent::new));
+    public static final RegistryObject<EntityComponentType<GeneticComponent, GeneticComponent.Storage>> GENETICS = REGISTER.register("genetics", () -> SimpleComponentType.of(GeneticComponent.class, GeneticComponent::new, GeneticComponent.Storage::new));
+    public static final RegistryObject<EntityComponentType<GeneticLayerComponent, GeneticLayerComponent.Storage>> GENETIC_LAYER_COLORS = REGISTER.register("genetic_layer_colors", () -> SimpleComponentType.of(GeneticLayerComponent.class, GeneticLayerComponent::new, GeneticLayerComponent.Storage::new));
+    public static final RegistryObject<EntityComponentType<FlattenedLayerComponent, FlattenedLayerComponent.Storage>> FLATTENED_LAYER = REGISTER.register("flattened_layer", () -> SimpleComponentType.of(FlattenedLayerComponent.class, FlattenedLayerComponent::new, FlattenedLayerComponent.Storage::new));
+    public static final RegistryObject<EntityComponentType<EyesClosedComponent, EyesClosedComponent.Storage>> EYES_CLOSED = REGISTER.register("eyes_closed", () -> SimpleComponentType.of(EyesClosedComponent.class, EyesClosedComponent::new, EyesClosedComponent.Storage::new));
+    public static final RegistryObject<EntityComponentType<BlinkingComponent, BlinkingComponent.Storage>> BLINKING = REGISTER.register("blinking", () -> SimpleComponentType.of(BlinkingComponent.class, BlinkingComponent::new, BlinkingComponent.Storage::new));
+    public static final RegistryObject<EntityComponentType<FamilyComponent, FamilyComponent.Storage>> FAMILY = REGISTER.register("family", () -> SimpleComponentType.of(FamilyComponent.class, FamilyComponent::new, FamilyComponent.Storage::new));
+    public static final RegistryObject<EntityComponentType<BreedingComponent, BreedingComponent.Storage>> BREEDING = REGISTER.register("breeding", () -> SimpleComponentType.of(BreedingComponent.class, BreedingComponent::new, BreedingComponent.Storage::new));
+    public static final RegistryObject<EntityComponentType<SleepingComponent, SleepingComponent.Storage>> SLEEPING = REGISTER.register("sleeping", () -> SimpleComponentType.of(SleepingComponent.class, SleepingComponent::new, SleepingComponent.Storage::new));
+    public static final RegistryObject<EntityComponentType<CloseProximityAngryComponent, CloseProximityAngryComponent.Storage>> CLOSE_PROXIMITY_ANGRY = REGISTER.register("close_proximity_angry", () -> SimpleComponentType.of(CloseProximityAngryComponent.class, CloseProximityAngryComponent::new, CloseProximityAngryComponent.Storage::new));
+    public static final RegistryObject<EntityComponentType<SoundStorageComponent, SoundStorageComponent.Storage>> SOUND_STORAGE = REGISTER.register("sound_storage", () -> SimpleComponentType.of(SoundStorageComponent.class, SoundStorageComponent::new, SoundStorageComponent.Storage::new));
+    public static final RegistryObject<EntityComponentType<IdleActionComponent, IdleActionComponent.Storage>> IDLE_ACTION = REGISTER.register("idle_action", () -> SimpleComponentType.of(IdleActionComponent.class, IdleActionComponent::new, IdleActionComponent.Storage::new));
 
-    public static void onRegisterComponents(RegisterComponentsEvent event) {
-        event.getRegistry().registerAll(
-            SimpleComponentType.builder(GenderComponent.class)
-                .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "gender"))
-                .withConstructor(GenderComponent::new)
-                .build(),
-            SimpleComponentType.builder(HerdComponent.class, HerdComponent.Storage.class)
-                .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "herd"))
-                .withStorage(HerdComponent.Storage::new)
-                .withConstructor(HerdComponent::new)
-                .build(),
-            SimpleComponentType.builder(AnimationComponent.class)
-                .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "animation"))
-                .withConstructor(AnimationComponent::new)
-                .build(),
-            SimpleComponentType.builder(ModelComponent.class, ModelComponent.Storage.class)
-                .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "model"))
-                .withConstructor(ModelComponent::new)
-                .withStorage(ModelComponent.Storage::new)
-                .build(),
-            SimpleComponentType.builder(RenderAdjustmentsComponent.class, RenderAdjustmentsComponent.Storage.class)
-                .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "render_adjustments"))
-                .withConstructor(RenderAdjustmentsComponent::new)
-                .withStorage(RenderAdjustmentsComponent.Storage::new)
-                .build(),
-            SimpleComponentType.builder(SpeedTrackingComponent.class)
-                .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "speed_tracking"))
-                .withConstructor(SpeedTrackingComponent::new)
-                .build(),
-            SimpleComponentType.builder(GeneticComponent.class, GeneticComponent.Storage.class)
-                .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "genetics"))
-                .withConstructor(GeneticComponent::new)
-                .withStorage(GeneticComponent.Storage::new)
-                .build(),
-            SimpleComponentType.builder(GeneticLayerComponent.class, GeneticLayerComponent.Storage.class)
-                .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "genetic_layer_colors"))
-                .withConstructor(GeneticLayerComponent::new)
-                .withStorage(GeneticLayerComponent.Storage::new)
-                .build(),
-            SimpleComponentType.builder(FlattenedLayerComponent.class, FlattenedLayerComponent.Storage.class)
-                .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "flattened_layer"))
-                .withConstructor(FlattenedLayerComponent::new)
-                .withStorage(FlattenedLayerComponent.Storage::new)
-                .build(),
-            SimpleComponentType.builder(EyesClosedComponent.class, EyesClosedComponent.Storage.class)
-                .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "eyes_closed"))
-                .withConstructor(EyesClosedComponent::new)
-                .withStorage(EyesClosedComponent.Storage::new)
-                .build(),
-            SimpleComponentType.builder(BlinkingComponent.class, BlinkingComponent.Storage.class)
-                .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "blinking"))
-                .withConstructor(BlinkingComponent::new)
-                .withStorage(BlinkingComponent.Storage::new)
-                .build(),
-            SimpleComponentType.builder(FamilyComponent.class, FamilyComponent.Storage.class)
-                .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "family"))
-                .withConstructor(FamilyComponent::new)
-                .withStorage(FamilyComponent.Storage::new)
-                .build(),
-            SimpleComponentType.builder(BreedingComponent.class, BreedingComponent.Storage.class)
-                .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "breeding"))
-                .withConstructor(BreedingComponent::new)
-                .withStorage(BreedingComponent.Storage::new)
-                .build(),
-            SimpleComponentType.builder(SleepingComponent.class, SleepingComponent.Storage.class)
-                .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "sleeping"))
-                .withConstructor(SleepingComponent::new)
-                .withStorage(SleepingComponent.Storage::new)
-                .build(),
-            SimpleComponentType.builder(CloseProximityAngryComponent.class, CloseProximityAngryComponent.Storage.class)
-                .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "close_proximity_angry"))
-                .withConstructor(CloseProximityAngryComponent::new)
-                .withStorage(CloseProximityAngryComponent.Storage::new)
-                .build(),
-            SimpleComponentType.builder(SoundStorageComponent.class, SoundStorageComponent.Storage.class)
-                .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "sound_storage"))
-                .withConstructor(SoundStorageComponent::new)
-                .withStorage(SoundStorageComponent.Storage::new)
-                .build(),
-            SimpleComponentType.builder(IdleActionComponent.class, IdleActionComponent.Storage.class)
-                .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "idle_action"))
-                .withConstructor(IdleActionComponent::new)
-                .withStorage(IdleActionComponent.Storage::new)
-                .build(),
+    public static final RegistryObject<EntityComponentType<GrowingComponent, GrowingComponent.Storage>> BLOCK_GROWING = REGISTER.register("block_growing", () -> SimpleComponentType.of(GrowingComponent.class, GrowingComponent::new, GrowingComponent.Storage::new));
+    public static final RegistryObject<EntityComponentType<FlowerWorldgenComponent, FlowerWorldgenComponent.Storage>> FLOWER_WORLDGEN = REGISTER.register("flower_worldgen", () -> SimpleComponentType.of(FlowerWorldgenComponent.class, FlowerWorldgenComponent::new, FlowerWorldgenComponent.Storage::new ));
+    public static final RegistryObject<EntityComponentType<BlockTouchEffectComponent, BlockTouchEffectComponent.Storage>> BLOCK_TOUCH_EFFECT = REGISTER.register("block_touch_effect", () -> SimpleComponentType.of(BlockTouchEffectComponent.class, BlockTouchEffectComponent::new, BlockTouchEffectComponent.Storage::new));
+    public static final RegistryObject<EntityComponentType<BlockDropsComponent, BlockDropsComponent.Storage>> BLOCK_DROPS = REGISTER.register("block_drops", () -> SimpleComponentType.of(BlockDropsComponent.class, BlockDropsComponent::new, BlockDropsComponent.Storage::new));
+    public static final RegistryObject<EntityComponentType<BlockPlaceableComponent, ?>> BLOCK_PLACEABLE = REGISTER.register("block_placeable", () -> SimpleComponentType.of(BlockPlaceableComponent.class, BlockPlaceableComponent::new));
 
-            SimpleComponentType.builder(GrowingComponent.class, GrowingComponent.Storage.class)
-                .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "block_growing"))
-                .withConstructor(GrowingComponent::new)
-                .withStorage(GrowingComponent.Storage::new)
-                .build(),
-            SimpleComponentType.builder(FlowerWorldgenComponent.class, FlowerWorldgenComponent.Storage.class)
-                .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "flower_worldgen"))
-                .withConstructor(FlowerWorldgenComponent::new)
-                .withStorage(FlowerWorldgenComponent.Storage::new)
-                .build(),
-            SimpleComponentType.builder(BlockTouchEffectComponent.class, BlockTouchEffectComponent.Storage.class)
-                .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "block_touch_effect"))
-                .withConstructor(BlockTouchEffectComponent::new)
-                .withStorage(BlockTouchEffectComponent.Storage::new)
-                .build(),
-            SimpleComponentType.builder(BlockDropsComponent.class, BlockDropsComponent.Storage.class)
-                .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "block_drops"))
-                .withConstructor(BlockDropsComponent::new)
-                .withStorage(BlockDropsComponent.Storage::new)
-                .build(),
-            SimpleComponentType.builder(BlockPlaceableComponent.class)
-                .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "block_placeable"))
-                .withConstructor(BlockPlaceableComponent::new)
-                .build(),
-
-            SimpleComponentType.builder(ItemRenderModelComponent.class, ItemRenderModelComponent.Storage.class)
-                .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "item_render"))
-                .withConstructor(ItemRenderModelComponent::new)
-                .withStorage(ItemRenderModelComponent.Storage::new)
-                .build(),
-            SimpleComponentType.builder(ItemEatenComponent.class, ItemEatenComponent.Storage.class)
-                .withIdentifier(new ResourceLocation(DumbLibrary.MODID, "item_eaten"))
-                .withConstructor(ItemEatenComponent::new)
-                .withStorage(ItemEatenComponent.Storage::new)
-                .build()
-        );
-    }
+    public static final RegistryObject<EntityComponentType<ItemRenderModelComponent, ItemRenderModelComponent.Storage>> ITEM_RENDER = REGISTER.register("item_render", () -> SimpleComponentType.of(ItemRenderModelComponent.class, ItemRenderModelComponent::new, ItemRenderModelComponent.Storage::new));
+    public static final RegistryObject<EntityComponentType<ItemEatenComponent, ItemEatenComponent.Storage>> ITEM_EATEN = REGISTER.register("item_eaten", () -> SimpleComponentType.of(ItemEatenComponent.class, ItemEatenComponent::new, ItemEatenComponent.Storage::new));
 
     public static void registerSystems(RegisterSystemsEvent event) {
         event.registerSystem(new HerdSystem());

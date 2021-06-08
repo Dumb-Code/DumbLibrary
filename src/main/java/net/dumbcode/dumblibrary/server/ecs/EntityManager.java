@@ -20,10 +20,12 @@ import net.minecraftforge.fml.common.Mod;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.function.Supplier;
 
 @Mod.EventBusSubscriber(modid = DumbLibrary.MODID)
-public interface EntityManager extends ICapabilityProvider {
+public abstract class EntityManager implements ICapabilityProvider {
 
     @SubscribeEvent
     static void onAttachWorldCapabilities(AttachCapabilitiesEvent<World> event) {
@@ -46,15 +48,21 @@ public interface EntityManager extends ICapabilityProvider {
         }
     }
 
-    void updateSystems(World world);
+    public abstract void updateSystems(World world);
 
-    void addEntity(Entity entity);
+    public abstract void addEntity(Entity entity);
 
-    void removeEntity(Entity entity);
+    public abstract void removeEntity(Entity entity);
 
-    EntityFamily<Entity> resolveFamily(EntityComponentType<?, ?>... types);
+    public abstract EntityFamily<Entity> resolveFamily(EntityComponentType<?, ?>... types);
 
-    class Impl implements EntityManager {
+    @SafeVarargs
+    public final EntityFamily<Entity> resolveFamily(Supplier<? extends EntityComponentType<?, ?>>... types) {
+        return this.resolveFamily(Arrays.stream(types).map(Supplier::get).toArray(EntityComponentType<?, ?>[]::new));
+    }
+
+
+    public static class Impl extends EntityManager {
 
         private final LazyOptional<EntityManager> thiz = LazyOptional.of(() -> this);
 

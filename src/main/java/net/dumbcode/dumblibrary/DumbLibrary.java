@@ -90,22 +90,20 @@ public class DumbLibrary {
         bus.addListener(BakedModelResolver::onModelBake);
         bus.addListener(this::preInit);
         bus.addListener(DumbRegistryHandler::onRegisteryRegister);
-        bus.addListener(EntityComponentTypes::onRegisterComponents);
 
-        forgeBus.addListener(GeneticTypes::onRegisterGenetics);
         forgeBus.addListener(EntityComponentTypes::registerSystems);
         forgeBus.addListener(MouseUtils::onMouseEvent);
 
         DRI.register(bus);
+        EntityComponentTypes.REGISTER.register(bus);
+        GeneticTypes.REGISTER.register(bus);
     }
 
     public void preInit(FMLCommonSetupEvent event) {
         IEventBus bus = MinecraftForge.EVENT_BUS;
-
-        ObjectHolderRegistry.applyObjectHolders();
         bus.post(new RegisterStoragesEvent());
-        bus.post(new RegisterGeneticTypes(DumbRegistries.GENETIC_TYPE_REGISTRY));
-        ObjectHolderRegistry.applyObjectHolders();
+
+//        bus.post(new RegisterGeneticTypes(DumbRegistries.GENETIC_TYPE_REGISTRY));
 
         NETWORK.registerMessage(0, S2CSyncAnimation.class, S2CSyncAnimation::toBytes, S2CSyncAnimation::fromBytes, S2CSyncAnimation::handle);
         NETWORK.registerMessage(2, S2CSyncComponent.class, S2CSyncComponent::toBytes, S2CSyncComponent::fromBytes, S2CSyncComponent::handle);

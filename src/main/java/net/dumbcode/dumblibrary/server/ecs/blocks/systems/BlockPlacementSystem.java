@@ -23,7 +23,7 @@ public class BlockPlacementSystem implements EntitySystem {
             );
             BlockState placement = item.getBlock().getStateForPlacement(context);
             BlockPropertyAccess.getAccessFromState(placement)
-                    .flatMap(EntityComponentTypes.BLOCK_PLACEABLE)
+                    .flatMap(EntityComponentTypes.BLOCK_PLACEABLE.get())
                     .filter(c -> !c.getPredicate().canPlace(event.getWorld(), event.getPos().relative(event.getFace()), placement))
                     .ifPresent(c -> {
                         event.setCancellationResult(ActionResultType.FAIL);

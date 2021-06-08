@@ -5,6 +5,7 @@ import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentType;
 
 import java.lang.reflect.Array;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class EntityFamily<E> {
     private final E[] matchedEntities;
@@ -23,8 +24,15 @@ public class EntityFamily<E> {
     public <T extends EntityComponent> T[] populateBuffer(EntityComponentType<T, ?> type) {
         return this.populateBuffer(type, null);
     }
+    public <T extends EntityComponent> T[] populateBuffer(Supplier<? extends EntityComponentType<T, ?>> type) {
+        return this.populateBuffer(type.get());
+    }
 
-    @SuppressWarnings("unchecked")
+    public <T extends EntityComponent> T[] populateBuffer(Supplier<? extends EntityComponentType<T, ?>> type, T[] buffer) {
+        return this.populateBuffer(type.get(), buffer);
+    }
+
+        @SuppressWarnings("unchecked")
     public <T extends EntityComponent> T[] populateBuffer(EntityComponentType<T, ?> type, T[] buffer) {
         if (buffer == null || buffer.length != this.matchedEntities.length) {
             buffer = (T[]) Array.newInstance(type.getType(), this.matchedEntities.length);

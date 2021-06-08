@@ -18,12 +18,12 @@ public class ItemEatenSystem implements EntitySystem {
 
     @SubscribeEvent
     public void onItemDuration(UseItemEvent.Duration event) {
-        ItemCompoundAccess.getAccess(event.getStack()).flatMap(EntityComponentTypes.ITEM_EATEN).ifPresent(c -> event.setDuration(c.getDuration()));
+        ItemCompoundAccess.getAccess(event.getStack()).flatMap(EntityComponentTypes.ITEM_EATEN.get()).ifPresent(c -> event.setDuration(c.getDuration()));
     }
 
     @SubscribeEvent
     public void onItemAction(UseItemEvent.Action event) {
-        ItemCompoundAccess.getAccess(event.getStack()).flatMap(EntityComponentTypes.ITEM_EATEN).ifPresent(c -> event.setAction(UseAction.EAT));
+        ItemCompoundAccess.getAccess(event.getStack()).flatMap(EntityComponentTypes.ITEM_EATEN.get()).ifPresent(c -> event.setAction(UseAction.EAT));
     }
 
     @SubscribeEvent
@@ -33,7 +33,7 @@ public class ItemEatenSystem implements EntitySystem {
 
         ItemStack itemstack = player.getItemInHand(hand);
 
-        ItemCompoundAccess.getAccess(itemstack).flatMap(EntityComponentTypes.ITEM_EATEN).ifPresent(c -> {
+        ItemCompoundAccess.getAccess(itemstack).flatMap(EntityComponentTypes.ITEM_EATEN.get()).ifPresent(c -> {
             if (player.canEat(c.isIgnoreHunger())) {
                 player.startUsingItem(hand);
                 event.setCancellationResult(ActionResultType.SUCCESS);

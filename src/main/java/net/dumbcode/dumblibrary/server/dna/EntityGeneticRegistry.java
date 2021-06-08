@@ -3,8 +3,7 @@ package net.dumbcode.dumblibrary.server.dna;
 import lombok.Value;
 import net.dumbcode.dumblibrary.server.attributes.ModOp;
 import net.dumbcode.dumblibrary.server.utils.GeneticUtils;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.passive.BatEntity;
+import net.minecraft.entity.EntityType;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,26 +13,26 @@ import java.util.Map;
 public enum EntityGeneticRegistry {
     INSTANCE;
 
-    private final Map<Class<? extends Entity>, List<Entry<?>>> entityEntryList = new HashMap<>();
+    private final Map<EntityType<?>, List<Entry<?>>> entityEntryList = new HashMap<>();
 
     EntityGeneticRegistry() {
-        register(BatEntity.class, GeneticTypes.SIZE, new GeneticFieldModifierStorage().setOperation(ModOp.MULTIPLY_BASE_THEN_ADD), -0.25F);
-        registerTargetTint(BatEntity.class, 0x1C1912);
+        register(EntityType.BAT, GeneticTypes.SIZE.get(), new GeneticFieldModifierStorage().setOperation(ModOp.MULTIPLY_BASE_THEN_ADD), -0.25F);
+        registerTargetTint(EntityType.BAT, 0x1C1912);
     }
 
-    public <S extends GeneticFactoryStorage> void register(Class<? extends Entity> clazz, GeneticType<S> type, float value) {
-        this.register(clazz, type, type.getStorage().get(), value);
+    public <S extends GeneticFactoryStorage> void register(EntityType<?> entityType, GeneticType<S> type, float value) {
+        this.register(entityType, type, type.getStorage().get(), value);
     }
 
-    public <S extends GeneticFactoryStorage> void register(Class<? extends Entity> clazz, GeneticType<S> type, S storage, float value) {
-        this.entityEntryList.computeIfAbsent(clazz, c -> new ArrayList<>()).add(new Entry<>(type, storage, value));
+    public <S extends GeneticFactoryStorage> void register(EntityType<?> entityType, GeneticType<S> type, S storage, float value) {
+        this.entityEntryList.computeIfAbsent(entityType, c -> new ArrayList<>()).add(new Entry<>(type, storage, value));
     }
 
-    public void registerTargetTint(Class<? extends Entity> clazz, int color) {
+    public void registerTargetTint(EntityType<?> entityType, int color) {
         int r = (color >> 16) & 0xFF;
         int g = (color >> 8) & 0xFF;
         int b = color & 0xFF;
-        this.register(clazz, GeneticTypes.OVERALL_TINT,
+        this.register(entityType, GeneticTypes.OVERALL_TINT.get(),
             new GeneticTypeOverallTintStorage().setTintType(GeneticTypeOverallTintStorage.TintType.TARGET),
             GeneticUtils.encode3BitColor(r/255F, g/255F, b/255F)
         );

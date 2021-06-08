@@ -14,6 +14,6 @@ public class EntityStorageOverrides {
 
     @SubscribeEvent
     public static void onRegisterStorages(RegisterStoragesEvent event) {
-        PLANT_PLACEABLE = event.register(EntityComponentTypes.BLOCK_PLACEABLE, "plant_placeable", FlowerBlockPlaceableStorage::new);
+        PLANT_PLACEABLE = event.register(EntityComponentTypes.BLOCK_PLACEABLE.get(), "plant_placeable", FlowerBlockPlaceableStorage::new);
     }
 }

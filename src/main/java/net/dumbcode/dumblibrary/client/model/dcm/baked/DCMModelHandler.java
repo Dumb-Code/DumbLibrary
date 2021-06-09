@@ -25,7 +25,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
- * The model handler for loading .tbl models
+ * The model handler for loading .dcm models
  */
 public enum DCMModelHandler implements IModelLoader<DCMModelGeometry> {
     INSTANCE;

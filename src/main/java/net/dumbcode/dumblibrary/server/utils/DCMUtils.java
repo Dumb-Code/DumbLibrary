@@ -32,8 +32,8 @@ public class DCMUtils {
     public static final ResourceLocation MISSING = new ResourceLocation(DumbLibrary.MODID, "nomodel");
 
     public static Map<String, AnimatedReferenceCube> getServersideCubes(ResourceLocation location) {
-        if (!location.getPath().endsWith(".tbl")) {
-            location = new ResourceLocation(location.getNamespace(), location.getPath() + ".tbl");
+        if (!location.getPath().endsWith(".dcm")) {
+            location = new ResourceLocation(location.getNamespace(), location.getPath() + ".dcm");
         }
 
         Map<String, AnimatedReferenceCube> map = Maps.newHashMap();
@@ -59,8 +59,8 @@ public class DCMUtils {
         if(MISSING.equals(location)) {
             return MissingModelInfo.MISSING;
         }
-        if (!location.getPath().endsWith(".tbl")) {
-            location = new ResourceLocation(location.getNamespace(), location.getPath() + ".tbl");
+        if (!location.getPath().endsWith(".dcm")) {
+            location = new ResourceLocation(location.getNamespace(), location.getPath() + ".dcm");
         }
         try {
             return StreamUtils.openStream(location, DCMUtils::getModelInformation);

@@ -12,7 +12,7 @@ public interface GuiConstants {
      */
     int NICE_WHITE = 0xFFF0F0F0;
 
-    ResourceLocation ROTATION_RING_LOCATION = new ResourceLocation(DumbLibrary.MODID, "models/misc/rotation_ring.tbl");
+    ResourceLocation ROTATION_RING_LOCATION = new ResourceLocation(DumbLibrary.MODID, "models/misc/rotation_ring.dcm");
 
     TranslationTextComponent LEFT_CLICK_TEXT = new TranslationTextComponent(DumbLibrary.MODID+".gui.controls.left_click");
     TranslationTextComponent CONTROLS_TEXT = new TranslationTextComponent(DumbLibrary.MODID+".gui.controls");

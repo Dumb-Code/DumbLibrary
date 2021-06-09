@@ -15,7 +15,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * The baked model representing the .tbl model. Simply just holds the list of quads along with the other necessary data
+ * The baked model representing the .dcm model. Simply just holds the list of quads along with the other necessary data
  *
  * @author Wyn Price
  */

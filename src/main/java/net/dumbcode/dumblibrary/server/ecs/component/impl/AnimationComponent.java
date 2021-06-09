@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.Value;
 import net.dumbcode.dumblibrary.DumbLibrary;
+import net.dumbcode.dumblibrary.client.model.dcm.DCMModelRenderer;
 import net.dumbcode.dumblibrary.server.animation.AnimatedReferenceCube;
 import net.dumbcode.dumblibrary.server.animation.Animation;
 import net.dumbcode.dumblibrary.server.animation.AnimationContainer;
@@ -21,6 +22,8 @@ import net.dumbcode.studio.animation.info.AnimationInfo;
 import net.dumbcode.studio.animation.instance.AnimatedCube;
 import net.dumbcode.studio.animation.instance.ModelAnimationHandler;
 import net.minecraft.entity.Entity;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.network.PacketDistributor;
 
 import javax.annotation.Nullable;
@@ -39,7 +42,7 @@ public class AnimationComponent extends EntityComponent implements RenderCallbac
     private BiConsumer<AnimationLayer, Integer> startSyncer;
     private IntConsumer stopSyncer;
 
-    private Iterable<? extends AnimatedCube> modelCubes;
+    private Iterable<? extends AnimatedCube> modelCubes = Collections.emptyList();
 
     /**
      * Returns whether a channel is active.
@@ -84,7 +87,9 @@ public class AnimationComponent extends EntityComponent implements RenderCallbac
         if(channel >= 0) {
             this.layers[channel] = layer;
         }
-        this.startSyncer.accept(layer, channel);
+        if(this.startSyncer != null) {
+            this.startSyncer.accept(layer, channel);
+        }
 
         return entry;
     }
@@ -94,18 +99,15 @@ public class AnimationComponent extends EntityComponent implements RenderCallbac
         if(id != null) {
             this.animationHandler.markRemoved(id);
             this.layers[channel] = null;
-            this.stopSyncer.accept(channel);
+            if(this.stopSyncer != null) {
+                this.stopSyncer.accept(channel);
+            }
         }
     }
 
     public void stopAll() {
         Arrays.fill(this.layers, null);
         this.animationHandler.markAllRemoved();
-    }
-
-    @Deprecated
-    public boolean isReadyForAnimations() {
-        return true;
     }
 
     @Override
@@ -125,11 +127,11 @@ public class AnimationComponent extends EntityComponent implements RenderCallbac
             //            }
             if (e.level.isClientSide) {
                 ModelComponent component = entity.get(EntityComponentTypes.MODEL).orElseThrow(() -> new IllegalStateException("Animation component needs a model component"));
-                SidedExecutor.getClient(() -> () -> component.getModelCache().getAllCubes(), Collections.emptyList());
+                this.modelCubes = DistExecutor.unsafeRunForDist(() -> () -> component.getModelCache().getAllCubes(), () -> Collections::emptyList);
             } else {
                 this.startSyncer = (data, channel) -> DumbLibrary.NETWORK.send(PacketDistributor.DIMENSION.with(e.level::dimension), new S2CSyncAnimation(e.getId(), data.getAnimation(), channel));
                 this.stopSyncer = channel -> DumbLibrary.NETWORK.send(PacketDistributor.DIMENSION.with(e.level::dimension), new S2CStopAnimation(e.getId(), channel));
-                Map<String, AnimatedReferenceCube> cubes = DCMUtils.getServersideCubes(entity.get(EntityComponentTypes.MODEL).map(com -> com.getFileLocation().getLocation()).orElse(DCMUtils.MISSING));
+                this.modelCubes = DCMUtils.getServersideCubes(entity.get(EntityComponentTypes.MODEL).map(com -> com.getFileLocation().getLocation()).orElse(DCMUtils.MISSING)).values();
             }
         } else {
             throw new IllegalStateException("Unable to animate non entity. Type " + entity.getClass().getSimpleName());

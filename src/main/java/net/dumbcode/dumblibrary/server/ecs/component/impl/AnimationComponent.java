@@ -1,8 +1,6 @@
 package net.dumbcode.dumblibrary.server.ecs.component.impl;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.Value;
+import lombok.*;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.client.model.dcm.DCMModelRenderer;
 import net.dumbcode.dumblibrary.server.animation.AnimatedReferenceCube;
@@ -55,7 +53,18 @@ public class AnimationComponent extends EntityComponent implements RenderCallbac
 
     @Nullable
     public AnimationInfo getWrap(int channel) {
-        return this.animationHandler.getInfo(this.layers[channel].getUuid());
+        if(this.isChannelActive(channel)) {
+            return this.animationHandler.getInfo(this.layers[channel].getUuid());
+        }
+        return null;
+    }
+
+    public void forceAnimationInfo(int channel, Animation animation) {
+        if(this.isChannelActive(channel)) {
+            AnimationLayer layer = this.layers[channel];
+            layer.setAnimation(animation);
+            this.animationHandler.forceAnimation(this.layers[channel].getUuid(), this.getInfo(animation));
+        }
     }
 
     public Animation getAnimation(int channel) {
@@ -143,9 +152,10 @@ public class AnimationComponent extends EntityComponent implements RenderCallbac
         preRenderCallbacks.add((context, entity, x, y, z, entityYaw, partialTicks) -> this.animationHandler.animate(this.modelCubes, partialTicks));
     }
 
-    @Value
+    @Data
+    @AllArgsConstructor
     private static class AnimationLayer {
-        private final Animation animation;
+        private Animation animation;
         private final UUID uuid;
     }
 }

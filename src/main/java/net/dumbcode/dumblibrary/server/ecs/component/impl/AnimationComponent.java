@@ -48,7 +48,11 @@ public class AnimationComponent extends EntityComponent implements RenderCallbac
      * @return true if an animation is being played, false otherwise.
      */
     public boolean isChannelActive(int channel) {
-        return this.layers[channel] != null && this.animationHandler.isPlaying(this.layers[channel].getUuid());
+        return channel >= 0 && this.layers[channel] != null && this.animationHandler.isPlaying(this.layers[channel].getUuid());
+    }
+
+    public boolean isAnimationPlaying(Animation animation, int channel) {
+        return this.isChannelActive(channel) && this.layers[channel].getAnimation() == animation;
     }
 
     @Nullable

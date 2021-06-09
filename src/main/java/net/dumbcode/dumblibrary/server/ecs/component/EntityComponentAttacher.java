@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Value;
 import lombok.With;
@@ -23,7 +24,7 @@ import java.util.function.Supplier;
 
 @Getter
 public class EntityComponentAttacher {
-    private final List<ComponentPair> allPairs = Lists.newArrayList();
+    private final List<ComponentPair<?, ?>> allPairs = Lists.newArrayList();
     private final ConstructConfiguration defaultConfig = new ConstructConfiguration().withDefaultTypes(true);
 
     public <T extends EntityComponent, S extends EntityComponentStorage<T>> S addComponent(EntityComponentType<T, S> type) {
@@ -39,7 +40,7 @@ public class EntityComponentAttacher {
     }
 
     public JsonArray writeToJson(JsonArray jarr) {
-        for (ComponentPair allPair : this.allPairs) {
+        for (ComponentPair<?, ?> allPair : this.allPairs) {
             JsonObject obj = new JsonObject();
             obj.addProperty("name", allPair.getType().getIdentifier().toString());
 
@@ -68,7 +69,7 @@ public class EntityComponentAttacher {
 
                 EntityComponentStorage<?> storage = value.constructStorage();
                 if(!StringUtils.isNullOrEmpty(storageId)) {
-                    Map<String, EntityComponentType.StorageOverride> overrideMap = EntityComponentType.StorageOverride.overrides.get(value);
+                    Map<String, EntityComponentType.StorageOverride<?, ?>> overrideMap = EntityComponentType.StorageOverride.overrides.get(value);
                     if(overrideMap != null && overrideMap.containsKey(storageId)) {
                         storage = overrideMap.get(storageId).construct();
                     }
@@ -139,34 +140,34 @@ public class EntityComponentAttacher {
     @With
     public class ConstructConfiguration {
         private final boolean defaultTypes;
-        private final List<EntityComponentType> addedTypes;
-        private final List<EntityComponentType> removedTypes;
+        private final List<EntityComponentType<?, ?>> addedTypes;
+        private final List<EntityComponentType<?, ?>> removedTypes;
 
         private ConstructConfiguration() {
             this(true, Lists.newArrayList(), Lists.newArrayList());
         }
 
-        public ConstructConfiguration(boolean useDefaultTypes, List<EntityComponentType> addedTypes, List<EntityComponentType> removedTypes) {
+        public ConstructConfiguration(boolean useDefaultTypes, List<EntityComponentType<?, ?>> addedTypes, List<EntityComponentType<?, ?>> removedTypes) {
             this.defaultTypes = useDefaultTypes;
             this.addedTypes = addedTypes;
             this.removedTypes = removedTypes;
         }
 
-        public ConstructConfiguration withType(EntityComponentType... types) {
-            List<EntityComponentType> temp = Lists.newArrayList(this.addedTypes);
+        public ConstructConfiguration withType(EntityComponentType<?, ?>... types) {
+            List<EntityComponentType<?, ?>> temp = Lists.newArrayList(this.addedTypes);
             Collections.addAll(temp, types);
             return new ConstructConfiguration(this.defaultTypes, Collections.unmodifiableList(temp), this.removedTypes);
         }
 
-        public ConstructConfiguration withoutType(EntityComponentType... types) {
-            List<EntityComponentType> temp = Lists.newArrayList(this.removedTypes);
+        public ConstructConfiguration withoutType(EntityComponentType<?, ?>... types) {
+            List<EntityComponentType<?, ?>> temp = Lists.newArrayList(this.removedTypes);
             Collections.addAll(temp, types);
             return new ConstructConfiguration(this.defaultTypes, this.addedTypes, Collections.unmodifiableList(temp));
         }
 
-        public List<ComponentPair> getTypes() {
-            List<ComponentPair> out = Lists.newArrayList();
-            for (ComponentPair pair : EntityComponentAttacher.this.allPairs) {
+        public List<ComponentPair<?, ?>> getTypes() {
+            List<ComponentPair<?, ?>> out = Lists.newArrayList();
+            for (ComponentPair<?, ?> pair : EntityComponentAttacher.this.allPairs) {
                 if(this.defaultTypes && pair.type.defaultAttach() && !this.removedTypes.contains(pair.type)) {
                     out.add(pair);
                 }
@@ -178,7 +179,7 @@ public class EntityComponentAttacher {
         }
 
         public void attachAll(ComponentWriteAccess cwa) {
-            for (ComponentPair type : this.getTypes()) {
+            for (ComponentPair<?, ?> type : this.getTypes()) {
                 type.attach(cwa);
             }
 
@@ -187,7 +188,7 @@ public class EntityComponentAttacher {
         
     }
 
-    @Value
+    @Data
     public static class ComponentPair<T extends EntityComponent, S extends EntityComponentStorage<T>> {
         private final EntityComponentType<T, ?> type;
         @Nullable

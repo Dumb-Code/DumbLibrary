@@ -40,7 +40,7 @@ public class AnimationComponent extends EntityComponent implements RenderCallbac
     private BiConsumer<AnimationLayer, Integer> startSyncer;
     private IntConsumer stopSyncer;
 
-    private Iterable<? extends AnimatedCube> modelCubes = Collections.emptyList();
+    private Iterable<? extends AnimatedReferenceCube> modelCubes = Collections.emptyList();
 
     /**
      * Returns whether a channel is active.
@@ -149,7 +149,15 @@ public class AnimationComponent extends EntityComponent implements RenderCallbac
 
     @Override
     public void addCallbacks(List<SubCallback> preRenderCallbacks, List<MainCallback> renderCallbacks, List<SubCallback> postRenderCallback) {
-        preRenderCallbacks.add((context, entity, x, y, z, entityYaw, partialTicks) -> this.animationHandler.animate(this.modelCubes, partialTicks));
+        preRenderCallbacks.add((context, entity, x, y, z, entityYaw, partialTicks) -> this.animationHandler.animate(this.modelCubes, partialTicks / 20F));
+    }
+
+    public ModelAnimationHandler getAnimationHandler() {
+        return animationHandler;
+    }
+
+    public Iterable<? extends AnimatedReferenceCube> getModelCubes() {
+        return modelCubes;
     }
 
     @Data

@@ -22,12 +22,11 @@ public interface ComponentAccess {
      * Gets the specified component, returns null if it cannot be found.
      * @param type the registered component type to get the component from.
      * @param <T> the component entry type.
-     * @param <S> the component storage type. Should be {@code ?} if no storage exists.
      * @return the component attached to the type {@code type}, or null if there was no component of that type attached.
      */
     @Nullable
-    <T extends EntityComponent, S extends EntityComponentStorage<T>> T getOrNull(EntityComponentType<T, S> type);
-    default <T extends EntityComponent, S extends EntityComponentStorage<T>> T getOrNull(Supplier<? extends EntityComponentType<T, ? extends S>> supplier) {
+    <T extends EntityComponent> T getOrNull(EntityComponentType<T, ?> type);
+    default <T extends EntityComponent> T getOrNull(Supplier<? extends EntityComponentType<T, ?>> supplier) {
         return this.getOrNull(supplier.get());
     }
 
@@ -35,12 +34,11 @@ public interface ComponentAccess {
      * Gets the specified component, throwing an exception if it cannot be found.
      * @param type the registered component type to get the component from.
      * @param <T> the component entry type.
-     * @param <S> the component storage type. Should be {@code ?} if no storage exists.
      * @return the component attached to the type {@code type}
      * @throws ComponentNotFoundException If there is no component attached to the type {@code type}
      */
     @Nonnull
-    default <T extends EntityComponent, S extends EntityComponentStorage<T>> T getOrExcept(EntityComponentType<T, S> type) throws ComponentNotFoundException {
+    default <T extends EntityComponent> T getOrExcept(EntityComponentType<T, ?> type) throws ComponentNotFoundException {
         T component = this.getOrNull(type);
         if (component == null) {
             throw new ComponentNotFoundException(this, type);
@@ -48,7 +46,7 @@ public interface ComponentAccess {
         return component;
     }
     @Nonnull
-    default <T extends EntityComponent, S extends EntityComponentStorage<T>> T getOrExcept(Supplier<? extends EntityComponentType<T, ? extends S>> supplier) throws ComponentNotFoundException {
+    default <T extends EntityComponent> T getOrExcept(Supplier<? extends EntityComponentType<T, ?>> supplier) throws ComponentNotFoundException {
         return this.getOrExcept(supplier.get());
     }
 
@@ -60,11 +58,11 @@ public interface ComponentAccess {
      * @return an optional of the component attached to the type {@code type}. If empty there is no component attached to the type {@code type}.
      */
     @Nonnull
-    default <T extends EntityComponent, S extends EntityComponentStorage<T>> Optional<T> get(EntityComponentType<T, S> type) {
+    default <T extends EntityComponent, S extends EntityComponentStorage<T>> Optional<T> get(EntityComponentType<T, ? extends S> type) {
         return Optional.ofNullable(this.getOrNull(type));
     }
     @Nonnull
-    default <T extends EntityComponent, S extends EntityComponentStorage<T>> Optional<T> get(Supplier<? extends EntityComponentType<T, ? extends S>> supplier) {
+    default <T extends EntityComponent> Optional<T> get(Supplier<? extends EntityComponentType<T, ?>> supplier) {
         return Optional.ofNullable(this.getOrNull(supplier.get()));
     }
 
@@ -83,7 +81,7 @@ public interface ComponentAccess {
     default boolean contains(EntityComponentType<?, ?> type) {
         return this.getOrNull(type) != null;
     }
-    default boolean contains(Supplier<? extends EntityComponentType<?, ?>> supplier) {
+    default <E extends EntityComponentType<?, ?>> boolean contains(Supplier<E> supplier) {
         return this.contains(supplier.get());
     }
 

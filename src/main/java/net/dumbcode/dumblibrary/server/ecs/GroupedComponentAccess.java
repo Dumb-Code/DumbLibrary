@@ -23,7 +23,7 @@ public class GroupedComponentAccess implements ComponentAccess {
 
     @Nullable
     @Override
-    public <T extends EntityComponent, S extends EntityComponentStorage<T>> T getOrNull(EntityComponentType<T, S> type) {
+    public <T extends EntityComponent> T getOrNull(EntityComponentType<T, ?> type) {
         List<T> collected = Arrays.stream(this.accesses)
                 .map(componentAccess -> componentAccess.getOrNull(type))
                 .filter(Objects::nonNull)

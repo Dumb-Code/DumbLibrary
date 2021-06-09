@@ -1,5 +1,6 @@
 package net.dumbcode.dumblibrary.server.ecs.component.impl;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import lombok.Getter;
 import lombok.Setter;
@@ -7,18 +8,22 @@ import lombok.experimental.Accessors;
 import net.dumbcode.dumblibrary.server.attributes.ModifiableField;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
+import net.dumbcode.dumblibrary.server.ecs.component.SaveableEntityStorage;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.GatherEnemiesComponent;
+import net.dumbcode.dumblibrary.server.utils.CollectorUtils;
+import net.dumbcode.dumblibrary.server.utils.StreamUtils;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.JSONUtils;
+import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.registries.ForgeRegistries;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -49,28 +54,11 @@ public class CloseProximityAngryComponent extends EntityComponent implements Gat
     @Getter
     @Accessors(chain = true)
     public static class Storage implements EntityComponentStorage<CloseProximityAngryComponent> {
-        private float range;
-
-        //TODO-stream: don't just add a blacklist class >:(
-        private List<Class<? extends LivingEntity>> blackListClasses = new ArrayList<>();
+        protected float range;
 
         @Override
         public void constructTo(CloseProximityAngryComponent component) {
             component.range.setBaseValue(range);
-            component.predicate = e -> {
-                for(Class<?> claz = e.getClass(); claz != null; claz = claz.getSuperclass()) {
-                    if(blackListClasses.contains(claz)) {
-                        return false;
-                    }
-                }
-                return true;
-            };
-        }
-
-        @SuppressWarnings("unchecked")
-        public Storage add(Class<? extends LivingEntity>... classes) {
-            Collections.addAll(this.blackListClasses, classes);
-            return this;
         }
 
         @Override

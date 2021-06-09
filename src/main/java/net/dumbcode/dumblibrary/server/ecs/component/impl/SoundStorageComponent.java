@@ -68,7 +68,8 @@ public class SoundStorageComponent extends EntityComponent {
     public static class Storage implements EntityComponentStorage<SoundStorageComponent> {
         private final Map<ECSSound, Supplier<SoundEvent>[]> soundMap = new HashMap<>();
 
-        public Storage addSound(ECSSound sound, Supplier<SoundEvent>... event) {
+        @SafeVarargs
+        public final Storage addSound(ECSSound sound, Supplier<SoundEvent>... event) {
             this.soundMap.put(sound, event);
             return this;
         }

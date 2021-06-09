@@ -26,7 +26,7 @@ public interface ComponentMapWriteAccess extends ComponentWriteAccess {
 
     @Nullable
     @Override
-    default <T extends EntityComponent, S extends EntityComponentStorage<T>> T getOrNull(EntityComponentType<T, S> type) {
+    default <T extends EntityComponent> T getOrNull(EntityComponentType<T, ?> type) {
         return this.getComponentMap().getNullable(type);
     }
 

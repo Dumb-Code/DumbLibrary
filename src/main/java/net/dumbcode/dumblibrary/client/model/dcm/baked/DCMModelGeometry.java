@@ -3,7 +3,9 @@ package net.dumbcode.dumblibrary.client.model.dcm.baked;
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.datafixers.util.Pair;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import lombok.With;
 import net.dumbcode.dumblibrary.server.utils.MathUtils;
 import net.dumbcode.studio.model.CubeInfo;
@@ -129,13 +131,19 @@ public class DCMModelGeometry implements IModelGeometry<DCMModelGeometry> {
             for (Direction value : Direction.values()) {
                 float[] uvData = uvMap.get(value);
 
+                int[] ints = generateVertexInfo(value);
+                VertexInfo[] vertexInfos = new VertexInfo[4];
+                for (int i = 0; i < ints.length; i++) {
+                    vertexInfos[i] = new VertexInfo(vertices[i], i);
+                }
+
                 //Check to make sure that the quad has a texture in the specific uv section
                 if (!this.hasSpriteGotTexture(layer.getSprite(), uvData)) {
                     continue;
                 }
 
                 if (!this.isOneDimensional(vertices)) {
-                    outList.add(this.buildQuad(vertices, layer, uvData, cube, value));
+                    outList.add(this.buildQuad(vertexInfos, layer, uvData, cube, value));
                 }
             }
         }
@@ -145,6 +153,8 @@ public class DCMModelGeometry implements IModelGeometry<DCMModelGeometry> {
         }
         stack.popPose();
     }
+
+
 
     /**
      * Generates a list of all the verticies. Uses bit-math to organize. <br>
@@ -165,6 +175,32 @@ public class DCMModelGeometry implements IModelGeometry<DCMModelGeometry> {
             vertices[i] = new Vector3f((float) ((i >> 2 & 1) == 1 ? max : min).x, (float) ((i >> 1 & 1) == 1 ? max : min).y, (float) ((i & 1) == 1 ? max : min).z);
         }
         return vertices;
+    }
+
+    private int[] generateVertexInfo(Direction facing) {
+        int x0y0z0 = 0;
+        int x0y0z1 = 1;
+        int x0y1z0 = 2;
+        int x0y1z1 = 3;
+        int x1y0z0 = 4;
+        int x1y0z1 = 5;
+        int x1y1z0 = 6;
+        int x1y1z1 = 7;
+        switch (facing) {
+            case NORTH:
+                return new int[]{ x0y0z0, x0y1z0, x1y1z0, x1y0z0 };
+            case EAST:
+                return new int[]{ x0y0z1, x0y1z1, x0y1z0, x0y0z0 };
+            case SOUTH:
+                return new int[]{ x1y0z0, x1y1z0, x0y1z0, x0y0z0 };
+            case WEST:
+                return new int[]{ x1y0z1, x1y1z1, x1y1z0, x1y0z0 };
+            case UP:
+            default:
+                return new int[]{ x0y1z0, x0y1z1, x1y1z1, x1y1z0 };
+            case DOWN:
+                return new int[]{ x0y0z1, x0y0z0, x1y0z0, x1y0z1 };
+        }
     }
 
     /**
@@ -278,9 +314,9 @@ public class DCMModelGeometry implements IModelGeometry<DCMModelGeometry> {
      * @param cube          the cubes
      * @return the build quad.
      */
-    private BakedQuad buildQuad(Vector3f[] vertices, DCMModelHandler.TextureLayer layer, float[] uvData, CubeInfo cube, Direction cubeDirection) {
+    private BakedQuad buildQuad(VertexInfo[] vertices, DCMModelHandler.TextureLayer layer, float[] uvData, CubeInfo cube, Direction cubeDirection) {
 
-        Vector3f normal = MathUtils.calculateNormalF(vertices[0], vertices[1], vertices[2]);
+        Vector3f normal = MathUtils.calculateNormalF(vertices[0].point, vertices[1].point, vertices[2].point);
         Direction quadFacing = Direction.getNearest(normal.x(), normal.y(), normal.z());
         BakedQuadBuilder builder = new BakedQuadBuilder();
         builder.setQuadOrientation(quadFacing);
@@ -296,8 +332,8 @@ public class DCMModelGeometry implements IModelGeometry<DCMModelGeometry> {
         builder.setQuadTint(tint);
 
         for (int i = 0; i < vertices.length; i++) {
-            float[] ts = this.generateLightupData(layer, cube, cubeDirection, i);
-            this.putVertexData(builder, vertices[i], normal,
+            float[] ts = this.generateLightupData(layer, cube, cubeDirection, vertices[i].index);
+            this.putVertexData(builder, vertices[i].point, normal,
                     layer.getSprite().getU(uvData[2 - (i / 2) * 2] * 16D),
                     layer.getSprite().getV(uvData[(i % 3 == 0) ? 1 : 3] * 16D),
                     ts);
@@ -441,5 +477,9 @@ public class DCMModelGeometry implements IModelGeometry<DCMModelGeometry> {
 //        return (Math.max(facing.getStepX(), 0) << 2) | (Math.max(facing.getStepY(), 0) << 1) | Math.max(facing.getStepZ(), 0);
 //    }
 //
-//    @Value private static class VertexInfo { Vector4f point; int index; }
+    @Data
+    private static class VertexInfo {
+        private final Vector3f point;
+        private final int index;
+    }
 }

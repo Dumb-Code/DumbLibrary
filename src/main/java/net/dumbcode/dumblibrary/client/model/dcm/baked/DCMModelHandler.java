@@ -8,6 +8,7 @@ import com.mojang.datafixers.util.Pair;
 import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.Value;
+import net.dumbcode.dumblibrary.server.utils.DCMUtils;
 import net.dumbcode.dumblibrary.server.utils.StreamUtils;
 import net.dumbcode.studio.model.ModelInfo;
 import net.dumbcode.studio.model.ModelLoader;
@@ -39,7 +40,7 @@ public enum DCMModelHandler implements IModelLoader<DCMModelGeometry> {
     @SneakyThrows
     public DCMModelGeometry read(JsonDeserializationContext deserializationContext, JsonObject modelContents) {
         JsonObject json = modelContents.getAsJsonObject();
-        ModelInfo information = StreamUtils.openStream(new ResourceLocation(JSONUtils.getAsString(json, "model")), ModelLoader::loadModel);
+        ModelInfo information = DCMUtils.getModelInformation(new ResourceLocation(JSONUtils.getAsString(json, "model")));
 
         List<TextureLayer> allTextures = readLayerData(json);
         List<LightupData> lightupData = Lists.newArrayList();

@@ -9,17 +9,24 @@ import net.dumbcode.dumblibrary.server.ecs.item.components.ItemRenderModelCompon
 import net.dumbcode.dumblibrary.server.ecs.item.systems.ItemEatenSystem;
 import net.dumbcode.dumblibrary.server.ecs.system.RegisterSystemsEvent;
 import net.dumbcode.dumblibrary.server.ecs.system.impl.*;
+import net.dumbcode.dumblibrary.server.registry.EarlyDeferredRegister;
 import net.dumbcode.dumblibrary.server.utils.InjectedUtils;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.ObjectHolder;
+import net.minecraftforge.registries.RegistryBuilder;
+
+import java.util.function.Supplier;
 
 public class EntityComponentTypes {
 
-    public static final DeferredRegister<EntityComponentType<?, ?>> REGISTER = DeferredRegister.create(EntityComponentType.getWildcardType(), DumbLibrary.MODID);
+    public static final EarlyDeferredRegister<EntityComponentType<?, ?>> REGISTER = EarlyDeferredRegister.create(EntityComponentType.getWildcardType(), DumbLibrary.MODID);
+
+    private static Supplier<IForgeRegistry<EntityComponentType<?, ?>>> REGISTRY = REGISTER.makeRegistry("component", RegistryBuilder::new);
 
     public static final RegistryObject<EntityComponentType<GenderComponent,?>> GENDER = REGISTER.register("gender", () -> SimpleComponentType.of(GenderComponent.class, GenderComponent::new));
     public static final RegistryObject<EntityComponentType<HerdComponent, HerdComponent.Storage>> HERD = REGISTER.register("herd", () -> SimpleComponentType.of(HerdComponent.class, HerdComponent::new, HerdComponent.Storage::new));
@@ -47,6 +54,10 @@ public class EntityComponentTypes {
 
     public static final RegistryObject<EntityComponentType<ItemRenderModelComponent, ItemRenderModelComponent.Storage>> ITEM_RENDER = REGISTER.register("item_render", () -> SimpleComponentType.of(ItemRenderModelComponent.class, ItemRenderModelComponent::new, ItemRenderModelComponent.Storage::new));
     public static final RegistryObject<EntityComponentType<ItemEatenComponent, ItemEatenComponent.Storage>> ITEM_EATEN = REGISTER.register("item_eaten", () -> SimpleComponentType.of(ItemEatenComponent.class, ItemEatenComponent::new, ItemEatenComponent.Storage::new));
+
+    public static IForgeRegistry<EntityComponentType<?, ?>> getRegistry() {
+        return REGISTRY.get();
+    }
 
     public static void registerSystems(RegisterSystemsEvent event) {
         event.registerSystem(new HerdSystem());

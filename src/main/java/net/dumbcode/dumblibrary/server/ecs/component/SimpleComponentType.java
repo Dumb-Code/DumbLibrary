@@ -8,12 +8,11 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.function.Supplier;
 
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @ToString
-public class SimpleComponentType<T extends EntityComponent, S extends EntityComponentStorage<T>> implements EntityComponentType<T, S> {
+public class SimpleComponentType<T extends EntityComponent, S extends EntityComponentStorage<T>> extends EntityComponentType<T, S> {
     @ToString.Exclude private final Supplier<T> constructor;
     @Nullable @ToString.Exclude private final Supplier<S> storageConstructor;
-    @EqualsAndHashCode.Include private final boolean defaultAttach;
+    private final boolean defaultAttach;
     private final Class<T> type;
 
     private SimpleComponentType(Supplier<T> constructor, @Nullable Supplier<S> storageConstructor, boolean defaultAttach, Class<T> type) {

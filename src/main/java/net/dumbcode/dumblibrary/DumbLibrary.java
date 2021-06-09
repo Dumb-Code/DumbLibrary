@@ -6,11 +6,8 @@ import net.dumbcode.dumblibrary.server.ItemComponent;
 import net.dumbcode.dumblibrary.server.dna.GeneticTypes;
 import net.dumbcode.dumblibrary.server.ecs.EntityManager;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentTypes;
-import net.dumbcode.dumblibrary.server.ecs.component.RegisterStoragesEvent;
+import net.dumbcode.dumblibrary.server.ecs.component.EntityStorageOverrides;
 import net.dumbcode.dumblibrary.server.network.*;
-import net.dumbcode.dumblibrary.server.registry.DumbRegistries;
-import net.dumbcode.dumblibrary.server.registry.DumbRegistryHandler;
-import net.dumbcode.dumblibrary.server.registry.RegisterGeneticTypes;
 import net.dumbcode.dumblibrary.server.taxidermy.BaseTaxidermyBlockEntity;
 import net.dumbcode.dumblibrary.server.taxidermy.TaxidermyContainer;
 import net.dumbcode.dumblibrary.server.utils.InjectedUtils;
@@ -38,7 +35,6 @@ import net.minecraftforge.fml.network.NetworkRegistry;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.ObjectHolderRegistry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -89,19 +85,16 @@ public class DumbLibrary {
         bus.addListener(BakedModelResolver::onTextureStitch);
         bus.addListener(BakedModelResolver::onModelBake);
         bus.addListener(this::preInit);
-        bus.addListener(DumbRegistryHandler::onRegisteryRegister);
 
         forgeBus.addListener(EntityComponentTypes::registerSystems);
         forgeBus.addListener(MouseUtils::onMouseEvent);
 
         DRI.register(bus);
         EntityComponentTypes.REGISTER.register(bus);
-        GeneticTypes.REGISTER.register(bus);
-    }
+        GeneticTypes.REGISTER.register(bus); }
 
     public void preInit(FMLCommonSetupEvent event) {
-        IEventBus bus = MinecraftForge.EVENT_BUS;
-        bus.post(new RegisterStoragesEvent());
+        EntityStorageOverrides.onRegisterStorages();
 
 //        bus.post(new RegisterGeneticTypes(DumbRegistries.GENETIC_TYPE_REGISTRY));
 
@@ -139,7 +132,6 @@ public class DumbLibrary {
 //
 //        });
 //    }
-
 
     public static Logger getLogger() {
         return logger;

@@ -2,6 +2,7 @@ package net.dumbcode.dumblibrary.client.model.dcm.baked;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.entity.model.ElytraModel;
 import net.minecraft.client.renderer.model.BakedQuad;
 import net.minecraft.client.renderer.model.IBakedModel;
 import net.minecraft.client.renderer.model.ItemCameraTransforms;
@@ -42,7 +43,12 @@ public class DCMBakedModel implements IBakedModel {
         if(layer == null) {
             return this.quadMap.values().stream().flatMap(Collection::stream).collect(Collectors.toList());
         }
-        return this.quadMap.getOrDefault(layer, EMPTY);
+        List<BakedQuad> bakedQuads = this.quadMap.get(layer.name);
+        if(bakedQuads == null) {
+            return this.quadMap.getOrDefault(null, EMPTY);
+        } else {
+            return bakedQuads;
+        }
     }
 
     @Override

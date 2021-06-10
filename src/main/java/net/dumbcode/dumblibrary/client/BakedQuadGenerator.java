@@ -13,7 +13,8 @@ import java.util.List;
 
 public class BakedQuadGenerator implements IVertexBuilder {
     private final List<BakedQuad> out = new ArrayList<>();
-    private final BakedQuadBuilder builder;
+    private final TextureAtlasSprite texture;
+    private BakedQuadBuilder builder;
 
     private int vertexCount;
 
@@ -27,6 +28,7 @@ public class BakedQuadGenerator implements IVertexBuilder {
     private float nz;
 
     public BakedQuadGenerator(TextureAtlasSprite texture) {
+        this.texture = texture;
         this.builder = new BakedQuadBuilder(texture);
         this.resetState();
     }
@@ -70,13 +72,14 @@ public class BakedQuadGenerator implements IVertexBuilder {
                 default: //Log that we don't know what to do with the element?
                     builder.put(e);
             }
-            if(++this.vertexCount == 4) {
-                out.add(builder.build());
-                this.vertexCount = 0;
-            }
-
-            this.resetState();
         }
+        if(++this.vertexCount == 4) {
+            out.add(builder.build());
+            builder = new BakedQuadBuilder(texture);
+            this.vertexCount = 0;
+        }
+
+        this.resetState();
     }
 
     public List<BakedQuad> poll() {

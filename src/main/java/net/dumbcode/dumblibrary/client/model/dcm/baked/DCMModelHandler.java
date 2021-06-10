@@ -8,19 +8,24 @@ import com.mojang.datafixers.util.Pair;
 import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.Value;
+import lombok.experimental.Accessors;
+import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.server.utils.DCMUtils;
+import net.dumbcode.dumblibrary.server.utils.MissingModelInfo;
 import net.dumbcode.dumblibrary.server.utils.StreamUtils;
 import net.dumbcode.studio.model.ModelInfo;
 import net.dumbcode.studio.model.ModelLoader;
+import net.dumbcode.studio.model.ModelMirror;
+import net.dumbcode.studio.model.RotationOrder;
+import net.minecraft.client.renderer.model.RenderMaterial;
 import net.minecraft.client.renderer.texture.AtlasTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.IResourceManager;
-import net.minecraft.util.Direction;
-import net.minecraft.util.JSONUtils;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.*;
 import net.minecraftforge.client.model.IModelLoader;
 
 import javax.annotation.Nullable;
+import java.io.IOException;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -40,7 +45,18 @@ public enum DCMModelHandler implements IModelLoader<DCMModelGeometry> {
     @SneakyThrows
     public DCMModelGeometry read(JsonDeserializationContext deserializationContext, JsonObject modelContents) {
         JsonObject json = modelContents.getAsJsonObject();
-        ModelInfo information = DCMUtils.getModelInformation(new ResourceLocation(JSONUtils.getAsString(json, "model")));
+
+        ResourceLocation location = new ResourceLocation(JSONUtils.getAsString(json, "model"));
+        ModelInfo information;
+        if (!location.getPath().endsWith(".dcm")) {
+            location = new ResourceLocation(location.getNamespace(), location.getPath() + ".dcm");
+        }
+        try {
+            information = StreamUtils.openStream(location, stream -> ModelLoader.loadModel(stream, RotationOrder.global, ModelMirror.NONE));
+        } catch (IOException e) {
+            DumbLibrary.getLogger().error("Unable to load model " + location, e);
+            information = MissingModelInfo.MISSING;
+        }
 
         List<TextureLayer> allTextures = readLayerData(json);
         List<LightupData> lightupData = Lists.newArrayList();
@@ -121,6 +137,7 @@ public enum DCMModelHandler implements IModelLoader<DCMModelGeometry> {
         private final Predicate<String> cubePredicate;
         private final int index;
         private TextureAtlasSprite sprite;
+        private RenderMaterial material;
     }
 
     /**

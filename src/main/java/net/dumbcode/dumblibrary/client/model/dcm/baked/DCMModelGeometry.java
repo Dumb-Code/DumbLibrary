@@ -59,7 +59,7 @@ public class DCMModelGeometry implements IModelGeometry<DCMModelGeometry> {
 
         //Go through all the texture layers and set the sprite to them.
         for (DCMModelHandler.TextureLayer texture : textures) {
-            texture.setSprite(spriteGetter.apply(owner.resolveTexture(texture.getValue())));
+            texture.setSprite(spriteGetter.apply(texture.getMaterial()));
         }
 
 //        //If it has lightup data, then we need to make sure the vertex format has the lightmap element
@@ -74,6 +74,7 @@ public class DCMModelGeometry implements IModelGeometry<DCMModelGeometry> {
 //        this.getMatrix(stack).mul(state.apply(Optional.empty()).orElse(TRSRTransformation.identity()).getMatrix());
 
         stack.scale(0.0625F, 0.0625F, 0.0625F);
+        stack.translate(8F, 0, 8F);
 
         //Iterate through all the layers, then through every group, and on each group go through all the root cubes.
         for (DCMModelHandler.TextureLayer layer : textures) {
@@ -134,7 +135,8 @@ public class DCMModelGeometry implements IModelGeometry<DCMModelGeometry> {
                 int[] ints = generateVertexInfo(value);
                 VertexInfo[] vertexInfos = new VertexInfo[4];
                 for (int i = 0; i < ints.length; i++) {
-                    vertexInfos[i] = new VertexInfo(vertices[i], i);
+                    int v = ints[i];
+                    vertexInfos[i] = new VertexInfo(vertices[v], v);
                 }
 
                 //Check to make sure that the quad has a texture in the specific uv section
@@ -192,9 +194,9 @@ public class DCMModelGeometry implements IModelGeometry<DCMModelGeometry> {
             case EAST:
                 return new int[]{ x0y0z1, x0y1z1, x0y1z0, x0y0z0 };
             case SOUTH:
-                return new int[]{ x1y0z0, x1y1z0, x0y1z0, x0y0z0 };
+                return new int[]{ x1y0z1, x1y1z1, x0y1z1, x0y0z1 };
             case WEST:
-                return new int[]{ x1y0z1, x1y1z1, x1y1z0, x1y0z0 };
+                return new int[]{ x1y0z0, x1y1z0, x1y1z1, x1y0z1 };
             case UP:
             default:
                 return new int[]{ x0y1z0, x0y1z1, x1y1z1, x1y1z0 };
@@ -295,13 +297,13 @@ public class DCMModelGeometry implements IModelGeometry<DCMModelGeometry> {
         stack.translate(cube.getRotationPoint()[0], cube.getRotationPoint()[1], cube.getRotationPoint()[2]);
         float[] rotation = cube.getRotation();
         if (rotation[2] != 0) {
-            stack.mulPose(Vector3f.ZP.rotationDegrees(rotation[2]));
+            stack.mulPose(Vector3f.ZP.rotation(rotation[2]));
         }
         if (rotation[1] != 0) {
-            stack.mulPose(Vector3f.YP.rotationDegrees(rotation[1]));
+            stack.mulPose(Vector3f.YP.rotation(rotation[1]));
         }
         if (rotation[0] != 0) {
-            stack.mulPose(Vector3f.XP.rotationDegrees(rotation[0]));
+            stack.mulPose(Vector3f.XP.rotation(rotation[0]));
         }
     }
 
@@ -395,6 +397,9 @@ public class DCMModelGeometry implements IModelGeometry<DCMModelGeometry> {
         for (int i = 0; i < sprite.getFrameCount(); i++) {
             for (float x = Math.min(uvData[0], uvData[2]); x < Math.max(uvData[0], uvData[2]); x += 1F/width) {
                 for (float y = Math.min(uvData[1], uvData[3]); y < Math.max(uvData[1], uvData[3]); y += 1F/height) {
+                    if(x >= 1 || y >= 1) {
+                        continue;
+                    }
                     int xPos = (int) (x * width);
                     int yPos = (int) (y * height);
                     int alpha = (sprite.getPixelRGBA(i, xPos, yPos) >> 24) & 0xFF;
@@ -434,7 +439,11 @@ public class DCMModelGeometry implements IModelGeometry<DCMModelGeometry> {
     @Override
     public Collection<RenderMaterial> getTextures(IModelConfiguration owner, Function<ResourceLocation, IUnbakedModel> modelGetter, Set<Pair<String, String>> missingTextureErrors) {
         return this.allTextures.stream()
-            .map(t -> owner.resolveTexture(t.getValue()))
+            .map(t -> {
+                RenderMaterial material = owner.resolveTexture(t.getLayerName());
+                t.setMaterial(material);
+                return material;
+            })
             .collect(Collectors.toSet());
     }
 

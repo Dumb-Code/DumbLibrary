@@ -61,7 +61,7 @@ public class BakedQuadGenerator implements IVertexBuilder {
                     break;
                 case UV:
                     if (format.getElements().get(e).getIndex() == 0) { //normal uv
-                        builder.put(e, this.u, this.v);
+                        builder.put(e, this.texture.getU(this.u * 16F), this.texture.getV(this.v * 16F));
                     } else {
                         builder.put(e,0, 0, 0, 1);
                     }
@@ -101,7 +101,7 @@ public class BakedQuadGenerator implements IVertexBuilder {
 
     public IVertexBuilder uv(float u, float v) {
         this.u = u;
-        this.v = u;
+        this.v = v;
         return this;
     }
 

@@ -144,7 +144,7 @@ public class DCMModelGeometry implements IModelGeometry<DCMModelGeometry> {
                     continue;
                 }
 
-                if (!this.isOneDimensional(vertices)) {
+                if (!this.isOneDimensional(vertexInfos)) {
                     outList.add(this.buildQuad(vertexInfos, layer, uvData, cube, value));
                 }
             }
@@ -418,17 +418,17 @@ public class DCMModelGeometry implements IModelGeometry<DCMModelGeometry> {
      * @param pointVertices the vertices to check on
      * @return true if it is one dimensional, false otherwise
      */
-    private boolean isOneDimensional(Vector3f[] pointVertices) {
+    private boolean isOneDimensional(VertexInfo[] pointVertices) {
         //Make sure that this plane is not 1D, as it would be pointless to create it.
         for (int i = 0; i < pointVertices.length; i++) {
-            Vector3f vertex = pointVertices[i];
+            Vector3f vertex = pointVertices[i].point;
             for (int n = i + 1; n < pointVertices.length; n++) {
-                Vector3f other = pointVertices[n];
+                Vector3f other = pointVertices[n].point;
                 if (Math.abs(vertex.x() - other.x()) < 1e-3F &&
                     Math.abs(vertex.y() - other.y()) < 1e-3F &&
                     Math.abs(vertex.z() - other.z()) < 1e-3F
                 ) {
-                    return true;
+                        return true;
                 }
             }
         }

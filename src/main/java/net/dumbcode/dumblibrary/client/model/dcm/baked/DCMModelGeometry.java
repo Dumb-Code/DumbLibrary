@@ -5,9 +5,7 @@ import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.datafixers.util.Pair;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
 import lombok.With;
-import net.dumbcode.dumblibrary.server.utils.MathUtils;
 import net.dumbcode.studio.model.CubeInfo;
 import net.dumbcode.studio.model.ModelInfo;
 import net.minecraft.client.renderer.model.*;
@@ -18,6 +16,7 @@ import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.math.vector.Vector3f;
+import net.minecraft.util.math.vector.Vector3i;
 import net.minecraft.util.math.vector.Vector4f;
 import net.minecraftforge.client.model.IModelConfiguration;
 import net.minecraftforge.client.model.geometry.IModelGeometry;
@@ -36,6 +35,15 @@ import java.util.stream.Collectors;
 @With
 @RequiredArgsConstructor
 public class DCMModelGeometry implements IModelGeometry<DCMModelGeometry> {
+
+    private static final int[][] QUAD_VERTICES_INDICES = {
+        {1, 0, 4, 5}, {2, 3, 7, 6}, {6, 4, 0, 2}, {3, 1, 5, 7}, {2, 0, 1, 3}, {7, 5, 4, 6}
+    }; //See https://gist.github.com/Wyn-Price/a6c86c3b3469624f4799fa8b8ccec959 on how to generate.
+
+    private static final int[] REGULAR_U = {2, 2, 0, 0}; //When axis = xz
+    private static final int[] FLIPPED_U = {0, 0, 2, 2}; //When axis = y
+    private static final int[] REGULAR_V = {3, 1, 1, 3}; //When axis = xz
+    private static final int[] FLIPPED_V = {1, 3, 3, 1}; //When axis = y
 
     private final Collection<DCMModelHandler.TextureLayer> allTextures;
     private final List<DCMModelHandler.LightupData> lightupData;
@@ -132,7 +140,7 @@ public class DCMModelGeometry implements IModelGeometry<DCMModelGeometry> {
             for (Direction value : Direction.values()) {
                 float[] uvData = uvMap.get(value);
 
-                int[] ints = generateVertexInfo(value);
+                int[] ints = QUAD_VERTICES_INDICES[value.ordinal()];
                 VertexInfo[] vertexInfos = new VertexInfo[4];
                 for (int i = 0; i < ints.length; i++) {
                     int v = ints[i];
@@ -145,7 +153,7 @@ public class DCMModelGeometry implements IModelGeometry<DCMModelGeometry> {
                 }
 
                 if (!this.isOneDimensional(vertexInfos)) {
-                    outList.add(this.buildQuad(vertexInfos, layer, uvData, cube, value));
+                    outList.add(this.buildQuad(vertexInfos, stack, layer, uvData, cube, value));
                 }
             }
         }
@@ -179,32 +187,6 @@ public class DCMModelGeometry implements IModelGeometry<DCMModelGeometry> {
         return vertices;
     }
 
-    private int[] generateVertexInfo(Direction facing) {
-        int x0y0z0 = 0;
-        int x0y0z1 = 1;
-        int x0y1z0 = 2;
-        int x0y1z1 = 3;
-        int x1y0z0 = 4;
-        int x1y0z1 = 5;
-        int x1y1z0 = 6;
-        int x1y1z1 = 7;
-        switch (facing) {
-            case NORTH:
-                return new int[]{ x0y0z0, x0y1z0, x1y1z0, x1y0z0 };
-            case EAST:
-                return new int[]{ x0y0z1, x0y1z1, x0y1z0, x0y0z0 };
-            case SOUTH:
-                return new int[]{ x1y0z1, x1y1z1, x0y1z1, x0y0z1 };
-            case WEST:
-                return new int[]{ x1y0z0, x1y1z0, x1y1z1, x1y0z1 };
-            case UP:
-            default:
-                return new int[]{ x0y1z0, x0y1z1, x1y1z1, x1y1z0 };
-            case DOWN:
-                return new int[]{ x0y0z1, x0y0z0, x1y0z0, x1y0z1 };
-        }
-    }
-
     /**
      * Generates the uv map for each face.
      * <pre>{@code
@@ -233,10 +215,18 @@ public class DCMModelGeometry implements IModelGeometry<DCMModelGeometry> {
      * @return A map of EnumFacing -> int[4] of uvs
      */
     private Map<Direction, float[]> generateUvMap(CubeInfo cube) {
-        Direction[] order = {Direction.EAST, Direction.WEST, Direction.UP, Direction.DOWN, Direction.SOUTH, Direction.NORTH};
         Map<Direction, float[]> uvMap = new EnumMap<>(Direction.class);
+        Direction[] order = {Direction.EAST, Direction.WEST, Direction.UP, Direction.DOWN, Direction.SOUTH, Direction.NORTH};
         for (int i = 0; i < order.length; i++) {
-            uvMap.put(order[i], cube.getGeneratedUVs()[i]);
+            float[] arr;
+            if(order[i].getAxis() == Direction.Axis.Y) {
+                float[] uvs = cube.getGeneratedUVs()[i];
+                //Flip the u and the v. Basically, 0 <-> 2, 1 <-> 3
+                arr = new float[] { uvs[2], uvs[3], uvs[0], uvs[1] };
+            } else {
+                arr = cube.getGeneratedUVs()[i];
+            }
+            uvMap.put(order[i], arr);
         }
         return uvMap;
     }
@@ -255,7 +245,7 @@ public class DCMModelGeometry implements IModelGeometry<DCMModelGeometry> {
 
         //On UP&DOWN side, directional up on the texture sheet is south for texture
         for (DCMModelHandler.LightupData datum : this.lightupData) {
-            if (datum.getLayersApplied().contains(layer.getLayerName())) {
+            if (datum.getLayersApplied() == null || datum.getLayersApplied().contains(layer.getLayerName())) {
                 for (DCMModelHandler.SmoothFace face : datum.getSmoothFace()) {
                     if(face.getCube().equals(cube.getName())) {
                         Direction origin = face.getSmoothFaceOrigin();
@@ -316,9 +306,10 @@ public class DCMModelGeometry implements IModelGeometry<DCMModelGeometry> {
      * @param cube          the cubes
      * @return the build quad.
      */
-    private BakedQuad buildQuad(VertexInfo[] vertices, DCMModelHandler.TextureLayer layer, float[] uvData, CubeInfo cube, Direction cubeDirection) {
-
-        Vector3f normal = MathUtils.calculateNormalF(vertices[0].point, vertices[1].point, vertices[2].point);
+    private BakedQuad buildQuad(VertexInfo[] vertices, MatrixStack stack, DCMModelHandler.TextureLayer layer, float[] uvData, CubeInfo cube, Direction cubeDirection) {
+        Vector3i n = cubeDirection.getNormal();
+        Vector3f normal = new Vector3f(n.getX(), n.getY(), n.getZ());
+        normal.transform(stack.last().normal());
         Direction quadFacing = Direction.getNearest(normal.x(), normal.y(), normal.z());
         BakedQuadBuilder builder = new BakedQuadBuilder();
         builder.setQuadOrientation(quadFacing);
@@ -333,11 +324,14 @@ public class DCMModelGeometry implements IModelGeometry<DCMModelGeometry> {
         }
         builder.setQuadTint(tint);
 
+        int[] u = cubeDirection.getAxis() == Direction.Axis.Y ? FLIPPED_U : REGULAR_U;
+        int[] v = cubeDirection.getAxis() == Direction.Axis.Y ? FLIPPED_V : REGULAR_V;
+
         for (int i = 0; i < vertices.length; i++) {
             float[] ts = this.generateLightupData(layer, cube, cubeDirection, vertices[i].index);
             this.putVertexData(builder, vertices[i].point, normal,
-                    layer.getSprite().getU(uvData[2 - (i / 2) * 2] * 16D),
-                    layer.getSprite().getV(uvData[(i % 3 == 0) ? 1 : 3] * 16D),
+                    layer.getSprite().getU(uvData[u[i]] * 16D),
+                    layer.getSprite().getV(uvData[v[i]] * 16D),
                     ts);
 
         }
@@ -447,45 +441,6 @@ public class DCMModelGeometry implements IModelGeometry<DCMModelGeometry> {
             .collect(Collectors.toSet());
     }
 
-
-//    @Override
-//    public IModel retexture(ImmutableMap<String, String> textures) {
-//        List<TabulaModelHandler.TextureLayer> textureLayers = new ArrayList<>(this.allTextures.size());
-//        for (TabulaModelHandler.TextureLayer texture : this.allTextures) {
-//            if (textures.containsKey(texture.getLayerName())) {
-//                String remapped = textures.get(texture.getLayerName());
-//                if (!remapped.isEmpty()) { //Removed texture
-//                    textureLayers.add(new TabulaModelHandler.TextureLayer(texture.getLayerName(), new ResourceLocation(remapped), texture.getCubePredicate(), texture.getLayer()));
-//                }
-//            } else {
-//                textureLayers.add(texture);
-//            }
-//        }
-//        return this.withAllTextures(textureLayers);
-//    }
-//
-//
-//
-//    /**
-//     * Encodes the EnumFacing to an integer. This integer's bits are in the form: [x][y][z],
-//     * where 1 represents the positive direction, and 0 is the negative direction <br>
-//     * For example;
-//     * <ul>
-//     * <li>{@link Direction#UP} {@code -> 0b010 -> 2}</li>
-//     * <li>{@link Direction#DOWN} {@code -> 0b000 -> 0}</li>
-//     * <li>{@link Direction#EAST} {@code -> 0b100 -> 4}</li>
-//     * <li>{@link Direction#NORTH} {@code -> 0b000 -> 0}</li>
-//     * </ul>
-//     * Note that this is not a {@code 1->1} function. If the {@code facing } is facing the negative direction on it's axis,
-//     * then the result will just be 0.
-//     *
-//     * @param facing the facing
-//     * @return the encoded integer
-//     */
-//    public int encode(Direction facing) {
-//        return (Math.max(facing.getStepX(), 0) << 2) | (Math.max(facing.getStepY(), 0) << 1) | Math.max(facing.getStepZ(), 0);
-//    }
-//
     @Data
     private static class VertexInfo {
         private final Vector3f point;

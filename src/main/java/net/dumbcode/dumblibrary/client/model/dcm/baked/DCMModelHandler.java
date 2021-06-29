@@ -8,9 +8,7 @@ import com.mojang.datafixers.util.Pair;
 import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.Value;
-import lombok.experimental.Accessors;
 import net.dumbcode.dumblibrary.DumbLibrary;
-import net.dumbcode.dumblibrary.server.utils.DCMUtils;
 import net.dumbcode.dumblibrary.server.utils.MissingModelInfo;
 import net.dumbcode.dumblibrary.server.utils.StreamUtils;
 import net.dumbcode.studio.model.ModelInfo;
@@ -21,7 +19,9 @@ import net.minecraft.client.renderer.model.RenderMaterial;
 import net.minecraft.client.renderer.texture.AtlasTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.IResourceManager;
-import net.minecraft.util.*;
+import net.minecraft.util.Direction;
+import net.minecraft.util.JSONUtils;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.IModelLoader;
 
 import javax.annotation.Nullable;
@@ -39,7 +39,7 @@ public enum DCMModelHandler implements IModelLoader<DCMModelGeometry> {
     /**
      * A dummy texture layer representing the missing texture/layer
      */
-    public static final TextureLayer MISSING = new TextureLayer("missing", "missingno", Predicates.alwaysTrue(), -1);
+    public static final TextureLayer MISSING = new TextureLayer("missing", "missingno", s -> true, -1);
 
     @Override
     @SneakyThrows

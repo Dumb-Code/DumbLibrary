@@ -25,30 +25,30 @@ public class RenderUtils {
         Vector3f e = new Vector3f(ei);
 
 //        buff.(GL11.GL_QUADS, DefaultVertexFormats.POSITION);
-        buff.vertex(pose, s.x(), e.y(), s.z()).normal(normal, 0, 1, 0).endVertex();
-        buff.vertex(pose, s.x(), e.y(), e.z()).normal(normal, 0, 1, 0).endVertex();
-        buff.vertex(pose, e.x(), e.y(), e.z()).normal(normal, 0, 1, 0).endVertex();
-        buff.vertex(pose, e.x(), e.y(), s.z()).normal(normal, 0, 1, 0).endVertex();
-        buff.vertex(pose, s.x(), s.y(), e.z()).normal(normal, 0, -1, 0).endVertex();
-        buff.vertex(pose, s.x(), s.y(), s.z()).normal(normal, 0, -1, 0).endVertex();
-        buff.vertex(pose, e.x(), s.y(), s.z()).normal(normal, 0, -1, 0).endVertex();
-        buff.vertex(pose, e.x(), s.y(), e.z()).normal(normal, 0, -1, 0).endVertex();
-        buff.vertex(pose, e.x(), e.y(), e.z()).normal(normal, 1, 0, 0).endVertex();
-        buff.vertex(pose, e.x(), s.y(), e.z()).normal(normal, 1, 0, 0).endVertex();
-        buff.vertex(pose, e.x(), s.y(), s.z()).normal(normal, 1, 0, 0).endVertex();
-        buff.vertex(pose, e.x(), e.y(), s.z()).normal(normal, 1, 0, 0).endVertex();
-        buff.vertex(pose, s.x(), s.y(), e.z()).normal(normal, -1, 0, 0).endVertex();
-        buff.vertex(pose, s.x(), e.y(), e.z()).normal(normal, -1, 0, 0).endVertex();
-        buff.vertex(pose, s.x(), e.y(), s.z()).normal(normal, -1, 0, 0).endVertex();
-        buff.vertex(pose, s.x(), s.y(), s.z()).normal(normal, -1, 0, 0).endVertex();
-        buff.vertex(pose, s.x(), e.y(), e.z()).normal(normal, 0, 0, 1).endVertex();
-        buff.vertex(pose, s.x(), s.y(), e.z()).normal(normal, 0, 0, 1).endVertex();
-        buff.vertex(pose, e.x(), s.y(), e.z()).normal(normal, 0, 0, 1).endVertex();
-        buff.vertex(pose, e.x(), e.y(), e.z()).normal(normal, 0, 0, 1).endVertex();
-        buff.vertex(pose, s.x(), s.y(), s.z()).normal(normal, 0, 0, -1).endVertex();
-        buff.vertex(pose, s.x(), e.y(), s.z()).normal(normal, 0, 0, -1).endVertex();
-        buff.vertex(pose, e.x(), e.y(), s.z()).normal(normal, 0, 0, -1).endVertex();
-        buff.vertex(pose, e.x(), s.y(), s.z()).normal(normal, 0, 0, -1).endVertex();
+        buff.vertex(pose, s.x(), e.y(), s.z()).normal(normal, 0, 1, 0).color(1F, 1F, 1F, 1F).endVertex();
+        buff.vertex(pose, s.x(), e.y(), e.z()).normal(normal, 0, 1, 0).color(1F, 1F, 1F, 1F).endVertex();
+        buff.vertex(pose, e.x(), e.y(), e.z()).normal(normal, 0, 1, 0).color(1F, 1F, 1F, 1F).endVertex();
+        buff.vertex(pose, e.x(), e.y(), s.z()).normal(normal, 0, 1, 0).color(1F, 1F, 1F, 1F).endVertex();
+        buff.vertex(pose, s.x(), s.y(), e.z()).normal(normal, 0, -1, 0).color(1F, 1F, 1F, 1F).endVertex();
+        buff.vertex(pose, s.x(), s.y(), s.z()).normal(normal, 0, -1, 0).color(1F, 1F, 1F, 1F).endVertex();
+        buff.vertex(pose, e.x(), s.y(), s.z()).normal(normal, 0, -1, 0).color(1F, 1F, 1F, 1F).endVertex();
+        buff.vertex(pose, e.x(), s.y(), e.z()).normal(normal, 0, -1, 0).color(1F, 1F, 1F, 1F).endVertex();
+        buff.vertex(pose, e.x(), e.y(), e.z()).normal(normal, 1, 0, 0).color(1F, 1F, 1F, 1F).endVertex();
+        buff.vertex(pose, e.x(), s.y(), e.z()).normal(normal, 1, 0, 0).color(1F, 1F, 1F, 1F).endVertex();
+        buff.vertex(pose, e.x(), s.y(), s.z()).normal(normal, 1, 0, 0).color(1F, 1F, 1F, 1F).endVertex();
+        buff.vertex(pose, e.x(), e.y(), s.z()).normal(normal, 1, 0, 0).color(1F, 1F, 1F, 1F).endVertex();
+        buff.vertex(pose, s.x(), s.y(), e.z()).normal(normal, -1, 0, 0).color(1F, 1F, 1F, 1F).endVertex();
+        buff.vertex(pose, s.x(), e.y(), e.z()).normal(normal, -1, 0, 0).color(1F, 1F, 1F, 1F).endVertex();
+        buff.vertex(pose, s.x(), e.y(), s.z()).normal(normal, -1, 0, 0).color(1F, 1F, 1F, 1F).endVertex();
+        buff.vertex(pose, s.x(), s.y(), s.z()).normal(normal, -1, 0, 0).color(1F, 1F, 1F, 1F).endVertex();
+        buff.vertex(pose, s.x(), e.y(), e.z()).normal(normal, 0, 0, 1).color(1F, 1F, 1F, 1F).endVertex();
+        buff.vertex(pose, s.x(), s.y(), e.z()).normal(normal, 0, 0, 1).color(1F, 1F, 1F, 1F).endVertex();
+        buff.vertex(pose, e.x(), s.y(), e.z()).normal(normal, 0, 0, 1).color(1F, 1F, 1F, 1F).endVertex();
+        buff.vertex(pose, e.x(), e.y(), e.z()).normal(normal, 0, 0, 1).color(1F, 1F, 1F, 1F).endVertex();
+        buff.vertex(pose, s.x(), s.y(), s.z()).normal(normal, 0, 0, -1).color(1F, 1F, 1F, 1F).endVertex();
+        buff.vertex(pose, s.x(), e.y(), s.z()).normal(normal, 0, 0, -1).color(1F, 1F, 1F, 1F).endVertex();
+        buff.vertex(pose, e.x(), e.y(), s.z()).normal(normal, 0, 0, -1).color(1F, 1F, 1F, 1F).endVertex();
+        buff.vertex(pose, e.x(), s.y(), s.z()).normal(normal, 0, 0, -1).color(1F, 1F, 1F, 1F).endVertex();
     }
 
 //    public static void drawSpacedCube(double ulfx, double ulfy, double ulfz, double ulbx, double ulby, double ulbz, double urfx, double urfy, double urfz, double urbx, double urby, double urbz, double dlfx, double dlfy, double dlfz, double dlbx, double dlby, double dlbz, double drfx, double drfy, double drfz, double drbx, double drby, double drbz, double uu, double uv, double du, double dv, double lu, double lv, double ru, double rv, double fu, double fv,double bu, double bv, double tw,double th, double td, IVertexBuilder buff) {

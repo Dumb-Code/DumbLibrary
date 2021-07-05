@@ -34,13 +34,12 @@ public enum ImageBufferHandler implements BiConsumer<PacketBuffer, NativeImage>,
             DumbLibrary.getLogger().error("Unable to write image to bytes", e);
         }
         buf.writeInt(data.length);
-        buf.writeBytes(data);
+        buf.writeByteArray(data);
     }
 
-    public NativeImage deserialize(ByteBuf buf) {
+    public NativeImage deserialize(PacketBuffer buf) {
         try {
-            byte[] data = new byte[buf.readInt()];
-            buf.readBytes(data);
+            byte[] data = buf.readByteArray(buf.readInt());
             @Cleanup ByteArrayInputStream bais = new ByteArrayInputStream(data);
             @Cleanup GZIPInputStream gzis = new GZIPInputStream(bais);
             return NativeImage.read(gzis);

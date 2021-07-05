@@ -213,7 +213,7 @@ public class TextureUtils {
                     g = Math.max( 0, Math.min( 255, g ) );
                     b = Math.max( 0, Math.min( 255, b ) );
 
-                    resized.setPixelRGBA(i, j, (a << 24) | (r << 16) | (g << 8) | (b));
+                    resized.setPixelRGBA(j, i, (a << 24) | (r << 16) | (g << 8) | (b));
                 }
             }
             return resized;

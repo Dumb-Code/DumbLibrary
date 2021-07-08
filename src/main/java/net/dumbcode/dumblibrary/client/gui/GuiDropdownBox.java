@@ -107,13 +107,13 @@ public class GuiDropdownBox<T extends SelectListEntry> extends Widget {
                 this.open = !this.open;
                 this.scrollBox.setHeight(this.open ? this.scrollBox.getTotalSize() : 0);
             }
-            return false;
+            return true;
         }
         if (mouseButton == 0) {
             if (this.isMouseOver(mouseX, mouseY)) {
                 this.open = !this.open;
                 this.scrollBox.setHeight(this.open ? this.scrollBox.getTotalSize() : 0);
-                return false;
+                return true;
             }
         }
         this.open = false;

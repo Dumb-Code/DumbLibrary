@@ -240,4 +240,25 @@ public class TextureUtils {
 
         return biCoef;
     }
+
+    /**
+     * Uploads sub area
+     * @param pixels the pixels to upload
+     * @param intoX the start x/u in the texture that's binded that we upload into.
+     * @param intoY the start y/v in the texture that's binded that we upload into.
+     * @param offsetX the x/u offset in {@code pixels} that we upload to
+     * @param offsetY the y/v offset in {@code pixels} that we upload to
+     * @param width the width of the area to upload
+     * @param height the height of the area to upload
+     */
+    public static void uploadSubArea(NativeImage pixels, int intoX, int intoY, int offsetX, int offsetY, int width, int height) {
+        pixels.upload(0, intoX, intoY, offsetX, offsetY, width, height, false, false);
+    }
+
+    public static void uploadSubArea(DynamicTexture texture, int startX, int startY, int width, int height) {
+        if(texture.getPixels() != null) {
+            texture.bind();
+            uploadSubArea(texture.getPixels(), startX, startY, startX, startY, width, height);
+        }
+    }
 }

@@ -187,4 +187,19 @@ public class RenderUtils {
         bufferbuilder.vertex(pose, (float) x, (float) y, 0).uv(sprite.getU(minU), sprite.getV(minV)).endVertex();
         tessellator.end();
     }
+
+    public static void drawScaledCustomSizeModalRect(MatrixStack stack, int x, int y, float u, float v, int uWidth, int vHeight, int width, int height, float tileWidth, float tileHeight)
+    {
+        Matrix4f pose = stack.last().pose();
+        float f = 1.0F / tileWidth;
+        float f1 = 1.0F / tileHeight;
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder buffer = tessellator.getBuilder();
+        buffer.begin(7, DefaultVertexFormats.POSITION_TEX);
+        buffer.vertex(pose, x, (y + height), 0.0F).uv(u * f, (v + vHeight) * f1).endVertex();
+        buffer.vertex(pose, (x + width), (y + height), 0.0F).uv((u + uWidth) * f, (v + vHeight) * f1).endVertex();
+        buffer.vertex(pose, (x + width), y, 0.0F).uv((u + uWidth) * f, v * f1).endVertex();
+        buffer.vertex(pose, x, y, 0.0F).uv(u * f, v * f1).endVertex();
+        tessellator.end();
+    }
 }

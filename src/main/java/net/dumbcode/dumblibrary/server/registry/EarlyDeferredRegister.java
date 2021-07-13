@@ -35,8 +35,8 @@ public class EarlyDeferredRegister<T extends IForgeRegistryEntry<T>> extends Wra
         private final Class<T> base;
         private final DeferredRegister.EventDispatcher delegate;
 
-        @SubscribeEvent(priority = EventPriority.HIGHEST)
-        public void onEarlyEvent(RegistryEvent.Register<Block> event) {
+        @SubscribeEvent
+        public void onEarlyEvent(PreBlockRegistryEvent.Pre event) {
             IForgeRegistry<?> registry = GameRegistry.findRegistry(this.base);
             if(registry == null) {
                 DumbLibrary.getLogger().error("Unable to find registry of type " + this.base);

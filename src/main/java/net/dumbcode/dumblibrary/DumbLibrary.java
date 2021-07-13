@@ -5,9 +5,10 @@ import net.dumbcode.dumblibrary.client.model.ModelHandler;
 import net.dumbcode.dumblibrary.server.ItemComponent;
 import net.dumbcode.dumblibrary.server.dna.GeneticTypes;
 import net.dumbcode.dumblibrary.server.ecs.EntityManager;
+import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentType;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentTypes;
-import net.dumbcode.dumblibrary.server.ecs.component.EntityStorageOverrides;
 import net.dumbcode.dumblibrary.server.network.*;
+import net.dumbcode.dumblibrary.server.registry.PreBlockRegistryEvent;
 import net.dumbcode.dumblibrary.server.taxidermy.BaseTaxidermyBlockEntity;
 import net.dumbcode.dumblibrary.server.taxidermy.TaxidermyContainer;
 import net.dumbcode.dumblibrary.server.utils.InjectedUtils;
@@ -15,6 +16,7 @@ import net.dumbcode.dumblibrary.server.utils.MouseUtils;
 import net.dumbcode.dumblibrary.server.utils.VoidStorage;
 import net.dumbcode.studio.model.ModelMirror;
 import net.dumbcode.studio.model.RotationOrder;
+import net.minecraft.block.Block;
 import net.minecraft.inventory.container.Container;
 import net.minecraft.inventory.container.ContainerType;
 import net.minecraft.item.Item;
@@ -25,11 +27,16 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.common.capabilities.CapabilityManager;
+import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.ModContainer;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.javafmlmod.FMLModContainer;
 import net.minecraftforge.fml.network.IContainerFactory;
 import net.minecraftforge.fml.network.NetworkRegistry;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
@@ -38,6 +45,9 @@ import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 @Mod(DumbLibrary.MODID)
@@ -91,10 +101,24 @@ public class DumbLibrary {
 
         DRI.register(bus);
         EntityComponentTypes.REGISTER.register(bus);
-        GeneticTypes.REGISTER.register(bus); }
+        GeneticTypes.REGISTER.register(bus);
+
+        bus.addGenericListener(Block.class, EventPriority.HIGHEST, (RegistryEvent.Register<Block> event) -> {
+            Consumer<PreBlockRegistryEvent> dispatcher = e -> ModList.get().forEachModContainer((s, modContainer) -> {
+                if(modContainer instanceof  FMLModContainer) {
+                    FMLModContainer fmlModContainer = (FMLModContainer) modContainer;
+                    fmlModContainer.getEventBus().post(e);
+                }
+            });
+            dispatcher.accept(new PreBlockRegistryEvent.Pre());
+            dispatcher.accept(new PreBlockRegistryEvent.Normal());
+            dispatcher.accept(new PreBlockRegistryEvent.Post());
+        });
+
+    }
 
     public void preInit(FMLCommonSetupEvent event) {
-        EntityStorageOverrides.onRegisterStorages();
+        EntityComponentType.addAll();
 
 //        bus.post(new RegisterGeneticTypes(DumbRegistries.GENETIC_TYPE_REGISTRY));
 

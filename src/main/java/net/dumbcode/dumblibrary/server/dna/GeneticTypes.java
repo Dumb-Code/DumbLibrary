@@ -8,6 +8,7 @@ import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentTypes;
 import net.dumbcode.dumblibrary.server.ecs.component.impl.GeneticLayerComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.impl.RenderAdjustmentsComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.impl.SleepingComponent;
+import net.dumbcode.dumblibrary.server.registry.EarlyDeferredRegister;
 import net.dumbcode.dumblibrary.server.utils.GeneticUtils;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
@@ -23,7 +24,7 @@ import java.util.function.Supplier;
 
 public class GeneticTypes {
 
-    public static final DeferredRegister<GeneticType<?>> REGISTER = DeferredRegister.create(GeneticType.getWildcardType(), DumbLibrary.MODID);
+    public static final EarlyDeferredRegister<GeneticType<?>> REGISTER = EarlyDeferredRegister.create(GeneticType.getWildcardType(), DumbLibrary.MODID);
 
     private static final Supplier<IForgeRegistry<GeneticType<?>>> REGISTRY = REGISTER.makeRegistry("genetic_type", RegistryBuilder::new);
 

@@ -32,6 +32,7 @@ import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.ModContainer;
 import net.minecraftforge.fml.ModList;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -104,15 +105,20 @@ public class DumbLibrary {
         GeneticTypes.REGISTER.register(bus);
 
         bus.addGenericListener(Block.class, EventPriority.HIGHEST, (RegistryEvent.Register<Block> event) -> {
+            ModContainer activeContainer = ModLoadingContext.get().getActiveContainer();
+            Object extension = ModLoadingContext.get().extension();
             Consumer<PreBlockRegistryEvent> dispatcher = e -> ModList.get().forEachModContainer((s, modContainer) -> {
-                if(modContainer instanceof  FMLModContainer) {
-                    FMLModContainer fmlModContainer = (FMLModContainer) modContainer;
-                    fmlModContainer.getEventBus().post(e);
-                }
+                ModContainer.buildTransitionHandler(
+                        modContainer,
+                        c -> e,
+                        (modLoadingStage, throwable) -> modLoadingStage,
+                        Runnable::run
+                ).join();
             });
             dispatcher.accept(new PreBlockRegistryEvent.Pre());
             dispatcher.accept(new PreBlockRegistryEvent.Normal());
             dispatcher.accept(new PreBlockRegistryEvent.Post());
+            ModLoadingContext.get().setActiveContainer(activeContainer, extension);
         });
 
     }

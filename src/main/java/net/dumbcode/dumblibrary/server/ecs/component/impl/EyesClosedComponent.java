@@ -25,12 +25,7 @@ public class EyesClosedComponent extends EntityComponent implements RenderFlatte
 
     @Override
     public void gatherComponents(ComponentAccess entity, Consumer<IndexedObject<FlattenedLayerProperty>> registry) {
-        registry.accept(new IndexedObject<>(new FlattenedLayerProperty(() -> {
-            if(this.blinkTicksLeft > 0) {
-                return this.eyesOffTexture;
-            }
-            return this.eyesOnTexture;
-        }, this.eyesOnTexture, this.eyesOffTexture), 0F));
+        registry.accept(new IndexedObject<>(new FlattenedLayerProperty(() -> this.blinkTicksLeft > 0 ? this.eyesOffTexture : this.eyesOnTexture), 0F));
     }
 
     @Override

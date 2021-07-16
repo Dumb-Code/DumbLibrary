@@ -6,6 +6,7 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.dumbcode.dumblibrary.client.component.ModelComponentRenderer;
 import net.dumbcode.dumblibrary.client.model.dcm.DCMModel;
+import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLayer;
 import net.dumbcode.dumblibrary.server.utils.DCMUtils;
 import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
@@ -16,6 +17,7 @@ import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLayerComp
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLocationComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLocationComponent.ConfigurableLocation;
 import net.dumbcode.dumblibrary.server.utils.IndexedObject;
+import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
@@ -25,6 +27,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 //Client usage only
@@ -98,7 +101,7 @@ public class ModelComponent extends EntityComponent implements RenderCallbackCom
     @OnlyIn(Dist.CLIENT)
     private void createRenderer(ComponentAccess entity) {
         if(this.renderer == null) {
-            List<IndexedObject<Supplier<RenderLayerComponent.Layer>>> layerList = new ArrayList<>();
+            List<IndexedObject<RenderLayer>> layerList = new ArrayList<>();
             for (EntityComponent component : entity.getAllComponents()) {
                 if(component instanceof RenderLayerComponent) {
                     ((RenderLayerComponent) component).gatherLayers(entity, layerList::add);

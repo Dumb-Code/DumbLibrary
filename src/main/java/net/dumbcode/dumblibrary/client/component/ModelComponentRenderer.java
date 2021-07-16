@@ -7,8 +7,10 @@ import net.dumbcode.dumblibrary.client.FramebufferCache;
 import net.dumbcode.dumblibrary.client.model.ModelMissing;
 import net.dumbcode.dumblibrary.client.model.dcm.DCMModel;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderCallbackComponent;
+import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLayer;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLayerComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLocationComponent;
+import net.dumbcode.dumblibrary.server.utils.IndexedObject;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
@@ -38,10 +40,10 @@ public class ModelComponentRenderer extends LivingRenderer<LivingEntity, EntityM
 
     private final Supplier<DCMModel> modelSupplier;
     private final RenderLocationComponent.ConfigurableLocation texture;
-    private final List<Supplier<RenderLayerComponent.Layer>> layerList;
+    private final List<RenderLayer> layerList;
 
 
-    public ModelComponentRenderer(float shadowSize, Supplier<DCMModel> modelSupplier, RenderLocationComponent.ConfigurableLocation texture, List<Supplier<RenderLayerComponent.Layer>> layerList) {
+    public ModelComponentRenderer(float shadowSize, Supplier<DCMModel> modelSupplier, RenderLocationComponent.ConfigurableLocation texture, List<RenderLayer> layerList) {
         super(MC.getEntityRenderDispatcher(), ModelMissing.getInstance(), shadowSize);
         this.modelSupplier = modelSupplier;
         this.texture = texture;
@@ -119,18 +121,8 @@ public class ModelComponentRenderer extends LivingRenderer<LivingEntity, EntityM
         RenderSystem.pushMatrix();
         RenderSystem.loadIdentity();
 
-        BufferBuilder buffer = Tessellator.getInstance().getBuilder();
-
-        for (Supplier<RenderLayerComponent.Layer> supplier : this.layerList) {
-            RenderLayerComponent.Layer layer = supplier.get();
-            RenderSystem.color4f(layer.getRed(), layer.getGreen(), layer.getBlue(), layer.getAlpha());
-            MC.textureManager.bind(layer.getTexture());
-            buffer.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
-            buffer.vertex(0, 1, -2).uv(0, 1).color(255, 255, 255, 255).endVertex();
-            buffer.vertex(1, 1, -2).uv(1, 1).color(255, 255, 255, 255).endVertex();
-            buffer.vertex(1, 0, -2).uv(1, 0).color(255, 255, 255, 255).endVertex();
-            buffer.vertex(0, 0, -2).uv(0, 0).color(255, 255, 255, 255).endVertex();
-            Tessellator.getInstance().end();
+        for (RenderLayer layer : this.layerList) {
+            layer.render(Tessellator.getInstance(), Tessellator.getInstance().getBuilder());
         }
 
         RenderSystem.popMatrix();
@@ -147,9 +139,11 @@ public class ModelComponentRenderer extends LivingRenderer<LivingEntity, EntityM
 
     private Framebuffer getFrameBuffer() {
         int width = this.model.texWidth;
-        for (Supplier<RenderLayerComponent.Layer> supplier : this.layerList) {
-            MC.textureManager.bind(supplier.get().getTexture());
-            width = Math.max(width, GL11.glGetTexLevelParameteri(GL11.GL_TEXTURE_2D, 0, GL11.GL_TEXTURE_WIDTH));
+        for (RenderLayer supplier : this.layerList) {
+            int i = supplier.getWidth();
+            if(i != -1) {
+                width = Math.max(width, i);
+            }
         }
         int height = (int) ((float) width * this.model.texWidth /  this.model.texHeight);
         return FramebufferCache.getFrameBuffer(width, height);

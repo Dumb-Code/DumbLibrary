@@ -19,6 +19,7 @@ import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentTypes;
 import net.dumbcode.dumblibrary.server.ecs.component.FinalizableComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.GatherGeneticsComponent;
+import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLayer;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLayerComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLocationComponent;
 import net.dumbcode.dumblibrary.server.utils.CollectorUtils;
@@ -55,15 +56,15 @@ public class GeneticLayerComponent extends EntityComponent implements RenderLaye
     private static final Random RAND = new Random();
 
     @Override
-    public void gatherLayers(ComponentAccess entity, Consumer<IndexedObject<Supplier<Layer>>> registry) {
+    public void gatherLayers(ComponentAccess entity, Consumer<IndexedObject<RenderLayer>> registry) {
         for (GeneticLayerEntry entry : this.entries) {
-            registry.accept(new IndexedObject<>(() -> {
+            registry.accept(new IndexedObject<>(new RenderLayer.DefaultTexture(() -> {
                 if(this.baseLocation != null) {
                     float[] colours = entry.getColours();
-                    return new Layer(colours[0], colours[1], colours[2], 1F, entry.getTextureLocation(this.baseLocation));
+                    return new RenderLayer.DefaultLayerData(entry.getTextureLocation(this.baseLocation), colours[0], colours[1], colours[2], 1F);
                 }
                 return null;
-            }, entry.index));
+            }), entry.index));
         }
     }
 

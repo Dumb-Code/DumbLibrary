@@ -1,21 +1,19 @@
 package net.dumbcode.dumblibrary.server.ecs.component.impl;
 
-import com.google.common.collect.Lists;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import net.dumbcode.dumblibrary.client.TextureUtils;
 import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentTypes;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderFlattenedLayerComponent;
+import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLayer;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLayerComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLocationComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.impl.data.FlattenedLayerProperty;
-import net.dumbcode.dumblibrary.server.utils.BuilderNode;
 import net.dumbcode.dumblibrary.server.utils.CollectorUtils;
 import net.dumbcode.dumblibrary.server.utils.IndexedObject;
 import net.dumbcode.dumblibrary.server.utils.StreamUtils;
@@ -26,9 +24,10 @@ import net.minecraft.util.JSONUtils;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.util.Constants;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 public class FlattenedLayerComponent extends EntityComponent implements RenderLayerComponent {
 
@@ -36,97 +35,31 @@ public class FlattenedLayerComponent extends EntityComponent implements RenderLa
     private final List<IndexedObject<FlattenedLayerProperty.Static>> staticLayers = new ArrayList<>();
 
     @Override
-    public void gatherLayers(ComponentAccess entity, Consumer<IndexedObject<Supplier<Layer>>> registry) {
-        List<IndexedObject<FlattenedLayerProperty>> layerEntries = new ArrayList<>();
-        for (IndexedObject<FlattenedLayerProperty.Static> layer : this.staticLayers) {
-            layerEntries.add(new IndexedObject<>(layer.getObject(), layer.getIndex()));
-        }
-        Optional<RenderLocationComponent.ConfigurableLocation> location = entity.get(EntityComponentTypes.MODEL).map(ModelComponent::getTexture);
-
-        if(!location.isPresent()) {
-            return;
-        }
-
+    public void gatherLayers(ComponentAccess entity, Consumer<IndexedObject<RenderLayer>> registry) {
+        List<IndexedObject<? extends FlattenedLayerProperty>> layerEntries = new ArrayList<>(this.staticLayers);
         for (EntityComponent component : entity.getAllComponents()) {
             if(component instanceof RenderFlattenedLayerComponent) {
                 ((RenderFlattenedLayerComponent) component).gatherComponents(entity, layerEntries::add);
             }
         }
 
-        //With the layers, [belly (1 texture), eyes (2 textures; blink & open), patterns (1 texture)]:
-        //
-        //                        belly
-        //                          |
-        //                          |
-        //            -----------------------------
-        //           /                             \
-        //          /                               \
-        //       blink                             open
-        //         |                                 |
-        //         |                                 |
-        //      patterns                          patterns
-        //         |                                 |
-        //         |                                 |
-        //   compiled_texture                 compiled_texture
-        //
-        //
-        //When eyes -> blink, compiled_texture  = [belly, blink, patterns]
-        //When eyes -> open,  compiled_texture  = [belly, open, patterns]
-        //
-        //These textures are compiled beforehand, and stored as strings. (Even though they're resource locations)
-
-        if(!layerEntries.isEmpty()) {
-            List<FlattenedLayerProperty> sortedByIndex = IndexedObject.sortIndex(layerEntries);
-
-            BuilderNode.Entry<String> root = new BuilderNode.Entry<>(null);
-            List<BuilderNode.Entry<String>> currentEntries = Lists.newArrayList(root);
-            for (FlattenedLayerProperty property : sortedByIndex) {
-                Set<String> allValues = property.allValues();
-                List<BuilderNode.Entry<String>> newValues = new ArrayList<>();
-                for (String value : allValues) {
-                    for (BuilderNode.Entry<String> entry : currentEntries) {
-                        BuilderNode.Entry<String> newEntry = new BuilderNode.Entry<>(value);
-                        entry.getChildren().add(newEntry);
-                        newValues.add(newEntry);
-                    }
-                }
-                currentEntries.clear();
-                currentEntries.addAll(newValues);
-            }
-            this.generateTexture(location.get(), new ArrayDeque<>(), root);
-
-            registry.accept(new IndexedObject<>(() -> {
-                BuilderNode.Entry<String> element = root;
-                for (FlattenedLayerProperty sorted : sortedByIndex) {
-                    String currentValue = sorted.currentValue();
-                    element = element.getChildren().stream()
-                        .filter(e -> e.getElement().equals(currentValue))
-                        .findFirst()
-                        .orElseThrow(() -> new IllegalArgumentException("Don't know how to handle type: " + currentValue + " for specified values " + sorted.allValues()));
-                }
-                if(element.getChildren().size() != 1) {
-                    throw new IllegalArgumentException("Error whilst traversing tree, reached destination: " + element.getChildren());
-                }
-                return new Layer(1F, 1F, 1F, 1F, new ResourceLocation(element.getChildren().get(0).getElement()));
-            }, this.index));
-
+        Optional<RenderLocationComponent.ConfigurableLocation> location = entity.get(EntityComponentTypes.MODEL).map(ModelComponent::getTexture);
+        if(!location.isPresent()) {
+            return;
         }
-    }
+        RenderLocationComponent.ConfigurableLocation baseLocation = location.get();
 
-    private void generateTexture(RenderLocationComponent.ConfigurableLocation baseLocation, Deque<String> currentStringStack, BuilderNode.Entry<String> currentNode) {
-        if(currentNode.getChildren().isEmpty()) { //End of tree, time to generate texture.
-            String location = "missingno";
-            if(baseLocation != null) {
-                location = TextureUtils.generateMultipleTexture(currentStringStack.stream().map(s -> baseLocation.copy().addFileName(s, Integer.MAX_VALUE).getLocation()).toArray(ResourceLocation[]::new)).toString();
-            }
-            currentNode.getChildren().add(new BuilderNode.Entry<>(location));
-        } else {
-            for (BuilderNode.Entry<String> child : currentNode.getChildren()) {
-                currentStringStack.push(child.getElement());
-                this.generateTexture(baseLocation, currentStringStack, child);
-                currentStringStack.pop();
-            }
+        ResourceLocation resourceLocation = baseLocation.copy().addFileName("%s", Integer.MAX_VALUE).getLocation();
+        for (IndexedObject<? extends FlattenedLayerProperty> entry : layerEntries) {
+            registry.accept(new IndexedObject<>(
+                new RenderLayer.DefaultTexture(() ->
+                    new RenderLayer.DefaultLayerData(
+                        new ResourceLocation(resourceLocation.getNamespace(), String.format(resourceLocation.getPath(), entry.getObject().currentValue()))
+                    )
+                ), entry.getIndex()
+            ));
         }
+
     }
 
     @Override

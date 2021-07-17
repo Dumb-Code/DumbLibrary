@@ -1,6 +1,7 @@
 package net.dumbcode.dumblibrary.server.ecs.component.additionals;
 
 import com.google.common.collect.Lists;
+import lombok.Getter;
 import lombok.Setter;
 import net.dumbcode.dumblibrary.server.utils.IndexedObject;
 import net.minecraft.util.ResourceLocation;
@@ -16,6 +17,7 @@ public interface RenderLocationComponent {
         private final String suffix;
 
         @Setter
+        @Getter
         private String modid;
 
         //List of folder names. Sorted by index
@@ -53,9 +55,13 @@ public interface RenderLocationComponent {
         }
 
         public ResourceLocation getLocation() {
+            return new ResourceLocation(this.modid, this.getPath());
+        }
+
+        public String getPath() {
             String joinedFolder = String.join("/", IndexedObject.sortIndex(this.folderNames)) + "/";
             String joinedFile = String.join("_", IndexedObject.sortIndex(this.fileNames));
-            return new ResourceLocation(this.modid, (this.folderNames.isEmpty() ? "" : joinedFolder) + joinedFile + this.suffix);
+            return (this.folderNames.isEmpty() ? "" : joinedFolder) + joinedFile + this.suffix;
         }
 
         public ConfigurableLocation copy() {

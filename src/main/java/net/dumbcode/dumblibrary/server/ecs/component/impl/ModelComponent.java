@@ -6,15 +6,12 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.dumbcode.dumblibrary.client.component.ModelComponentRenderer;
 import net.dumbcode.dumblibrary.client.model.dcm.DCMModel;
-import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLayer;
+import net.dumbcode.dumblibrary.server.ecs.component.additionals.*;
 import net.dumbcode.dumblibrary.server.utils.DCMUtils;
 import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
 import net.dumbcode.dumblibrary.server.ecs.component.FinalizableComponent;
-import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderCallbackComponent;
-import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLayerComponent;
-import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLocationComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLocationComponent.ConfigurableLocation;
 import net.dumbcode.dumblibrary.server.utils.IndexedObject;
 import net.minecraft.client.renderer.BufferBuilder;
@@ -90,6 +87,12 @@ public class ModelComponent extends EntityComponent implements RenderCallbackCom
         for (EntityComponent component : entity.getAllComponents()) {
             if(component instanceof RenderLocationComponent) {
                 ((RenderLocationComponent) component).editLocations(this.texture, this.fileLocation);
+            }
+        }
+
+        for (EntityComponent component : entity.getAllComponents()) {
+            if(component instanceof ModelSetComponent) {
+                ((ModelSetComponent) component).onModelSet(this);
             }
         }
 

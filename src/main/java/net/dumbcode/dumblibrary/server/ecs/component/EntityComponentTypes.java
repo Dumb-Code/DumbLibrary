@@ -10,14 +10,8 @@ import net.dumbcode.dumblibrary.server.ecs.item.systems.ItemEatenSystem;
 import net.dumbcode.dumblibrary.server.ecs.system.RegisterSystemsEvent;
 import net.dumbcode.dumblibrary.server.ecs.system.impl.*;
 import net.dumbcode.dumblibrary.server.registry.EarlyDeferredRegister;
-import net.dumbcode.dumblibrary.server.utils.InjectedUtils;
-import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.RegistryObject;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.IForgeRegistry;
-import net.minecraftforge.registries.ObjectHolder;
 import net.minecraftforge.registries.RegistryBuilder;
 
 import java.util.function.Supplier;
@@ -45,6 +39,7 @@ public class EntityComponentTypes {
     public static final RegistryObject<EntityComponentType<CloseProximityAngryComponent, CloseProximityAngryComponent.Storage>> CLOSE_PROXIMITY_ANGRY = REGISTER.register("close_proximity_angry", () -> SimpleComponentType.of(CloseProximityAngryComponent.class, CloseProximityAngryComponent::new, CloseProximityAngryComponent.Storage::new));
     public static final RegistryObject<EntityComponentType<SoundStorageComponent, SoundStorageComponent.Storage>> SOUND_STORAGE = REGISTER.register("sound_storage", () -> SimpleComponentType.of(SoundStorageComponent.class, SoundStorageComponent::new, SoundStorageComponent.Storage::new));
     public static final RegistryObject<EntityComponentType<IdleActionComponent, IdleActionComponent.Storage>> IDLE_ACTION = REGISTER.register("idle_action", () -> SimpleComponentType.of(IdleActionComponent.class, IdleActionComponent::new, IdleActionComponent.Storage::new));
+    public static final RegistryObject<EntityComponentType<CullSizeComponent, CullSizeComponent.Storage>> CULL_SIZE = REGISTER.register("cull_size", () -> SimpleComponentType.of(CullSizeComponent.class, CullSizeComponent::new, CullSizeComponent.Storage::new));
 
     public static final RegistryObject<EntityComponentType<GrowingComponent, GrowingComponent.Storage>> BLOCK_GROWING = REGISTER.register("block_growing", () -> SimpleComponentType.of(GrowingComponent.class, GrowingComponent::new, GrowingComponent.Storage::new));
     public static final RegistryObject<EntityComponentType<FlowerWorldgenComponent, FlowerWorldgenComponent.Storage>> FLOWER_WORLDGEN = REGISTER.register("flower_worldgen", () -> SimpleComponentType.of(FlowerWorldgenComponent.class, FlowerWorldgenComponent::new, FlowerWorldgenComponent.Storage::new ));

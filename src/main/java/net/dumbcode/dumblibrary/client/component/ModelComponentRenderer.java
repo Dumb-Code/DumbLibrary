@@ -1,6 +1,7 @@
 package net.dumbcode.dumblibrary.client.component;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.client.FramebufferCache;
@@ -12,6 +13,7 @@ import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLayerComp
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLocationComponent;
 import net.dumbcode.dumblibrary.server.utils.IndexedObject;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.Tessellator;
@@ -22,6 +24,7 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.shader.Framebuffer;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.inventory.container.PlayerContainer;
 import net.minecraft.resources.IResourceManager;
 import net.minecraft.util.ResourceLocation;
 import org.apache.commons.lang3.NotImplementedException;
@@ -35,7 +38,7 @@ public class ModelComponentRenderer extends LivingRenderer<LivingEntity, EntityM
 
     private static final Minecraft MC = Minecraft.getInstance();
 
-    private static final ResourceLocation DL_MODEL_TEX_LOCATION = new ResourceLocation(DumbLibrary.MODID, "dl_model_override_texture@@");
+    private static final ResourceLocation DL_MODEL_TEX_LOCATION = new ResourceLocation(DumbLibrary.MODID, "dl_model_override_texture");
     private static final EditableTexture DL_MODEL_TEX = new EditableTexture();
 
     private final Supplier<DCMModel> modelSupplier;
@@ -56,12 +59,6 @@ public class ModelComponentRenderer extends LivingRenderer<LivingEntity, EntityM
     @Override
     public void invoke(RenderComponentContext context, Entity entity, float entityYaw, float partialTicks, MatrixStack stack, IRenderTypeBuffer buffer, int light, List<RenderCallbackComponent.SubCallback> preCallbacks, List<RenderCallbackComponent.SubCallback> postCallbacks) {
 //            this.doRenderShadowAndFire(entity, x, y, z, entityYaw, partialTicks);
-
-        Framebuffer frameBuffer = this.getFrameBuffer();
-        frameBuffer.bindWrite(true);
-        this.renderAllLayers();
-        MC.getMainRenderTarget().bindWrite(true);
-        DL_MODEL_TEX.setId(frameBuffer.getColorTextureId());
 
         DCMModel model = this.modelSupplier.get();
         this.model = (EntityModel<LivingEntity>)(Object)model;
@@ -92,6 +89,7 @@ public class ModelComponentRenderer extends LivingRenderer<LivingEntity, EntityM
         for (RenderCallbackComponent.SubCallback callback : postCallbacks) {
             callback.invoke(context, entity, entityYaw, partialTicks, stack, buffer, light);
         }
+
     }
 
     @Override
@@ -101,39 +99,44 @@ public class ModelComponentRenderer extends LivingRenderer<LivingEntity, EntityM
 
 
     private void renderAllLayers() {
-        RenderSystem.clearColor(0F, 0, 0, 0);
-        RenderSystem.clear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT, true);
-        RenderSystem.color4f(1f, 1f, 1f, 1f);
+        RenderSystem.clearColor(0F, 0, 0, 0.0F);
 
-//        MC.entityRenderer.disableLightmap();
-        RenderSystem.disableLighting();
+        RenderSystem.clear(GL11.GL_COLOR_BUFFER_BIT, Minecraft.ON_OSX);
+        RenderSystem.color4f(1f, 1f, 1f, 1f);
 
         RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         RenderSystem.enableBlend();
-
-        int lastMode = GL11.glGetInteger(GL11.GL_MATRIX_MODE);
-        RenderSystem.pushMatrix();
+        RenderSystem.enableDepthTest();
+        RenderSystem.depthMask(false);
         RenderSystem.matrixMode(GL11.GL_PROJECTION);
         RenderSystem.pushMatrix();
         RenderSystem.loadIdentity();
-        RenderSystem.ortho(0, 1, 0, 1, 0, 1000);
+        RenderSystem.ortho(0, 1, 1 ,0, 1000.0D, 3000.0D);
         RenderSystem.matrixMode(GL11.GL_MODELVIEW);
         RenderSystem.pushMatrix();
         RenderSystem.loadIdentity();
+        RenderSystem.translatef(0.0F, 0.0F, -2000.0F);
+        RenderSystem.enableTexture();
+        RenderSystem.disableLighting();
+        RenderSystem.enableAlphaTest();
+        RenderSystem.enableColorMaterial();
+
+//        RenderSystem.disableBlend();
+//        RenderSystem.disableAlphaTest();
+
+        RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+        Minecraft.getInstance().textureManager.bind(PlayerContainer.BLOCK_ATLAS);
+        Tessellator tessellator = RenderSystem.renderThreadTesselator();
 
         for (RenderLayer layer : this.layerList) {
-            layer.render(Tessellator.getInstance(), Tessellator.getInstance().getBuilder());
+            layer.render(tessellator, tessellator.getBuilder());
         }
 
         RenderSystem.popMatrix();
         RenderSystem.matrixMode(GL11.GL_PROJECTION);
         RenderSystem.popMatrix();
-        RenderSystem.matrixMode(lastMode);
-        RenderSystem.popMatrix();
-
-//        MC.entityRenderer.enableLightmap();
-        RenderSystem.enableLighting();
-        RenderSystem.disableBlend();
+        RenderSystem.matrixMode(GL11.GL_MODELVIEW);
+        RenderSystem.depthMask(true);
 
     }
 
@@ -156,6 +159,12 @@ public class ModelComponentRenderer extends LivingRenderer<LivingEntity, EntityM
 
     @Override
     public ResourceLocation getTextureLocation(LivingEntity entity) {
+        Framebuffer frameBuffer = this.getFrameBuffer();
+        frameBuffer.bindWrite(true);
+        this.renderAllLayers();
+        MC.getMainRenderTarget().bindWrite(true);
+        DL_MODEL_TEX.setId(frameBuffer.getColorTextureId());
+
         return DL_MODEL_TEX_LOCATION;
     }
 

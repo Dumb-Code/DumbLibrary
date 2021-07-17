@@ -35,7 +35,7 @@ public class SimpleComponentType<T extends EntityComponent, S extends EntityComp
     }
 
     public static <T extends EntityComponent, S extends EntityComponentStorage<T>> EntityComponentType<T, S> of(Class<T> type, Supplier<T> constructor, @Nullable Supplier<S> storage, boolean defaultAttach) {
-        return new SimpleComponentType<>(constructor, storage, true, type);
+        return new SimpleComponentType<>(constructor, storage, defaultAttach, type);
     }
 
 

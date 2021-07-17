@@ -54,9 +54,10 @@ public class TaskScheduler {
         scheduledTasks.removeIf(t -> {
             if(t.ticksLeft-- == 0) {
                 try {
+                    t.task.run();
                     t.task.get();
                 } catch (InterruptedException | ExecutionException e) {
-                    DumbLibrary.getLogger().error("Unable to process Scheduled Task", e);
+                    DumbLibrary.getLogger().fatal("Error executing task", e);
                 }
                 return true;
             }

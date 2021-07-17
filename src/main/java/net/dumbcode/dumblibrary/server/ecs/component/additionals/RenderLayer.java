@@ -45,10 +45,10 @@ public interface RenderLayer {
             }
             this.bind();
             buffer.begin(7, DefaultVertexFormats.POSITION_COLOR_TEX);
-            buffer.vertex(0, 1, -2).color(data.red, data.green, data.blue, data.alpha).uv(0, 1).endVertex();
-            buffer.vertex(1, 1, -2).color(data.red, data.green, data.blue, data.alpha).uv(1, 1).endVertex();
-            buffer.vertex(1, 0, -2).color(data.red, data.green, data.blue, data.alpha).uv(1, 0).endVertex();
-            buffer.vertex(0, 0, -2).color(data.red, data.green, data.blue, data.alpha).uv(0, 0).endVertex();
+            buffer.vertex(0, 1, -2).color(data.red, data.green, data.blue, data.alpha).uv(0, 0).endVertex();
+            buffer.vertex(1, 1, -2).color(data.red, data.green, data.blue, data.alpha).uv(1, 0).endVertex();
+            buffer.vertex(1, 0, -2).color(data.red, data.green, data.blue, data.alpha).uv(1, 1).endVertex();
+            buffer.vertex(0, 0, -2).color(data.red, data.green, data.blue, data.alpha).uv(0, 1).endVertex();
             tessellator.end();
         }
 

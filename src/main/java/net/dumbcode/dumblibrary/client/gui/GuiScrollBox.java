@@ -19,6 +19,7 @@ import net.minecraft.util.text.StringTextComponent;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 @Getter
@@ -46,6 +47,8 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> extends Widget {
     @Getter(AccessLevel.NONE)
     @Setter(AccessLevel.NONE)
     private final Supplier<List<T>> listSupplier;
+
+    private BooleanSupplier shouldCountMouse = () -> true;
 
     @Getter(AccessLevel.NONE)
     @Setter(AccessLevel.NONE)
@@ -192,11 +195,12 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> extends Widget {
      * @return true if the mouse is over the scrollbar, false otherwise.
      */
     private boolean mouseOverScrollBar(double mouseX, double mouseY, int height, float[] scrollBar) {
-        return     mouseX - this.x > 0 && mouseX - this.x <= this.width
-                && mouseY - this.y > 0 && mouseY - this.y < height
+        return this.shouldCountMouse.getAsBoolean() &&
+            mouseX - this.x > 0 && mouseX - this.x <= this.width
+            && mouseY - this.y > 0 && mouseY - this.y < height
 
-                && mouseX >= scrollBar[0] && mouseX <= scrollBar[0] + scrollBar[2]
-                && mouseY >= scrollBar[1] && mouseY <= scrollBar[1] + scrollBar[3];
+            && mouseX >= scrollBar[0] && mouseX <= scrollBar[0] + scrollBar[2]
+            && mouseY >= scrollBar[1] && mouseY <= scrollBar[1] + scrollBar[3];
     }
 
     /**
@@ -305,6 +309,11 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> extends Widget {
         return false;
     }
 
+    @Override
+    public boolean isMouseOver(double mouseX, double mouseY) {
+        return this.isMouseOver(mouseX, mouseY, this.getTotalSize(this.listSupplier.get().size()));
+    }
+
     /**
      * Checks to see if the mouse is over this element
      *
@@ -313,11 +322,11 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> extends Widget {
      * @return true if the mouse is over this element, false otherwise
      */
     public boolean isMouseOver(double mouseX, double mouseY, int height) {
-        return     mouseX - this.x > 0
-                && mouseX - this.x <= this.width
-
-                && mouseY - this.y > 0
-                && mouseY - this.y <= height;
+        return this.shouldCountMouse.getAsBoolean() &&
+            mouseX - this.x > 0
+            && mouseX - this.x <= this.width
+            && mouseY - this.y > 0
+            && mouseY - this.y <= height;
     }
 
 

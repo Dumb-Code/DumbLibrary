@@ -6,6 +6,7 @@ import net.dumbcode.dumblibrary.client.model.dcm.DCMModelRenderer;
 import net.dumbcode.dumblibrary.server.animation.AnimatedReferenceCube;
 import net.dumbcode.dumblibrary.server.animation.Animation;
 import net.dumbcode.dumblibrary.server.animation.AnimationContainer;
+import net.dumbcode.dumblibrary.server.ecs.component.additionals.ModelSetComponent;
 import net.dumbcode.dumblibrary.server.utils.DCMUtils;
 import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
@@ -29,7 +30,7 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.IntConsumer;
 
-public class AnimationComponent extends EntityComponent implements RenderCallbackComponent, FinalizableComponent {
+public class AnimationComponent extends EntityComponent implements RenderCallbackComponent, FinalizableComponent, ModelSetComponent {
 
     @Setter @Getter AnimationContainer animationContainer;
 
@@ -41,6 +42,7 @@ public class AnimationComponent extends EntityComponent implements RenderCallbac
     private IntConsumer stopSyncer;
 
     private Iterable<? extends AnimatedReferenceCube> modelCubes = Collections.emptyList();
+    private boolean shouldUserDummyCubes = true;
 
     /**
      * Returns whether a channel is active.
@@ -91,9 +93,9 @@ public class AnimationComponent extends EntityComponent implements RenderCallbac
      */
     public AnimationEntryData playAnimation(Animation animation, AnimationEntryData entry, int channel) {
         if(channel >= 0) {
-            UUID current = this.layers[channel].getUuid();
+            AnimationLayer current = this.layers[channel];
             if(current != null) {
-                this.animationHandler.markRemoved(current);
+                this.animationHandler.markRemoved(current.getUuid());
             }
         }
         AnimationLayer layer = new AnimationLayer(animation, this.animationHandler.startAnimation(entry));
@@ -108,9 +110,9 @@ public class AnimationComponent extends EntityComponent implements RenderCallbac
     }
 
     public void stopAnimation(int channel) {
-        UUID id = this.layers[channel].getUuid();
-        if(id != null) {
-            this.animationHandler.markRemoved(id);
+        AnimationLayer current = this.layers[channel];
+        if(current != null) {
+            this.animationHandler.markRemoved(current.getUuid());
             this.layers[channel] = null;
             if(this.stopSyncer != null) {
                 this.stopSyncer.accept(channel);
@@ -121,6 +123,15 @@ public class AnimationComponent extends EntityComponent implements RenderCallbac
     public void stopAll() {
         Arrays.fill(this.layers, null);
         this.animationHandler.markAllRemoved();
+    }
+
+    @Override
+    public void onModelSet(ModelComponent component) {
+        if(this.shouldUserDummyCubes) {
+            this.modelCubes = DCMUtils.getServersideCubes(component.getFileLocation().getLocation()).values();
+        } else {
+            this.modelCubes = DistExecutor.unsafeRunForDist(() -> () -> component.getModelCache().getAllCubes(), () -> Collections::emptyList);
+        }
     }
 
     @Override
@@ -138,18 +149,16 @@ public class AnimationComponent extends EntityComponent implements RenderCallbac
             //                Map<String, AnimatableCube> cubes = DCMUtils.getServersideCubes(entity.get(EntityComponentTypes.MODEL).map(com -> com.getFileLocation().getLocation()).orElse(DCMUtils.MISSING));
             //                this.animationLayer = new AnimationLayer(cubes.keySet(), cubes::get, this.animationContainer.createDataGetter(), e);//this.animationContainer.apply(ecs).getAnimations()::get
             //            }
-            if (e.level.isClientSide) {
-                ModelComponent component = entity.get(EntityComponentTypes.MODEL).orElseThrow(() -> new IllegalStateException("Animation component needs a model component"));
-                this.modelCubes = DistExecutor.unsafeRunForDist(() -> () -> component.getModelCache().getAllCubes(), () -> Collections::emptyList);
-            } else {
+            if (!e.level.isClientSide) {
+                this.shouldUserDummyCubes = false;
                 this.startSyncer = (data, channel) -> DumbLibrary.NETWORK.send(PacketDistributor.DIMENSION.with(e.level::dimension), new S2CSyncAnimation(e.getId(), data.getAnimation(), channel));
                 this.stopSyncer = channel -> DumbLibrary.NETWORK.send(PacketDistributor.DIMENSION.with(e.level::dimension), new S2CStopAnimation(e.getId(), channel));
-                this.modelCubes = DCMUtils.getServersideCubes(entity.get(EntityComponentTypes.MODEL).map(com -> com.getFileLocation().getLocation()).orElse(DCMUtils.MISSING)).values();
             }
         } else {
             throw new IllegalStateException("Unable to animate non entity. Type " + entity.getClass().getSimpleName());
         }
     }
+
 
     @Override
     public void addCallbacks(List<SubCallback> preRenderCallbacks, List<MainCallback> renderCallbacks, List<SubCallback> postRenderCallback) {

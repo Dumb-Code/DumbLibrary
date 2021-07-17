@@ -1,14 +1,20 @@
 package net.dumbcode.dumblibrary.server.taxidermy;
 
 import lombok.Getter;
+import net.dumbcode.dumblibrary.client.gui.TaxidermyScreen;
 import net.dumbcode.dumblibrary.client.model.dcm.DCMModel;
 import net.dumbcode.dumblibrary.server.SimpleBlockEntity;
 import net.minecraft.block.BlockState;
+import net.minecraft.client.gui.IHasContainer;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 import java.util.Map;
+import java.util.Scanner;
 
 public abstract class BaseTaxidermyBlockEntity extends SimpleBlockEntity {
 
@@ -36,5 +42,10 @@ public abstract class BaseTaxidermyBlockEntity extends SimpleBlockEntity {
 
     public abstract ResourceLocation getTexture();
     public abstract DCMModel getModel();
+
+    @OnlyIn(Dist.CLIENT)
+    public TaxidermyScreen openScreen(TaxidermyContainer container) {
+        return null;
+    }
 
 }

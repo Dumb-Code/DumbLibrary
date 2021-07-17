@@ -28,7 +28,7 @@ public class C2SFullPoseChange {
         int count = buf.readInt();
         Map<String, Vector3f> pose = new HashMap<>();
         for (int i = 0; i < count; i++) {
-            String name = buf.readUtf();
+            String name = buf.readUtf(32767);
             float rx = buf.readFloat();
             float ry = buf.readFloat();
             float rz = buf.readFloat();

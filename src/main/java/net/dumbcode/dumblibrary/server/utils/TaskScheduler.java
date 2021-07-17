@@ -7,6 +7,8 @@ import lombok.Data;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.World;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -29,6 +31,7 @@ public class TaskScheduler {
     private static final List<Scheduled> scheduledTasks = new ArrayList<>();
 
     @SubscribeEvent
+    @OnlyIn(Dist.CLIENT)
     public static void clientUpdate(TickEvent.ClientTickEvent event) {
         if(event.phase == TickEvent.Phase.START) {
             update(Minecraft.getInstance().level);

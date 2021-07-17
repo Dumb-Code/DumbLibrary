@@ -26,7 +26,7 @@ public class C2SMoveSelectedSkeletalPart {
 
     public static C2SMoveSelectedSkeletalPart fromBytes(PacketBuffer buf) {
         return new C2SMoveSelectedSkeletalPart(
-            buf.readUtf(),
+            buf.readUtf(32767),
             XYZAxis.values()[buf.readInt()],
             buf.readByte(),
             buf.readFloat()
@@ -43,6 +43,7 @@ public class C2SMoveSelectedSkeletalPart {
     public static void handle(C2SMoveSelectedSkeletalPart message, Supplier<NetworkEvent.Context> supplier) {
         NetworkEvent.Context context = supplier.get();
         context.enqueueWork(() -> {
+
             ServerPlayerEntity sender = context.getSender();
             World world = sender.level;
             if(sender.containerMenu instanceof TaxidermyContainer) {

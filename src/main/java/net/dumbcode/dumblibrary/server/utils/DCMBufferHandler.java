@@ -49,7 +49,7 @@ public enum DCMBufferHandler implements BiConsumer<PacketBuffer, ModelInfo>, Fun
     @Override
     public ModelInfo apply(PacketBuffer buffer) {
         ModelInfo info = new ModelInfo(
-            buffer.readUtf(),
+            buffer.readUtf(32767),
             buffer.readInt(), buffer.readInt(),
             RotationOrder.ZYX
         );
@@ -61,7 +61,7 @@ public enum DCMBufferHandler implements BiConsumer<PacketBuffer, ModelInfo>, Fun
         for (int i = 0; i < cubes; i++) {
             CubeInfo cube = new CubeInfo(
                 info,
-                buf.readUtf(),
+                buf.readUtf(32767),
                 readIntArray(buf, 3),
                 readFloatArray(buf, 3),
                 readFloatArray(buf, 3),

@@ -2,6 +2,8 @@ package net.dumbcode.dumblibrary.server.network;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.network.NetworkEvent;
 
@@ -13,6 +15,7 @@ public class NetworkUtils {
         return context.getDirection().getReceptionSide().isClient() ? getClientPlayer() : context.getSender();
     }
 
+    @OnlyIn(Dist.CLIENT)
     private static PlayerEntity getClientPlayer() {
         return Minecraft.getInstance().player;
     }

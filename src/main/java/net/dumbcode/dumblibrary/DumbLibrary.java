@@ -1,6 +1,7 @@
 package net.dumbcode.dumblibrary;
 
 import net.dumbcode.dumblibrary.client.BakedModelResolver;
+import net.dumbcode.dumblibrary.client.gui.TaxidermyScreen;
 import net.dumbcode.dumblibrary.client.model.ModelHandler;
 import net.dumbcode.dumblibrary.server.ItemComponent;
 import net.dumbcode.dumblibrary.server.dna.GeneticTypes;
@@ -17,12 +18,18 @@ import net.dumbcode.dumblibrary.server.utils.VoidStorage;
 import net.dumbcode.studio.model.ModelMirror;
 import net.dumbcode.studio.model.RotationOrder;
 import net.minecraft.block.Block;
+import net.minecraft.client.gui.IHasContainer;
+import net.minecraft.client.gui.ScreenManager;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.container.Container;
 import net.minecraft.inventory.container.ContainerType;
 import net.minecraft.item.Item;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityInject;
@@ -30,10 +37,7 @@ import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.ModContainer;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.fml.RegistryObject;
+import net.minecraftforge.fml.*;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
@@ -71,7 +75,7 @@ public class DumbLibrary {
             return new TaxidermyContainer((BaseTaxidermyBlockEntity) entity, windowId);
         }
         String teClazz = entity == null ? "@null" : entity.getClass().getSimpleName();
-        throw new IllegalStateException("Illegal point, tried to open tracking beacon at " + blockPos + " but found tileentity of " + teClazz);
+        throw new IllegalStateException("Illegal point, tried to open taxidermy block at " + blockPos + " but found tileentity of " + teClazz);
     }));
 
     @CapabilityInject(EntityManager.class)
@@ -92,17 +96,21 @@ public class DumbLibrary {
         IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
         IEventBus forgeBus = MinecraftForge.EVENT_BUS;
 
-        bus.addListener(ModelHandler::onModelReady);
-        bus.addListener(BakedModelResolver::onTextureStitch);
-        bus.addListener(BakedModelResolver::onModelBake);
         bus.addListener(this::preInit);
 
         forgeBus.addListener(EntityComponentTypes::registerSystems);
-        forgeBus.addListener(MouseUtils::onMouseEvent);
 
         DRI.register(bus);
+        DRC.register(bus);
         EntityComponentTypes.REGISTER.register(bus);
         GeneticTypes.REGISTER.register(bus);
+
+        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
+            bus.addListener(ModelHandler::onModelReady);
+            bus.addListener(BakedModelResolver::onTextureStitch);
+            bus.addListener(BakedModelResolver::onModelBake);
+            forgeBus.addListener(MouseUtils::onMouseEvent);
+        });
 
         bus.addGenericListener(Block.class, EventPriority.HIGHEST, (RegistryEvent.Register<Block> event) -> {
             ModContainer activeContainer = ModLoadingContext.get().getActiveContainer();
@@ -145,6 +153,12 @@ public class DumbLibrary {
         NETWORK.registerMessage(14, B14ReleaseCollection.class, B14ReleaseCollection::toBytes, B14ReleaseCollection::fromBytes, B14ReleaseCollection::handle);
 
         CapabilityManager.INSTANCE.register(EntityManager.class, new VoidStorage<>(), EntityManager.Impl::new);
+
+        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
+            //We need it as a full declaration becuase of weird compile stuff
+            ScreenManager.IScreenFactory<TaxidermyContainer, TaxidermyScreen> factory = (container, inventory, title) -> container.getBlockEntity().openScreen(container);
+            ScreenManager.register(TAXIDERMY_CONTAINER.get(), factory);
+        });
     }
 
 //    @Mod.EventHandler

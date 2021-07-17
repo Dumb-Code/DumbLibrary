@@ -26,7 +26,7 @@ public class C2SSkeletalMovement {
 
     public static C2SSkeletalMovement fromBytes(PacketBuffer buf) {
         return new C2SSkeletalMovement(
-            buf.readUtf(),
+            buf.readUtf(32767),
             new Vector3f(buf.readFloat(), buf.readFloat(), buf.readFloat()),
             new Vector3f(buf.readFloat(), buf.readFloat(), buf.readFloat())
         );

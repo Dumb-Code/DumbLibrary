@@ -31,7 +31,6 @@ import java.util.function.Consumer;
 
 public class FlattenedLayerComponent extends EntityComponent implements RenderLayerComponent {
 
-    private float index;
     private final List<IndexedObject<FlattenedLayerProperty.Static>> staticLayers = new ArrayList<>();
 
     @Override
@@ -52,11 +51,10 @@ public class FlattenedLayerComponent extends EntityComponent implements RenderLa
         String path = baseLocation.copy().addFileName("%s", Integer.MAX_VALUE).getPath();
         for (IndexedObject<? extends FlattenedLayerProperty> entry : layerEntries) {
             registry.accept(new IndexedObject<>(
-                new RenderLayer.DefaultTexture(() ->
-                    new RenderLayer.DefaultLayerData(
-                        new ResourceLocation(baseLocation.getModid(), String.format(path, entry.getObject().currentValue()))
-                    )
-                ), entry.getIndex()
+                new RenderLayer.DefaultTexture(() -> {
+                    String s = entry.getObject().currentValue();
+                    return s == null ? null : new RenderLayer.DefaultLayerData(new ResourceLocation(baseLocation.getModid(), String.format(path, s)));
+                }), entry.getIndex()
             ));
         }
 
@@ -69,7 +67,6 @@ public class FlattenedLayerComponent extends EntityComponent implements RenderLa
         for (IndexedObject<FlattenedLayerProperty.Static> layer : this.staticLayers) {
             IndexedObject.serializeByteBuf(buf, layer, aStatic -> buf.writeUtf(aStatic.getValue()));
         }
-        buf.writeFloat(this.index);
     }
 
     @Override
@@ -81,7 +78,6 @@ public class FlattenedLayerComponent extends EntityComponent implements RenderLa
         for (int i = 0; i < size; i++) {
             this.staticLayers.add(IndexedObject.deserializeByteBuf(buf, () -> new FlattenedLayerProperty.Static(buf.readUtf())));
         }
-        this.index = buf.readFloat();
     }
 
     @Override
@@ -91,7 +87,6 @@ public class FlattenedLayerComponent extends EntityComponent implements RenderLa
                 .map(io -> IndexedObject.serializeNBT(io, aStatic -> StringNBT.valueOf(aStatic.getValue())))
                 .collect(CollectorUtils.toNBTTagList())
         );
-        compound.putFloat("Index", this.index);
         return super.serialize(compound);
     }
 
@@ -101,7 +96,6 @@ public class FlattenedLayerComponent extends EntityComponent implements RenderLa
         StreamUtils.stream(compound.getList("layers", Constants.NBT.TAG_COMPOUND))
             .map(t -> IndexedObject.deserializeNBT((CompoundNBT)t, b -> new FlattenedLayerProperty.Static(b.getAsString())))
             .forEach(this.staticLayers::add);
-        this.index = compound.getFloat("Index");
         super.deserialize(compound);
     }
 
@@ -110,7 +104,6 @@ public class FlattenedLayerComponent extends EntityComponent implements RenderLa
     @Accessors(chain = true)
     public static class Storage implements EntityComponentStorage<FlattenedLayerComponent> {
 
-        private float index;
         private final List<IndexedObject<FlattenedLayerProperty.Static>> staticLayers = new ArrayList<>();
 
         public Storage staticLayer(String layerName, float index) {
@@ -121,7 +114,6 @@ public class FlattenedLayerComponent extends EntityComponent implements RenderLa
         @Override
         public void constructTo(FlattenedLayerComponent component) {
             component.staticLayers.addAll(this.staticLayers);
-            component.index = this.index;
         }
 
         @Override
@@ -131,7 +123,6 @@ public class FlattenedLayerComponent extends EntityComponent implements RenderLa
                     .map(io -> IndexedObject.serializeJson(io, aStatic -> new JsonPrimitive(aStatic.getValue())))
                     .collect(CollectorUtils.toJsonArray())
             );
-            json.addProperty("index", this.index);
         }
 
         @Override
@@ -140,7 +131,6 @@ public class FlattenedLayerComponent extends EntityComponent implements RenderLa
             StreamUtils.stream(JSONUtils.getAsJsonArray(json, "layers"))
                 .map(e -> IndexedObject.deserializeJson(e.getAsJsonObject(), b -> new FlattenedLayerProperty.Static(b.getAsString())))
                 .forEach(this.staticLayers::add);
-            this.index = JSONUtils.getAsFloat(json, "index");
         }
     }
 }

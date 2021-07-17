@@ -3,6 +3,7 @@ package net.dumbcode.dumblibrary.server.ecs.component.impl.data;
 import com.google.common.collect.Sets;
 import lombok.Getter;
 
+import javax.annotation.Nullable;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -13,7 +14,7 @@ public class FlattenedLayerProperty {
         this.currentValue = currentValue;
     }
 
-
+    @Nullable
     public String currentValue() {
         return this.currentValue.get();
     }

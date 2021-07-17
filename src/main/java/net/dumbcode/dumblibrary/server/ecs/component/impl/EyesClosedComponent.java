@@ -18,6 +18,7 @@ import java.util.function.Consumer;
 
 @Getter
 public class EyesClosedComponent extends EntityComponent implements RenderFlattenedLayerComponent {
+    private float index;
     private String eyesOnTexture;
     private String eyesOffTexture;
 
@@ -25,7 +26,7 @@ public class EyesClosedComponent extends EntityComponent implements RenderFlatte
 
     @Override
     public void gatherComponents(ComponentAccess entity, Consumer<IndexedObject<FlattenedLayerProperty>> registry) {
-        registry.accept(new IndexedObject<>(new FlattenedLayerProperty(() -> this.blinkTicksLeft > 0 ? this.eyesOffTexture : this.eyesOnTexture), 0F));
+        registry.accept(new IndexedObject<>(new FlattenedLayerProperty(() -> this.blinkTicksLeft > 0 ? this.eyesOffTexture : this.eyesOnTexture), this.index));
     }
 
     @Override
@@ -34,6 +35,7 @@ public class EyesClosedComponent extends EntityComponent implements RenderFlatte
         compound.putString("off_texture", this.eyesOffTexture);
 
         compound.putInt("blink_tick_time", this.blinkTicksLeft);
+        compound.putFloat("index", this.index);
         return super.serialize(compound);
     }
 
@@ -43,6 +45,7 @@ public class EyesClosedComponent extends EntityComponent implements RenderFlatte
         this.eyesOffTexture = compound.getString("off_texture");
 
         this.blinkTicksLeft = compound.getInt("blink_tick_time");
+        this.index = compound.getFloat("index");
         super.deserialize(compound);
     }
 
@@ -52,6 +55,7 @@ public class EyesClosedComponent extends EntityComponent implements RenderFlatte
         buf.writeUtf(this.eyesOffTexture);
 
         buf.writeInt(this.blinkTicksLeft);
+        buf.writeFloat(this.index);
         super.serialize(buf);
     }
 
@@ -85,6 +89,7 @@ public class EyesClosedComponent extends EntityComponent implements RenderFlatte
         this.eyesOffTexture = buf.readUtf();
 
         this.blinkTicksLeft = buf.readInt();
+        this.index = buf.readFloat();
         super.deserialize(buf);
     }
 
@@ -97,6 +102,7 @@ public class EyesClosedComponent extends EntityComponent implements RenderFlatte
     @Accessors(chain = true)
     public static class Storage implements EntityComponentStorage<EyesClosedComponent> {
 
+        private float index;
         private String eyesOnTexture;
         private String eyesOffTexture;
 
@@ -108,14 +114,20 @@ public class EyesClosedComponent extends EntityComponent implements RenderFlatte
 
         @Override
         public void writeJson(JsonObject json) {
-            json.addProperty("on_texture", this.eyesOnTexture);
-            json.addProperty("off_texture", this.eyesOffTexture);
+            if(this.eyesOnTexture != null) {
+                json.addProperty("on_texture", this.eyesOnTexture);
+            }
+            if(this.eyesOffTexture != null) {
+                json.addProperty("off_texture", this.eyesOffTexture);
+            }
+            json.addProperty("index", this.index);
         }
 
         @Override
         public void readJson(JsonObject json) {
-            this.eyesOnTexture = JSONUtils.getAsString(json, "on_texture");
-            this.eyesOffTexture = JSONUtils.getAsString(json, "off_texture");
+            this.eyesOnTexture = JSONUtils.getAsString(json, "on_texture", null);
+            this.eyesOffTexture = JSONUtils.getAsString(json, "off_texture", null);
+            this.index = JSONUtils.getAsFloat(json, "index");
         }
     }
 }

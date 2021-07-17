@@ -34,7 +34,7 @@ public enum EntityGeneticRegistry {
         int b = color & 0xFF;
         this.register(entityType, GeneticTypes.OVERALL_TINT.get(),
             new GeneticTypeOverallTintStorage().setTintType(GeneticTypeOverallTintStorage.TintType.TARGET),
-            GeneticUtils.encode3BitColor(r/255F, g/255F, b/255F)
+            GeneticUtils.encodeFloatColor(r/255F, g/255F, b/255F, 1F)
         );
     }
 

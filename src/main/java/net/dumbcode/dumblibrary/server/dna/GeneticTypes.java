@@ -5,9 +5,9 @@ import net.dumbcode.dumblibrary.server.dna.datahandlers.ColouredGeneticDataHandl
 import net.dumbcode.dumblibrary.server.dna.storages.GeneticTypeLayerColorStorage;
 import net.dumbcode.dumblibrary.server.dna.storages.RandomUUIDStorage;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentTypes;
-import net.dumbcode.dumblibrary.server.ecs.component.impl.GeneticLayerComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.impl.RenderAdjustmentsComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.impl.SleepingComponent;
+import net.dumbcode.dumblibrary.server.ecs.component.impl.data.GeneticLayerEntry;
 import net.dumbcode.dumblibrary.server.registry.EarlyDeferredRegister;
 import net.dumbcode.dumblibrary.server.utils.GeneticUtils;
 import net.minecraft.entity.LivingEntity;
@@ -16,7 +16,6 @@ import net.minecraft.entity.ai.attributes.Attributes;
 import net.minecraft.entity.ai.attributes.ModifiableAttributeInstance;
 import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.fml.RegistryObject;
-import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.RegistryBuilder;
 
@@ -33,7 +32,7 @@ public class GeneticTypes {
         GeneticType.<GeneticTypeLayerColorStorage>builder()
             .storage(GeneticTypeLayerColorStorage::new)
             .onChange(EntityComponentTypes.GENETIC_LAYER_COLORS.get(), (value, rawValue, component, storage)
-                -> component.setLayerValues(storage.getLayerName(), GeneticUtils.decode3BitColor(rawValue)))
+                -> component.setLayerValues(storage.getLayerName(), GeneticUtils.decodeFloatColor(rawValue)))
             .dataHandler(ColouredGeneticDataHandler.INSTANCE)
             .build()
     );
@@ -43,11 +42,11 @@ public class GeneticTypes {
         GeneticType.<GeneticTypeOverallTintStorage>builder()
             .storage(GeneticTypeOverallTintStorage::new)
             .onChange(EntityComponentTypes.GENETIC_LAYER_COLORS.get(), (value, rawValue, component, storage) -> {
-                for (GeneticLayerComponent.GeneticLayerEntry entry : component.getEntries()) {
+                for (GeneticLayerEntry entry : component.getEntries()) {
                     if(storage.getTintType() == GeneticTypeOverallTintStorage.TintType.DIRECT) {
-                        entry.addDirectTint(storage.getRandomUUID(), GeneticUtils.decode3BitColor(rawValue));
+                        entry.addDirectTint(storage.getRandomUUID(), GeneticUtils.decodeFloatColor(rawValue));
                     } else {
-                        entry.addTargetTint(storage.getRandomUUID(), GeneticUtils.decode3BitColor(rawValue));
+                        entry.addTargetTint(storage.getRandomUUID(), GeneticUtils.decodeFloatColor(rawValue));
                     }
                 }
             })

@@ -57,7 +57,7 @@ public class GeneticLayerEntry {
         this.defaultColorMin = defaultColorMin;
         this.defaultColorMax = defaultColorMax;
         this.defaultAlphaMin = defaultAlphaMin;
-        this.defaultAlphaMax = defaultAlphaMin;
+        this.defaultAlphaMax = defaultAlphaMax;
     }
 
     public Optional<ResourceLocation> getTextureLocation(RenderLocationComponent.ConfigurableLocation baseLocation) {

@@ -23,7 +23,7 @@ public class GeneticEntry<T extends GeneticFactoryStorage> {
     @Nullable private final T storage;
     private final float baseValue;
     private final float modifierRange;
-    private float modifier = 0; //Normal distribution with mean 1
+    private float modifier = 0; //Normal distribution with mean 1. This is stored as an int, to preserve accuracy over NAN
 
     private GeneticEntry(GeneticEntry<T> schemaEntry) {
         this(schemaEntry.getType(), schemaEntry.getIdentifier(), schemaEntry.getStorage(), schemaEntry.getBaseValue(), schemaEntry.getModifierRange());
@@ -54,7 +54,7 @@ public class GeneticEntry<T extends GeneticFactoryStorage> {
         compound.putString("type", Objects.requireNonNull(this.type.getRegistryName()).toString());
         compound.putFloat("base_value", this.baseValue);
         compound.putFloat("modifier_range", this.modifierRange);
-        compound.putFloat("modifier", this.modifier);
+        compound.putInt("modifier", Float.floatToRawIntBits(this.modifier));
         JavaUtils.nullApply(this.storage, t -> compound.put("storage", t.serialize(new CompoundNBT())));
         return compound;
     }
@@ -64,7 +64,7 @@ public class GeneticEntry<T extends GeneticFactoryStorage> {
         json.addProperty("type", Objects.requireNonNull(this.type.getRegistryName()).toString());
         json.addProperty("base_value", this.baseValue);
         json.addProperty("modifier_range", this.modifierRange);
-        json.addProperty("modifier", this.modifier);
+        json.addProperty("modifier", Float.floatToRawIntBits(this.modifier));
         JavaUtils.nullApply(this.storage, t -> json.add("storage", t.serialize(new JsonObject())));
         return json;
     }
@@ -77,7 +77,7 @@ public class GeneticEntry<T extends GeneticFactoryStorage> {
             JavaUtils.nullApply(type.getStorage().get(), t -> t.deserialize(compound.getCompound("storage"))),
             compound.getFloat("base_value"),
             compound.getFloat("modifier_range")
-        ).setModifier(compound.getFloat("modifier"));
+        ).setModifier(Float.intBitsToFloat(compound.getInt("modifier")));
     }
 
     public static <T extends GeneticFactoryStorage> GeneticEntry deserialize(JsonObject json) {
@@ -88,6 +88,6 @@ public class GeneticEntry<T extends GeneticFactoryStorage> {
             JavaUtils.nullApply(type.getStorage().get(), t -> t.deserialize(JSONUtils.getAsJsonObject(json, "storage"))),
             JSONUtils.getAsFloat(json, "base_value"),
             JSONUtils.getAsFloat(json, "modifier_range")
-        ).setModifier(JSONUtils.getAsFloat(json, "modifier"));
+        ).setModifier((Float.intBitsToFloat(JSONUtils.getAsInt(json, "modifier"))));
     }
 }

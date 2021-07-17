@@ -304,7 +304,7 @@ public class GeneticLayerEntry {
         private boolean variesOpacity = false;
         private float defaultColorMin = 0.7F;
         private float defaultColorMax = 1F;
-        private float defaultAlphaMin = 0.3F;
+        private float defaultAlphaMin = 0.5F;
         private float defaultAlphaMax = 1F;
 
         GeneticLayerEntryBuilder(String layerName, float index) {

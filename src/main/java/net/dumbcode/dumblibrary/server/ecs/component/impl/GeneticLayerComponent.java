@@ -106,9 +106,6 @@ public class GeneticLayerComponent extends EntityComponent implements RenderLaye
             .forEach(e -> {
                 String n = e.getLayerName();
                 float cm = e.getDefaultColorMin();
-                if(cm == 0.5) {
-                    cm = 0.2F;
-                }
                 float cr = e.getDefaultColorMax() - cm;
                 float am = e.getDefaultAlphaMin();
                 float ar = e.getDefaultAlphaMax() - am;

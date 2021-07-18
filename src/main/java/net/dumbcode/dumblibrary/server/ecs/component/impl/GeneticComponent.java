@@ -2,6 +2,8 @@ package net.dumbcode.dumblibrary.server.ecs.component.impl;
 
 import com.google.gson.JsonObject;
 import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 import net.dumbcode.dumblibrary.server.dna.GeneticEntry;
 import net.dumbcode.dumblibrary.server.dna.GeneticFactoryStorage;
 import net.dumbcode.dumblibrary.server.dna.GeneticType;
@@ -28,7 +30,16 @@ public class GeneticComponent extends EntityComponent implements FinalizableComp
     @Getter
     private final List<GeneticEntry<?>> genetics = new ArrayList<>();
 
+    //Delay adding default genetics to the actual genetic list till we finalize, where we can then use `shouldRandomizeGenetics`
+    private final List<GeneticEntry<?>> defaultGenetics = new ArrayList<>();
+
     private boolean doneGatherGenetics = true;
+
+    private boolean shouldRandomizeGenetics = true;
+
+    public void disableRandomGenetics() {
+        this.shouldRandomizeGenetics = false;
+    }
 
     private <T extends GeneticFactoryStorage> void applyChange(ComponentAccess entity, GeneticEntry<T> entry, float modifier) {
         entry.setModifier(modifier);
@@ -60,14 +71,24 @@ public class GeneticComponent extends EntityComponent implements FinalizableComp
         super.deserialize(compound);
     }
 
+    public void addGenetics(GeneticEntry<?> entry) {
+        this.genetics.add(entry);
+    }
+
     @Override
     public void finalizeComponent(ComponentAccess entity) {
         if(!this.doneGatherGenetics) {
             this.doneGatherGenetics = true;
             for (EntityComponent component : entity.getAllComponents()) {
                 if(component instanceof GatherGeneticsComponent) {
-                    ((GatherGeneticsComponent) component).gatherGenetics(entity, this.genetics::add);
+                    ((GatherGeneticsComponent) component).gatherGenetics(entity, this.genetics::add, this.shouldRandomizeGenetics);
                 }
+            }
+            for (GeneticEntry<?> genetic : this.defaultGenetics) {
+                if(this.shouldRandomizeGenetics) {
+                    genetic.setRandomModifier();
+                }
+                this.genetics.add(genetic);
             }
         }
         this.applyChangeToAll(entity);
@@ -94,10 +115,7 @@ public class GeneticComponent extends EntityComponent implements FinalizableComp
 
         @Override
         public void constructTo(GeneticComponent component) {
-            this.baseEntries.stream().map(GeneticEntry::copy).forEach(e -> {
-                e.setRandomModifier();
-                component.genetics.add(e);
-            });
+            this.baseEntries.stream().map(GeneticEntry::copy).forEach(component.defaultGenetics::add);
         }
 
         @Override

@@ -1,10 +1,12 @@
 package net.dumbcode.dumblibrary.server.ecs.component.impl;
 
 import com.google.gson.JsonObject;
+import com.mojang.blaze3d.matrix.MatrixStack;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.dumbcode.dumblibrary.client.component.ModelComponentRenderer;
+import net.dumbcode.dumblibrary.client.component.RenderComponentContext;
 import net.dumbcode.dumblibrary.client.model.dcm.DCMModel;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.*;
 import net.dumbcode.dumblibrary.server.utils.DCMUtils;
@@ -15,6 +17,7 @@ import net.dumbcode.dumblibrary.server.ecs.component.FinalizableComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLocationComponent.ConfigurableLocation;
 import net.dumbcode.dumblibrary.server.utils.IndexedObject;
 import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
@@ -45,7 +48,10 @@ public class ModelComponent extends EntityComponent implements RenderCallbackCom
 
     @Override
     public void addCallbacks(List<SubCallback> preRenderCallbacks, List<MainCallback> renderCallbacks, List<SubCallback> postRenderCallback) {
-        renderCallbacks.add(this.renderer);
+        renderCallbacks.add(
+            (context, entity, entityYaw, partialTicks, stack, buffer, light, preCallbacks, postCallbacks) ->
+                this.renderer.invoke(context, entity, entityYaw, partialTicks, stack, buffer, light, preCallbacks, postCallbacks)
+        );
     }
 
     @Override

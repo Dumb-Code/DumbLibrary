@@ -1,6 +1,7 @@
 package net.dumbcode.dumblibrary;
 
 import net.dumbcode.dumblibrary.client.BakedModelResolver;
+import net.dumbcode.dumblibrary.client.TextureUtils;
 import net.dumbcode.dumblibrary.client.gui.TaxidermyScreen;
 import net.dumbcode.dumblibrary.client.model.ModelHandler;
 import net.dumbcode.dumblibrary.server.ItemComponent;
@@ -18,6 +19,7 @@ import net.dumbcode.dumblibrary.server.utils.VoidStorage;
 import net.dumbcode.studio.model.ModelMirror;
 import net.dumbcode.studio.model.RotationOrder;
 import net.minecraft.block.Block;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.IHasContainer;
 import net.minecraft.client.gui.ScreenManager;
 import net.minecraft.client.gui.screen.Screen;
@@ -25,6 +27,7 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.container.Container;
 import net.minecraft.inventory.container.ContainerType;
 import net.minecraft.item.Item;
+import net.minecraft.resources.IReloadableResourceManager;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
@@ -47,6 +50,8 @@ import net.minecraftforge.fml.network.NetworkRegistry;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.resource.ISelectiveResourceReloadListener;
+import net.minecraftforge.resource.VanillaResourceType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -158,6 +163,12 @@ public class DumbLibrary {
             //We need it as a full declaration becuase of weird compile stuff
             ScreenManager.IScreenFactory<TaxidermyContainer, TaxidermyScreen> factory = (container, inventory, title) -> container.getBlockEntity().openScreen(container);
             ScreenManager.register(TAXIDERMY_CONTAINER.get(), factory);
+
+            ((IReloadableResourceManager) Minecraft.getInstance().getResourceManager()).registerReloadListener((ISelectiveResourceReloadListener) (manager, predicate) -> {
+                if(predicate.test(VanillaResourceType.TEXTURES)) {
+                    TextureUtils.clearMap();
+                }
+            });
         });
     }
 

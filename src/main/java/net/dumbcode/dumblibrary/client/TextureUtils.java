@@ -10,9 +10,12 @@ import net.minecraft.client.renderer.texture.TextureUtil;
 import net.minecraft.resources.IResource;
 import net.minecraft.util.HTTPUtil;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.math.vector.Vector3f;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.function.Consumer;
 
 public class TextureUtils {
 
@@ -259,6 +262,44 @@ public class TextureUtils {
         if(texture.getPixels() != null) {
             texture.bind();
             uploadSubArea(texture.getPixels(), startX, startY, startX, startY, width, height);
+        }
+    }
+
+    private static final Map<ResourceLocation, Vector3d> AVERAGE_COLOR_MAP = new HashMap<>();
+    public static void clearMap() {
+        AVERAGE_COLOR_MAP.clear();
+    }
+
+    public static void attemptAverageColor(ResourceLocation resourceLocation, Consumer<Vector3d> result) {
+        if(AVERAGE_COLOR_MAP.containsKey(resourceLocation)) {
+            result.accept(AVERAGE_COLOR_MAP.get(resourceLocation));
+            return;
+        }
+        try (IResource resource = Minecraft.getInstance().getResourceManager().getResource(resourceLocation)) {
+            NativeImage read = NativeImage.read(resource.getInputStream());
+            int[] data = read.makePixelArray();
+            HTTPUtil.DOWNLOAD_EXECUTOR.execute(() -> {
+                List<Vector3d> acceptablePixels = new ArrayList<>();
+                for (int textureDatum : data) {
+                    if (((textureDatum >> 24) & 0xFF) != 0) {
+                        acceptablePixels.add(new Vector3d(
+                            ((textureDatum >> 16) & 0xFF) / 255F,
+                            ((textureDatum >> 8) & 0xFF) / 255F,
+                            (textureDatum & 0xFF) / 255F
+                        ));
+                    }
+                }
+                int size = acceptablePixels.size();
+                 acceptablePixels.stream()
+                    .reduce(Vector3d::add)
+                    .ifPresent(v -> {
+                        Vector3d vector3d = new Vector3d(v.x / size, v.y / size, v.z / size);
+                        AVERAGE_COLOR_MAP.put(resourceLocation, vector3d);
+                        result.accept(vector3d);
+                    });
+            });
+        } catch (IOException e) {
+            DumbLibrary.getLogger().warn("Unable to get resource " + resourceLocation);
         }
     }
 }

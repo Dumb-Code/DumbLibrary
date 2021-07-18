@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 @Value
@@ -26,6 +27,15 @@ public class IndexedObject<T> {
             .map(IndexedObject::getObject)
             .collect(Collectors.toList());
     }
+
+    public static <T, R> Function<IndexedObject<T>, IndexedObject<R>> mapper(Function<T, R> function) {
+        return o -> new IndexedObject<>(function.apply(o.getObject()), o.getIndex());
+    }
+
+    public static <T> Collector<IndexedObject<T>, List<IndexedObject<T>>, List<T>> sortedList() {
+        return CollectorUtils.listDelegate(IndexedObject::sortIndex);
+    }
+
 
     public static <T> CompoundNBT serializeNBT(IndexedObject<T> object, Function<T, INBT> objectSerializer) {
         CompoundNBT tag = new CompoundNBT();

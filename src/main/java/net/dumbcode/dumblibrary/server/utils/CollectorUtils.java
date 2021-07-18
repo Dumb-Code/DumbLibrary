@@ -61,7 +61,7 @@ public class CollectorUtils {
         return listDelegate(ts -> ts.stream().map(t -> { S s = creator.get(); biConsumer.accept(t, s); return s; }));
     }
 
-    private static <T, S> Collector<T, List<T>, S> listDelegate(Function<List<T>, S> finisher) {
+    public static <T, S> Collector<T, List<T>, S> listDelegate(Function<List<T>, S> finisher) {
         return new CollectorImpl<T, List<T>, S>(ArrayList::new, List::add, (list1, list2) -> { list1.addAll(list2); return list1; }).finisher(finisher);
     }
 

@@ -7,7 +7,7 @@ import com.google.gson.JsonObject;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Value;
-import lombok.With;
+import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.ecs.ComponentWriteAccess;
 import net.dumbcode.dumblibrary.server.registry.DumbRegistries;
 import net.minecraft.util.JSONUtils;
@@ -16,6 +16,7 @@ import net.minecraft.util.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.swing.text.html.parser.Entity;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -137,32 +138,43 @@ public class EntityComponentAttacher {
         return new ConstructConfiguration();
     }
 
-    @With
     public class ConstructConfiguration {
         private final boolean defaultTypes;
         private final List<EntityComponentType<?, ?>> addedTypes;
         private final List<EntityComponentType<?, ?>> removedTypes;
+        private final List<ComponentFinalizeCallback<?>> callbacks;
 
         private ConstructConfiguration() {
-            this(true, Lists.newArrayList(), Lists.newArrayList());
+            this(true, Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
         }
 
-        public ConstructConfiguration(boolean useDefaultTypes, List<EntityComponentType<?, ?>> addedTypes, List<EntityComponentType<?, ?>> removedTypes) {
+        public ConstructConfiguration(boolean useDefaultTypes, List<EntityComponentType<?, ?>> addedTypes, List<EntityComponentType<?, ?>> removedTypes, List<ComponentFinalizeCallback<?>> callbacks) {
             this.defaultTypes = useDefaultTypes;
             this.addedTypes = addedTypes;
             this.removedTypes = removedTypes;
+            this.callbacks = callbacks;
+        }
+
+        public ConstructConfiguration withDefaultTypes(boolean defaultTypes) {
+            return this.defaultTypes == defaultTypes ? this : new ConstructConfiguration(defaultTypes, this.addedTypes, this.removedTypes, this.callbacks);
         }
 
         public ConstructConfiguration withType(EntityComponentType<?, ?>... types) {
             List<EntityComponentType<?, ?>> temp = Lists.newArrayList(this.addedTypes);
             Collections.addAll(temp, types);
-            return new ConstructConfiguration(this.defaultTypes, Collections.unmodifiableList(temp), this.removedTypes);
+            return new ConstructConfiguration(this.defaultTypes, Collections.unmodifiableList(temp), this.removedTypes, this.callbacks);
         }
 
         public ConstructConfiguration withoutType(EntityComponentType<?, ?>... types) {
             List<EntityComponentType<?, ?>> temp = Lists.newArrayList(this.removedTypes);
             Collections.addAll(temp, types);
-            return new ConstructConfiguration(this.defaultTypes, this.addedTypes, Collections.unmodifiableList(temp));
+            return new ConstructConfiguration(this.defaultTypes, this.addedTypes, Collections.unmodifiableList(temp), this.callbacks);
+        }
+
+        public <T extends EntityComponent> ConstructConfiguration runBeforeFinalize(EntityComponentType<T, ?> type, Consumer<T> consumer) {
+            List<ComponentFinalizeCallback<?>> temp = Lists.newArrayList(this.callbacks);
+            temp.add(new ComponentFinalizeCallback<>(type, consumer));
+            return new ConstructConfiguration(this.defaultTypes, this.addedTypes, this.removedTypes, Collections.unmodifiableList(temp));
         }
 
         public List<ComponentPair<?, ?>> getTypes() {
@@ -182,10 +194,12 @@ public class EntityComponentAttacher {
             for (ComponentPair<?, ?> type : this.getTypes()) {
                 type.attach(cwa);
             }
+            for (ComponentFinalizeCallback<?> callback : this.callbacks) {
+                callback.apply(cwa);
+            }
 
             cwa.finalizeComponents();
         }
-        
     }
 
     @Data
@@ -198,5 +212,16 @@ public class EntityComponentAttacher {
         public void attach(ComponentWriteAccess access) {
             access.attachComponent(this.type, this.storage, this.storageId);
         }
+    }
+
+    @Value
+    private static class ComponentFinalizeCallback<T extends EntityComponent> {
+        EntityComponentType<T, ?> type;
+        Consumer<T> consumer;
+
+        private void apply(ComponentAccess access) {
+            access.get(this.type).ifPresent(this.consumer);
+        }
+
     }
 }

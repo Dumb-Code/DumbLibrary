@@ -101,16 +101,21 @@ public class GeneticLayerComponent extends EntityComponent implements RenderLaye
     }
 
     @Override
-    public void gatherGenetics(ComponentAccess entity, Consumer<GeneticEntry> registry) {
-        this.entries.stream()
+    public void gatherGenetics(ComponentAccess entity, Consumer<GeneticEntry<?>> registry, boolean randomGeneticVariation) {
+        this.entries
             .forEach(e -> {
                 String n = e.getLayerName();
-                float cm = e.getDefaultColorMin();
-                float cr = e.getDefaultColorMax() - cm;
-                float am = e.getDefaultAlphaMin();
-                float ar = e.getDefaultAlphaMax() - am;
-                GeneticEntry<?> entry = new GeneticEntry<>(GeneticTypes.LAYER_COLORS, "genetic_layer_" + n, new GeneticTypeLayerColorStorage().setLayerName(n), 128, 128);
-                entry.setModifier(GeneticUtils.encodeFloatColor(cm + RAND.nextFloat() * cr, cm + RAND.nextFloat() * cr, cm + RAND.nextFloat() * cr, am + RAND.nextFloat() * ar));
+                GeneticEntry<?> entry = new GeneticEntry<>(GeneticTypes.LAYER_COLORS, "genetic_layer_" + n, new GeneticTypeLayerColorStorage().setLayerName(n), 0F, 1F);
+                if(randomGeneticVariation) {
+                    float cm = e.getDefaultColorMin();
+                    float cr = e.getDefaultColorMax() - cm;
+                    float am = e.getDefaultAlphaMin();
+                    float ar = e.getDefaultAlphaMax() - am;
+                    entry.setModifier(GeneticUtils.encodeFloatColor(cm + RAND.nextFloat() * cr, cm + RAND.nextFloat() * cr, cm + RAND.nextFloat() * cr, am + RAND.nextFloat() * ar));
+
+                } else {
+                    entry.setModifier(GeneticUtils.encodeFloatColor(1F, 1F, 1F, 1F));
+                }
                 registry.accept(entry);
             });
     }

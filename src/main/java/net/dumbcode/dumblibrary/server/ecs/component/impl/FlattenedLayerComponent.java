@@ -48,12 +48,11 @@ public class FlattenedLayerComponent extends EntityComponent implements RenderLa
         }
         RenderLocationComponent.ConfigurableLocation baseLocation = location.get();
 
-        String path = baseLocation.copy().addFileName("%s", Integer.MAX_VALUE).getPath();
         for (IndexedObject<? extends FlattenedLayerProperty> entry : layerEntries) {
             registry.accept(new IndexedObject<>(
                 new RenderLayer.DefaultTexture(() -> {
                     String s = entry.getObject().currentValue();
-                    return s == null ? null : new RenderLayer.DefaultLayerData(new ResourceLocation(baseLocation.getModid(), String.format(path, s)));
+                    return s == null ? null : new RenderLayer.DefaultLayerData(baseLocation.copy().addFileName(s, Integer.MAX_VALUE).getLocation());
                 }), entry.getIndex()
             ));
         }

@@ -61,6 +61,14 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> extends Widget {
         this.listSupplier = listSupplier;
     }
 
+    public GuiScrollBox<T> addFromPrevious(GuiScrollBox<T> scrollBox) {
+        if(scrollBox != null) {
+            this.selectedElement = scrollBox.selectedElement;
+            this.scroll = scrollBox.scroll;
+        }
+        return this;
+    }
+
     /**
      * Renders the box
      *
@@ -176,7 +184,7 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> extends Widget {
         int ySize = (listSize - this.cellMax) * this.cellHeight;
         if(ySize > 0) {
             float scrollLength = MathHelper.clamp(height / ySize, 32, height - 8);
-            float scrollYStart = this.scroll * this.cellHeight * (height - scrollLength) / (Math.max((listSize - this.cellMax) * this.cellHeight, 1)) + this.y - 1;
+            float scrollYStart = this.scroll * this.cellHeight * (height - scrollLength) / (Math.max((listSize - this.cellMax) * this.cellHeight, 1)) + this.y;
             if (scrollYStart < this.y - 1) {
                 scrollYStart = this.y - 1F;
             }

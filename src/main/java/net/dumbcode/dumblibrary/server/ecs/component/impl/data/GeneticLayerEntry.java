@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import net.dumbcode.dumblibrary.DumbLibrary;
+import net.dumbcode.dumblibrary.client.TextureUtils;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLocationComponent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.NativeImage;
@@ -25,7 +26,6 @@ import java.io.IOException;
 import java.util.*;
 import java.util.function.BiConsumer;
 
-//todo:move to own class
 @Data
 @AllArgsConstructor(access = AccessLevel.NONE)
 @Accessors(chain = true)
@@ -61,8 +61,9 @@ public class GeneticLayerEntry {
     }
 
     public Optional<ResourceLocation> getTextureLocation(RenderLocationComponent.ConfigurableLocation baseLocation) {
-        if (this.textureLocationCache == null) {
-            this.textureLocationCache = baseLocation.copy().addFileName(this.layerName, Integer.MAX_VALUE).getLocation();
+        ResourceLocation location = baseLocation.copy().addFileName(this.layerName, Integer.MAX_VALUE).getLocation();
+        if (!location.equals(this.textureLocationCache)) {
+            this.textureLocationCache = location;
             if (this.checkIfExists) {
                 this.doesTextureExist = Minecraft.getInstance().getResourceManager().hasResource(this.textureLocationCache);
             }
@@ -81,26 +82,7 @@ public class GeneticLayerEntry {
     }
 
     private void tryGetAverageColor() {
-        try (IResource resource = Minecraft.getInstance().getResourceManager().getResource(this.textureLocationCache)) {
-            NativeImage read = NativeImage.read(resource.getInputStream());
-            int[] data = read.makePixelArray();
-            List<Vector3d> acceptablePixels = new ArrayList<>();
-            for (int textureDatum : data) {
-                if (((textureDatum >> 24) & 0xFF) != 0) {
-                    acceptablePixels.add(new Vector3d(
-                        ((textureDatum >> 16) & 0xFF) / 255F,
-                        ((textureDatum >> 8) & 0xFF) / 255F,
-                        (textureDatum & 0xFF) / 255F
-                    ));
-                }
-            }
-            int size = acceptablePixels.size();
-            acceptablePixels.stream()
-                .reduce(Vector3d::add)
-                .ifPresent(v -> this.setAverageColor((float) v.x / size, (float) v.y / size, (float) v.z / size));
-        } catch (IOException e) {
-            DumbLibrary.getLogger().warn("Unable to get resource");
-        }
+        TextureUtils.attemptAverageColor(this.textureLocationCache, vector3d -> this.setAverageColor((float) vector3d.x, (float) vector3d.y, (float) vector3d.z));
     }
 
     public float[] getColours() {
@@ -110,6 +92,7 @@ public class GeneticLayerEntry {
         List<Vector4f> tints = new ArrayList<>(this.baseTints.values());
         if (this.averageColor != null) {
             for (Vector4f value : this.targetTints.values()) {
+                //TODO: verify if this is correct
                 tints.add(new Vector4f(
                     value.x() / this.averageColor.x(),
                     value.y() / this.averageColor.y(),

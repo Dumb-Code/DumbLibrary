@@ -195,7 +195,7 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> extends Widget {
 
         int ySize = (listSize - this.cellMax) * this.cellHeight;
         if(ySize > 0) {
-            float scrollLength = MathHelper.clamp(height / ySize, 32, height - 8);
+            float scrollLength = MathHelper.clamp(height - ySize + 1, 32, height - 8);
             float scrollYStart = this.scroll * this.cellHeight * (height - scrollLength) / (Math.max((listSize - this.cellMax) * this.cellHeight, 1)) + this.y;
             if (scrollYStart < this.y - 1) {
                 scrollYStart = this.y - 1F;

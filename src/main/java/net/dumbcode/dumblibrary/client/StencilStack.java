@@ -15,7 +15,16 @@ public class StencilStack {
     private static final Deque<Entry> renders = new ArrayDeque<>();
 
     public static void pushSquareStencil(MatrixStack stack, int left, int top, int right, int bottom) {
-        pushStencil(() ->  AbstractGui.fill(stack, left, top, right, bottom, -1), Type.AND);
+        pushSquareStencil(stack, left, top, right, bottom, Type.AND);
+    }
+
+    public static void pushSquareStencil(MatrixStack stack, int left, int top, int right, int bottom, Type type) {
+        MatrixStack.Entry last = stack.last();
+        MatrixStack clone = new MatrixStack();
+        MatrixStack.Entry clonedLast = clone.last();
+        clonedLast.normal().load(last.normal());
+        clonedLast.pose().set(last.pose());
+        pushStencil(() ->  AbstractGui.fill(clone, left, top, right, bottom, -1), type);
     }
 
     public static void pushStencil(Runnable renderCallback, Type type) {

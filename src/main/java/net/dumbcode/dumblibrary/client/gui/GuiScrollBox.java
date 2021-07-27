@@ -4,6 +4,7 @@ import com.mojang.blaze3d.matrix.MatrixStack;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.Accessors;
 import net.dumbcode.dumblibrary.client.RenderUtils;
 import net.dumbcode.dumblibrary.client.StencilStack;
 import net.dumbcode.dumblibrary.server.utils.MouseUtils;
@@ -24,6 +25,7 @@ import java.util.function.Supplier;
 
 @Getter
 @Setter
+@Accessors(chain = true)
 public class GuiScrollBox<T extends GuiScrollboxEntry> extends Widget {
 
     private static final Minecraft MC = Minecraft.getInstance();
@@ -38,7 +40,9 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> extends Widget {
     private int highlightColor = 0x2299bbff;
     private int cellHighlightColor = 0xFF303030;
     private int cellSelectedColor = 0xFFA0A0A0;
+    private int emptyColor = 0xFF505050;
     private int borderColor = 0xFFFFFFFF;
+    private boolean renderFullSize;
 
     private float scroll;
 
@@ -92,7 +96,7 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> extends Widget {
             Minecraft.getInstance().getMainRenderTarget().enableStencil();
         }
 
-        StencilStack.pushSquareStencil(stack, this.x, this.y, this.x + this.width, this.y + height);
+        StencilStack.pushSquareStencil(stack, this.x, this.y, this.x + this.width, this.y + (this.renderFullSize ? this.cellMax * this.cellHeight : height));
 
         int borderSize = 1;
         MC.textureManager.bind(PlayerContainer.BLOCK_ATLAS);
@@ -107,6 +111,9 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> extends Widget {
         RenderHelper.turnOff();
         StencilStack.popStencil();
 
+        if(this.renderFullSize) {
+            height = this.cellMax * this.cellHeight;
+        }
         RenderUtils.renderBorder(stack, this.x, this.y, this.x + this.width, this.y + height, borderSize, this.borderColor);
     }
 
@@ -168,6 +175,11 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> extends Widget {
                 entry.postDraw(stack, this.x, yStart, mouseX, mouseY);
             }
         }
+        int yStart = (int) (this.y + this.cellHeight * entries.size() - this.scroll * this.cellHeight);
+        if(this.renderFullSize) {
+            AbstractGui.fill(stack, this.x, yStart, this.x + this.width, this.y + this.cellMax * this.cellHeight, this.emptyColor);
+        }
+        AbstractGui.fill(stack, this.x, yStart, this.x + this.width, yStart + borderSize, this.borderColor);
     }
 
     /**

@@ -9,6 +9,7 @@ import net.dumbcode.dumblibrary.server.dna.GeneticTypes;
 import net.dumbcode.dumblibrary.server.ecs.EntityManager;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentType;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentTypes;
+import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLayer;
 import net.dumbcode.dumblibrary.server.network.*;
 import net.dumbcode.dumblibrary.server.registry.PreBlockRegistryEvent;
 import net.dumbcode.dumblibrary.server.taxidermy.BaseTaxidermyBlockEntity;
@@ -167,6 +168,9 @@ public class DumbLibrary {
             ((IReloadableResourceManager) Minecraft.getInstance().getResourceManager()).registerReloadListener((ISelectiveResourceReloadListener) (manager, predicate) -> {
                 if(predicate.test(VanillaResourceType.TEXTURES)) {
                     TextureUtils.clearMap();
+                }
+                if(predicate.test(VanillaResourceType.SHADERS)) {
+                    RenderLayer.DefaultTexture.resetShader();
                 }
             });
         });

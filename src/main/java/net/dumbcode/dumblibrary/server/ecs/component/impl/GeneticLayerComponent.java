@@ -52,10 +52,10 @@ public class GeneticLayerComponent extends EntityComponent implements RenderLaye
     }
 
 
-    public void setLayerValues(String layer, float[] rgb) {
+    public void setLayerValues(UUID uuid, String layer, float[] rgb) {
         for (GeneticLayerEntry entry : this.entries) {
             if(entry.getLayerName().equals(layer)) {
-                entry.addDirectTint(new UUID(13, layer.hashCode()), rgb);
+                entry.addDirectTint(uuid, rgb);
             }
         }
         this.syncToClient();

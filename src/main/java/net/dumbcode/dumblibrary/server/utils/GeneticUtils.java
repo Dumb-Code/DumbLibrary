@@ -4,8 +4,12 @@ import net.minecraft.util.math.MathHelper;
 
 public class GeneticUtils {
 
+    public static int decodeFloatColorInt(float value) {
+        return Float.floatToRawIntBits(value);
+    }
+
     public static float[] decodeFloatColor(float value) {
-        int actValue = Float.floatToRawIntBits(value);
+        int actValue = decodeFloatColorInt(value);
         float red =   ((actValue     ) & 255) / 255F;
         float green = ((actValue >> 8) & 255) / 255F;
         float blue =  ((actValue >> 16) & 255) / 255F;

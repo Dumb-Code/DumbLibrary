@@ -89,8 +89,8 @@ public class GlslSandboxShader {
             }
         }
         if(FLIP_SHADER != null) {
-            FLIP_SHADER.apply();
             FLIP_SHADER.setSampler("sampler", this.framebuffer::getColorTextureId);
+            FLIP_SHADER.apply();
         }
     }
 

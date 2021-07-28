@@ -1,0 +1,10 @@
+{
+  "vertex": "dumblibrary:flip",
+  "fragment": "dumblibrary:tint",
+  "uniforms": [
+    { "name": "colour", "type": "float", "count": 4, "values": [ 1.0, 1.0, 1.0, 1.0 ] }
+  ],
+  "samplers": [
+    { "name": "sampler" }
+  ]
+}

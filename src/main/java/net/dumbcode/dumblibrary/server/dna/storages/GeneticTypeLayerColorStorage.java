@@ -11,7 +11,7 @@ import net.minecraft.util.JSONUtils;
 @Getter
 @Setter
 @Accessors(chain = true)
-public class GeneticTypeLayerColorStorage implements GeneticFactoryStorage {
+public class GeneticTypeLayerColorStorage extends GeneticColorStorage {
 
     private String layerName = "undefined";
 

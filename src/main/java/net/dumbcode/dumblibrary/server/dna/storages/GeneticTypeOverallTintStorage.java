@@ -1,17 +1,16 @@
-package net.dumbcode.dumblibrary.server.dna;
+package net.dumbcode.dumblibrary.server.dna.storages;
 
 import com.google.gson.JsonObject;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import net.dumbcode.dumblibrary.server.dna.storages.RandomUUIDStorage;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.JSONUtils;
 
 @Getter
 @Setter
 @Accessors(chain = true)
-public class GeneticTypeOverallTintStorage extends RandomUUIDStorage {
+public class GeneticTypeOverallTintStorage extends GeneticColorStorage {
 
     private TintType tintType = TintType.DIRECT;
 

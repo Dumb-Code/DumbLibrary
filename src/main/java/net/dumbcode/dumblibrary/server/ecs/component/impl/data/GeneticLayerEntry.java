@@ -115,7 +115,7 @@ public class GeneticLayerEntry {
         return this.colorCache = new float[]{result.x() / tints.size(), result.y() / tints.size(), result.z() / tints.size(), this.variesOpacity ? result.w() / tints.size() : 1F};
     }
 
-    public void setAverageColor(float r, float b, float g) {
+    public void setAverageColor(float r, float g, float b) {
         this.averageColor = new Vector3f(r, g, b);
         this.colorCache = null;
     }
@@ -130,7 +130,7 @@ public class GeneticLayerEntry {
     public void addTargetTint(UUID uuid, float... colours) {
         Vector4f vector4f = new Vector4f();
         vector4f.set(colours);
-        this.baseTints.put(uuid, vector4f);
+        this.targetTints.put(uuid, vector4f);
         this.colorCache = null;
     }
 

@@ -2,8 +2,9 @@ package net.dumbcode.dumblibrary.server.dna;
 
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.server.dna.datahandlers.ColouredGeneticDataHandler;
+import net.dumbcode.dumblibrary.server.dna.storages.GeneticFieldModifierStorage;
 import net.dumbcode.dumblibrary.server.dna.storages.GeneticTypeLayerColorStorage;
-import net.dumbcode.dumblibrary.server.dna.storages.RandomUUIDStorage;
+import net.dumbcode.dumblibrary.server.dna.storages.GeneticTypeOverallTintStorage;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentTypes;
 import net.dumbcode.dumblibrary.server.ecs.component.impl.RenderAdjustmentsComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.impl.SleepingComponent;
@@ -14,7 +15,6 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.ai.attributes.Attributes;
 import net.minecraft.entity.ai.attributes.ModifiableAttributeInstance;
-import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.RegistryBuilder;
@@ -32,7 +32,7 @@ public class GeneticTypes {
         GeneticType.<GeneticTypeLayerColorStorage>builder()
             .storage(GeneticTypeLayerColorStorage::new)
             .onChange(EntityComponentTypes.GENETIC_LAYER_COLORS.get(), (value, rawValue, component, storage)
-                -> component.setLayerValues(storage.getLayerName(), GeneticUtils.decodeFloatColor(rawValue)))
+                -> component.setLayerValues(storage.getRandomUUID(), storage.getLayerName(), GeneticUtils.decodeFloatColor(rawValue)))
             .dataHandler(ColouredGeneticDataHandler.INSTANCE)
             .build()
     );
@@ -53,25 +53,20 @@ public class GeneticTypes {
             .dataHandler(ColouredGeneticDataHandler.INSTANCE)
             .build()
     );
-    public static final RegistryObject<GeneticType<RandomUUIDStorage>> SPEED_MODIFIER = REGISTER.register("speed_modifier", () ->
-        GeneticType.<RandomUUIDStorage>builder()
-            .storage(RandomUUIDStorage::new)
-            .onChange((value, rawValue, type, storage) -> {
-                if (type instanceof LivingEntity) {
-                    ModifiableAttributeInstance attribute = ((LivingEntity) type).getAttribute(Attributes.MOVEMENT_SPEED);
-                    if (attribute != null) {
-                        AttributeModifier modifier = new AttributeModifier(storage.getRandomUUID(), "speed_genetics", MathHelper.clamp(value / 4F, -1, 1), AttributeModifier.Operation.MULTIPLY_BASE);
-                        if (!attribute.hasModifier(modifier)) {
-                            attribute.addPermanentModifier(modifier);
-                        }
-                    }
-                }
-            })
-            .build()
-    );
+    public static final RegistryObject<GeneticType<GeneticFieldModifierStorage>> SPEED_MODIFIER = REGISTER.register("speed_modifier", () -> GeneticType.simpleVanillaModifierType(Attributes.MOVEMENT_SPEED, "speed_genetics"));
+    public static final RegistryObject<GeneticType<GeneticFieldModifierStorage>> HEALTH_MODIFIER = REGISTER.register("health_modifier", () -> GeneticType.simpleVanillaModifierType(Attributes.MAX_HEALTH, "health_genetics"));
+    public static final RegistryObject<GeneticType<GeneticFieldModifierStorage>> JUMP_STRENGTH = REGISTER.register("jump_strength", () -> GeneticType.simpleVanillaModifierType(Attributes.JUMP_STRENGTH, "jump_genetics"));
+
 
     public static final RegistryObject<GeneticType<GeneticFieldModifierStorage>> SIZE = REGISTER.register("size", () -> GeneticType.simpleFieldModifierType(EntityComponentTypes.RENDER_ADJUSTMENTS.get(), RenderAdjustmentsComponent::getScaleModifier));
     public static final RegistryObject<GeneticType<GeneticFieldModifierStorage>> NOCTURNAL_CHANCE = REGISTER.register("nocturnal_chance", () -> GeneticType.simpleFieldModifierType(EntityComponentTypes.SLEEPING.get(), SleepingComponent::getNocturnalChance));
+    public static final RegistryObject<GeneticType<?>> REPRODUCTIVE_CAPABILITY = REGISTER.register("reproductive_capability", GeneticType::unfinished);
+    public static final RegistryObject<GeneticType<?>> IMMUNITY = REGISTER.register("immunity", GeneticType::unfinished);
+    public static final RegistryObject<GeneticType<?>> UNDERWATER_CAPACITY = REGISTER.register("underwater_capacity", GeneticType::unfinished);
+    public static final RegistryObject<GeneticType<?>> INTELLIGENCE = REGISTER.register("intelligence", GeneticType::unfinished);
+    public static final RegistryObject<GeneticType<?>> TAMING_CHANCE = REGISTER.register("taming_chance", GeneticType::unfinished);
+    public static final RegistryObject<GeneticType<?>> HEAT_RESISTANCE = REGISTER.register("heat_resistance", GeneticType::unfinished);
+    public static final RegistryObject<GeneticType<?>> HEALTH_REGEN_SPEED = REGISTER.register("health_regen_speed", GeneticType::unfinished);
 
     public static IForgeRegistry<GeneticType<?>> registry() {
         return REGISTRY.get();

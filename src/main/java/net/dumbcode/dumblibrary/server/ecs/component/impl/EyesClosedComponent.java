@@ -13,26 +13,31 @@ import net.dumbcode.dumblibrary.server.utils.IndexedObject;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.JSONUtils;
+import net.minecraftforge.common.util.Constants;
 
 import java.util.function.Consumer;
 
 @Getter
 public class EyesClosedComponent extends EntityComponent implements RenderFlattenedLayerComponent {
     private float index;
-    private String eyesOnTexture;
-    private String eyesOffTexture;
+    private String eyesOpenTexture;
+    private String eyesClosedTexture;
 
     private int blinkTicksLeft;
 
     @Override
     public void gatherComponents(ComponentAccess entity, Consumer<IndexedObject<FlattenedLayerProperty>> registry) {
-        registry.accept(new IndexedObject<>(new FlattenedLayerProperty(() -> this.blinkTicksLeft > 0 ? this.eyesOffTexture : this.eyesOnTexture), this.index));
+        registry.accept(new IndexedObject<>(new FlattenedLayerProperty(() -> this.blinkTicksLeft > 0 ? this.eyesClosedTexture : this.eyesOpenTexture), this.index));
     }
 
     @Override
     public CompoundNBT serialize(CompoundNBT compound) {
-        compound.putString("on_texture", this.eyesOnTexture);
-        compound.putString("off_texture", this.eyesOffTexture);
+        if(this.eyesOpenTexture != null) {
+            compound.putString("open_texture", this.eyesOpenTexture);
+        }
+        if(this.eyesClosedTexture != null) {
+            compound.putString("closed_texture", this.eyesClosedTexture);
+        }
 
         compound.putInt("blink_tick_time", this.blinkTicksLeft);
         compound.putFloat("index", this.index);
@@ -41,8 +46,8 @@ public class EyesClosedComponent extends EntityComponent implements RenderFlatte
 
     @Override
     public void deserialize(CompoundNBT compound) {
-        this.eyesOnTexture = compound.getString("on_texture");
-        this.eyesOffTexture = compound.getString("off_texture");
+        this.eyesOpenTexture = compound.contains("open_texture", Constants.NBT.TAG_STRING) ? compound.getString("on_texture") : null;
+        this.eyesClosedTexture = compound.contains("closed_texture", Constants.NBT.TAG_STRING) ? compound.getString("off_texture") : null;
 
         this.blinkTicksLeft = compound.getInt("blink_tick_time");
         this.index = compound.getFloat("index");
@@ -51,8 +56,14 @@ public class EyesClosedComponent extends EntityComponent implements RenderFlatte
 
     @Override
     public void serialize(PacketBuffer buf) {
-        buf.writeUtf(this.eyesOnTexture);
-        buf.writeUtf(this.eyesOffTexture);
+        buf.writeBoolean(this.eyesOpenTexture != null);
+        if(this.eyesOpenTexture != null) {
+            buf.writeUtf(this.eyesOpenTexture);
+        }
+        buf.writeBoolean(this.eyesClosedTexture != null);
+        if(this.eyesClosedTexture != null) {
+            buf.writeUtf(this.eyesClosedTexture);
+        }
 
         buf.writeInt(this.blinkTicksLeft);
         buf.writeFloat(this.index);
@@ -85,8 +96,8 @@ public class EyesClosedComponent extends EntityComponent implements RenderFlatte
 
     @Override
     public void deserialize(PacketBuffer buf) {
-        this.eyesOnTexture = buf.readUtf();
-        this.eyesOffTexture = buf.readUtf();
+        this.eyesOpenTexture = buf.readBoolean() ? buf.readUtf() : null;
+        this.eyesClosedTexture = buf.readBoolean() ? buf.readUtf() : null;
 
         this.blinkTicksLeft = buf.readInt();
         this.index = buf.readFloat();
@@ -103,30 +114,31 @@ public class EyesClosedComponent extends EntityComponent implements RenderFlatte
     public static class Storage implements EntityComponentStorage<EyesClosedComponent> {
 
         private float index;
-        private String eyesOnTexture;
-        private String eyesOffTexture;
+        private String eyesOpenTexture;
+        private String eyesClosedTexture;
 
         @Override
         public void constructTo(EyesClosedComponent component) {
-            component.eyesOnTexture = this.eyesOnTexture;
-            component.eyesOffTexture = this.eyesOffTexture;
+            component.eyesOpenTexture = this.eyesOpenTexture;
+            component.eyesClosedTexture = this.eyesClosedTexture;
+            component.index = this.index;
         }
 
         @Override
         public void writeJson(JsonObject json) {
-            if(this.eyesOnTexture != null) {
-                json.addProperty("on_texture", this.eyesOnTexture);
+            if(this.eyesOpenTexture != null) {
+                json.addProperty("open_texture", this.eyesOpenTexture);
             }
-            if(this.eyesOffTexture != null) {
-                json.addProperty("off_texture", this.eyesOffTexture);
+            if(this.eyesClosedTexture != null) {
+                json.addProperty("closed_texture", this.eyesClosedTexture);
             }
             json.addProperty("index", this.index);
         }
 
         @Override
         public void readJson(JsonObject json) {
-            this.eyesOnTexture = JSONUtils.getAsString(json, "on_texture", null);
-            this.eyesOffTexture = JSONUtils.getAsString(json, "off_texture", null);
+            this.eyesOpenTexture = JSONUtils.getAsString(json, "open_texture", null);
+            this.eyesClosedTexture = JSONUtils.getAsString(json, "closed_texture", null);
             this.index = JSONUtils.getAsFloat(json, "index");
         }
     }

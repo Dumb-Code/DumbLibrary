@@ -8,7 +8,7 @@ import net.minecraft.nbt.CompoundNBT;
 import java.util.UUID;
 
 @Getter
-public class RandomUUIDStorage implements GeneticFactoryStorage {
+public abstract class RandomUUIDStorage implements GeneticFactoryStorage {
     private UUID randomUUID = UUID.randomUUID();
 
     @Override

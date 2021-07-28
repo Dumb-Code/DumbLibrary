@@ -22,6 +22,7 @@ import net.minecraft.client.renderer.entity.model.EntityModel;
 import net.minecraft.client.renderer.texture.Texture;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.shader.Framebuffer;
+import net.minecraft.client.shader.ShaderInstance;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.inventory.container.PlayerContainer;
@@ -30,9 +31,13 @@ import net.minecraft.util.ResourceLocation;
 import org.apache.commons.lang3.NotImplementedException;
 import org.lwjgl.opengl.GL11;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.stream.IntStream;
+
+import static net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLayer.DefaultTexture.TINT_SHADER;
 
 public class ModelComponentRenderer extends LivingRenderer<LivingEntity, EntityModel<LivingEntity>> implements RenderCallbackComponent.MainCallback {
 
@@ -101,12 +106,11 @@ public class ModelComponentRenderer extends LivingRenderer<LivingEntity, EntityM
     private void renderAllLayers() {
         RenderSystem.clearColor(0F, 0, 0, 0.0F);
 
-        RenderSystem.clear(GL11.GL_COLOR_BUFFER_BIT, Minecraft.ON_OSX);
+        RenderSystem.clear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT, Minecraft.ON_OSX);
         RenderSystem.color4f(1f, 1f, 1f, 1f);
 
         RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         RenderSystem.enableBlend();
-        RenderSystem.enableDepthTest();
         RenderSystem.depthMask(false);
         RenderSystem.matrixMode(GL11.GL_PROJECTION);
         RenderSystem.pushMatrix();
@@ -120,9 +124,8 @@ public class ModelComponentRenderer extends LivingRenderer<LivingEntity, EntityM
         RenderSystem.disableLighting();
         RenderSystem.enableAlphaTest();
         RenderSystem.enableColorMaterial();
+        RenderSystem.disableDepthTest();
 
-//        RenderSystem.disableBlend();
-//        RenderSystem.disableAlphaTest();
 
         RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
         Minecraft.getInstance().textureManager.bind(PlayerContainer.BLOCK_ATLAS);

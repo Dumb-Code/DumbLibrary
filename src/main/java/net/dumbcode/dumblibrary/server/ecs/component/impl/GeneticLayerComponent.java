@@ -4,7 +4,7 @@ import com.google.gson.JsonObject;
 import lombok.*;
 import net.dumbcode.dumblibrary.server.dna.GeneticEntry;
 import net.dumbcode.dumblibrary.server.dna.GeneticTypes;
-import net.dumbcode.dumblibrary.server.dna.storages.GeneticTypeLayerColorStorage;
+import net.dumbcode.dumblibrary.server.dna.storages.GeneticLayerColorStorage;
 import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
@@ -105,7 +105,7 @@ public class GeneticLayerComponent extends EntityComponent implements RenderLaye
         this.entries
             .forEach(e -> {
                 String n = e.getLayerName();
-                GeneticEntry<?> entry = new GeneticEntry<>(GeneticTypes.LAYER_COLORS, "genetic_layer_" + n, new GeneticTypeLayerColorStorage().setLayerName(n), 0F, 1F);
+                GeneticEntry<?> entry = new GeneticEntry<>(GeneticTypes.LAYER_COLORS, new GeneticLayerColorStorage().setLayerName(n));
                 if(randomGeneticVariation) {
                     float cm = e.getDefaultColorMin();
                     float cr = e.getDefaultColorMax() - cm;

@@ -4,14 +4,16 @@ import com.google.gson.JsonObject;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import net.dumbcode.dumblibrary.server.dna.DefaultGeneticFactoryStorageTypes;
 import net.dumbcode.dumblibrary.server.dna.GeneticFactoryStorage;
+import net.dumbcode.dumblibrary.server.dna.GeneticFactoryStorageType;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.JSONUtils;
 
 @Getter
 @Setter
 @Accessors(chain = true)
-public class GeneticTypeLayerColorStorage extends GeneticColorStorage {
+public class GeneticLayerColorStorage extends GeneticColorStorage {
 
     private String layerName = "undefined";
 
@@ -35,5 +37,10 @@ public class GeneticTypeLayerColorStorage extends GeneticColorStorage {
     @Override
     public void deserialize(JsonObject json) {
         this.layerName = JSONUtils.getAsString(json, "layer");
+    }
+
+    @Override
+    public GeneticFactoryStorageType<?> getType() {
+        return DefaultGeneticFactoryStorageTypes.LAYER_COLOUR;
     }
 }

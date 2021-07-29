@@ -3,21 +3,18 @@ package net.dumbcode.dumblibrary.client.gui;
 import com.mojang.blaze3d.matrix.MatrixStack;
 
 public interface GuiScrollboxEntry {
+
     /**
      * Draws the element
      *
+     * @param stack the matrix stack
      * @param x the elements x position
      * @param y the elements y position
      * @param mouseX the mouse X position
      * @param mouseY the mouse Y position
+     * @param mouseOver whether the mouse is over
      */
-    @Deprecated
-    default void draw(MatrixStack stack, int x, int y, int mouseX, int mouseY) {
-
-    }
-
-    default void draw(MatrixStack stack, int x, int y, int mouseX, int mouseY, boolean mouseOver) {
-        draw(stack, x, y, mouseX, mouseY);
+    default void draw(MatrixStack stack, int x, int y, int width, int height, int mouseX, int mouseY, boolean mouseOver) {
     }
 
 
@@ -29,7 +26,7 @@ public interface GuiScrollboxEntry {
      * @param mouseX the mouse X position
      * @param mouseY the mouse Y position
      */
-    default void postDraw(MatrixStack stack, int x, int y, int mouseX, int mouseY) {
+    default void postDraw(MatrixStack stack, int x, int y, int width, int height, int mouseX, int mouseY) {
     }
 
     /**

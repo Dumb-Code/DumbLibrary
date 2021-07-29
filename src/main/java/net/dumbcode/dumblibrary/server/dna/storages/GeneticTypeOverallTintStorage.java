@@ -4,6 +4,8 @@ import com.google.gson.JsonObject;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import net.dumbcode.dumblibrary.server.dna.DefaultGeneticFactoryStorageTypes;
+import net.dumbcode.dumblibrary.server.dna.GeneticFactoryStorageType;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.JSONUtils;
 
@@ -36,6 +38,11 @@ public class GeneticTypeOverallTintStorage extends GeneticColorStorage {
     public void deserialize(JsonObject json) {
         this.tintType = TintType.values()[JSONUtils.getAsInt(json, "tint_type", 0) % TintType.values().length];
         super.deserialize(json);
+    }
+
+    @Override
+    public GeneticFactoryStorageType<?> getType() {
+        return DefaultGeneticFactoryStorageTypes.OVERALL_COLOUR;
     }
 
     public enum TintType {

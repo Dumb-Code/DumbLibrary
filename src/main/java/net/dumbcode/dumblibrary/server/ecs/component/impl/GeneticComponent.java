@@ -1,11 +1,13 @@
 package net.dumbcode.dumblibrary.server.ecs.component.impl;
 
+import com.google.common.collect.Maps;
 import com.google.gson.JsonObject;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.dumbcode.dumblibrary.server.dna.GeneticEntry;
 import net.dumbcode.dumblibrary.server.dna.GeneticFactoryStorage;
+import net.dumbcode.dumblibrary.server.dna.GeneticFactoryStorageType;
 import net.dumbcode.dumblibrary.server.dna.GeneticType;
 import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
@@ -14,6 +16,7 @@ import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentType;
 import net.dumbcode.dumblibrary.server.ecs.component.FinalizableComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.GatherGeneticsComponent;
 import net.dumbcode.dumblibrary.server.utils.CollectorUtils;
+import net.dumbcode.dumblibrary.server.utils.GeneticUtils;
 import net.dumbcode.dumblibrary.server.utils.JavaUtils;
 import net.dumbcode.dumblibrary.server.utils.StreamUtils;
 import net.minecraft.nbt.CompoundNBT;
@@ -21,14 +24,14 @@ import net.minecraft.util.JSONUtils;
 import net.minecraftforge.common.util.Constants;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class GeneticComponent extends EntityComponent implements FinalizableComponent {
     @Getter
-    private final List<GeneticEntry<?>> genetics = new ArrayList<>();
+//    private final List<GeneticEntry<?>> genetics = new ArrayList<>();
+    private final Map<GeneticType<?>, Map<Object, GeneticEntry<?>>> genetics = new HashMap<>(); //<Type, <CombinerKey, Genetic>>
 
     //Delay adding default genetics to the actual genetic list till we finalize, where we can then use `shouldRandomizeGenetics`
     private final List<GeneticEntry<?>> defaultGenetics = new ArrayList<>();
@@ -41,24 +44,37 @@ public class GeneticComponent extends EntityComponent implements FinalizableComp
         this.shouldRandomizeGenetics = false;
     }
 
-    private <T extends GeneticFactoryStorage> void applyChange(ComponentAccess entity, GeneticEntry<T> entry, float modifier) {
+    private <T extends GeneticFactoryStorage> void applyChange(ComponentAccess entity, GeneticEntry<T> entry, double modifier) {
         entry.setModifier(modifier);
-        entry.getType().getOnChange().apply(entry.getBaseValue() + entry.getModifierRange() * modifier, modifier, entity, entry.getStorage());
+        entry.getType().getOnChange().apply(modifier, entity, entry.getStorage());
     }
 
-    public Optional<GeneticEntry<?>> findEntry(String identifier) {
-        return this.getGenetics().stream().filter(g -> g.getIdentifier().equals(identifier)).findFirst();
+    public List<GeneticEntry<?>> getGenetics() {
+        return this.genetics.values().stream().flatMap(m -> m.values().stream()).collect(Collectors.toList());
+    }
+
+    public <T extends GeneticFactoryStorage> Optional<GeneticEntry<?>> findEntry(GeneticEntry<T> entry) {
+        Map<Object, GeneticEntry<?>> map = this.genetics.get(entry.getType());
+        if(map == null) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(map.get(GeneticUtils.getCombinerKey(entry)));
     }
 
     private void applyChangeToAll(ComponentAccess entity) {
-        for (GeneticEntry<?> value : this.genetics) {
+        for (GeneticEntry<?> value : this.getGenetics()) {
             this.applyChange(entity, value, value.getModifier());
         }
     }
 
+    public <T extends GeneticFactoryStorage> void insertGenetic(GeneticEntry<T> entry) {
+        Map<Object, GeneticEntry<?>> map = this.genetics.computeIfAbsent(entry.getType(), t -> Maps.newHashMap());
+        map.put(GeneticUtils.getCombinerKey(entry), entry);
+    }
+
     @Override
     public CompoundNBT serialize(CompoundNBT compound) {
-        compound.put("genetics", this.genetics.stream().map(e -> e.serialize(new CompoundNBT())).collect(CollectorUtils.toNBTTagList()));
+        compound.put("genetics", this.getGenetics().stream().map(e -> e.serialize(new CompoundNBT())).collect(CollectorUtils.toNBTTagList()));
         return super.serialize(compound);
     }
 
@@ -67,29 +83,27 @@ public class GeneticComponent extends EntityComponent implements FinalizableComp
         this.genetics.clear();
         StreamUtils.stream(compound.getList("genetics", Constants.NBT.TAG_COMPOUND))
             .map(b -> GeneticEntry.deserialize((CompoundNBT) b))
-            .forEach(this.genetics::add);
+            .forEach(this::insertGenetic);
         super.deserialize(compound);
-    }
-
-    public void addGenetics(GeneticEntry<?> entry) {
-        this.genetics.add(entry);
     }
 
     @Override
     public void finalizeComponent(ComponentAccess entity) {
         if(!this.doneGatherGenetics) {
             this.doneGatherGenetics = true;
+            List<GeneticEntry<?>> toAdd = this.getGenetics();
             for (EntityComponent component : entity.getAllComponents()) {
                 if(component instanceof GatherGeneticsComponent) {
-                    ((GatherGeneticsComponent) component).gatherGenetics(entity, this.genetics::add, this.shouldRandomizeGenetics);
+                    ((GatherGeneticsComponent) component).gatherGenetics(entity, toAdd::add, this.shouldRandomizeGenetics);
                 }
             }
             for (GeneticEntry<?> genetic : this.defaultGenetics) {
                 if(this.shouldRandomizeGenetics) {
                     genetic.setRandomModifier();
                 }
-                this.genetics.add(genetic);
+                toAdd.add(genetic);
             }
+            GeneticUtils.combineAll(toAdd).forEach(this::insertGenetic);
         }
         this.applyChangeToAll(entity);
     }
@@ -104,12 +118,17 @@ public class GeneticComponent extends EntityComponent implements FinalizableComp
 
         private final List<GeneticEntry<?>> baseEntries = new ArrayList<>();
 
-        public <T extends GeneticFactoryStorage> Storage addGeneticEntry(GeneticType<T> type, String identifier,  float baseValue, float modifierRange) {
-            return this.addGeneticEntry(type, identifier, baseValue, modifierRange, t -> {});
+        public <T extends GeneticFactoryStorage> Storage addGeneticEntry(GeneticType<T> type) {
+            return this.addGeneticEntry(type, 0);
         }
 
-        public <T extends GeneticFactoryStorage> Storage addGeneticEntry(GeneticType<T> type, String identifier, float baseValue, float modifierRange, Consumer<T> storageInitializer) {
-            this.baseEntries.add(new GeneticEntry<>(type, identifier, JavaUtils.nullApply(type.getStorage().get(), storageInitializer), baseValue, modifierRange));
+        public <T extends GeneticFactoryStorage> Storage addGeneticEntry(GeneticType<T> type, float defaultValue) {
+            this.addGeneticEntry(type, type.getStorage().get(), defaultValue);
+            return this;
+        }
+
+        public <T extends GeneticFactoryStorage> Storage addGeneticEntry(GeneticType<T> type, T storage, float defaultValue) {
+            this.baseEntries.add(new GeneticEntry<>(type, storage).setModifier(defaultValue));
             return this;
         }
 

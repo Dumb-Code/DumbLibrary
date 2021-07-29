@@ -32,8 +32,8 @@ public class ModifiableField {
         return (int) this.getValue();
     }
 
-    public void addModifer(UUID uuid, ModOp op, double value) {
-        this.addModifier(new ModifiableFieldModifier(uuid, op, value));
+    public void addModifier(UUID uuid, double value) {
+        this.addModifier(new ModifiableFieldModifier(uuid, value));
     }
 
     public void addModifier(ModifiableFieldModifier modifier) {
@@ -45,27 +45,11 @@ public class ModifiableField {
     }
 
     private double computeValue() {
-        Map<ModOp, Set<ModifiableFieldModifier>> map = new EnumMap<>(ModOp.class);
         double startValue = this.baseValue;
-
-        for (ModifiableFieldModifier modifier : this.operations.values()) {
-            map.computeIfAbsent(modifier.getOp(), op -> new HashSet<>()).add(modifier);
-        }
-
-        for (ModifiableFieldModifier modifier : map.getOrDefault(ModOp.ADD, new HashSet<>())) {
-            startValue += modifier.getValue();
-        }
-
         double result = startValue;
-
-        for (ModifiableFieldModifier modifier : map.getOrDefault(ModOp.MULTIPLY_BASE_THEN_ADD, new HashSet<>())) {
-            result += startValue * modifier.getValue();
+        for (ModifiableFieldModifier value : this.operations.values()) {
+            result += startValue * value.getValue();
         }
-
-        for (ModifiableFieldModifier modifier : map.getOrDefault(ModOp.MULTIPLY, new HashSet<>())) {
-            result *= modifier.getValue();
-        }
-
         return result;
     }
 
@@ -78,7 +62,6 @@ public class ModifiableField {
         this.operations.forEach((uuid, modifier) -> {
             CompoundNBT compound = new CompoundNBT();
             compound.putUUID("uuid", uuid);
-            compound.putInt("modifier", modifier.getOp().ordinal());
             compound.putDouble("value", modifier.getValue());
             nbtOperations.add(compound);
         });
@@ -94,7 +77,7 @@ public class ModifiableField {
         for (INBT base : nbt.getList("operations", Constants.NBT.TAG_COMPOUND)) {
             CompoundNBT compound = (CompoundNBT) base;
             UUID uuid = compound.getUUID("uuid");
-            this.operations.put(uuid, new ModifiableFieldModifier(uuid, ModOp.values()[compound.getInt("modifier")], compound.getDouble("value")));
+            this.operations.put(uuid, new ModifiableFieldModifier(uuid, compound.getDouble("value")));
         }
     }
 

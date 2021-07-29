@@ -20,5 +20,22 @@
     "dumblibrary.gui.controls.middle_click_drag": "Middle click drag",
     "dumblibrary.gui.controls.left_click": "Left click",
     "dumblibrary.gui.controls.movement_keys": "Movement keys",
-    "dumblibrary.gui.controls.arrow_keys": "Arrow keys"
+    "dumblibrary.gui.controls.arrow_keys": "Arrow keys",
+
+    "dumblibrary.genetic_type.layer_colors": "Layer Colors",
+    "dumblibrary.genetic_type.overall_tint": "Overall Tint",
+    "dumblibrary.genetic_type.speed_modifier": "Speed",
+    "dumblibrary.genetic_type.health_modifier": "Health",
+    "dumblibrary.genetic_type.jump_strength": "Jump",
+    "dumblibrary.genetic_type.size": "Size",
+    "dumblibrary.genetic_type.nocturnal_chance": "Nocturnal Chance",
+    "dumblibrary.genetic_type.reproductive_capability": "Reproductive Capability",
+    "dumblibrary.genetic_type.immunity": "Immunity",
+    "dumblibrary.genetic_type.underwater_capacity": "Underwater Capability",
+    "dumblibrary.genetic_type.intelligence": "Intelligence",
+    "dumblibrary.genetic_type.taming_chance": "Taming Chance",
+    "dumblibrary.genetic_type.heat_resistance": "Heat Resistance",
+    "dumblibrary.genetic_type.health_regen_speed": "Regeneration",
+
+    "dumblibrary.genetic_storage.diet": "Can Eat: "
 }

@@ -1,10 +1,8 @@
 package net.dumbcode.dumblibrary.server.dna;
 
+import lombok.NonNull;
 import lombok.Value;
-import net.dumbcode.dumblibrary.server.attributes.ModOp;
-import net.dumbcode.dumblibrary.server.dna.storages.GeneticFieldModifierStorage;
 import net.dumbcode.dumblibrary.server.dna.storages.GeneticTypeOverallTintStorage;
-import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentTypes;
 import net.dumbcode.dumblibrary.server.utils.GeneticUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -12,6 +10,7 @@ import net.minecraft.entity.passive.FoxEntity;
 import net.minecraft.entity.passive.MooshroomEntity;
 import net.minecraft.entity.passive.horse.CoatColors;
 import net.minecraft.item.DyeColor;
+import net.minecraft.nbt.CompoundNBT;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -253,15 +252,15 @@ public enum  EntityGeneticRegistry {
     }
 
 
-    public <S extends GeneticFactoryStorage> S register(EntityType<?> entityType, GeneticType<S> type, float value) {
+    public <S extends GeneticFactoryStorage> S register(EntityType<?> entityType, GeneticType<S> type, double value) {
         return this.register(entityType, type, type.getStorage().get(), null, value);
     }
 
-    public <S extends GeneticFactoryStorage> S register(EntityType<?> entityType, GeneticType<S> type, String variant, float value) {
+    public <S extends GeneticFactoryStorage> S register(EntityType<?> entityType, GeneticType<S> type, String variant, double value) {
         return this.register(entityType, type, type.getStorage().get(), variant, value);
     }
 
-    public <S extends GeneticFactoryStorage> S register(EntityType<?> entityType, GeneticType<S> type, S storage, @Nullable String variant, float value) {
+    public <S extends GeneticFactoryStorage> S register(EntityType<?> entityType, GeneticType<S> type, @NonNull S storage, @Nullable String variant, double value) {
         this.entityEntryList.computeIfAbsent(entityType, c -> new ArrayList<>()).add(new Entry<>(type, storage, variant, value));
         return storage;
     }
@@ -280,9 +279,22 @@ public enum  EntityGeneticRegistry {
         return null;
     }
 
+    public List<Entry<?>> gatherEntry(EntityType<?> entityType, @Nullable String variant) {
+        List<Entry<?>> list = new ArrayList<>();
+        if(this.entityEntryList.containsKey(entityType)) {
+            for (Entry<?> entry : this.entityEntryList.get(entityType)) {
+                if(entry.getVariant() == null || entry.getVariant().equals(variant)) {
+                    list.add(entry);
+                }
+            }
+        }
+        return list;
+    }
+
     public void registerTargetTint(EntityType<?> entityType, int color) {
         registerTargetTint(entityType, null, color);
     }
+
 
     public void registerTargetTint(EntityType<?> entityType, @Nullable String variant, int color) {
         int r = (color >> 16) & 0xFF;
@@ -305,6 +317,13 @@ public enum  EntityGeneticRegistry {
         GeneticType<S> type;
         S storage;
         @Nullable String variant;
-        float value;
+        double value;
+
+        public GeneticEntry<S> create(float modifier) {
+            S storage = this.type.getStorage().get();
+            //Ugly cloning method
+            storage.deserialize(this.storage.serialize(new CompoundNBT()));
+            return new GeneticEntry<>(this.type, storage).setModifier(this.type.getDataHandler().scale(this.value, modifier));
+        }
     }
 }

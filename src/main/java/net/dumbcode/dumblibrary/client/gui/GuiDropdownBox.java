@@ -88,7 +88,7 @@ public class GuiDropdownBox<T extends SelectListEntry> extends Widget {
         if (!this.search.isEmpty()) {
             MC.font.draw(stack, this.search, this.x + 5, this.y + this.cellHeight / 2F - MC.font.lineHeight / 2F, -1);
         } else if (this.getActive() != null) {
-            this.getActive().draw(stack, this.x, this.y, mouseX, mouseY, this.isMouseOver(mouseX, mouseY));
+            this.getActive().draw(stack, this.x, this.y, this.width, this.cellHeight, mouseX, mouseY, this.isMouseOver(mouseX, mouseY));
         }
         StencilStack.popStencil();
 

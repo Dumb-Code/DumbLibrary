@@ -7,6 +7,5 @@ import java.util.UUID;
 @Value
 public class ModifiableFieldModifier {
     private final UUID uuid;
-    private final ModOp op;
     private final double value;
 }

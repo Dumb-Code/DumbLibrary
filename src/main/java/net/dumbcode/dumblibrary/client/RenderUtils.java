@@ -3,6 +3,7 @@ package net.dumbcode.dumblibrary.client;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 import net.dumbcode.dumblibrary.server.utils.MathUtils;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.Tessellator;
@@ -13,6 +14,7 @@ import net.minecraft.util.math.vector.Matrix3f;
 import net.minecraft.util.math.vector.Matrix4f;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.math.vector.Vector3f;
+import net.minecraft.util.text.ITextComponent;
 
 import java.util.Arrays;
 
@@ -201,5 +203,34 @@ public class RenderUtils {
         buffer.vertex(pose, (x + width), y, 0.0F).uv((u + uWidth) * f, v * f1).endVertex();
         buffer.vertex(pose, x, y, 0.0F).uv(u * f, v * f1).endVertex();
         tessellator.end();
+    }
+
+    public static final int PIXELS_PER_TICK = 1;
+    public static final int TICKS_WAIT_AT_END = 2;
+
+    public static void renderScrollingText(MatrixStack stack, ITextComponent text, float scrollTicks, int x, int y, int width, int color) {
+        Minecraft mc = Minecraft.getInstance();
+        int textWidth = mc.font.width(text);
+
+        if(textWidth < width) {
+            mc.font.draw(stack, text, x, y, color);
+            return;
+        }
+
+        int textTicks = textWidth / PIXELS_PER_TICK;
+        int totalTicks = textTicks + TICKS_WAIT_AT_END;
+        float internalScrollTicks = scrollTicks % totalTicks;
+
+        StencilStack.pushSquareStencil(stack, x, y, x+width, y+mc.font.lineHeight);
+        int pixelsToMove = (int) (internalScrollTicks * PIXELS_PER_TICK);
+        int start = x - pixelsToMove;
+
+        if(internalScrollTicks > textTicks - ((float) width / PIXELS_PER_TICK)) {
+            start = x + width - textWidth;
+        }
+
+        mc.font.draw(stack, text, start, y, color);
+
+        StencilStack.popStencil();
     }
 }

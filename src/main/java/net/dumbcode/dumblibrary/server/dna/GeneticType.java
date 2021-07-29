@@ -1,6 +1,5 @@
 package net.dumbcode.dumblibrary.server.dna;
 
-import com.sun.java.accessibility.util.java.awt.TextComponentTranslator;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +13,6 @@ import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.attributes.Attribute;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
-import net.minecraft.entity.ai.attributes.Attributes;
 import net.minecraft.entity.ai.attributes.ModifiableAttributeInstance;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TranslationTextComponent;
@@ -38,18 +36,18 @@ public class GeneticType<T extends GeneticFactoryStorage> extends ForgeRegistryE
     public static <E extends EntityComponent> GeneticType<GeneticFieldModifierStorage> simpleFieldModifierType(EntityComponentType<E, ?> componentType, Function<E, ModifiableField> func) {
         return GeneticType.<GeneticFieldModifierStorage>builder()
             .storage(GeneticFieldModifierStorage::new)
-            .onChange(componentType, func, (value, rawValue, field, storage) -> field.addModifer(storage.getRandomUUID(), storage.getOperation(), value*storage.getModifier()))
+            .onChange(componentType, func, (value, field, storage) -> field.addModifier(storage.getRandomUUID(), value))
             .build();
     }
 
     public static <E extends EntityComponent> GeneticType<GeneticFieldModifierStorage> simpleVanillaModifierType(Attribute attributeType, String modifierName) {
         return GeneticType.<GeneticFieldModifierStorage>builder()
             .storage(GeneticFieldModifierStorage::new)
-            .onChange((value, rawValue, type, storage) -> {
+            .onChange((value, type, storage) -> {
                 if (type instanceof LivingEntity) {
                     ModifiableAttributeInstance attribute = ((LivingEntity) type).getAttribute(attributeType);
                     if (attribute != null) {
-                        AttributeModifier modifier = new AttributeModifier(storage.getRandomUUID(), modifierName, storage.getModifier()*value, storage.getOperation().getVanilla());
+                        AttributeModifier modifier = new AttributeModifier(storage.getRandomUUID(), modifierName, value, AttributeModifier.Operation.MULTIPLY_BASE);
                         if (!attribute.hasModifier(modifier)) {
                             attribute.addPermanentModifier(modifier);
                         }
@@ -60,13 +58,13 @@ public class GeneticType<T extends GeneticFactoryStorage> extends ForgeRegistryE
     }
 
     @Deprecated
-    public static <E extends EntityComponent> GeneticType<?> unfinished() {
-        return GeneticType.builder().build();
+    public static <E extends EntityComponent> GeneticType<GeneticFieldModifierStorage> unfinished() {
+        return GeneticType.<GeneticFieldModifierStorage>builder().storage(GeneticFieldModifierStorage::new).build();
     }
 
     public TranslationTextComponent getTranslationComponent() {
         ResourceLocation name = this.getRegistryName();
-        return new TranslationTextComponent(name.getNamespace() + ".genetic_type" + name.getPath() + ".name");
+        return new TranslationTextComponent(name.getNamespace() + ".genetic_type." + name.getPath());
     }
 
     public static <T extends GeneticFactoryStorage> GeneticTypeBuilder<T> builder() {
@@ -74,7 +72,7 @@ public class GeneticType<T extends GeneticFactoryStorage> extends ForgeRegistryE
     }
 
     public static class GeneticTypeBuilder<T extends GeneticFactoryStorage> {
-        private GeneticValueApplier<T, ComponentAccess> onChange = (value, rawValue, type, storage1) -> {};
+        private GeneticValueApplier<T, ComponentAccess> onChange = (value, type, storage1) -> {};
         private GeneticDataHandler dataHandler = FloatGeneticDataHandler.INSTANCE;
         private Supplier<T> storageCreator = () -> null;
 
@@ -86,12 +84,12 @@ public class GeneticType<T extends GeneticFactoryStorage> extends ForgeRegistryE
         }
 
         public <E extends EntityComponent> GeneticTypeBuilder<T> onChange(EntityComponentType<E, ?> type, GeneticValueApplier<T, E> onChange) {
-            this.onChange = (value, rawValue, access, storage) -> access.get(type).ifPresent(c -> onChange.apply(value, rawValue, c, storage));
+            this.onChange = (value, access, storage) -> access.get(type).ifPresent(c -> onChange.apply(value, c, storage));
             return this;
         }
 
         public <E extends EntityComponent> GeneticTypeBuilder<T> onChange(EntityComponentType<E, ?> type, Function<E, ModifiableField> func, GeneticValueApplier<T, ModifiableField> onChange) {
-            this.onChange = (value, rawValue, access, storage) -> access.get(type).map(func).ifPresent(c -> onChange.apply(value, rawValue, c, storage));
+            this.onChange = (value, access, storage) -> access.get(type).map(func).ifPresent(c -> onChange.apply(value, c, storage));
             return this;
         }
 

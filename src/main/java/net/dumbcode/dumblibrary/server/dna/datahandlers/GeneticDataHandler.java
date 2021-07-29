@@ -1,10 +1,13 @@
 package net.dumbcode.dumblibrary.server.dna.datahandlers;
 
-import java.util.Random;
+import it.unimi.dsi.fastutil.doubles.DoubleList;
+import it.unimi.dsi.fastutil.floats.FloatList;
 
 public interface GeneticDataHandler {
-    Random RAND = new Random();
 
-    float combine(float a, float b);
-    float gaussian(float mean, float range);
+    double combineChild(double a, double b);
+
+    double combineMultipleSources(DoubleList floats);
+
+    double scale(double value, double modifier);
 }

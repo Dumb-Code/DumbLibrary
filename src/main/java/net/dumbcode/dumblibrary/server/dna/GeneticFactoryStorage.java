@@ -8,7 +8,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 
 import java.util.function.Function;
 
-public interface GeneticFactoryStorage {
+public interface GeneticFactoryStorage<O> {
     CompoundNBT serialize(CompoundNBT nbt);
     void deserialize(CompoundNBT nbt);
 
@@ -18,7 +18,7 @@ public interface GeneticFactoryStorage {
     GeneticFactoryStorageType<?> getType();
 
     @OnlyIn(Dist.CLIENT)
-    void render(MatrixStack stack, GeneticType<?> entry, double value, int x, int y, int width, int height, float ticks);
+    void render(MatrixStack stack, GeneticType<?, O> entry, O value, int x, int y, int width, int height, float ticks);
 
 
 }

@@ -18,60 +18,60 @@ import java.util.function.Supplier;
 
 @Data
 @Accessors(chain = true)
-
-public class GeneticEntry<T extends GeneticFactoryStorage> {
-    private final GeneticType<T> type;
+public class GeneticEntry<T extends GeneticFactoryStorage<O>, O> {
+    private final GeneticType<T, O> type;
     private final T storage;
-    private double modifier = 0;
+    private O modifier;
 
-    private GeneticEntry(GeneticEntry<T> schemaEntry) {
+    private GeneticEntry(GeneticEntry<T, O> schemaEntry) {
         this(schemaEntry.getType(), schemaEntry.getStorage());
     }
 
-    public GeneticEntry(Supplier<? extends GeneticType<T>> type, T storage) {
+    public GeneticEntry(Supplier<? extends GeneticType<T, O>> type, T storage) {
         this(type.get(), storage);
     }
-    public GeneticEntry(GeneticType<T> type, @NonNull T storage) {
+    public GeneticEntry(GeneticType<T, O> type, @NonNull T storage) {
         this.type = type;
         this.storage = storage;
+        this.modifier = this.type.getDataHandler().defaultValue();
     }
 
-    public GeneticEntry<T> copy() {
+    public GeneticEntry<T, O> copy() {
         return new GeneticEntry<>(this);
     }
 
-    public GeneticEntry<T> setRandomModifier() {
-        this.modifier = (float) new Random().nextGaussian();
+    public GeneticEntry<T, O> setRandomModifier() {
+        this.modifier = this.type.getDataHandler().defaultValue();
         return this;
     }
 
     public CompoundNBT serialize(CompoundNBT compound) {
         compound.putString("type", Objects.requireNonNull(this.type.getRegistryName()).toString());
-        compound.putLong("modifier", Double.doubleToRawLongBits(this.modifier));
+        compound.put("modifier", this.type.getDataHandler().write(this.modifier, new CompoundNBT()));
         JavaUtils.nullApply(this.storage, t -> compound.put("storage", t.serialize(new CompoundNBT())));
         return compound;
     }
 
     public JsonObject serialize(JsonObject json) {
         json.addProperty("type", Objects.requireNonNull(this.type.getRegistryName()).toString());
-        json.addProperty("modifier", Double.doubleToRawLongBits(this.modifier));
+        json.add("value", this.type.getDataHandler().write(this.modifier, new JsonObject()));
         JavaUtils.nullApply(this.storage, t -> json.add("storage", t.serialize(new JsonObject())));
         return json;
     }
 
-    public static <T extends GeneticFactoryStorage> GeneticEntry<T> deserialize(CompoundNBT compound) {
-        @SuppressWarnings("unchecked") GeneticType<T> type = (GeneticType<T>) Objects.requireNonNull(DumbRegistries.GENETIC_TYPE_REGISTRY.getValue(new ResourceLocation(compound.getString("type"))));
+    public static <T extends GeneticFactoryStorage<O>, O> GeneticEntry<T, O> deserialize(CompoundNBT compound) {
+        @SuppressWarnings("unchecked") GeneticType<T, O> type = (GeneticType<T, O>) Objects.requireNonNull(DumbRegistries.GENETIC_TYPE_REGISTRY.getValue(new ResourceLocation(compound.getString("type"))));
         return new GeneticEntry<>(
             type,
             Util.make(type.getStorage().get(), t -> t.deserialize(compound.getCompound("storage")))
-        ).setModifier(Double.longBitsToDouble(compound.getInt("modifier")));
+        ).setModifier(type.getDataHandler().read(compound.getCompound("value")));
     }
 
-    public static <T extends GeneticFactoryStorage> GeneticEntry deserialize(JsonObject json) {
-        @SuppressWarnings("unchecked") GeneticType<T> type = (GeneticType<T>) Objects.requireNonNull(DumbRegistries.GENETIC_TYPE_REGISTRY.getValue(new ResourceLocation(JSONUtils.getAsString(json, "type"))));
+    public static <T extends GeneticFactoryStorage<O>, O> GeneticEntry<T, O> deserialize(JsonObject json) {
+        @SuppressWarnings("unchecked") GeneticType<T, O> type = (GeneticType<T, O>) Objects.requireNonNull(DumbRegistries.GENETIC_TYPE_REGISTRY.getValue(new ResourceLocation(JSONUtils.getAsString(json, "type"))));
         return new GeneticEntry<>(
             type,
             Util.make(type.getStorage().get(), t -> t.deserialize(JSONUtils.getAsJsonObject(json, "storage")))
-        ).setModifier((Double.longBitsToDouble(JSONUtils.getAsInt(json, "modifier"))));
+        ).setModifier(type.getDataHandler().read(json.getAsJsonObject("value")));
     }
 }

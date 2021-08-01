@@ -4,6 +4,8 @@ import com.google.gson.JsonObject;
 import lombok.*;
 import net.dumbcode.dumblibrary.server.dna.GeneticEntry;
 import net.dumbcode.dumblibrary.server.dna.GeneticTypes;
+import net.dumbcode.dumblibrary.server.dna.data.GeneticTint;
+import net.dumbcode.dumblibrary.server.dna.storages.GeneticColorStorage;
 import net.dumbcode.dumblibrary.server.dna.storages.GeneticLayerColorStorage;
 import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
@@ -52,10 +54,10 @@ public class GeneticLayerComponent extends EntityComponent implements RenderLaye
     }
 
 
-    public void setLayerValues(UUID uuid, String layer, float[] rgb) {
+    public void setLayerValues(UUID uuid, String layer, GeneticTint.Part part) {
         for (GeneticLayerEntry entry : this.entries) {
             if(entry.getLayerName().equals(layer)) {
-                entry.addDirectTint(uuid, rgb);
+                entry.addDirectTint(uuid, part);
             }
         }
         this.syncToClient();
@@ -101,23 +103,35 @@ public class GeneticLayerComponent extends EntityComponent implements RenderLaye
     }
 
     @Override
-    public void gatherGenetics(ComponentAccess entity, Consumer<GeneticEntry<?>> registry, boolean randomGeneticVariation) {
+    public void gatherGenetics(ComponentAccess entity, Consumer<GeneticEntry<?, ?>> registry, boolean randomGeneticVariation) {
         this.entries
             .forEach(e -> {
                 String n = e.getLayerName();
-                GeneticEntry<?> entry = new GeneticEntry<>(GeneticTypes.LAYER_COLORS, new GeneticLayerColorStorage().setLayerName(n));
+                GeneticEntry<GeneticLayerColorStorage, GeneticTint> entry = new GeneticEntry<>(GeneticTypes.LAYER_COLORS, new GeneticLayerColorStorage().setLayerName(n));
                 if(randomGeneticVariation) {
-                    float cm = e.getDefaultColorMin();
-                    float cr = e.getDefaultColorMax() - cm;
-                    float am = e.getDefaultAlphaMin();
-                    float ar = e.getDefaultAlphaMax() - am;
-                    entry.setModifier(GeneticUtils.encodeFloatColor(cm + RAND.nextFloat() * cr, cm + RAND.nextFloat() * cr, cm + RAND.nextFloat() * cr, am + RAND.nextFloat() * ar));
+                    float cm = e.getColourMutate();
+                    float cr = 1 - cm;
+                    float am = e.getAlphaMutate();
+                    float ar = 1 - am;
+                    entry.setModifier(new GeneticTint(
+                        new GeneticTint.Part(
+                            cm + RAND.nextFloat() * cr, cm + RAND.nextFloat() * cr, cm + RAND.nextFloat() * cr, am + RAND.nextFloat() * ar, GeneticUtils.DEFAULT_COLOUR_IMPORTANCE
+                        ),
+                        new GeneticTint.Part(
+                            cm + RAND.nextFloat() * cr, cm + RAND.nextFloat() * cr, cm + RAND.nextFloat() * cr, am + RAND.nextFloat() * ar, GeneticUtils.DEFAULT_COLOUR_IMPORTANCE
+                        )
+                    ));
 
-                } else {
-                    entry.setModifier(GeneticUtils.encodeFloatColor(1F, 1F, 1F, 1F));
                 }
                 registry.accept(entry);
             });
+    }
+
+    @Override
+    public void clearGenetics() {
+        for (GeneticLayerEntry entry : this.entries) {
+            entry.clear();
+        }
     }
 
     public static class Storage implements EntityComponentStorage<GeneticLayerComponent> {

@@ -16,27 +16,32 @@ import net.minecraft.util.JSONUtils;
 public class GeneticLayerColorStorage extends GeneticColorStorage {
 
     private String layerName = "undefined";
+    private boolean primary = true;
 
     @Override
     public CompoundNBT serialize(CompoundNBT nbt) {
         nbt.putString("layer", this.layerName);
+        nbt.putBoolean("primary", this.primary);
         return nbt;
     }
 
     @Override
     public void deserialize(CompoundNBT nbt) {
         this.layerName = nbt.getString("layer");
+        this.primary = nbt.getBoolean("primary");
     }
 
     @Override
     public JsonObject serialize(JsonObject json) {
         json.addProperty("layer", this.layerName);
+        json.addProperty("primary", this.primary);
         return json;
     }
 
     @Override
     public void deserialize(JsonObject json) {
         this.layerName = JSONUtils.getAsString(json, "layer");
+        this.primary = JSONUtils.getAsBoolean(json, "primary");
     }
 
     @Override

@@ -319,7 +319,7 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> extends Widget {
             for (int i = 0; i < entries.size(); i++) {
                 int xStart = this.x + (i % this.cellsPerRow) * width;
                 int yStart = (int) (this.y + this.cellHeight * (i / this.cellsPerRow) - this.scroll * this.cellHeight);
-                if (mouseX >= xStart && mouseX < xStart + width && mouseY - this.y <= this.cellHeight * (i + 1) - this.scroll * this.cellHeight) {
+                if (mouseX >= xStart && mouseX < xStart + width && mouseY >= yStart && mouseY < yStart + this.cellHeight) {
                     if (entries.get(i).onClicked(mouseX - xStart, mouseY - yStart, mouseX, mouseY)) {
                         this.selectedElement = entries.get(i);
                     }

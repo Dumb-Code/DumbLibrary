@@ -2,6 +2,7 @@ package net.dumbcode.dumblibrary.server.dna;
 
 import lombok.NonNull;
 import lombok.Value;
+import net.dumbcode.dumblibrary.server.dna.data.GeneticTint;
 import net.dumbcode.dumblibrary.server.dna.storages.GeneticTypeOverallTintStorage;
 import net.dumbcode.dumblibrary.server.utils.GeneticUtils;
 import net.minecraft.entity.Entity;
@@ -13,16 +14,14 @@ import net.minecraft.item.DyeColor;
 import net.minecraft.nbt.CompoundNBT;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
 public enum  EntityGeneticRegistry {
     INSTANCE;
 
-    private final Map<EntityType<?>, List<Entry<?>>> entityEntryList = new HashMap<>();
+    private final Map<EntityType<?>, List<Entry<?, ?>>> entityEntryList = new HashMap<>();
+    private final Map<EntityType<?>, Map<String, List<Integer>>> tintEntryList = new HashMap<>();
     private final Map<EntityType<?>, Function<?, String>> variantGetters = new HashMap<>();
 
     EntityGeneticRegistry() {
@@ -40,14 +39,14 @@ public enum  EntityGeneticRegistry {
         //Panda Bear: Increase reduce speed, and reduce reproductive capability
         register(EntityType.PANDA, GeneticTypes.SPEED_MODIFIER.get(), 0.35F);
         register(EntityType.PANDA, GeneticTypes.REPRODUCTIVE_CAPABILITY.get(), -0.5F);
-        registerTargetTint(EntityType.PANDA, 0xB2B2B2); //https://www.htmlcsscolor.com/hex/B2B2B2
+        registerTargetTint(EntityType.PANDA, 0xB2B2B2, 0x222222); //https://www.htmlcsscolor.com/hex/B2B2B2 https://www.htmlcsscolor.com/hex/222222
 
         //Turtle: boost immunity, Increase in health, Increase in underwater capability, decrease speed, and shift in skin tone to turtle green
         register(EntityType.TURTLE, GeneticTypes.IMMUNITY.get(), 1.25F);
         register(EntityType.TURTLE, GeneticTypes.HEALTH_MODIFIER.get(), 0.75F);
         register(EntityType.TURTLE, GeneticTypes.UNDERWATER_CAPACITY.get(), 1.25F);
         register(EntityType.TURTLE, GeneticTypes.SPEED_MODIFIER.get(), -0.5F);
-        registerTargetTint(EntityType.TURTLE, 0x28340A);//https://www.htmlcsscolor.com/hex/28340A
+        registerTargetTint(EntityType.TURTLE, 0xBFB37F, 0x28340A);//https://www.htmlcsscolor.com/hex/BFB37F https://www.htmlcsscolor.com/hex/28340A
 
         //Wolf: Increase intelligence, Increased chances of taming, Increase in Speed
         register(EntityType.WOLF, GeneticTypes.INTELLIGENCE.get(), 0.75F);
@@ -69,16 +68,16 @@ public enum  EntityGeneticRegistry {
         //Fox: Increase in speed, Increase in Intelligence
         register(EntityType.FOX, GeneticTypes.SPEED_MODIFIER.get(), 0.7F);
         register(EntityType.FOX, GeneticTypes.INTELLIGENCE.get(), 0.3F);
-        registerTargetTint(EntityType.FOX, FoxEntity.Type.RED.getName(), 0xE37C21); //https://www.htmlcsscolor.com/hex/E37C21
-        registerTargetTint(EntityType.FOX, FoxEntity.Type.SNOW.getName(), 0xB2B2B2); //https://www.htmlcsscolor.com/hex/B2B2B2
+        registerTargetTint(EntityType.FOX, FoxEntity.Type.RED.getName(), 0xB2B2B2, 0xE37C21); //https://www.htmlcsscolor.com/hex/B2B2B2 https://www.htmlcsscolor.com/hex/E37C21
+        registerTargetTint(EntityType.FOX, FoxEntity.Type.SNOW.getName(), 0xB2B2B2, 0xB2B2B2); //https://www.htmlcsscolor.com/hex/B2B2B2
         registerVariantGetter(EntityType.FOX, f -> f.getFoxType().getName());
 
         //Sheep: reduced intelligence
         register(EntityType.SHEEP, GeneticTypes.INTELLIGENCE.get(), -0.25F);
-        registerTargetTint(EntityType.SHEEP, 0xB2B2B2); //https://www.htmlcsscolor.com/hex/B2B2B2
+        registerTargetTint(EntityType.SHEEP, 0xB4947D, 0xB2B2B2); //https://www.htmlcsscolor.com/hex/B4947D https://www.htmlcsscolor.com/hex/B2B2B2
 
         //Cow
-        registerTargetTint(EntityType.COW, 0x433626); //https://www.htmlcsscolor.com/hex/433626
+        registerTargetTint(EntityType.COW, 0x433626, 0xB1B1B1); //https://www.htmlcsscolor.com/hex/433626 https://www.htmlcsscolor.com/hex/B1B1B1
 
         //Pig: Increased immunity
         register(EntityType.PIG, GeneticTypes.IMMUNITY.get(), 0.25F);
@@ -87,19 +86,21 @@ public enum  EntityGeneticRegistry {
         //Rabbit: Increased speed, reduced size, TODO: increase in chance of albinism
         register(EntityType.RABBIT, GeneticTypes.SPEED_MODIFIER.get(), 0.5F);
         register(EntityType.RABBIT, GeneticTypes.SIZE.get(), -0.75F);
-        registerTargetTint(EntityType.RABBIT, "white", 0xB2B2B2); //https://www.htmlcsscolor.com/hex/B2B2B2
-        registerTargetTint(EntityType.RABBIT, "black", 0x131313); //https://www.htmlcsscolor.com/hex/131313
-        registerTargetTint(EntityType.RABBIT, "desert", 0xF9EAAF); //https://www.htmlcsscolor.com/hex/F9EAAF
-        registerTargetTint(EntityType.RABBIT, "saltpepper", 0x7F6D58); //https://www.htmlcsscolor.com/hex/7F6D58
-        registerTargetTint(EntityType.RABBIT, "brown", 0x826F58); //https://www.htmlcsscolor.com/hex/826F58
+        registerTargetTint(EntityType.RABBIT, "white", 0xB2B2B2, 0xB2B2B2); //https://www.htmlcsscolor.com/hex/B2B2B2
+        registerTargetTint(EntityType.RABBIT, "black", 0x131313, 0x131313); //https://www.htmlcsscolor.com/hex/131313
+        registerTargetTint(EntityType.RABBIT, "desert", 0xF9EAAF, 0xF9EAAF); //https://www.htmlcsscolor.com/hex/F9EAAF
+        registerTargetTint(EntityType.RABBIT, "black_and_white", 0xB2B2B2, 0x131313); //https://www.htmlcsscolor.com/hex/B2B2B2 https://www.htmlcsscolor.com/hex/131313
+        registerTargetTint(EntityType.RABBIT, "saltpepper", 0x7F6D58, 0x7F6D58); //https://www.htmlcsscolor.com/hex/7F6D58
+        registerTargetTint(EntityType.RABBIT, "brown", 0x826F58, 0x826F58); //https://www.htmlcsscolor.com/hex/826F58
         registerVariantGetter(EntityType.RABBIT, r -> {
             switch (r.getRabbitType()) {
                 case 1:
                 case 99: //Killer bunny
                     return "white";
                 case 2:
-                case 3:
                     return "black";
+                case 3:
+                    return "black_and_white";
                 case 4:
                     return "desert";
                 case 5:
@@ -111,18 +112,18 @@ public enum  EntityGeneticRegistry {
 
         //Chicken: Reduced intelligence, shift in skin tone to white TODO: Small chance of clucking ????
         register(EntityType.CHICKEN, GeneticTypes.INTELLIGENCE.get(), -0.5F);
-        registerTargetTint(EntityType.CHICKEN, 0xB2B2B2); //https://www.htmlcsscolor.com/hex/B2B2B2
+        registerTargetTint(EntityType.CHICKEN, 0xB2B2B2, 0xD40409); //https://www.htmlcsscolor.com/hex/B2B2B2 https://www.htmlcsscolor.com/hex/D40409
 
         //Parrot: Increased intelligence, Increased chances of taming,
         // TODO: Small chance of dinosaur being able to imitate sounds
         // TODO: Allergy to cocoa beans - when do dinos eat cocoa beans anyway????
         // TODO: delta skin when green
         register(EntityType.PARROT, GeneticTypes.INTELLIGENCE.get(), 0.25F);
-        registerTargetTint(EntityType.PARROT, "red", 0xEB0100);//https://www.htmlcsscolor.com/hex/EB0100
-        registerTargetTint(EntityType.PARROT, "blue", 0x112DEC);//https://www.htmlcsscolor.com/hex/112DEC
-        registerTargetTint(EntityType.PARROT, "green", 0x9CDA00);//https://www.htmlcsscolor.com/hex/9CDA00
-        registerTargetTint(EntityType.PARROT, "light_blue", 0x12CCFD);//https://www.htmlcsscolor.com/hex/12CCFD
-        registerTargetTint(EntityType.PARROT, "gray", 0xAFAFAF);//https://www.htmlcsscolor.com/hex/AFAFAF
+        registerTargetTint(EntityType.PARROT, "red", 0xEB0100, 0xE8C100);//https://www.htmlcsscolor.com/hex/EB0100 https://www.htmlcsscolor.com/hex/E8C100
+        registerTargetTint(EntityType.PARROT, "blue", 0x112DEC, 0xE8C100);//https://www.htmlcsscolor.com/hex/112DEC https://www.htmlcsscolor.com/hex/E8C100
+        registerTargetTint(EntityType.PARROT, "green", 0x9CDA00, 0x9CDA00);//https://www.htmlcsscolor.com/hex/9CDA00
+        registerTargetTint(EntityType.PARROT, "light_blue", 0x12CCFD, 0xE8C100);//https://www.htmlcsscolor.com/hex/12CCFD  https://www.htmlcsscolor.com/hex/E8C100
+        registerTargetTint(EntityType.PARROT, "gray", 0xAFAFAF, 0xE8C100);//https://www.htmlcsscolor.com/hex/AFAFAF  https://www.htmlcsscolor.com/hex/E8C100
         registerVariantGetter(EntityType.PARROT, p -> {
             switch (p.getVariant()) {
                 case 1: return "blue";
@@ -168,16 +169,16 @@ public enum  EntityGeneticRegistry {
         register(EntityType.CAT, GeneticTypes.INTELLIGENCE.get(), 0.5F);
         register(EntityType.CAT, GeneticTypes.TAMING_CHANCE.get(), 0.45F);
         register(EntityType.CAT, GeneticTypes.SIZE.get(), -0.6F);
-        registerTargetTint(EntityType.CAT, "tabby", 0x856549); //https://www.htmlcsscolor.com/hex/856549
-        registerTargetTint(EntityType.CAT, "black", 0x1C1827); //https://www.htmlcsscolor.com/hex/1C1827
-        registerTargetTint(EntityType.CAT, "red", 0xF0B245); //https://www.htmlcsscolor.com/hex/F0B245
-        registerTargetTint(EntityType.CAT, "siamese", 0xF6E7D3); //https://www.htmlcsscolor.com/hex/F6E7D3
+        registerTargetTint(EntityType.CAT, "tabby", 0x856549, 0x736B60); //https://www.htmlcsscolor.com/hex/856549 https://www.htmlcsscolor.com/hex/736B60
+        registerTargetTint(EntityType.CAT, "black", 0x1C1827, 0xB2B2B2); //https://www.htmlcsscolor.com/hex/1C1827 https://www.htmlcsscolor.com/hex/B2B2B2
+        registerTargetTint(EntityType.CAT, "red", 0xF0B245, 0xD97720); //https://www.htmlcsscolor.com/hex/F0B245 https://www.htmlcsscolor.com/hex/D97720
+        registerTargetTint(EntityType.CAT, "siamese", 0xF6E7D3, 0x5A473E); //https://www.htmlcsscolor.com/hex/F6E7D3 https://www.htmlcsscolor.com/hex/5A473E
         registerTargetTint(EntityType.CAT, "british_shorthair", 0xBABABA); //https://www.htmlcsscolor.com/hex/BABABA
-        registerTargetTint(EntityType.CAT, "calico", 0xD89A3D); //https://www.htmlcsscolor.com/hex/D89A3D
+        registerTargetTint(EntityType.CAT, "calico", 0xB2B2B2, 0xD89A3D); //https://www.htmlcsscolor.com/hex/B2B2B2 https://www.htmlcsscolor.com/hex/D89A3D
         registerTargetTint(EntityType.CAT, "persian", 0xFCDCB0); //https://www.htmlcsscolor.com/hex/FCDCB0
-        registerTargetTint(EntityType.CAT, "ragdoll", 0xB2B2B2); //https://www.htmlcsscolor.com/hex/B2B2B2
+        registerTargetTint(EntityType.CAT, "ragdoll", 0xB2B2B2, 0x544E49); //https://www.htmlcsscolor.com/hex/B2B2B2 https://www.htmlcsscolor.com/hex/544E49
         registerTargetTint(EntityType.CAT, "white", 0xB2B2B2); //https://www.htmlcsscolor.com/hex/B2B2B2
-        registerTargetTint(EntityType.CAT, "jellie", 0x616161); //https://www.htmlcsscolor.com/hex/616161
+        registerTargetTint(EntityType.CAT, "jellie", 0xB2B2B2, 0x616161); //https://www.htmlcsscolor.com/hex/B2B2B2 https://www.htmlcsscolor.com/hex/616161
         registerTargetTint(EntityType.CAT, "all_black", 0x161623); //https://www.htmlcsscolor.com/hex/161623
         registerVariantGetter(EntityType.CAT, c -> {
             switch (c.getCatType()) {
@@ -200,12 +201,12 @@ public enum  EntityGeneticRegistry {
         register(EntityType.OCELOT, GeneticTypes.SPEED_MODIFIER.get(), 0.5F);
         register(EntityType.OCELOT, GeneticTypes.TAMING_CHANCE.get(), -0.3F);
         register(EntityType.OCELOT, GeneticTypes.SIZE.get(), -0.6F);
-        registerTargetTint(EntityType.OCELOT, 0xFDD976); //https://www.htmlcsscolor.com/hex/FDD976
+        registerTargetTint(EntityType.OCELOT, 0xFDD976, 0x8C5329); //https://www.htmlcsscolor.com/hex/FDD976 https://www.htmlcsscolor.com/hex/8C5329
 
         //Mooshroom:
         //todo: Increased poison resistance ??
-        registerTargetTint(EntityType.MOOSHROOM, MooshroomEntity.Type.BROWN.name(), 0xB68767); //https://www.htmlcsscolor.com/hex/B68767
-        registerTargetTint(EntityType.MOOSHROOM, MooshroomEntity.Type.RED.name(), 0xA41012); //https://www.htmlcsscolor.com/hex/A41012
+        registerTargetTint(EntityType.MOOSHROOM, MooshroomEntity.Type.BROWN.name(), 0xB68767, 0xB0B0B0); //https://www.htmlcsscolor.com/hex/B68767 https://www.htmlcsscolor.com/hex/B0B0B0
+        registerTargetTint(EntityType.MOOSHROOM, MooshroomEntity.Type.RED.name(), 0xA41012, 0xB0B0B0); //https://www.htmlcsscolor.com/hex/A41012 https://www.htmlcsscolor.com/hex/B0B0B0
         registerVariantGetter(EntityType.MOOSHROOM, m -> m.getMushroomType().name());
 
         //Fish: Increase in underwater capability, Decrease in health, size
@@ -214,9 +215,9 @@ public enum  EntityGeneticRegistry {
             register(type, GeneticTypes.HEALTH_MODIFIER.get(), -0.5F);
             register(type, GeneticTypes.SIZE.get(), -0.5F);
         }
-        registerTargetTint(EntityType.SALMON, 0xA83A38); //https://www.htmlcsscolor.com/hex/A83A38
-        registerTargetTint(EntityType.COD, 0x775B49); //https://www.htmlcsscolor.com/hex/775B49
-        registerTargetTint(EntityType.PUFFERFISH, 0xE3970B); //https://www.htmlcsscolor.com/hex/E3970B
+        registerTargetTint(EntityType.SALMON, 0xA83A38, 0x4C6E52); //https://www.htmlcsscolor.com/hex/A83A38 https://www.htmlcsscolor.com/hex/4C6E52
+        registerTargetTint(EntityType.COD, 0xAF9878, 0x775B49); //https://www.htmlcsscolor.com/hex/AF9878 https://www.htmlcsscolor.com/hex/775B49
+        registerTargetTint(EntityType.PUFFERFISH, 0xC2B091, 0xE3970B); //https://www.htmlcsscolor.com/hex/C2B091 https://www.htmlcsscolor.com/hex/E3970B
 
         //Register all troipical fish colour
         for (DyeColor value : DyeColor.values()) {
@@ -228,12 +229,13 @@ public enum  EntityGeneticRegistry {
         register(EntityType.SQUID, GeneticTypes.HEALTH_REGEN_SPEED.get(), 0.25F);
         register(EntityType.SQUID, GeneticTypes.UNDERWATER_CAPACITY.get(), 0.5F);
         register(EntityType.SQUID, GeneticTypes.HEALTH_MODIFIER.get(), -0.3F);
-        registerTargetTint(EntityType.SQUID, 0x536B7F); //https://www.htmlcsscolor.com/hex/536B7F
+        registerTargetTint(EntityType.SQUID, 0x132737, 0x536B7F); //https://www.htmlcsscolor.com/hex/132737 https://www.htmlcsscolor.com/hex/536B7F
 
         //Bee: Increase in speed
         // todo: Poison ability for carnivore bites
         register(EntityType.BEE, GeneticTypes.SPEED_MODIFIER.get(), 0.3F);
-        registerTargetTint(EntityType.BEE, 0xE6C15E); //https://www.htmlcsscolor.com/hex/E6C15E
+        register(EntityType.BEE, GeneticTypes.SIZE.get(), -0.5F);
+        registerTargetTint(EntityType.BEE, 0xE6C15E, 0x5A3023); //https://www.htmlcsscolor.com/hex/E6C15E https://www.htmlcsscolor.com/hex/5A3023
 
         //Spider: Shift in day/night cycle
         register(EntityType.SPIDER, GeneticTypes.NOCTURNAL_CHANCE.get(), 0.75F);
@@ -243,7 +245,6 @@ public enum  EntityGeneticRegistry {
         //- Reduced size
         // todo: poison ability for carnivore bites
         register(EntityType.CAVE_SPIDER, GeneticTypes.SIZE.get(), -0.5F);
-        register(EntityType.CAVE_SPIDER, GeneticTypes.SIZE.get(), -0.5F);
         registerTargetTint(EntityType.CAVE_SPIDER, 0x153833); //https://www.htmlcsscolor.com/hex/153833
 
         //Axolotl: Faster health regeneration, Shift in skin tone/palette to Leucistic, Wild/Brown, Gold, Cyan, or Blue similar to parrots, Increased chances of taming, Increased aggression to aquatic
@@ -252,15 +253,15 @@ public enum  EntityGeneticRegistry {
     }
 
 
-    public <S extends GeneticFactoryStorage> S register(EntityType<?> entityType, GeneticType<S> type, double value) {
+    public <S extends GeneticFactoryStorage<O>, O> S register(EntityType<?> entityType, GeneticType<S, O> type, O value) {
         return this.register(entityType, type, type.getStorage().get(), null, value);
     }
 
-    public <S extends GeneticFactoryStorage> S register(EntityType<?> entityType, GeneticType<S> type, String variant, double value) {
+    public <S extends GeneticFactoryStorage<O>, O> S register(EntityType<?> entityType, GeneticType<S, O> type, String variant, O value) {
         return this.register(entityType, type, type.getStorage().get(), variant, value);
     }
 
-    public <S extends GeneticFactoryStorage> S register(EntityType<?> entityType, GeneticType<S> type, @NonNull S storage, @Nullable String variant, double value) {
+    public <S extends GeneticFactoryStorage<O>, O> S register(EntityType<?> entityType, GeneticType<S, O> type, @NonNull S storage, @Nullable String variant, O value) {
         this.entityEntryList.computeIfAbsent(entityType, c -> new ArrayList<>()).add(new Entry<>(type, storage, variant, value));
         return storage;
     }
@@ -279,10 +280,10 @@ public enum  EntityGeneticRegistry {
         return null;
     }
 
-    public List<Entry<?>> gatherEntry(EntityType<?> entityType, @Nullable String variant) {
-        List<Entry<?>> list = new ArrayList<>();
+    public List<Entry<?, ?>> gatherEntry(EntityType<?> entityType, @Nullable String variant) {
+        List<Entry<?, ?>> list = new ArrayList<>();
         if(this.entityEntryList.containsKey(entityType)) {
-            for (Entry<?> entry : this.entityEntryList.get(entityType)) {
+            for (Entry<?, ?> entry : this.entityEntryList.get(entityType)) {
                 if(entry.getVariant() == null || entry.getVariant().equals(variant)) {
                     list.add(entry);
                 }
@@ -291,20 +292,44 @@ public enum  EntityGeneticRegistry {
         return list;
     }
 
-    public void registerTargetTint(EntityType<?> entityType, int color) {
-        registerTargetTint(entityType, null, color);
+    public List<Integer> gatherTints(EntityType<?> entityType, @Nullable String variant) {
+        if(this.tintEntryList.containsKey(entityType)) {
+            Map<String, List<Integer>> tints = this.tintEntryList.get(entityType);
+            if(tints.containsKey(variant)) {
+                return tints.get(variant);
+            }
+        }
+        return Collections.emptyList();
     }
 
 
-    public void registerTargetTint(EntityType<?> entityType, @Nullable String variant, int color) {
-        int r = (color >> 16) & 0xFF;
-        int g = (color >> 8) & 0xFF;
-        int b = color & 0xFF;
-        this.register(entityType, GeneticTypes.OVERALL_TINT.get(),
-            new GeneticTypeOverallTintStorage().setTintType(GeneticTypeOverallTintStorage.TintType.TARGET),
-            variant,
-            GeneticUtils.encodeFloatColor(r/255F, g/255F, b/255F, 1F)
-        );
+    public void registerTargetTint(EntityType<?> entityType, Integer... colours) {
+        registerTargetTint(entityType, null, colours);
+    }
+
+    public void registerTargetTint(EntityType<?> entityType, @Nullable String variant, Integer...colours) {
+//        this.register(entityType, GeneticTypes.OVERALL_TINT.get(),
+//            new GeneticTypeOverallTintStorage().setTintType(GeneticTypeOverallTintStorage.TintType.TARGET),
+//            variant,
+//            new GeneticTint(
+//                new GeneticTint.Part(
+//                    ((primary >> 16) & 0xFF) / 255F,
+//                    ((primary >> 8) & 0xFF) / 255F,
+//                    ((primary) & 0xFF) / 255F,
+//                    1F
+//                ),
+//                new GeneticTint.Part(
+//                    ((secondary >> 16) & 0xFF) / 255F,
+//                    ((secondary >> 8) & 0xFF) / 255F,
+//                    ((secondary) & 0xFF) / 255F,
+//                    1F
+//                ),
+//                GeneticUtils.DEFAULT_COLOUR_IMPORTANCE
+//            )
+//        );
+        Collections.addAll(this.tintEntryList
+            .computeIfAbsent(entityType, t -> new HashMap<>())
+            .computeIfAbsent(variant, v -> new ArrayList<>()), colours);
     }
 
     public <T extends Entity> void registerVariantGetter(EntityType<T> type, Function<T, String> getter) {
@@ -313,13 +338,13 @@ public enum  EntityGeneticRegistry {
 
 
     @Value
-    public static class Entry<S extends GeneticFactoryStorage> {
-        GeneticType<S> type;
+    public static class Entry<S extends GeneticFactoryStorage<O>, O> {
+        GeneticType<S, O> type;
         S storage;
         @Nullable String variant;
-        double value;
+        O value;
 
-        public GeneticEntry<S> create(float modifier) {
+        public GeneticEntry<S, O> create(float modifier) {
             S storage = this.type.getStorage().get();
             //Ugly cloning method
             storage.deserialize(this.storage.serialize(new CompoundNBT()));

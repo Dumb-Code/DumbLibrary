@@ -15,11 +15,11 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 @Getter
 @Setter
 @Accessors(chain = true)
-public class GeneticFieldModifierStorage extends RandomUUIDStorage {
+public class GeneticFieldModifierStorage extends RandomUUIDStorage<Float> {
 
     @Override
     @OnlyIn(Dist.CLIENT)
-    public void render(MatrixStack stack, GeneticType<?> type, double value, int x, int y, int width, int height, float ticks) {
+    public void render(MatrixStack stack, GeneticType<?, Float> type, Float value, int x, int y, int width, int height, float ticks) {
         int color = -1;
         String prefix = "";
         if(value > 0) {

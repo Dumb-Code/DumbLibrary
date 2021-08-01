@@ -29,12 +29,11 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class GeneticComponent extends EntityComponent implements FinalizableComponent {
-    @Getter
-//    private final List<GeneticEntry<?>> genetics = new ArrayList<>();
-    private final Map<GeneticType<?>, Map<Object, GeneticEntry<?>>> genetics = new HashMap<>(); //<Type, <CombinerKey, Genetic>>
+//    private final List<GeneticEntry<?, ?>> genetics = new ArrayList<>();
+    private final Map<GeneticType<?, ?>, Map<Object, GeneticEntry<?, ?>>> genetics = new HashMap<>(); //<Type, <CombinerKey, Genetic>>
 
     //Delay adding default genetics to the actual genetic list till we finalize, where we can then use `shouldRandomizeGenetics`
-    private final List<GeneticEntry<?>> defaultGenetics = new ArrayList<>();
+    private final List<GeneticEntry<?, ?>> defaultGenetics = new ArrayList<>();
 
     private boolean doneGatherGenetics = true;
 
@@ -44,17 +43,16 @@ public class GeneticComponent extends EntityComponent implements FinalizableComp
         this.shouldRandomizeGenetics = false;
     }
 
-    private <T extends GeneticFactoryStorage> void applyChange(ComponentAccess entity, GeneticEntry<T> entry, double modifier) {
-        entry.setModifier(modifier);
-        entry.getType().getOnChange().apply(modifier, entity, entry.getStorage());
+    private <T extends GeneticFactoryStorage<O>, O> void applyChange(ComponentAccess entity, GeneticEntry<T, O> entry) {
+        entry.getType().getOnChange().apply(entry.getModifier(), entity, entry.getStorage());
     }
 
-    public List<GeneticEntry<?>> getGenetics() {
+    public List<GeneticEntry<?, ?>> getGenetics() {
         return this.genetics.values().stream().flatMap(m -> m.values().stream()).collect(Collectors.toList());
     }
 
-    public <T extends GeneticFactoryStorage> Optional<GeneticEntry<?>> findEntry(GeneticEntry<T> entry) {
-        Map<Object, GeneticEntry<?>> map = this.genetics.get(entry.getType());
+    public <T extends GeneticFactoryStorage<?>> Optional<GeneticEntry<?, ?>> findEntry(GeneticEntry<T, ?> entry) {
+        Map<Object, GeneticEntry<?, ?>> map = this.genetics.get(entry.getType());
         if(map == null) {
             return Optional.empty();
         }
@@ -62,13 +60,13 @@ public class GeneticComponent extends EntityComponent implements FinalizableComp
     }
 
     private void applyChangeToAll(ComponentAccess entity) {
-        for (GeneticEntry<?> value : this.getGenetics()) {
-            this.applyChange(entity, value, value.getModifier());
+        for (GeneticEntry<?, ?> value : this.getGenetics()) {
+            this.applyChange(entity, value);
         }
     }
 
-    public <T extends GeneticFactoryStorage> void insertGenetic(GeneticEntry<T> entry) {
-        Map<Object, GeneticEntry<?>> map = this.genetics.computeIfAbsent(entry.getType(), t -> Maps.newHashMap());
+    public <T extends GeneticFactoryStorage<?>> void insertGenetic(GeneticEntry<T, ?> entry) {
+        Map<Object, GeneticEntry<?, ?>> map = this.genetics.computeIfAbsent(entry.getType(), t -> Maps.newHashMap());
         map.put(GeneticUtils.getCombinerKey(entry), entry);
     }
 
@@ -91,13 +89,13 @@ public class GeneticComponent extends EntityComponent implements FinalizableComp
     public void finalizeComponent(ComponentAccess entity) {
         if(!this.doneGatherGenetics) {
             this.doneGatherGenetics = true;
-            List<GeneticEntry<?>> toAdd = this.getGenetics();
+            List<GeneticEntry<?, ?>> toAdd = this.getGenetics();
             for (EntityComponent component : entity.getAllComponents()) {
                 if(component instanceof GatherGeneticsComponent) {
                     ((GatherGeneticsComponent) component).gatherGenetics(entity, toAdd::add, this.shouldRandomizeGenetics);
                 }
             }
-            for (GeneticEntry<?> genetic : this.defaultGenetics) {
+            for (GeneticEntry<?, ?> genetic : this.defaultGenetics) {
                 if(this.shouldRandomizeGenetics) {
                     genetic.setRandomModifier();
                 }
@@ -108,26 +106,50 @@ public class GeneticComponent extends EntityComponent implements FinalizableComp
         this.applyChangeToAll(entity);
     }
 
+    public void useExistingGenetics() {
+        this.doneGatherGenetics = true;
+    }
+
     @Override
     public void onCreated(EntityComponentType type, @Nullable EntityComponentStorage storage, @Nullable String storageID) {
         this.doneGatherGenetics = false;
         super.onCreated(type, storage, storageID);
     }
 
+    public static void mutateGenes(GeneticComponent component, ComponentAccess access) {
+
+    }
+
+    /**
+     * Replaces the genetics on component `component`.
+     * `entries` has to be combined.
+     */
+    public static void replaceGenetics(GeneticComponent component, ComponentAccess access, List<GeneticEntry<?, ?>> entries) {
+        component.genetics.clear();
+        for (EntityComponent allComponent : access.getAllComponents()) {
+            if(allComponent instanceof GatherGeneticsComponent) {
+                ((GatherGeneticsComponent) allComponent).clearGenetics();
+            }
+        }
+        for (GeneticEntry<?, ?> entry : entries) {
+            component.insertGenetic(entry);
+        }
+        component.applyChangeToAll(access);
+    }
+
     public static class Storage implements EntityComponentStorage<GeneticComponent> {
 
-        private final List<GeneticEntry<?>> baseEntries = new ArrayList<>();
+        private final List<GeneticEntry<?, ?>> baseEntries = new ArrayList<>();
 
-        public <T extends GeneticFactoryStorage> Storage addGeneticEntry(GeneticType<T> type) {
-            return this.addGeneticEntry(type, 0);
+        public <T extends GeneticFactoryStorage<Float>> Storage addGeneticEntry(GeneticType<T, Float> type) {
+            return this.addGeneticEntry(type, 0F);
         }
 
-        public <T extends GeneticFactoryStorage> Storage addGeneticEntry(GeneticType<T> type, float defaultValue) {
-            this.addGeneticEntry(type, type.getStorage().get(), defaultValue);
-            return this;
+        public <T extends GeneticFactoryStorage<O>, O> Storage addGeneticEntry(GeneticType<T, O> type, O defaultValue) {
+            return this.addGeneticEntry(type, type.getStorage().get(), defaultValue);
         }
 
-        public <T extends GeneticFactoryStorage> Storage addGeneticEntry(GeneticType<T> type, T storage, float defaultValue) {
+        public <T extends GeneticFactoryStorage<O>, O> Storage addGeneticEntry(GeneticType<T, O> type, T storage, O defaultValue) {
             this.baseEntries.add(new GeneticEntry<>(type, storage).setModifier(defaultValue));
             return this;
         }

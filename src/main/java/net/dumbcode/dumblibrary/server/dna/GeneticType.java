@@ -4,8 +4,10 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.dumbcode.dumblibrary.server.attributes.ModifiableField;
-import net.dumbcode.dumblibrary.server.dna.datahandlers.FloatGeneticDataHandler;
-import net.dumbcode.dumblibrary.server.dna.datahandlers.GeneticDataHandler;
+import net.dumbcode.dumblibrary.server.dna.data.ColouredGeneticDataHandler;
+import net.dumbcode.dumblibrary.server.dna.data.FloatGeneticDataHandler;
+import net.dumbcode.dumblibrary.server.dna.data.GeneticDataHandler;
+import net.dumbcode.dumblibrary.server.dna.data.GeneticTint;
 import net.dumbcode.dumblibrary.server.dna.storages.GeneticFieldModifierStorage;
 import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
@@ -23,24 +25,24 @@ import java.util.function.Supplier;
 
 @Getter
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-public class GeneticType<T extends GeneticFactoryStorage> extends ForgeRegistryEntry<GeneticType<?>> {
-    private final GeneticValueApplier<T, ComponentAccess> onChange;
-    private final GeneticDataHandler dataHandler;
+public class GeneticType<T extends GeneticFactoryStorage<O>, O> extends ForgeRegistryEntry<GeneticType<? ,?>> {
+    private final GeneticValueApplier<T, ComponentAccess, O> onChange;
+    private final GeneticDataHandler<O> dataHandler;
     private final Supplier<T> storage;
 
     @SuppressWarnings("unchecked")
-    public static Class<GeneticType<?>> getWildcardType() {
-        return (Class<GeneticType<?>>) (Class<?>) GeneticType.class;
+    public static Class<GeneticType<?, ?>> getWildcardType() {
+        return (Class<GeneticType<?, ?>>) (Class<?>) GeneticType.class;
     }
 
-    public static <E extends EntityComponent> GeneticType<GeneticFieldModifierStorage> simpleFieldModifierType(EntityComponentType<E, ?> componentType, Function<E, ModifiableField> func) {
+    public static <E extends EntityComponent> GeneticType<GeneticFieldModifierStorage, Float> simpleFieldModifierType(EntityComponentType<E, ?> componentType, Function<E, ModifiableField> func) {
         return GeneticType.<GeneticFieldModifierStorage>builder()
             .storage(GeneticFieldModifierStorage::new)
             .onChange(componentType, func, (value, field, storage) -> field.addModifier(storage.getRandomUUID(), value))
             .build();
     }
 
-    public static <E extends EntityComponent> GeneticType<GeneticFieldModifierStorage> simpleVanillaModifierType(Attribute attributeType, String modifierName) {
+    public static <E extends EntityComponent> GeneticType<GeneticFieldModifierStorage, Float> simpleVanillaModifierType(Attribute attributeType, String modifierName) {
         return GeneticType.<GeneticFieldModifierStorage>builder()
             .storage(GeneticFieldModifierStorage::new)
             .onChange((value, type, storage) -> {
@@ -58,7 +60,7 @@ public class GeneticType<T extends GeneticFactoryStorage> extends ForgeRegistryE
     }
 
     @Deprecated
-    public static <E extends EntityComponent> GeneticType<GeneticFieldModifierStorage> unfinished() {
+    public static <E extends EntityComponent> GeneticType<GeneticFieldModifierStorage, Float> unfinished() {
         return GeneticType.<GeneticFieldModifierStorage>builder().storage(GeneticFieldModifierStorage::new).build();
     }
 
@@ -67,43 +69,44 @@ public class GeneticType<T extends GeneticFactoryStorage> extends ForgeRegistryE
         return new TranslationTextComponent(name.getNamespace() + ".genetic_type." + name.getPath());
     }
 
-    public static <T extends GeneticFactoryStorage> GeneticTypeBuilder<T> builder() {
-        return new GeneticTypeBuilder<>();
+    public static <T extends GeneticFactoryStorage<Float>> GeneticTypeBuilder<T, Float> builder() {
+        return builder(FloatGeneticDataHandler.INSTANCE);
     }
 
-    public static class GeneticTypeBuilder<T extends GeneticFactoryStorage> {
-        private GeneticValueApplier<T, ComponentAccess> onChange = (value, type, storage1) -> {};
-        private GeneticDataHandler dataHandler = FloatGeneticDataHandler.INSTANCE;
+    public static <T extends GeneticFactoryStorage<O>, O> GeneticTypeBuilder<T, O> builder(GeneticDataHandler<O> dataHandler) {
+        return new GeneticTypeBuilder<>(dataHandler);
+    }
+
+    public static class GeneticTypeBuilder<T extends GeneticFactoryStorage<O>, O> {
+        private final GeneticDataHandler<O> dataHandler;
+        private GeneticValueApplier<T, ComponentAccess, O> onChange = (value, type, storage1) -> {};
         private Supplier<T> storageCreator = () -> null;
 
-        private GeneticTypeBuilder() { }
+        private GeneticTypeBuilder(GeneticDataHandler<O> dataHandler) {
+            this.dataHandler = dataHandler;
+        }
 
-        public GeneticTypeBuilder<T> onChange(GeneticValueApplier<T, ComponentAccess> onChange) {
+        public GeneticTypeBuilder<T, O> onChange(GeneticValueApplier<T, ComponentAccess, O> onChange) {
             this.onChange = onChange;
             return this;
         }
 
-        public <E extends EntityComponent> GeneticTypeBuilder<T> onChange(EntityComponentType<E, ?> type, GeneticValueApplier<T, E> onChange) {
+        public <E extends EntityComponent> GeneticTypeBuilder<T, O> onChange(EntityComponentType<E, ?> type, GeneticValueApplier<T, E, O> onChange) {
             this.onChange = (value, access, storage) -> access.get(type).ifPresent(c -> onChange.apply(value, c, storage));
             return this;
         }
 
-        public <E extends EntityComponent> GeneticTypeBuilder<T> onChange(EntityComponentType<E, ?> type, Function<E, ModifiableField> func, GeneticValueApplier<T, ModifiableField> onChange) {
+        public <E extends EntityComponent> GeneticTypeBuilder<T, O> onChange(EntityComponentType<E, ?> type, Function<E, ModifiableField> func, GeneticValueApplier<T, ModifiableField, O> onChange) {
             this.onChange = (value, access, storage) -> access.get(type).map(func).ifPresent(c -> onChange.apply(value, c, storage));
             return this;
         }
 
-        public GeneticTypeBuilder<T> storage(Supplier<T> storageCreator) {
+        public GeneticTypeBuilder<T, O> storage(Supplier<T> storageCreator) {
             this.storageCreator = storageCreator;
             return this;
         }
 
-        public GeneticTypeBuilder<T> dataHandler(GeneticDataHandler dataHandler) {
-            this.dataHandler = dataHandler;
-            return this;
-        }
-
-        public GeneticType<T> build() {
+        public GeneticType<T, O> build() {
             return new GeneticType<>(this.onChange, this.dataHandler, this.storageCreator);
         }
     }

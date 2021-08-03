@@ -45,6 +45,7 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> extends Widget {
     private int emptyColor = 0xFF505050;
     private int borderColor = 0xFFFFFFFF;
     private boolean renderFullSize;
+    private boolean renderCellBorders = true;
 
     private float scroll;
 
@@ -67,10 +68,16 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> extends Widget {
         this.listSupplier = listSupplier;
     }
 
+    public GuiScrollBox<T> setActive(boolean active) {
+        this.active = active;
+        return this;
+    }
+
     public GuiScrollBox<T> addFromPrevious(GuiScrollBox<T> scrollBox) {
         if(scrollBox != null) {
             this.selectedElement = scrollBox.selectedElement;
             this.scroll = scrollBox.scroll;
+            this.active = scrollBox.active;
         }
         return this;
     }
@@ -83,6 +90,9 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> extends Widget {
      */
     @Override
     public void render(MatrixStack stack, int mouseX, int mouseY, float ticks) {
+        if(!this.active) {
+            return;
+        }
         this.scroll(0); //This is used to ensure the clamping of the scroll
 
         List<T> entries = this.listSupplier.get();
@@ -164,12 +174,13 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> extends Widget {
             if (yStart + this.cellHeight >= this.y && yStart <= this.y + height) {
                 AbstractGui.fill(stack, xStart, yStart, xStart + width, yStart + this.cellHeight, entry == this.selectedElement ? this.cellSelectedColor : this.cellHighlightColor);
 
-                if(index / this.cellsPerRow == 0) {
-                    //Top row, only if on first row.
-                    AbstractGui.fill(stack, xStart, yStart, xStart + width, yStart + borderSize, this.borderColor);
+                if(this.renderCellBorders) {
+                    if(index / this.cellsPerRow == 0) {
+                        //Top row, only if on first row.
+                        AbstractGui.fill(stack, xStart, yStart, xStart + width, yStart + borderSize, this.borderColor);
+                    }
+                    AbstractGui.fill(stack, xStart, yStart + this.cellHeight-1, xStart + width, yStart + this.cellHeight + borderSize-1, this.borderColor);
                 }
-
-                AbstractGui.fill(stack, xStart, yStart + this.cellHeight-1, xStart + width, yStart + this.cellHeight + borderSize-1, this.borderColor);
 
                 boolean mouseOverElement = !this.mouseOverScrollBar(mouseX, mouseY, height, scrollBar) && mouseX >= xStart && mouseX < xStart + width && mouseY >= yStart && mouseY < yStart + this.cellHeight;
 
@@ -183,13 +194,21 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> extends Widget {
                 entry.postDraw(stack, xStart, yStart, width, this.cellHeight, mouseX, mouseY);
             }
         }
-        for (int i = 1; i < this.cellsPerRow; i++) {
-            int xStart = this.x + i * width;
-            AbstractGui.fill(stack, xStart, this.y, xStart + borderSize, this.y + height, this.borderColor);
+        if(this.renderCellBorders) {
+            for (int i = 1; i < this.cellsPerRow; i++) {
+                int xStart = this.x + i * width;
+                AbstractGui.fill(stack, xStart, this.y, xStart + borderSize, this.y + height, this.borderColor);
+            }
         }
-        int yStart = (int) (this.y + this.cellHeight * (entries.size() - this.scroll) / this.cellsPerRow * this.cellHeight);
+
         if(this.renderFullSize) {
-            AbstractGui.fill(stack, this.x, yStart, this.x + this.width, this.y + this.cellMax * this.cellHeight, this.emptyColor);
+            int lastIndex = entries.size() - 1;
+            int yStart = (int) (this.y + this.cellHeight * (lastIndex / this.cellsPerRow) - this.scroll * this.cellHeight);
+            if(entries.size() % this.cellsPerRow != 0) {
+                int xStart = this.x + (entries.size() % this.cellsPerRow) * width;
+                AbstractGui.fill(stack, xStart, yStart, this.x + this.width, yStart + this.cellHeight, this.emptyColor);
+            }
+            AbstractGui.fill(stack, this.x, yStart + this.cellHeight, this.x + this.width, this.y + this.cellMax * this.cellHeight, this.emptyColor);
         }
     }
 
@@ -206,7 +225,7 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> extends Widget {
 
         int ySize = (MathHelper.ceil(listSize / (float) this.cellsPerRow) - this.cellMax) * this.cellHeight;
         if(ySize > 0) {
-            float scrollLength = MathHelper.clamp(height - ySize + 1, 8, height - 8);
+            float scrollLength = MathHelper.clamp(height - ySize + 1, 16, height - 8);
             float scrollYStart = this.scroll * this.cellHeight * (height - scrollLength) / ySize + this.y;
             if (scrollYStart < this.y - 1) {
                 scrollYStart = this.y - 1F;
@@ -285,6 +304,9 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> extends Widget {
      */
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
+        if(!this.active) {
+            return false;
+        }
         List<T> entries = this.listSupplier.get();
 
         boolean additionalRows = entries.size() > this.cellMax;
@@ -331,6 +353,9 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> extends Widget {
 
     @Override
     public boolean mouseScrolled(double p_231043_1_, double p_231043_3_, double amount) {
+        if(!this.active) {
+            return false;
+        }
         if (amount != 0) {
             int scroll = amount < 0 ? -1 : 1;
             for (T t : this.listSupplier.get()) {
@@ -345,7 +370,7 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> extends Widget {
 
     @Override
     public boolean isMouseOver(double mouseX, double mouseY) {
-        return this.isMouseOver(mouseX, mouseY, this.getTotalSize(this.listSupplier.get().size()));
+        return this.active && this.isMouseOver(mouseX, mouseY, this.getTotalSize(this.listSupplier.get().size()));
     }
 
     /**

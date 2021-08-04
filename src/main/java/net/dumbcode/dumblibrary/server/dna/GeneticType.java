@@ -20,6 +20,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.registries.ForgeRegistryEntry;
 
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -27,6 +28,7 @@ import java.util.function.Supplier;
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class GeneticType<T extends GeneticFactoryStorage<O>, O> extends ForgeRegistryEntry<GeneticType<? ,?>> {
     private final GeneticValueApplier<T, ComponentAccess, O> onChange;
+    private final GeneticValueApplier<T, ComponentAccess, O> onRemove;
     private final GeneticDataHandler<O> dataHandler;
     private final Supplier<T> storage;
 
@@ -39,6 +41,7 @@ public class GeneticType<T extends GeneticFactoryStorage<O>, O> extends ForgeReg
         return GeneticType.<GeneticFieldModifierStorage>builder()
             .storage(GeneticFieldModifierStorage::new)
             .onChange(componentType, func, (value, field, storage) -> field.addModifier(storage.getRandomUUID(), value))
+            .onRemove(componentType, func, (value, field, storage) -> field.removeModifier(storage.getRandomUUID()))
             .build();
     }
 
@@ -53,6 +56,14 @@ public class GeneticType<T extends GeneticFactoryStorage<O>, O> extends ForgeReg
                         if (!attribute.hasModifier(modifier)) {
                             attribute.addPermanentModifier(modifier);
                         }
+                    }
+                }
+            })
+            .onRemove((value, type, storage) -> {
+                if (type instanceof LivingEntity) {
+                    ModifiableAttributeInstance attribute = ((LivingEntity) type).getAttribute(attributeType);
+                    if (attribute != null) {
+                        attribute.removeModifier(storage.getRandomUUID());
                     }
                 }
             })
@@ -80,6 +91,7 @@ public class GeneticType<T extends GeneticFactoryStorage<O>, O> extends ForgeReg
     public static class GeneticTypeBuilder<T extends GeneticFactoryStorage<O>, O> {
         private final GeneticDataHandler<O> dataHandler;
         private GeneticValueApplier<T, ComponentAccess, O> onChange = (value, type, storage1) -> {};
+        private GeneticValueApplier<T, ComponentAccess, O> onRemove = (value, type, storage1) -> {};
         private Supplier<T> storageCreator = () -> null;
 
         private GeneticTypeBuilder(GeneticDataHandler<O> dataHandler) {
@@ -92,13 +104,36 @@ public class GeneticType<T extends GeneticFactoryStorage<O>, O> extends ForgeReg
         }
 
         public <E extends EntityComponent> GeneticTypeBuilder<T, O> onChange(EntityComponentType<E, ?> type, GeneticValueApplier<T, E, O> onChange) {
-            this.onChange = (value, access, storage) -> access.get(type).ifPresent(c -> onChange.apply(value, c, storage));
+            this.onChange = this.convert(type, onChange);
             return this;
         }
 
         public <E extends EntityComponent> GeneticTypeBuilder<T, O> onChange(EntityComponentType<E, ?> type, Function<E, ModifiableField> func, GeneticValueApplier<T, ModifiableField, O> onChange) {
-            this.onChange = (value, access, storage) -> access.get(type).map(func).ifPresent(c -> onChange.apply(value, c, storage));
+            this.onChange = this.convert(type, func, onChange);
             return this;
+        }
+
+        public GeneticTypeBuilder<T, O> onRemove(GeneticValueApplier<T, ComponentAccess, O> onChange) {
+            this.onRemove = onChange;
+            return this;
+        }
+
+        public <E extends EntityComponent> GeneticTypeBuilder<T, O> onRemove(EntityComponentType<E, ?> type, GeneticValueApplier<T, E, O> onChange) {
+            this.onRemove = this.convert(type, onChange);
+            return this;
+        }
+
+        public <E extends EntityComponent> GeneticTypeBuilder<T, O> onRemove(EntityComponentType<E, ?> type, Function<E, ModifiableField> func, GeneticValueApplier<T, ModifiableField, O> onChange) {
+            this.onRemove = this.convert(type, func, onChange);
+            return this;
+        }
+
+        private <E extends EntityComponent> GeneticValueApplier<T, ComponentAccess, O> convert(EntityComponentType<E, ?> type, GeneticValueApplier<T, E, O> onChange) {
+            return (value, access, storage) -> access.get(type).ifPresent(c -> onChange.apply(value, c, storage));
+        }
+
+        private <E extends EntityComponent> GeneticValueApplier<T, ComponentAccess, O> convert(EntityComponentType<E, ?> type, Function<E, ModifiableField> func, GeneticValueApplier<T, ModifiableField, O> onChange) {
+            return (value, access, storage) -> access.get(type).map(func).ifPresent(c -> onChange.apply(value, c, storage));
         }
 
         public GeneticTypeBuilder<T, O> storage(Supplier<T> storageCreator) {
@@ -107,7 +142,7 @@ public class GeneticType<T extends GeneticFactoryStorage<O>, O> extends ForgeReg
         }
 
         public GeneticType<T, O> build() {
-            return new GeneticType<>(this.onChange, this.dataHandler, this.storageCreator);
+            return new GeneticType<>(this.onChange, this.onRemove, this.dataHandler, this.storageCreator);
         }
     }
 }

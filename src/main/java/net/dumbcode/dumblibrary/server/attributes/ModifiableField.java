@@ -37,9 +37,14 @@ public class ModifiableField {
     }
 
     public void addModifier(ModifiableFieldModifier modifier) {
-        ModifiableFieldModifier old = this.operations.get(modifier.getUuid());
-        this.operations.put(modifier.getUuid(), modifier);
+        ModifiableFieldModifier old = this.operations.put(modifier.getUuid(), modifier);
         if(!modifier.equals(old)) {
+            this.needsUpdate = true;
+        }
+    }
+
+    public void removeModifier(UUID uuid) {
+        if (this.operations.remove(uuid) != null) {
             this.needsUpdate = true;
         }
     }

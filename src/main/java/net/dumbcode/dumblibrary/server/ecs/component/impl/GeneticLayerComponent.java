@@ -63,6 +63,15 @@ public class GeneticLayerComponent extends EntityComponent implements RenderLaye
         this.syncToClient();
     }
 
+    public void removeLayerValues(UUID uuid, String layer) {
+        for (GeneticLayerEntry entry : this.entries) {
+            if(entry.getLayerName().equals(layer)) {
+                entry.removeTargetTint(uuid);
+            }
+        }
+        this.syncToClient();
+    }
+
     @Override
     public void deserialize(CompoundNBT compound) {
         this.entries.clear();
@@ -125,13 +134,6 @@ public class GeneticLayerComponent extends EntityComponent implements RenderLaye
                 }
                 registry.accept(entry);
             });
-    }
-
-    @Override
-    public void clearGenetics() {
-        for (GeneticLayerEntry entry : this.entries) {
-            entry.clear();
-        }
     }
 
     public static class Storage implements EntityComponentStorage<GeneticLayerComponent> {

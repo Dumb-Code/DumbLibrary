@@ -47,6 +47,10 @@ public class GeneticComponent extends EntityComponent implements FinalizableComp
         entry.getType().getOnChange().apply(entry.getModifier(), entity, entry.getStorage());
     }
 
+    private <T extends GeneticFactoryStorage<O>, O> void applyRemove(ComponentAccess entity, GeneticEntry<T, O> entry) {
+        entry.getType().getOnRemove().apply(entry.getModifier(), entity, entry.getStorage());
+    }
+
     public List<GeneticEntry<?, ?>> getGenetics() {
         return this.genetics.values().stream().flatMap(m -> m.values().stream()).collect(Collectors.toList());
     }
@@ -125,12 +129,10 @@ public class GeneticComponent extends EntityComponent implements FinalizableComp
      * `entries` has to be combined.
      */
     public static void replaceGenetics(GeneticComponent component, ComponentAccess access, List<GeneticEntry<?, ?>> entries) {
-        component.genetics.clear();
-        for (EntityComponent allComponent : access.getAllComponents()) {
-            if(allComponent instanceof GatherGeneticsComponent) {
-                ((GatherGeneticsComponent) allComponent).clearGenetics();
-            }
+        for (GeneticEntry<?, ?> genetic : component.getGenetics()) {
+            component.applyRemove(access, genetic);
         }
+        component.genetics.clear();
         for (GeneticEntry<?, ?> entry : entries) {
             component.insertGenetic(entry);
         }

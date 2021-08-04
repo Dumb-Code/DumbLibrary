@@ -7,6 +7,4 @@ import java.util.function.Consumer;
 
 public interface GatherGeneticsComponent {
     void gatherGenetics(ComponentAccess entity, Consumer<GeneticEntry<?, ?>> registry, boolean randomGeneticVariation);
-
-    void clearGenetics();
 }

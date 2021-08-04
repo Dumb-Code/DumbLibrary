@@ -31,6 +31,8 @@ public class GeneticTypes {
             .storage(GeneticLayerColorStorage::new)
             .onChange(EntityComponentTypes.GENETIC_LAYER_COLORS.get(), (value, component, storage)
                 -> component.setLayerValues(storage.getRandomUUID(), storage.getLayerName(), value.getPrimary()))
+            .onRemove(EntityComponentTypes.GENETIC_LAYER_COLORS.get(), (value, component, storage)
+                -> component.removeLayerValues(storage.getRandomUUID(), storage.getLayerName()))
             .build()
     );
 
@@ -45,6 +47,15 @@ public class GeneticTypes {
                         entry.addDirectTint(storage.getRandomUUID(), part);
                     } else {
                         entry.addTargetTint(storage.getRandomUUID(), part);
+                    }
+                }
+            })
+            .onRemove(EntityComponentTypes.GENETIC_LAYER_COLORS.get(), (value, component, storage) -> {
+                for (GeneticLayerEntry entry : component.getEntries()) {
+                    if(storage.getTintType() == GeneticTypeOverallTintStorage.TintType.DIRECT) {
+                        entry.removeDirectTint(storage.getRandomUUID());
+                    } else {
+                        entry.removeTargetTint(storage.getRandomUUID());
                     }
                 }
             })

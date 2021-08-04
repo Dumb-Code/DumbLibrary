@@ -145,16 +145,21 @@ public class GeneticLayerEntry {
         this.colorCache = null;
     }
 
+    public void removeDirectTint(UUID uuid) {
+        this.baseTints.remove(uuid);
+        this.colorCache = null;
+    }
+
     public void addTargetTint(UUID uuid, GeneticTint.Part part) {
         this.targetTints.put(uuid, part);
         this.colorCache = null;
     }
 
-    public void clear() {
-        this.baseTints.clear();
-        this.targetTints.clear();
+    public void removeTargetTint(UUID uuid) {
+        this.targetTints.remove(uuid);
         this.colorCache = null;
     }
+
 
     public static void serialize(GeneticLayerEntry entry, PacketBuffer buf) {
         buf.writeUtf(entry.layerName);

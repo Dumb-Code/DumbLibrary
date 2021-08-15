@@ -206,9 +206,9 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> extends Widget {
             int yStart = (int) (this.y + this.cellHeight * (lastIndex / this.cellsPerRow) - this.scroll * this.cellHeight);
             if(entries.size() % this.cellsPerRow != 0) {
                 int xStart = this.x + (entries.size() % this.cellsPerRow) * width;
-                AbstractGui.fill(stack, xStart, yStart, this.x + this.width, yStart + this.cellHeight, this.emptyColor);
+                AbstractGui.fill(stack, xStart+1, yStart, this.x + this.width, yStart + this.cellHeight, this.emptyColor);
             }
-            AbstractGui.fill(stack, this.x, yStart + this.cellHeight, this.x + this.width, this.y + this.cellMax * this.cellHeight, this.emptyColor);
+            AbstractGui.fill(stack, this.x, yStart + (entries.isEmpty() ? 0 : this.cellHeight), this.x + this.width, this.y + this.cellMax * this.cellHeight, this.emptyColor);
         }
     }
 

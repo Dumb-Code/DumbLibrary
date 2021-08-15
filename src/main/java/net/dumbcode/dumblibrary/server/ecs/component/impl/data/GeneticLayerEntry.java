@@ -29,7 +29,7 @@ import java.util.*;
 @Data
 @AllArgsConstructor(access = AccessLevel.NONE)
 @Accessors(chain = true)
-public class GeneticLayerEntry {
+public class GeneticLayerEntry implements Cloneable {
     private final String layerName;
     private final float layerWeight;
     private final float index;
@@ -58,6 +58,10 @@ public class GeneticLayerEntry {
 
         this.colourMutate = colourMutate;
         this.alphaMutate = alphaMutate;
+    }
+
+    public GeneticLayerEntry cloneForEntity() {
+        return new GeneticLayerEntry(this.layerName, this.layerWeight, this.index, this.checkIfExists, this.variesOpacity, this.primary, this.colourMutate, this.alphaMutate);
     }
 
     public Optional<ResourceLocation> getTextureLocation(RenderLocationComponent.ConfigurableLocation baseLocation) {

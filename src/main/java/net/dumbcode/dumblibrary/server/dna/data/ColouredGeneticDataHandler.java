@@ -1,11 +1,15 @@
 package net.dumbcode.dumblibrary.server.dna.data;
 
 import com.google.gson.JsonObject;
+import com.mojang.blaze3d.matrix.MatrixStack;
 import lombok.Value;
 import net.dumbcode.dumblibrary.server.utils.GeneticUtils;
+import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.JSONUtils;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 import java.util.List;
 import java.util.Random;
@@ -180,5 +184,12 @@ public enum ColouredGeneticDataHandler implements GeneticDataHandler<GeneticTint
             value.getPrimary().withImportance((int) (value.getPrimary().getImportance() * modifier)),
             value.getSecondary().withImportance((int) (value.getSecondary().getImportance() * modifier))
         );
+    }
+
+    @Override
+    @OnlyIn(Dist.CLIENT)
+    public GeneticTint renderIsolationEdit(MatrixStack stack, int x, int y, int width, int height, int mouseX, int mouseY, boolean mouseDown, GeneticTint current) {
+        AbstractGui.fill(stack, x, y, x+width, y+height, 0xAABBCCDD);
+        return current;
     }
 }

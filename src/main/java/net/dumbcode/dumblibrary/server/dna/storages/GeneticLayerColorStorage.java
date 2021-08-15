@@ -4,9 +4,6 @@ import com.google.gson.JsonObject;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import net.dumbcode.dumblibrary.server.dna.DefaultGeneticFactoryStorageTypes;
-import net.dumbcode.dumblibrary.server.dna.GeneticFactoryStorage;
-import net.dumbcode.dumblibrary.server.dna.GeneticFactoryStorageType;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.JSONUtils;
 
@@ -45,7 +42,7 @@ public class GeneticLayerColorStorage extends GeneticColorStorage {
     }
 
     @Override
-    public GeneticFactoryStorageType<?> getType() {
-        return DefaultGeneticFactoryStorageTypes.LAYER_COLOUR;
+    public Object getCombinerKey() {
+        return this.layerName;
     }
 }

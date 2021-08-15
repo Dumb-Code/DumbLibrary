@@ -15,7 +15,7 @@ public interface GeneticFactoryStorage<O> {
     JsonObject serialize(JsonObject json);
     void deserialize(JsonObject json);
 
-    GeneticFactoryStorageType<?> getType();
+    Object getCombinerKey();
 
     @OnlyIn(Dist.CLIENT)
     void render(MatrixStack stack, GeneticType<?, O> entry, O value, int x, int y, int width, int height, float ticks);

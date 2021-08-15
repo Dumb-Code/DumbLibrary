@@ -5,10 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.dumbcode.dumblibrary.client.RenderUtils;
-import net.dumbcode.dumblibrary.server.dna.DefaultGeneticFactoryStorageTypes;
-import net.dumbcode.dumblibrary.server.dna.GeneticFactoryStorageType;
 import net.dumbcode.dumblibrary.server.dna.GeneticType;
-import net.dumbcode.dumblibrary.server.utils.MathUtils;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -32,8 +29,7 @@ public class GeneticFieldModifierStorage extends RandomUUIDStorage<Float> {
     }
 
     @Override
-    public GeneticFactoryStorageType<?> getType() {
-        return DefaultGeneticFactoryStorageTypes.MODIFIER;
+    public Object getCombinerKey() {
+        return null;
     }
-
 }

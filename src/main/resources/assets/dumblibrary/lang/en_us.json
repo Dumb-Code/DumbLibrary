@@ -23,7 +23,7 @@
     "dumblibrary.gui.controls.arrow_keys": "Arrow keys",
 
     "dumblibrary.genetic_type.layer_colors": "Layer Colors",
-    "dumblibrary.genetic_type.overall_tint": "Overall Tint",
+    "dumblibrary.genetic_type.overall_tint": "Color",
     "dumblibrary.genetic_type.speed_modifier": "Speed",
     "dumblibrary.genetic_type.health_modifier": "Health",
     "dumblibrary.genetic_type.jump_strength": "Jump",

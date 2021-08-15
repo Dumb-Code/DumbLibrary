@@ -1,9 +1,6 @@
 package net.dumbcode.dumblibrary.server.dna.storages;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
-import net.dumbcode.dumblibrary.server.dna.DefaultGeneticFactoryStorageTypes;
-import net.dumbcode.dumblibrary.server.dna.EntityGeneticRegistry;
-import net.dumbcode.dumblibrary.server.dna.GeneticFactoryStorageType;
 import net.dumbcode.dumblibrary.server.dna.GeneticType;
 import net.dumbcode.dumblibrary.server.dna.data.GeneticTint;
 import net.dumbcode.dumblibrary.server.utils.GeneticUtils;

@@ -2,7 +2,6 @@ package net.dumbcode.dumblibrary.server.utils;
 
 import net.dumbcode.dumblibrary.server.dna.GeneticEntry;
 import net.dumbcode.dumblibrary.server.dna.GeneticFactoryStorage;
-import net.dumbcode.dumblibrary.server.dna.GeneticFactoryStorageType;
 import net.dumbcode.dumblibrary.server.dna.GeneticType;
 
 import java.util.ArrayList;
@@ -17,9 +16,7 @@ public class GeneticUtils {
     public static int DEFAULT_COLOUR_IMPORTANCE = 1000;
 
     public static <T extends GeneticFactoryStorage<?>> Object getCombinerKey(GeneticEntry<T, ?> entry) {
-        @SuppressWarnings("unchecked")
-        GeneticFactoryStorageType<T> type = (GeneticFactoryStorageType<T>) entry.getStorage().getType();
-        return type.combinerKey(entry.getStorage());
+        return entry.getStorage().getCombinerKey();
     }
 
     public static List<GeneticEntry<?, ?>> combineAll(List<GeneticEntry<?, ?>> entries) {

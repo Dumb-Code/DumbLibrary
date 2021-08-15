@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import lombok.*;
 import net.dumbcode.dumblibrary.server.dna.GeneticEntry;
 import net.dumbcode.dumblibrary.server.dna.GeneticTypes;
+import net.dumbcode.dumblibrary.server.dna.data.ColouredGeneticDataHandler;
 import net.dumbcode.dumblibrary.server.dna.data.GeneticTint;
 import net.dumbcode.dumblibrary.server.dna.storages.GeneticColorStorage;
 import net.dumbcode.dumblibrary.server.dna.storages.GeneticLayerColorStorage;
@@ -22,9 +23,11 @@ import net.dumbcode.dumblibrary.server.utils.GeneticUtils;
 import net.dumbcode.dumblibrary.server.utils.IndexedObject;
 import net.dumbcode.dumblibrary.server.utils.StreamUtils;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.ListNBT;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.JSONUtils;
 import net.minecraftforge.common.util.Constants;
+import org.apache.logging.log4j.util.BiConsumer;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -155,7 +158,9 @@ public class GeneticLayerComponent extends EntityComponent implements RenderLaye
 
         @Override
         public void constructTo(GeneticLayerComponent component) {
-            component.entries.addAll(this.entries);
+            for (GeneticLayerEntry entry : this.entries) {
+                component.entries.add(entry.cloneForEntity());
+            }
         }
 
         @Override
@@ -171,5 +176,4 @@ public class GeneticLayerComponent extends EntityComponent implements RenderLaye
                 .forEach(this.entries::add);
         }
     }
-
 }

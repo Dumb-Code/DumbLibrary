@@ -3,6 +3,7 @@ package net.dumbcode.dumblibrary.server.dna.data;
 import com.google.gson.JsonObject;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
+import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.api.distmarker.Dist;
@@ -11,6 +12,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Random;
+import java.util.function.Consumer;
 
 public interface GeneticDataHandler<O> {
 
@@ -32,6 +34,11 @@ public interface GeneticDataHandler<O> {
 
     O scale(O value, float modifier);
 
+
+//    O renderIsolationEdit(MatrixStack stack, int x, int y, int width, int height, int mouseX, int mouseY, boolean mouseDown, O current);
+
     @OnlyIn(Dist.CLIENT)
-    O renderIsolationEdit(MatrixStack stack, int x, int y, int width, int height, int mouseX, int mouseY, boolean mouseDown, O current);
+    Widget createIsolationWidget(int x, int y, int width, int height, boolean isSecondary, O current, Consumer<O> setter);
+
+
 }

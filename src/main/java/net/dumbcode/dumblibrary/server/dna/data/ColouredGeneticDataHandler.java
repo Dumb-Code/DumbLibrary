@@ -3,16 +3,21 @@ package net.dumbcode.dumblibrary.server.dna.data;
 import com.google.gson.JsonObject;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import lombok.Value;
+import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.server.utils.GeneticUtils;
 import net.minecraft.client.gui.AbstractGui;
+import net.minecraft.client.gui.widget.Widget;
+import net.minecraft.client.shader.ShaderInstance;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.JSONUtils;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Random;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public enum ColouredGeneticDataHandler implements GeneticDataHandler<GeneticTint> {
@@ -186,10 +191,22 @@ public enum ColouredGeneticDataHandler implements GeneticDataHandler<GeneticTint
         );
     }
 
+//    @Override
+//    @OnlyIn(Dist.CLIENT)
+//    public GeneticTint renderIsolationEdit(MatrixStack stack, int x, int y, int width, int height, int mouseX, int mouseY, boolean mouseDown, GeneticTint current) {
+//        AbstractGui.fill(stack, x, y, x+width, y+height, 0xAABBCCDD);
+//        return current;
+//    }
+
+
     @Override
-    @OnlyIn(Dist.CLIENT)
-    public GeneticTint renderIsolationEdit(MatrixStack stack, int x, int y, int width, int height, int mouseX, int mouseY, boolean mouseDown, GeneticTint current) {
-        AbstractGui.fill(stack, x, y, x+width, y+height, 0xAABBCCDD);
-        return current;
+    public Widget createIsolationWidget(int x, int y, int width, int height, boolean isSecondary, GeneticTint current, Consumer<GeneticTint> setter) {
+        GeneticTint.Part part = isSecondary ? current.getSecondary() : current.getPrimary();
+        Consumer<GeneticTint.Part> partConsumer =
+            isSecondary ?
+                p -> setter.accept(new GeneticTint(current.getPrimary(), p)) :
+                p -> setter.accept(new GeneticTint(p, current.getSecondary()));
+
+        return null;
     }
 }

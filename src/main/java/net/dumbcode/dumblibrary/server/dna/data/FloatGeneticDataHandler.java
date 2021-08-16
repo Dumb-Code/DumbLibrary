@@ -3,6 +3,7 @@ package net.dumbcode.dumblibrary.server.dna.data;
 import com.google.gson.JsonObject;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import net.dumbcode.dumblibrary.client.SimpleSlider;
+import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.JSONUtils;
@@ -13,6 +14,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 
 import java.util.List;
 import java.util.Random;
+import java.util.function.Consumer;
 
 public enum FloatGeneticDataHandler implements GeneticDataHandler<Float> {
     INSTANCE;
@@ -78,13 +80,10 @@ public enum FloatGeneticDataHandler implements GeneticDataHandler<Float> {
         return value * modifier;
     }
 
+
     @Override
     @OnlyIn(Dist.CLIENT)
-    public Float renderIsolationEdit(MatrixStack stack, int x, int y, int width, int height, int mouseX, int mouseY, boolean mouseDown, Float current) {
-        if(mouseDown) {
-            current = MathHelper.clamp((mouseX - (x + 4)) / (float) (width - 8), 0, 1); //Taken from Slider
-        }
-        SimpleSlider.render(x, y, width, height, current, new StringTextComponent(Math.round(current * 100) + "%"), -1, true, stack, mouseX, mouseY);
-        return current;
+    public Widget createIsolationWidget(int x, int y, int width, int height, boolean isSecondary, Float current, Consumer<Float> setter) {
+        return new SimpleSlider(x, y, width, height, new StringTextComponent(""), new StringTextComponent("%"), 0, 100, current * 100, false, true, p -> {}, s -> setter.accept((float) s.sliderValue));
     }
 }

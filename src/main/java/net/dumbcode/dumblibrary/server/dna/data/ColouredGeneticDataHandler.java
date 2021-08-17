@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import lombok.Value;
 import net.dumbcode.dumblibrary.DumbLibrary;
+import net.dumbcode.dumblibrary.client.gui.ColourWheelSelector;
 import net.dumbcode.dumblibrary.server.utils.GeneticUtils;
 import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.gui.widget.Widget;
@@ -18,6 +19,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Random;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public enum ColouredGeneticDataHandler implements GeneticDataHandler<GeneticTint> {
@@ -200,13 +202,32 @@ public enum ColouredGeneticDataHandler implements GeneticDataHandler<GeneticTint
 
 
     @Override
-    public Widget createIsolationWidget(int x, int y, int width, int height, boolean isSecondary, GeneticTint current, Consumer<GeneticTint> setter) {
-        GeneticTint.Part part = isSecondary ? current.getSecondary() : current.getPrimary();
+    public Widget createIsolationWidget(int x, int y, int width, int height, boolean isSecondary, Supplier<GeneticTint> current, Consumer<GeneticTint> setter) {
+        Supplier<GeneticTint.Part> part = isSecondary ?
+            () -> current.get().getSecondary() :
+            () -> current.get().getPrimary();
         Consumer<GeneticTint.Part> partConsumer =
             isSecondary ?
-                p -> setter.accept(new GeneticTint(current.getPrimary(), p)) :
-                p -> setter.accept(new GeneticTint(p, current.getSecondary()));
+                p -> setter.accept(new GeneticTint(current.get().getPrimary(), p)) :
+                p -> setter.accept(new GeneticTint(p, current.get().getSecondary()));
 
-        return null;
+        int radii;
+        int startX;
+        int startY;
+
+        //Tall Space
+        if(width < height) {
+            radii = width;
+            startX = x;
+            startY = y + (height - radii) / 2;
+        } else { //Wide object
+            radii = height;
+            startX = x + (width - radii) / 2;
+            startY = y;
+        }
+
+        GeneticTint.Part now = part.get();
+        return new ColourWheelSelector(startX, startY, radii, (selector, r, g, b) -> partConsumer.accept(new GeneticTint.Part(r, g, b, 1F, part.get().getImportance())))
+            .setColour((int) (now.getR() * 255F), (int) (now.getG() * 255F), (int) (now.getB() * 255F));
     }
 }

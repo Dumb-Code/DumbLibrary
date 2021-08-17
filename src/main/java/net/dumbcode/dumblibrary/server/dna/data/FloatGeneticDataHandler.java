@@ -15,6 +15,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import java.util.List;
 import java.util.Random;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public enum FloatGeneticDataHandler implements GeneticDataHandler<Float> {
     INSTANCE;
@@ -83,7 +84,7 @@ public enum FloatGeneticDataHandler implements GeneticDataHandler<Float> {
 
     @Override
     @OnlyIn(Dist.CLIENT)
-    public Widget createIsolationWidget(int x, int y, int width, int height, boolean isSecondary, Float current, Consumer<Float> setter) {
-        return new SimpleSlider(x, y, width, height, new StringTextComponent(""), new StringTextComponent("%"), 0, 100, current * 100, false, true, p -> {}, s -> setter.accept((float) s.sliderValue));
+    public Widget createIsolationWidget(int x, int y, int width, int height, boolean isSecondary, Supplier<Float> current, Consumer<Float> setter) {
+        return new SimpleSlider(x, y, width, height, new StringTextComponent(""), new StringTextComponent("%"), 0, 100, current.get() * 100, false, true, p -> {}, s -> setter.accept((float) s.sliderValue));
     }
 }

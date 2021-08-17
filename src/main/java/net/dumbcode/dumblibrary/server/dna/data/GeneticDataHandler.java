@@ -13,6 +13,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Random;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public interface GeneticDataHandler<O> {
 
@@ -38,7 +39,7 @@ public interface GeneticDataHandler<O> {
 //    O renderIsolationEdit(MatrixStack stack, int x, int y, int width, int height, int mouseX, int mouseY, boolean mouseDown, O current);
 
     @OnlyIn(Dist.CLIENT)
-    Widget createIsolationWidget(int x, int y, int width, int height, boolean isSecondary, O current, Consumer<O> setter);
+    Widget createIsolationWidget(int x, int y, int width, int height, boolean isSecondary, Supplier<O> current, Consumer<O> setter);
 
 
 }

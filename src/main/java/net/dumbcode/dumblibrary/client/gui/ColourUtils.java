@@ -49,11 +49,8 @@ public class ColourUtils {
         return 0xff000000 | (r << 16) | (g << 8) | (b << 0);
     }
 
-    public static float[] RGBtoHSB(int r, int g, int b, float[] hsbvals) {
+    public static float[] RGBtoHSB(int r, int g, int b) {
         float hue, saturation, brightness;
-        if (hsbvals == null) {
-            hsbvals = new float[3];
-        }
         int cmax = (r > g) ? r : g;
         if (b > cmax) cmax = b;
         int cmin = (r < g) ? r : g;
@@ -80,9 +77,6 @@ public class ColourUtils {
             if (hue < 0)
                 hue = hue + 1.0f;
         }
-        hsbvals[0] = hue;
-        hsbvals[1] = saturation;
-        hsbvals[2] = brightness;
-        return hsbvals;
+        return new float[] { hue, saturation, brightness };
     }
 }

@@ -5,6 +5,8 @@ import com.mojang.blaze3d.matrix.MatrixStack;
 import lombok.Value;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.client.gui.ColourWheelSelector;
+import net.dumbcode.dumblibrary.client.gui.ImportanceColourPicker;
+import net.dumbcode.dumblibrary.server.dna.GeneticType;
 import net.dumbcode.dumblibrary.server.utils.GeneticUtils;
 import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.gui.widget.Widget;
@@ -202,7 +204,7 @@ public enum ColouredGeneticDataHandler implements GeneticDataHandler<GeneticTint
 
 
     @Override
-    public Widget createIsolationWidget(int x, int y, int width, int height, boolean isSecondary, Supplier<GeneticTint> current, Consumer<GeneticTint> setter) {
+    public Widget createIsolationWidget(int x, int y, int width, int height, boolean isSecondary, Supplier<GeneticTint> current, Consumer<GeneticTint> setter, GeneticType<?, GeneticTint> type) {
         Supplier<GeneticTint.Part> part = isSecondary ?
             () -> current.get().getSecondary() :
             () -> current.get().getPrimary();
@@ -227,7 +229,8 @@ public enum ColouredGeneticDataHandler implements GeneticDataHandler<GeneticTint
         }
 
         GeneticTint.Part now = part.get();
-        return new ColourWheelSelector(startX, startY, radii, (selector, r, g, b) -> partConsumer.accept(new GeneticTint.Part(r, g, b, 1F, part.get().getImportance())))
-            .setColour((int) (now.getR() * 255F), (int) (now.getG() * 255F), (int) (now.getB() * 255F));
+//        return new ColourWheelSelector(startX, startY, radii, (selector, r, g, b) -> partConsumer.accept(new GeneticTint.Part(r, g, b, 1F, part.get().getImportance())))
+//            .setColour((int) (now.getR() * 255F), (int) (now.getG() * 255F), (int) (now.getB() * 255F));
+        return new ImportanceColourPicker(startX, startY, radii, now, partConsumer);
     }
 }

@@ -84,7 +84,7 @@ public abstract class EntityComponent {
     public void setResync(ComponentAccess access) {
         this.syncer = () -> {
             if(access instanceof Entity && !((Entity) access).level.isClientSide) {
-                DumbLibrary.NETWORK.send(PacketDistributor.DIMENSION.with(() -> ((Entity) access).level.dimension()), new S2CSyncComponent(((Entity) access).getId(), this.type, this.serializeSync()));
+                DumbLibrary.NETWORK.send(PacketDistributor.TRACKING_ENTITY.with(() -> (Entity) access), new S2CSyncComponent(((Entity) access).getId(), this.type, this.serializeSync()));
             }
         };
     }

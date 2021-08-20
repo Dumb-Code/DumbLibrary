@@ -1,4 +1,4 @@
-package net.dumbcode.dumblibrary.client;
+package net.dumbcode.dumblibrary.client.gui;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import net.dumbcode.dumblibrary.client.RenderUtils;

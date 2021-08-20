@@ -27,6 +27,9 @@ public class GeneticEntry<T extends GeneticFactoryStorage<O>, O> {
         this(schemaEntry.getType(), schemaEntry.getStorage());
     }
 
+    public GeneticEntry(GeneticType<T, O> type) {
+        this(type, type.getStorage().get());
+    }
     public GeneticEntry(Supplier<? extends GeneticType<T, O>> type, T storage) {
         this(type.get(), storage);
     }

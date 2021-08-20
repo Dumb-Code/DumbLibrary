@@ -50,7 +50,7 @@ public class C2SMoveSelectedSkeletalPart {
                 BaseTaxidermyBlockEntity builder = ((TaxidermyContainer) sender.containerMenu).getBlockEntity();
                 builder.getHistory().liveEdit(message.part, message.type, message.axis, message.value);
                 builder.setChanged();
-                DumbLibrary.NETWORK.send(PacketDistributor.DIMENSION.with(world::dimension), new S2CUpdateSkeletalBuilder(builder.getBlockPos(), message.part, message.axis, message.type, message.value));
+                DumbLibrary.NETWORK.send(NetworkUtils.forPos(world, builder.getBlockPos()), new S2CUpdateSkeletalBuilder(builder.getBlockPos(), message.part, message.axis, message.type, message.value));
             }
         });
         context.setPacketHandled(true);

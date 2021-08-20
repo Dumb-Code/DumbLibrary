@@ -151,8 +151,8 @@ public class AnimationComponent extends EntityComponent implements RenderCallbac
             //            }
             if (!e.level.isClientSide) {
                 this.shouldUserDummyCubes = false;
-                this.startSyncer = (data, channel) -> DumbLibrary.NETWORK.send(PacketDistributor.DIMENSION.with(e.level::dimension), new S2CSyncAnimation(e.getId(), data.getAnimation(), channel));
-                this.stopSyncer = channel -> DumbLibrary.NETWORK.send(PacketDistributor.DIMENSION.with(e.level::dimension), new S2CStopAnimation(e.getId(), channel));
+                this.startSyncer = (data, channel) -> DumbLibrary.NETWORK.send(PacketDistributor.TRACKING_ENTITY.with(() -> e), new S2CSyncAnimation(e.getId(), data.getAnimation(), channel));
+                this.stopSyncer = channel -> DumbLibrary.NETWORK.send(PacketDistributor.TRACKING_ENTITY.with(() -> e), new S2CStopAnimation(e.getId(), channel));
             }
         } else {
             throw new IllegalStateException("Unable to animate non entity. Type " + entity.getClass().getSimpleName());

@@ -39,7 +39,7 @@ public class C2SMoveInHistory {
                 } else {
                     builder.getHistory().undo();
                 }
-                DumbLibrary.NETWORK.send(PacketDistributor.DIMENSION.with(world::dimension), new S2CUpdateHistoryIndex(builder.getBlockPos(), message.direction));
+                DumbLibrary.NETWORK.send(NetworkUtils.forPos(world, builder.getBlockPos()), new S2CUpdateHistoryIndex(builder.getBlockPos(), message.direction));
             }
         });
         context.setPacketHandled(true);

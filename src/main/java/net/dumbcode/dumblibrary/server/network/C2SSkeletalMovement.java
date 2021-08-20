@@ -51,7 +51,7 @@ public class C2SSkeletalMovement {
                 BaseTaxidermyBlockEntity builder = ((TaxidermyContainer) sender.containerMenu).getBlockEntity();
                 builder.getHistory().add(new TaxidermyHistory.Record(message.part, new TaxidermyHistory.CubeProps(message.rotations, message.position)));
                 builder.setChanged();
-                DumbLibrary.NETWORK.send(PacketDistributor.DIMENSION.with(world::dimension), new S2CHistoryRecord(builder.getBlockPos(), message.part, message.rotations, message.position));
+                DumbLibrary.NETWORK.send(NetworkUtils.forPos(world, builder.getBlockPos()), new S2CHistoryRecord(builder.getBlockPos(), message.part, message.rotations, message.position));
             }
         });
         context.setPacketHandled(true);

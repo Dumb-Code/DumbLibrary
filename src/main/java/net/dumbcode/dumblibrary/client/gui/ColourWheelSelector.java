@@ -1,6 +1,7 @@
 package net.dumbcode.dumblibrary.client.gui;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.client.RenderUtils;
 import net.minecraft.client.Minecraft;
@@ -28,10 +29,13 @@ public class ColourWheelSelector extends Widget {
 
     private Vector3i selectedPoint = new Vector3i(0, 0, 0);
 
-    private final OnChange onChange;
+    protected OnChange onChange;
+
+    protected final int size;
 
     public ColourWheelSelector(int x, int y, int size, OnChange onChange) {
-        super(x, y, size, size - 17, new StringTextComponent(":)"));
+        super(x, y, size, size, new StringTextComponent(":)"));
+        this.size = size - 17;
         this.onChange = onChange;
         if(shaderManager == null) {
             try {
@@ -47,16 +51,17 @@ public class ColourWheelSelector extends Widget {
 
         AbstractGui.fill(stack, this.x, this.y, this.x+this.width, this.y+this.height, 0xFF000000 | this.calculateColor());
 
+        RenderSystem.enableBlend();
         if(shaderManager != null) {
 
             shaderManager.safeGetUniform("lightness").set(1F - this.lightness);
 
             shaderManager.apply();
 
-            int centerX = this.x + this.height/2;
-            int centerY = this.y + this.height/2;
+            int centerX = this.x + this.size/2;
+            int centerY = this.y + this.size/2;
 
-            int radii = this.height/2;
+            int radii = this.size/2;
 
             BufferBuilder buff = Tessellator.getInstance().getBuilder();
 
@@ -70,14 +75,14 @@ public class ColourWheelSelector extends Widget {
             shaderManager.clear();
         }
 
-        int halfSliderWidth = 10;
+        int halfSliderWidth = 6;
 
-        AbstractGui.fill(stack, this.x + this.height + halfSliderWidth + 3, this.y + 5, this.x + this.height + halfSliderWidth + 7, this.y + this.height - 5, 0xFF000000);
-        AbstractGui.fill(stack, this.x + this.height + 5, (int) (this.y + 2 + (this.getHeight()-10)*this.lightness), this.x + this.height + 2*halfSliderWidth + 5, (int) (y + 8 + (this.getHeight()-10)*this.lightness), 0xFF000000);
+        AbstractGui.fill(stack, this.x + this.size + halfSliderWidth + 3, this.y + 5, this.x + this.size + halfSliderWidth + 7, this.y + this.height - 5, 0xFF000000);
+        AbstractGui.fill(stack, this.x + this.size + 5, (int) (this.y + 2 + (this.getHeight()-10)*this.lightness), this.x + this.size + 2*halfSliderWidth + 5, (int) (y + 8 + (this.getHeight()-10)*this.lightness), 0xFF000000);
 
 
-        int centerX = x + this.height/2;
-        int centerY = y + this.height/2;
+        int centerX = x + this.size/2;
+        int centerY = y + this.size/2;
         RenderUtils.renderBorderExclusive(stack, centerX + this.selectedPoint.getX() - 2, centerY + this.selectedPoint.getY() - 2, centerX + this.selectedPoint.getX() + 2, centerY + this.selectedPoint.getY() + 2, 2, -1);
 
     }
@@ -100,7 +105,7 @@ public class ColourWheelSelector extends Widget {
         this.lightness = 1F - hsb[2];
 
         double theta = -2*Math.PI*hsb[0] - Math.PI/2D;
-        double length = hsb[1] * this.height/2D;
+        double length = hsb[1] * this.size/2D;
 
         this.selectedPoint = new Vector3i((int)(length*Math.cos(theta)), (int)(length*Math.sin(theta)), 0);
         return this;
@@ -114,18 +119,18 @@ public class ColourWheelSelector extends Widget {
 
     @Override
     public void onClick(double mouseX, double mouseY) {
-        int startX = x + this.height;
-        int halfSliderWidth = 10;
-        if(mouseX > startX - 2 && mouseX < startX + 2*halfSliderWidth + 2&& mouseY > y - 2 && mouseY < y + this.height-10 + 2) {
+        int startX = x + this.size;
+        int halfSliderWidth = 6;
+        if(mouseX > startX - 2 && mouseX < startX + 2*halfSliderWidth + 2&& mouseY > y - 2 && mouseY < y + this.size-10 + 2) {
             this.lightness = (float) (mouseY - y) / (this.height-10);
             this.sliderSelected = true;
         } else {
             this.sliderSelected = false;
         }
 
-        int centerX = x + this.height/2;
-        int centerY = y + this.height/2;
-        int radii = this.height/2;
+        int centerX = x + this.size/2;
+        int centerY = y + this.size/2;
+        int radii = this.size/2;
 
         if((mouseX - centerX)*(mouseX - centerX) + (mouseY - centerY)*(mouseY - centerY) <= radii*radii) {
             this.wheelSelected = true;
@@ -146,9 +151,9 @@ public class ColourWheelSelector extends Widget {
             this.lightness = MathHelper.clamp((float) (mouseY - y) / (this.height-10), 0F, 1F);
         }
         if(this.wheelSelected) {
-            this.selectedPoint = new Vector3i(mouseX - x - this.height/2F + 5, mouseY - y - this.height/2F + 5, 0);
+            this.selectedPoint = new Vector3i(mouseX - x - this.size/2F + 5, mouseY - y - this.size/2F + 5, 0);
             double theta = Math.atan2(this.selectedPoint.getY(), this.selectedPoint.getX());
-            double length = Math.min(Math.sqrt(this.selectedPoint.getX()*this.selectedPoint.getX() + this.selectedPoint.getY()*this.selectedPoint.getY()), this.height/2D);
+            double length = Math.min(Math.sqrt(this.selectedPoint.getX()*this.selectedPoint.getX() + this.selectedPoint.getY()*this.selectedPoint.getY()), this.size/2D);
 
             this.selectedPoint = new Vector3i((int) (length*Math.cos(theta)), (int) (length*Math.sin(theta)), 0);
         }
@@ -158,7 +163,7 @@ public class ColourWheelSelector extends Widget {
         }
     }
 
-    private void onChange() {
+    protected void onChange() {
         int color = this.calculateColor();
         float r = ((color >> 16) & 255) / 255F;
         float g = ((color >> 8 ) & 255) / 255F;

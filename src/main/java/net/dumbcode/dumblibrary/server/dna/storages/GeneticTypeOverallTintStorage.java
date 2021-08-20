@@ -12,7 +12,7 @@ import net.minecraft.util.JSONUtils;
 @Accessors(chain = true)
 public class GeneticTypeOverallTintStorage extends GeneticColorStorage {
 
-    private TintType tintType = TintType.DIRECT;
+    private TintType tintType = TintType.TARGET;
 
     @Override
     public CompoundNBT serialize(CompoundNBT nbt) {

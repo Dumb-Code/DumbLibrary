@@ -10,6 +10,7 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.JSONUtils;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Util;
+import net.minecraft.util.text.IFormattableTextComponent;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
@@ -48,9 +49,13 @@ public class GeneticEntry<T extends GeneticFactoryStorage<O>, O> {
         return this;
     }
 
+    public IFormattableTextComponent gatherTextComponents() {
+        return this.getType().getTranslationComponent().append(": ").append(this.type.getDataHandler().getValue(this.modifier));
+    }
+
     public CompoundNBT serialize(CompoundNBT compound) {
         compound.putString("type", Objects.requireNonNull(this.type.getRegistryName()).toString());
-        compound.put("modifier", this.type.getDataHandler().write(this.modifier, new CompoundNBT()));
+        compound.put("value", this.type.getDataHandler().write(this.modifier, new CompoundNBT()));
         JavaUtils.nullApply(this.storage, t -> compound.put("storage", t.serialize(new CompoundNBT())));
         return compound;
     }

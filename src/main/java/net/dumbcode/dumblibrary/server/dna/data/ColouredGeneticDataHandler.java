@@ -14,8 +14,13 @@ import net.minecraft.client.shader.ShaderInstance;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.JSONUtils;
+import net.minecraft.util.text.Color;
+import net.minecraft.util.text.IFormattableTextComponent;
+import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.util.List;
@@ -160,8 +165,7 @@ public enum ColouredGeneticDataHandler implements GeneticDataHandler<GeneticTint
         }
 
         if(size == 0) {
-            size = 1;
-            total = new float[] { 1, 1, 1, 1 };
+            return new GeneticTint.Part(1,1, 1, 1, 0);
         }
 
         return new GeneticTint.Part(
@@ -195,13 +199,22 @@ public enum ColouredGeneticDataHandler implements GeneticDataHandler<GeneticTint
         );
     }
 
-//    @Override
-//    @OnlyIn(Dist.CLIENT)
-//    public GeneticTint renderIsolationEdit(MatrixStack stack, int x, int y, int width, int height, int mouseX, int mouseY, boolean mouseDown, GeneticTint current) {
-//        AbstractGui.fill(stack, x, y, x+width, y+height, 0xAABBCCDD);
-//        return current;
-//    }
+    public IFormattableTextComponent getValue(GeneticTint.Part part) {
+        int r = (int) (part.getR() * 255F);
+        int g = (int) (part.getG() * 255F);
+        int b = (int) (part.getB() * 255F);
+        int colour = r << 16 | g << 8 | b;
+        Color color = Color.fromRgb(colour);
+        return new StringTextComponent(color.serialize() + " (" + Math.round((float) part.getImportance() / GeneticUtils.DEFAULT_COLOUR_IMPORTANCE * 100F) + "%)").withStyle(s -> s.withColor(color));
+    }
 
+    @Override
+    public IFormattableTextComponent getValue(GeneticTint data) {
+        return
+            this.getValue(data.getPrimary())
+            .append(new StringTextComponent(", ").withStyle(TextFormatting.WHITE))
+            .append(this.getValue(data.getSecondary()));
+    }
 
     @Override
     public Widget createIsolationWidget(int x, int y, int width, int height, boolean isSecondary, Supplier<GeneticTint> current, Consumer<GeneticTint> setter, GeneticType<?, GeneticTint> type) {

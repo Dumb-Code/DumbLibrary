@@ -7,6 +7,7 @@ import net.dumbcode.dumblibrary.server.dna.GeneticType;
 import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
+import net.minecraft.util.text.IFormattableTextComponent;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -35,6 +36,8 @@ public interface GeneticDataHandler<O> {
     O combineMultipleSources(List<O> datas);
 
     O scale(O value, float modifier);
+
+    IFormattableTextComponent getValue(O data);
 
 
 //    O renderIsolationEdit(MatrixStack stack, int x, int y, int width, int height, int mouseX, int mouseY, boolean mouseDown, O current);

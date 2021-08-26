@@ -8,7 +8,9 @@ import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.JSONUtils;
+import net.minecraft.util.text.IFormattableTextComponent;
 import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -81,6 +83,16 @@ public enum FloatGeneticDataHandler implements GeneticDataHandler<Float> {
         return value * modifier;
     }
 
+    @Override
+    public IFormattableTextComponent getValue(Float data) {
+        TextFormatting colour = TextFormatting.GRAY;
+        if(data < 0) {
+            colour = TextFormatting.RED;
+        } else if(data > 0) {
+            colour = TextFormatting.GREEN;
+        }
+        return new StringTextComponent(Math.round(data * 100) + "%").withStyle(colour);
+    }
 
     @Override
     @OnlyIn(Dist.CLIENT)

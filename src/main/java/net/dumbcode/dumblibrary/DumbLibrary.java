@@ -1,6 +1,7 @@
 package net.dumbcode.dumblibrary;
 
 import net.dumbcode.dumblibrary.client.BakedModelResolver;
+import net.dumbcode.dumblibrary.client.YRotatedModel;
 import net.dumbcode.dumblibrary.client.TextureUtils;
 import net.dumbcode.dumblibrary.client.gui.TaxidermyScreen;
 import net.dumbcode.dumblibrary.client.model.ModelHandler;
@@ -21,10 +22,7 @@ import net.dumbcode.studio.model.ModelMirror;
 import net.dumbcode.studio.model.RotationOrder;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.IHasContainer;
 import net.minecraft.client.gui.ScreenManager;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.container.Container;
 import net.minecraft.inventory.container.ContainerType;
 import net.minecraft.item.Item;
@@ -32,7 +30,6 @@ import net.minecraft.resources.IReloadableResourceManager;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.ITextComponent;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
@@ -45,7 +42,6 @@ import net.minecraftforge.fml.*;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.fml.javafmlmod.FMLModContainer;
 import net.minecraftforge.fml.network.IContainerFactory;
 import net.minecraftforge.fml.network.NetworkRegistry;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
@@ -56,9 +52,7 @@ import net.minecraftforge.resource.VanillaResourceType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 @Mod(DumbLibrary.MODID)
@@ -115,6 +109,7 @@ public class DumbLibrary {
             bus.addListener(ModelHandler::onModelReady);
             bus.addListener(BakedModelResolver::onTextureStitch);
             bus.addListener(BakedModelResolver::onModelBake);
+            bus.addListener(YRotatedModel::onModelBakeEvent);
             forgeBus.addListener(MouseUtils::onMouseEvent);
         });
 

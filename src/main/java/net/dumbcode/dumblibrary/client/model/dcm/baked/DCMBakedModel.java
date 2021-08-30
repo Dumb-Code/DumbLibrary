@@ -1,5 +1,7 @@
 package net.dumbcode.dumblibrary.client.model.dcm.baked;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
+import net.dumbcode.dumblibrary.client.model.TransformableModel;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.model.ElytraModel;
@@ -20,7 +22,7 @@ import java.util.stream.Collectors;
  *
  * @author Wyn Price
  */
-public class DCMBakedModel implements IBakedModel {
+public class DCMBakedModel implements IBakedModel, TransformableModel {
 
     private static final List<BakedQuad> EMPTY = Collections.emptyList();
 
@@ -49,6 +51,27 @@ public class DCMBakedModel implements IBakedModel {
         } else {
             return bakedQuads;
         }
+    }
+
+    @Override
+    public IBakedModel transform(MatrixStack stack) {
+        Map<String, List<BakedQuad>> map = new HashMap<>();
+        for (String s : this.quadMap.keySet()) {
+            List<BakedQuad> list = new ArrayList<>();
+            for (BakedQuad b : this.quadMap.get(s)) {
+                BakedQuad transform = TransformableModel.transformQuad(b, stack);
+                list.add(transform);
+            }
+            if (map.put(s, list) != null) {
+                throw new IllegalStateException("Duplicate key");
+            }
+        }
+        return new DCMBakedModel(
+            map,
+            this.ambientOcclusion,
+            this.particleTexture,
+            this.transforms
+        );
     }
 
     @Override

@@ -1,6 +1,7 @@
 package net.dumbcode.dumblibrary.server.utils;
 
 import com.google.common.collect.Maps;
+import com.mojang.blaze3d.matrix.MatrixStack;
 import lombok.experimental.UtilityClass;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.client.model.dcm.DCMModel;
@@ -82,42 +83,47 @@ public class DCMUtils {
     }
 
     public static Vector3f getModelPosAlpha(AnimatedReferenceCube cube, float xalpha, float yalpha, float zalpha) {
+        return getModelPosAlpha(cube, xalpha, yalpha, zalpha, true);
+    }
+
+    public static Vector3f getModelPosAlpha(AnimatedReferenceCube cube, float xalpha, float yalpha, float zalpha, boolean xyMirror) {
         CubeInfo info = cube.getInfo();
         float[] offset = info.getOffset();
         int[] dimensions = info.getDimensions();
-        return getModelPos(cube,
-            (offset[0] + dimensions[0] * xalpha) / 16F,
-            (offset[1] + dimensions[1] * yalpha) / -16F,
-            (offset[2] + dimensions[2] * zalpha) / -16F
+        float[] cubeGrow = info.getCubeGrow();
+        MatrixStack stack = new MatrixStack();
+        if(xyMirror) {
+            stack.mulPose(Vector3f.XP.rotationDegrees(180));
+        }
+        transformToCube(cube, stack);
+        Vector4f vector4f = new Vector4f(
+            (offset[0] - cubeGrow[0] + (dimensions[0] + cubeGrow[0]*2) * xalpha) / 16F,
+            (offset[1] - cubeGrow[1] + (dimensions[1] + cubeGrow[1]*2) * yalpha) / 16F,
+            (offset[2] - cubeGrow[2] + (dimensions[2] + cubeGrow[2]*2) * zalpha) / 16F,
+            1F
         );
+        vector4f.transform(stack.last().pose());
+        return new Vector3f(vector4f.x(), vector4f.y(), vector4f.z());
     }
 
-    public static Vector3f getModelPos(AnimatedReferenceCube cube, float x, float y, float z) {
-        Vector4f rendererPos = new Vector4f(x, y, z, 1);
 
-        Matrix4f boxTranslate = new Matrix4f();
-        Matrix4f boxRotateX = new Matrix4f();
-        Matrix4f boxRotateY = new Matrix4f();
-        Matrix4f boxRotateZ = new Matrix4f();
-
-        float[] point = cube.getPosition();
-        boxTranslate.translate(new Vector3f(point[0] / 16F, -point[1] / 16F, -point[2] / 16F));
-
-        float[] rotation = cube.getRotation();
-        boxRotateX.multiply(Vector3f.XP.rotation(rotation[0]));
-        boxRotateX.multiply(Vector3f.YP.rotation(-rotation[1]));
-        boxRotateX.multiply(Vector3f.ZP.rotation(-rotation[2]));
-
-        rendererPos.transform(boxRotateX);
-        rendererPos.transform(boxRotateY);
-        rendererPos.transform(boxRotateZ);
-        rendererPos.transform(boxTranslate);
-
-        AnimatedReferenceCube parent = cube.getParent();
-        if (parent != null) {
-            return getModelPos(parent, rendererPos.x(), rendererPos.y(), rendererPos.z());
+    public static void transformToCube(AnimatedReferenceCube cube, MatrixStack stack) {
+        if(cube.getParent() != null) {
+            transformToCube(cube.getParent(), stack);
         }
-        return new Vector3f(rendererPos.x(), rendererPos.y(), rendererPos.z());
+        float[] p = cube.getPosition();
+        stack.translate(p[0], p[1], p[2]);
+
+        float[] r = cube.getRotation();
+        if (r[0] != 0.0F) {
+            stack.mulPose(Vector3f.ZP.rotation(r[0]));
+        }
+        if (r[1] != 0.0F) {
+            stack.mulPose(Vector3f.YP.rotation(r[1]));
+        }
+        if (r[2] != 0.0F) {
+            stack.mulPose(Vector3f.XP.rotation(r[2]));
+        }
     }
 
     /**

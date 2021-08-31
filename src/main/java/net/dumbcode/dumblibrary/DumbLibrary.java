@@ -91,7 +91,7 @@ public class DumbLibrary {
 
     public DumbLibrary() {
         RotationOrder.ZYX.applyAsGlobal();
-        ModelMirror.XY.applyAsGlobal();
+        ModelMirror.XY.applyAsGlobal(0, 12, 0);
 
         IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
         IEventBus forgeBus = MinecraftForge.EVENT_BUS;

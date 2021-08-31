@@ -53,14 +53,14 @@ public enum DCMBufferHandler implements BiConsumer<PacketBuffer, ModelInfo>, Fun
             buffer.readInt(), buffer.readInt(),
             RotationOrder.ZYX
         );
-        readCubes(info, buffer, info.getRoots());
+        readCubes(info, null, buffer, info.getRoots());
         return info;
     }
-    private static void readCubes(ModelInfo info, PacketBuffer buf, List<CubeInfo> out) {
+    private static void readCubes(ModelInfo info, CubeInfo parent, PacketBuffer buf, List<CubeInfo> out) {
         short cubes = buf.readShort();
         for (int i = 0; i < cubes; i++) {
             CubeInfo cube = new CubeInfo(
-                info,
+                info, parent,
                 buf.readUtf(32767),
                 readIntArray(buf, 3),
                 readFloatArray(buf, 3),
@@ -70,7 +70,7 @@ public enum DCMBufferHandler implements BiConsumer<PacketBuffer, ModelInfo>, Fun
                 buf.readBoolean(),
                 readFloatArray(buf, 3)
             );
-            readCubes(info, buf, cube.getChildren());
+            readCubes(info, cube, buf, cube.getChildren());
             out.add(cube);
         }
     }

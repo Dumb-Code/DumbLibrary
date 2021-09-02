@@ -37,13 +37,13 @@ public class YRotatedModel {
         switch (direction) {
             default:
             case EAST:
-                rotation = 0;
+                rotation = 180;
                 break;
             case SOUTH:
                 rotation = 90;
                 break;
             case WEST:
-                rotation = 180;
+                rotation = 0;
                 break;
             case NORTH:
                 rotation = 270;

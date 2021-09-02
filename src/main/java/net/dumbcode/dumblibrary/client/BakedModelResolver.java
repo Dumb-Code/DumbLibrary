@@ -25,6 +25,9 @@ public class BakedModelResolver {
 
     public BakedModelResolver(ResourceLocation location) {
         this.location = location;
+    }
+
+    public void mark() {
         RESOLVERS.add(this);
     }
 

@@ -7,10 +7,7 @@ import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.client.model.dcm.DCMModel;
 import net.dumbcode.dumblibrary.server.animation.AnimatedReferenceCube;
 import net.dumbcode.dumblibrary.server.info.ServerAnimatableCube;
-import net.dumbcode.studio.model.CubeInfo;
-import net.dumbcode.studio.model.ModelInfo;
-import net.dumbcode.studio.model.ModelLoader;
-import net.dumbcode.studio.model.ModelWriter;
+import net.dumbcode.studio.model.*;
 import net.dumbcode.studio.util.CubeUtils;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.vector.Matrix3f;
@@ -54,10 +51,18 @@ public class DCMUtils {
     }
 
     public static DCMModel getModel(ResourceLocation location) {
-        return new DCMModel(getModelInformation(location));
+        return getModel(location, true);
+    }
+
+    public static DCMModel getModel(ResourceLocation location, boolean flipped) {
+        return new DCMModel(getModelInformation(location, flipped));
     }
 
     public static ModelInfo getModelInformation(ResourceLocation location) {
+        return getModelInformation(location, true);
+    }
+
+    public static ModelInfo getModelInformation(ResourceLocation location, boolean flipped) {
         if(MISSING.equals(location)) {
             return MissingModelInfo.MISSING;
         }
@@ -65,7 +70,7 @@ public class DCMUtils {
             location = new ResourceLocation(location.getNamespace(), location.getPath() + ".dcm");
         }
         try {
-            return StreamUtils.openStream(location, DCMUtils::getModelInformation);
+            return StreamUtils.openStream(location, inputStream -> ModelLoader.loadModel(inputStream, RotationOrder.ZYX, flipped ? ModelMirror.global : ModelMirror.NONE));
         } catch (IOException e) {
             DumbLibrary.getLogger().error("Unable to load model " + location, e);
             return MissingModelInfo.MISSING;

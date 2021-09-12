@@ -13,10 +13,13 @@ import net.dumbcode.studio.model.CubeInfo;
 import net.dumbcode.studio.model.ModelInfo;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.entity.model.EntityModel;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.gen.feature.structure.TemplateStructurePiece;
 
 import java.util.Collection;
 import java.util.List;
@@ -74,13 +77,17 @@ public class DCMModel extends EntityModel<Entity> {
     }
 
     public void renderImmediate(MatrixStack stack, int light, ResourceLocation texture) {
-        IRenderTypeBuffer.Impl buffer = Minecraft.getInstance().renderBuffers().bufferSource();
+        IRenderTypeBuffer.Impl buffer = IRenderTypeBuffer.immediate(Tessellator.getInstance().getBuilder());
         this.renderToBuffer(stack, buffer.getBuffer(this.renderType(texture)), light, OverlayTexture.NO_OVERLAY, 1, 1, 1, 1);
         buffer.endBatch();
     }
 
     public void renderBoxes(MatrixStack stack, int light, IRenderTypeBuffer buffs, ResourceLocation texture) {
-        this.renderToBuffer(stack, buffs.getBuffer(this.renderType(texture)), light, OverlayTexture.NO_OVERLAY, 1, 1, 1, 1);
+        this.renderBoxes(stack, light, buffs, this.renderType(texture));
+    }
+
+    public void renderBoxes(MatrixStack stack, int light, IRenderTypeBuffer buffs, RenderType type) {
+        this.renderToBuffer(stack, buffs.getBuffer(type), light, OverlayTexture.NO_OVERLAY, 1, 1, 1, 1);
     }
 
     public void resetAnimations() {

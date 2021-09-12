@@ -17,7 +17,7 @@ import java.util.function.Consumer;
 
 public class PreprocessRegisterDeferredRegister<T extends IForgeRegistryEntry<T>> extends WrappedDeferredRegister<T> {
 
-    private final List<Runnable> preRegistry = new ArrayList<>();
+    protected final List<Runnable> preRegistry = new ArrayList<>();
 
     public static <T extends IForgeRegistryEntry<T>> PreprocessRegisterDeferredRegister<T> create(Class<T> base, String modid) {
         return new PreprocessRegisterDeferredRegister<T>(base, DeferredRegister.create(base, modid));
@@ -29,11 +29,15 @@ public class PreprocessRegisterDeferredRegister<T extends IForgeRegistryEntry<T>
 
     @Override
     public void register(IEventBus bus) {
-        super.register(new EventBusDelegate(bus, d -> new DelegateEventDispatcher<>(this.base, this.preRegistry, d)));
+        super.register(new EventBusDelegate(bus, this::onRegister));
+    }
+
+    protected Object onRegister(DeferredRegister.EventDispatcher dispatcher) {
+        return new DelegateEventDispatcher<>(this.base, this.preRegistry, dispatcher);
     }
 
     @RequiredArgsConstructor
-    public static class DelegateEventDispatcher<T extends IForgeRegistryEntry<T>> {
+    private static class DelegateEventDispatcher<T extends IForgeRegistryEntry<T>> {
         private final Class<T> base;
         private final List<Runnable> preRegistry;
         private final DeferredRegister.EventDispatcher delegate;

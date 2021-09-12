@@ -2,50 +2,45 @@ package net.dumbcode.dumblibrary.server.registry;
 
 import lombok.RequiredArgsConstructor;
 import net.dumbcode.dumblibrary.DumbLibrary;
-import net.minecraft.block.Block;
 import net.minecraftforge.event.RegistryEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.IForgeRegistryEntry;
-import net.minecraftforge.registries.RegistryManager;
 
-import java.util.function.Consumer;
+import java.util.List;
 
-//An abstraction of the deferred register used to handle stuff that need to go before blocks and items.
-public class EarlyDeferredRegister<T extends IForgeRegistryEntry<T>> extends WrappedDeferredRegister<T> {
+public class PostEarlyDeferredRegister<T extends IForgeRegistryEntry<T>> extends PreprocessRegisterDeferredRegister<T> {
 
-    public static <T extends IForgeRegistryEntry<T>> EarlyDeferredRegister<T> create(Class<T> base, String modid) {
-        return new EarlyDeferredRegister<T>(base, DeferredRegister.create(base, modid));
+    public static <T extends IForgeRegistryEntry<T>> PostEarlyDeferredRegister<T> create(Class<T> base, String modid) {
+        return new PostEarlyDeferredRegister<T>(base, DeferredRegister.create(base, modid));
     }
 
-    protected EarlyDeferredRegister(Class<T> base, DeferredRegister<T> register) {
+    protected PostEarlyDeferredRegister(Class<T> base, DeferredRegister<T> register) {
         super(base, register);
     }
 
     @Override
-    public void register(IEventBus bus) {
-        this.register.register(new EventBusDelegate(bus, ed -> new DelegateEventDispatcher<>(this.base, ed)));
+    protected Object onRegister(DeferredRegister.EventDispatcher dispatcher) {
+        return new DelegateEventDispatcher<>(this.base, this.preRegistry, dispatcher);
     }
 
     @RequiredArgsConstructor
-    public static class DelegateEventDispatcher<T extends IForgeRegistryEntry<T>> {
+    private static class DelegateEventDispatcher<T extends IForgeRegistryEntry<T>> {
         private final Class<T> base;
+        private final List<Runnable> preRegistry;
         private final DeferredRegister.EventDispatcher delegate;
 
         @SubscribeEvent
-        public void onEarlyEvent(PreBlockRegistryEvent.Pre event) {
+        public void onRegistryEvent(PreBlockRegistryEvent.Post event) {
             IForgeRegistry<?> registry = GameRegistry.findRegistry(this.base);
             if(registry == null) {
                 DumbLibrary.getLogger().error("Unable to find registry of type " + this.base);
                 return;
             }
+            this.preRegistry.forEach(Runnable::run);
             this.delegate.handleEvent(new RegistryEvent.Register<>(registry.getRegistryName(), registry));
         }
     }
-
-
 }

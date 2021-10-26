@@ -108,6 +108,7 @@ public class DumbLibrary {
         DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
             bus.addListener(ModelHandler::onModelReady);
             bus.addListener(BakedModelResolver::onTextureStitch);
+            bus.addListener(BakedModelResolver::onModelReady);
             bus.addListener(BakedModelResolver::onModelBake);
             bus.addListener(YRotatedModel::onModelBakeEvent);
             forgeBus.addListener(MouseUtils::onMouseEvent);

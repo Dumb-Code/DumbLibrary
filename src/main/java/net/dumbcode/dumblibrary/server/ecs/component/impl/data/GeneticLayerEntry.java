@@ -167,6 +167,7 @@ public class GeneticLayerEntry implements Cloneable {
 
     public static void serialize(GeneticLayerEntry entry, PacketBuffer buf) {
         buf.writeUtf(entry.layerName);
+        buf.writeFloat(entry.layerWeight);
         buf.writeFloat(entry.index);
         buf.writeBoolean(entry.checkIfExists);
         buf.writeBoolean(entry.variesOpacity);
@@ -182,9 +183,7 @@ public class GeneticLayerEntry implements Cloneable {
     private static void writeMap(Map<UUID, GeneticTint.Part> map, PacketBuffer buf) {
         buf.writeByte(map.size());
         map.forEach((uuid, col) -> {
-            buf.writeLong(uuid.getMostSignificantBits());
-            buf.writeLong(uuid.getLeastSignificantBits());
-
+            buf.writeUUID(uuid);
             ColouredGeneticDataHandler.writePartBuffer(col, buf);
         });
     }
@@ -297,7 +296,7 @@ public class GeneticLayerEntry implements Cloneable {
         byte size = buf.readByte();
         for (byte i = 0; i < size; i++) {
             consumer.accept(
-                new UUID(buf.readLong(), buf.readLong()),
+                buf.readUUID(),
                 ColouredGeneticDataHandler.readPartBuffer(buf)
             );
         }

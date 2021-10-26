@@ -1,5 +1,6 @@
 package net.dumbcode.dumblibrary.server.animation;
 
+import lombok.NonNull;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.server.utils.StreamUtils;
 import net.dumbcode.studio.animation.info.AnimationInfo;
@@ -16,7 +17,10 @@ import java.util.Map;
 public class AnimationContainer {
     private final Map<Animation, AnimationInfo> animationMap = new HashMap<>();
 
-    public AnimationContainer(ResourceLocation regName) {
+    private AnimationContainer(ResourceLocation regName) {
+        if(regName == null) {
+            return;
+        }
         String baseLoc = "models/entities/" + regName.getPath() + "/";
         try {
             StreamUtils.getPath(new ResourceLocation(regName.getNamespace(), baseLoc), folder -> {
@@ -51,5 +55,13 @@ public class AnimationContainer {
 
     public AnimationInfo getInfo(Animation animation) {
         return this.animationMap.getOrDefault(animation, AnimationInfo.EMPTY);
+    }
+
+    public static AnimationContainer of(@NonNull ResourceLocation regName) {
+        return new AnimationContainer(regName);
+    }
+
+    public static AnimationContainer empty() {
+        return new AnimationContainer(null);
     }
 }

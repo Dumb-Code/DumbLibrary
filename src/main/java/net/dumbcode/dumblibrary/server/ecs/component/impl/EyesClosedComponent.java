@@ -46,8 +46,8 @@ public class EyesClosedComponent extends EntityComponent implements RenderFlatte
 
     @Override
     public void deserialize(CompoundNBT compound) {
-        this.eyesOpenTexture = compound.contains("open_texture", Constants.NBT.TAG_STRING) ? compound.getString("on_texture") : null;
-        this.eyesClosedTexture = compound.contains("closed_texture", Constants.NBT.TAG_STRING) ? compound.getString("off_texture") : null;
+        this.eyesOpenTexture = compound.contains("open_texture", Constants.NBT.TAG_STRING) ? compound.getString("open_texture") : null;
+        this.eyesClosedTexture = compound.contains("closed_texture", Constants.NBT.TAG_STRING) ? compound.getString("closed_texture") : null;
 
         this.blinkTicksLeft = compound.getInt("blink_tick_time");
         this.index = compound.getFloat("index");

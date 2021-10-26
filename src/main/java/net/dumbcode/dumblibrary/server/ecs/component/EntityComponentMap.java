@@ -63,6 +63,8 @@ public class EntityComponentMap extends LinkedHashMap<EntityComponentType<?, ?>,
         for (Map.Entry<EntityComponentType<?, ?>, EntityComponent> entry : this.entrySet()) {
             buf.writeRegistryId(entry.getKey());
             entry.getValue().serialize(buf);
+
+            buf.writeUtf("BRUH");
         }
     }
 
@@ -72,9 +74,14 @@ public class EntityComponentMap extends LinkedHashMap<EntityComponentType<?, ?>,
         for (int i = 0; i < size; i++) {
             EntityComponentType<?, ?> type = buf.readRegistryIdSafe(EntityComponentType.getWildcardType());
             EntityComponent component = type.constructEmpty();
+            System.out.println(component.getClass().getSimpleName());
             component.deserialize(buf);
             this.put(type, component);
+
+            System.out.println(component.getClass().getSimpleName() + ": " + buf.readUtf());
         }
+        System.out.println("DONE");
+        System.out.println("DONE1");
     }
 
     @Override

@@ -62,8 +62,10 @@ public class ModelComponentRenderer extends LivingRenderer<LivingEntity, EntityM
     Consumer<MatrixStack> preCallbacks;
 
     @Override
-    public void invoke(RenderComponentContext context, Entity entity, float entityYaw, float partialTicks, MatrixStack stack, IRenderTypeBuffer buffer, int light, List<RenderCallbackComponent.SubCallback> preCallbacks, List<RenderCallbackComponent.SubCallback> postCallbacks) {
+    public void invoke(RenderComponentContext context, Entity entity, float entityYaw, float partialTicks, MatrixStack stack, IRenderTypeBuffer discarded_buffer, int light, List<RenderCallbackComponent.SubCallback> preCallbacks, List<RenderCallbackComponent.SubCallback> postCallbacks) {
 //            this.doRenderShadowAndFire(entity, x, y, z, entityYaw, partialTicks);
+
+        IRenderTypeBuffer.Impl buffer = IRenderTypeBuffer.immediate(Tessellator.getInstance().getBuilder());
 
         DCMModel model = this.modelSupplier.get();
         this.model = (EntityModel<LivingEntity>)(Object)model;
@@ -94,6 +96,8 @@ public class ModelComponentRenderer extends LivingRenderer<LivingEntity, EntityM
         for (RenderCallbackComponent.SubCallback callback : postCallbacks) {
             callback.invoke(context, entity, entityYaw, partialTicks, stack, buffer, light);
         }
+
+        buffer.endBatch();
 
     }
 

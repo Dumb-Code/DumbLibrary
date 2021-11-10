@@ -52,8 +52,8 @@ public class SpeedTrackingSystem implements EntitySystem {
     private void updateEntity(Entity entity, SpeedTrackingComponent component) {
         component.setPreviousSpeed(component.getSpeed());
         double x = entity.position().x - entity.xo;
-        double z = entity.position().x - entity.zo;
+        double z = entity.position().z - entity.zo;
         float speed = MathHelper.sqrt(x * x + z * z);
-        component.setSpeed(component.getSpeed() + (speed - component.getSpeed()) * 0.1F);
+        component.setSpeed(component.getSpeed() + (speed - component.getSpeed()));
     }
 }

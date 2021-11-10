@@ -6,6 +6,7 @@ import net.dumbcode.dumblibrary.client.model.dcm.DCMModelRenderer;
 import net.dumbcode.dumblibrary.server.animation.AnimatedReferenceCube;
 import net.dumbcode.dumblibrary.server.animation.Animation;
 import net.dumbcode.dumblibrary.server.animation.AnimationContainer;
+import net.dumbcode.dumblibrary.server.ecs.component.FinalizableAdditiveComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.ModelSetComponent;
 import net.dumbcode.dumblibrary.server.utils.DCMUtils;
 import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
@@ -30,7 +31,7 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.IntConsumer;
 
-public class AnimationComponent extends EntityComponent implements RenderCallbackComponent, FinalizableComponent, ModelSetComponent {
+public class AnimationComponent extends EntityComponent implements RenderCallbackComponent, FinalizableAdditiveComponent, ModelSetComponent {
 
     @Setter @Getter AnimationContainer animationContainer;
 
@@ -42,7 +43,7 @@ public class AnimationComponent extends EntityComponent implements RenderCallbac
     private IntConsumer stopSyncer;
 
     private Iterable<? extends AnimatedReferenceCube> modelCubes = Collections.emptyList();
-    private boolean shouldUserDummyCubes = true;
+    private boolean shouldUserDummyCubes = false;
 
     /**
      * Returns whether a channel is active.
@@ -135,7 +136,7 @@ public class AnimationComponent extends EntityComponent implements RenderCallbac
     }
 
     @Override
-    public void finalizeComponent(ComponentAccess entity) {
+    public void finalizeAdditiveComponent(ComponentAccess entity) {
         if(entity instanceof Entity) {
             Entity e = (Entity) entity;
             //if(e.world.isRemote) {
@@ -150,7 +151,7 @@ public class AnimationComponent extends EntityComponent implements RenderCallbac
             //                this.animationLayer = new AnimationLayer(cubes.keySet(), cubes::get, this.animationContainer.createDataGetter(), e);//this.animationContainer.apply(ecs).getAnimations()::get
             //            }
             if (!e.level.isClientSide) {
-                this.shouldUserDummyCubes = false;
+                this.shouldUserDummyCubes = true;
                 this.startSyncer = (data, channel) -> DumbLibrary.NETWORK.send(PacketDistributor.TRACKING_ENTITY.with(() -> e), new S2CSyncAnimation(e.getId(), data.getAnimation(), channel));
                 this.stopSyncer = channel -> DumbLibrary.NETWORK.send(PacketDistributor.TRACKING_ENTITY.with(() -> e), new S2CStopAnimation(e.getId(), channel));
             }
@@ -162,7 +163,7 @@ public class AnimationComponent extends EntityComponent implements RenderCallbac
 
     @Override
     public void addCallbacks(List<SubCallback> preRenderCallbacks, List<MainCallback> renderCallbacks, List<SubCallback> postRenderCallback) {
-        preRenderCallbacks.add((context, entity, x, y, z, entityYaw, partialTicks) -> this.animationHandler.animate(this.modelCubes, partialTicks / 20F));
+        preRenderCallbacks.add((context, entity, entityYaw, partialTicks, stack, buffer, light) -> this.animationHandler.animate(this.modelCubes, partialTicks / 20F));
     }
 
     public ModelAnimationHandler getAnimationHandler() {

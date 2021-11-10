@@ -18,12 +18,12 @@ public class ComponentRenderer<E extends Entity & ComponentAccess> extends Entit
 
     @Override
     public void render(E entity, float entityYaw, float partialTicks, MatrixStack stack, IRenderTypeBuffer buffer, int light) {
-        RenderComponentContext context = entity.getOrExcept(EntityComponentTypes.RENDER_CONTEXT.get()).getContext();
-
-        for (RenderCallbackComponent.MainCallback callback : context.getRenderCallbacks()) {
-            callback.invoke(context, entity, entityYaw, partialTicks, stack, buffer, light, context.getPreRenderCallbacks(), context.getPostRenderCallback());
-        }
-
+        entity.get(EntityComponentTypes.RENDER_CONTEXT.get()).ifPresent(componentRenderContext -> {
+            RenderComponentContext context = componentRenderContext.getContext();
+            for (RenderCallbackComponent.MainCallback callback : context.getRenderCallbacks()) {
+                callback.invoke(context, entity, entityYaw, partialTicks, stack, buffer, light, context.getPreRenderCallbacks(), context.getPostRenderCallback());
+            }
+        });
     }
 
     @Override

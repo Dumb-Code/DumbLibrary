@@ -7,19 +7,19 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
-//This is used so once travis loads the world it doesn't go on forever
+//This is used so once github actions loads the world it doesn't go on forever
 @Mod.EventBusSubscriber(modid = DumbLibrary.MODID)
-public class TravisWorldTickListener {
+public class GithubActionsTickListener {
 
     @SubscribeEvent
     public static void onWorldTick(TickEvent.WorldTickEvent event) {
-        if("true".equals(System.getenv("TRAVIS"))) {
-            DumbLibrary.getLogger().info("Dumb Library has detected that this server is being run on a travis server. We will now exit");
+        if("true".equals(System.getenv("GITHUB_ACTIONS"))) {
+            DumbLibrary.getLogger().info("Dumb Library has detected that this server is being run as a github action. We will now exit");
 
             if(event.world.getServer() instanceof DedicatedServer) {
                 event.world.getServer().halt(true);
             }
         }
-        MinecraftForge.EVENT_BUS.unregister(TravisWorldTickListener.class);
+        MinecraftForge.EVENT_BUS.unregister(GithubActionsTickListener.class);
     }
 }

@@ -44,8 +44,13 @@ public class GeneticEntry<T extends GeneticFactoryStorage<O>, O> {
         return new GeneticEntry<>(this);
     }
 
-    public GeneticEntry<T, O> setRandomModifier() {
-        this.modifier = this.type.getDataHandler().defaultValue();
+    public GeneticEntry<T, O> setRandomModifier(Random random) {
+        this.modifier = this.type.getDataHandler().gaussianValue(random);
+        return this;
+    }
+
+    public GeneticEntry<T, O> mutateModifier(Random random, float amount) {
+        this.modifier = this.type.getDataHandler().mutateValue(this.modifier, random, amount);
         return this;
     }
 

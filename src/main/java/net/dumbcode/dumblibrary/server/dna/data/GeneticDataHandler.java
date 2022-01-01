@@ -31,6 +31,8 @@ public interface GeneticDataHandler<O> {
 
     O gaussianValue(Random rand);
 
+    O mutateValue(O value, Random random, float amount);
+
     O combineChild(O a, O b);
 
     O combineMultipleSources(List<O> datas);

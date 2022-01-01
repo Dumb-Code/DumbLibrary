@@ -86,6 +86,7 @@ public class GeneticComponent extends EntityComponent implements FinalizableComp
     @Override
     public void finalizeComponent(ComponentAccess entity) {
         if(!this.doneGatherGenetics) {
+            Random random = new Random();
             this.doneGatherGenetics = true;
             List<GeneticEntry<?, ?>> toAdd = this.getGenetics();
             for (EntityComponent component : entity.getAllComponents()) {
@@ -95,7 +96,7 @@ public class GeneticComponent extends EntityComponent implements FinalizableComp
             }
             for (GeneticEntry<?, ?> genetic : this.defaultGenetics) {
                 if(this.shouldRandomizeGenetics) {
-                    genetic.setRandomModifier();
+                    genetic.setRandomModifier(random);
                 }
                 toAdd.add(genetic);
             }
@@ -115,7 +116,11 @@ public class GeneticComponent extends EntityComponent implements FinalizableComp
     }
 
     public static void mutateGenes(GeneticComponent component, ComponentAccess access) {
-
+        Random random = new Random();
+        for (GeneticEntry<?, ?> genetic : component.getGenetics()) {
+            genetic.mutateModifier(random, 0.1F);
+        }
+        component.applyChangeToAll(access);
     }
 
     /**

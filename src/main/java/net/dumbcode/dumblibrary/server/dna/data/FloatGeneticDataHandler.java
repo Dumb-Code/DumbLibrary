@@ -70,6 +70,11 @@ public enum FloatGeneticDataHandler implements GeneticDataHandler<Float> {
     }
 
     @Override
+    public Float mutateValue(Float value, Random random, float amount) {
+        return value + (float) random.nextGaussian()*amount;
+    }
+
+    @Override
     public Float combineMultipleSources(List<Float> floats) {
         float sum = 0;
         for (Float f : floats) {

@@ -150,6 +150,24 @@ public enum ColouredGeneticDataHandler implements GeneticDataHandler<GeneticTint
         );
     }
 
+    private static GeneticTint.Part mutate(GeneticTint.Part part, Random random, float amount) {
+        return new GeneticTint.Part(
+            (part.getR() + (float) random.nextGaussian() * amount) / 2F,
+            (part.getG() + (float) random.nextGaussian() * amount) / 2F,
+            (part.getB() + (float) random.nextGaussian() * amount) / 2F,
+            (part.getA() + (float) random.nextGaussian() * amount) / 2F,
+            GeneticUtils.DEFAULT_COLOUR_IMPORTANCE
+        );
+    }
+
+    @Override
+    public GeneticTint mutateValue(GeneticTint value, Random random, float amount) {
+        return new GeneticTint(
+            mutate(value.getPrimary(), random, amount),
+            mutate(value.getSecondary(), random, amount)
+        );
+    }
+
     public static GeneticTint.Part combineMultipleParts(List<GeneticTint.Part> data) {
         float[] total = new float[4];
         int size = 0;

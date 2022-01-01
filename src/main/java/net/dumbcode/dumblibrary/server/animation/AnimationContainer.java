@@ -27,6 +27,9 @@ public class AnimationContainer {
                 for (Path path : StreamUtils.listPaths(folder)) {
                     if(Files.isDirectory(path)) {
                         String folderName = path.getFileName().toString();
+                        if(folderName.endsWith("/")) {
+                            folderName = folderName.substring(0, folderName.length() - 1);
+                        }
                         for (Path subFile : StreamUtils.listPaths(path)) {
                             if(Files.isRegularFile(subFile)) {
                                 this.loadAnimation(folderName, subFile);

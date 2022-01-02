@@ -15,7 +15,7 @@ jobs:
     env:
       COMMIT_MESSAGE: ${{ github.event.commits[0].message }}
       COMMIT_AUTHOR: ${{ github.event.commits[0].author.name }}
-      WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+      WEBHOOK_URL: ${{ secrets.DUMBLIB_WEBHOOK }}
     steps:
       - uses: actions/checkout@v2
         with:

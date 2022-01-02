@@ -15,6 +15,7 @@ jobs:
     env:
       COMMIT_MESSAGE: ${{ github.event.commits[0].message }}
       COMMIT_AUTHOR: ${{ github.event.commits[0].author.name }}
+      WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
     steps:
       - uses: actions/checkout@v2
         with:
@@ -33,6 +34,4 @@ jobs:
 #      - name: Dummy Run Server Until World Tick
 #        run: ./gradlew runServer
       - name: Deploy Webhook
-        env:
-          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
         run: ./gradlew postRequest

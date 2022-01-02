@@ -37,7 +37,7 @@ jobs:
         run: ./gradlew postRequest
   Github-Webhook-If-Fail:
     needs: Test-And-Deploy
-    if: failure()
+#    if: failure()
     runs-on: ubuntu-latest
     steps:
       - uses: sarisia/actions-status-discord@v1.8.5
@@ -46,7 +46,5 @@ jobs:
         with:
           status: failure
           nodetail: true
-          title: Error In Job
-          description: |
-            [Build ${{ env.GITHUB_RUN_NUMBER }} has errored - ${{ github.event.commits[0].message }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
-            Blame ${{ github.event.commits[0].author.name }}
+          title: [ Build ${ { env.GITHUB_RUN_NUMBER } } has errored - ${ { github.event.commits[ 0 ].message } } ](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          description: Blame ${{ github.event.commits[0].author.name }}

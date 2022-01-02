@@ -114,9 +114,8 @@ publishing {
     }
 }
 
-def weburl = System.getenv('WEBHOOK_URL') ?: WEBHOOK_URL
 gradlehook {
-    urlToken weburl
+    urlToken System.getenv('WEBHOOK_URL')
     addField 'payload_json', '{ "embeds": [{ "title":"' + System.getenv("COMMIT_MESSAGE") + " - " + System.getenv("COMMIT_AUTHOR") + '", "timestamp": "{{datetime}}" }] }'
     addArtifact jar
 }

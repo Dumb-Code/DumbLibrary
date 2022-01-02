@@ -33,6 +33,6 @@ jobs:
 #      - name: Dummy Run Server Until World Tick
 #        run: ./gradlew runServer
       - name: Deploy Webhook
-        run: ./gradlew postRequest
         env:
           WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+        run: ./gradlew postRequest

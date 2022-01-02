@@ -48,6 +48,5 @@ jobs:
           nodetail: true
           title: Error In Job
           description: |
-          "[Build ${{ env.GITHUB_RUN_NUMBER }} has errored - ${{ env.COMMIT_MESSAGE }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
-          Blame ${{ env.COMMIT_AUTHOR }}
-          "
+            [Build ${{ env.GITHUB_RUN_NUMBER }} has errored - ${{ env.COMMIT_MESSAGE }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            Blame ${{ env.COMMIT_AUTHOR }}

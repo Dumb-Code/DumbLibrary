@@ -1,17 +1,20 @@
 buildscript {
     repositories {
-        maven { url = 'https://files.minecraftforge.net/maven' }
+        maven { url = 'https://maven.minecraftforge.net' }
+        mavenLocal()
         mavenCentral()
     }
     dependencies {
         classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
+        classpath "net.dumbcode.gradlehook:GradleHook:2.0.1"
     }
 }
 apply plugin: 'net.minecraftforge.gradle'
+apply plugin: "net.dumbcode.gradlehook"
 apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
 
-version = '1.0'
+version = '1.16.5-' + (System.getenv("GITHUB_ACTIONS") ? System.getenv("GITHUB_RUN_NUMBER") : 'dev')
 group = 'net.dumbcode.dumblibrary' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = 'dumblibrary'
 
@@ -67,7 +70,7 @@ configurations {
 }
 
 dependencies {
-    minecraft 'net.minecraftforge:forge:1.16.5-36.1.0'
+    minecraft 'net.minecraftforge:forge:1.16.5-36.2.20'
 
     implementation 'org.projectlombok:lombok:1.18.12'
     annotationProcessor 'org.projectlombok:lombok:1.18.12'
@@ -78,12 +81,12 @@ dependencies {
 jar {
     manifest {
         attributes([
-            "Specification-Title": "examplemod",
-            "Specification-Vendor": "examplemodsareus",
+            "Specification-Title": "dumblibrary",
+            "Specification-Vendor": "dumbcode",
             "Specification-Version": "1", // We are version 1 of ourselves
             "Implementation-Title": project.name,
             "Implementation-Version": "${version}",
-            "Implementation-Vendor" :"examplemodsareus",
+            "Implementation-Vendor" :"dumbcode",
             "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
         ])
     }
@@ -107,4 +110,11 @@ publishing {
             url "file:///${project.projectDir}/mcmodsrepo"
         }
     }
+}
+
+def weburl = System.getenv('WEBHOOK_URL') ?: WEBHOOK_URL
+gradlehook {
+    urlToken weburl
+    addField 'payload_json', '{ "embeds": [{ "title":"' + System.getenv("COMMIT_MESSAGE") + " - " + System.getenv("COMMIT_AUTHOR") + '", "timestamp": "{{datetime}}" }] }'
+    addArtifact jar
 }

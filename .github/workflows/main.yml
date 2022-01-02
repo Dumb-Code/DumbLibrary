@@ -12,7 +12,9 @@ on:
 jobs:
   Test-And-Deploy:
     runs-on: ubuntu-latest
-
+    env:
+      COMMIT_MESSAGE: ${{ github.event.commits[0].message }}
+      COMMIT_AUTHOR: ${{ github.event.commits[0].author.name }}
     steps:
       - uses: actions/checkout@v2
         with:
@@ -28,10 +30,7 @@ jobs:
         run: |
           mkdir run
           echo "eula=true" > run/eula.txt
-      - name: Dummy Run Server Until World Tick
-        run: ./gradlew runServer
-      - name: Test for crashes
-        run: |
-          if [ -d "run/crash-reports" ]; then
-            exit 9999
-          fi
+#      - name: Dummy Run Server Until World Tick
+#        run: ./gradlew runServer
+      - name: Deploy Webhook
+        run: ./gradlew postRequest

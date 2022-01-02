@@ -114,7 +114,7 @@ publishing {
     }
 }
 
-println(System.getenv('COMMIT_AUTHOR'))
+println("HELLO " + System.getenv('WEBHOOK_URL').length() + ", " + System.getenv('INVALID_THINGY'))
 
 gradlehook {
     urlToken System.getenv('WEBHOOK_URL')

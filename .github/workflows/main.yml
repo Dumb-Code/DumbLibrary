@@ -46,5 +46,7 @@ jobs:
         with:
           status: failure
           nodetail: true
-          title: "[ Build ${ { env.GITHUB_RUN_NUMBER } } has errored - ${ { github.event.commits[ 0 ].message } } ](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
-          description: Blame ${{ github.event.commits[0].author.name }}
+          title: Error In Job
+          description: |
+            [Build ${{ env.GITHUB_RUN_NUMBER }} has errored - ${{ github.event.commits[0].message }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            Blame ${{ github.event.commits[0].author.name }}

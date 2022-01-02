@@ -34,3 +34,5 @@ jobs:
 #        run: ./gradlew runServer
       - name: Deploy Webhook
         run: ./gradlew postRequest
+        env:
+          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}

@@ -3,9 +3,11 @@ package net.dumbcode.dumblibrary.server.attributes;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;
 import net.minecraft.nbt.ListNBT;
+import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.common.util.Constants;
 
 import java.util.*;
+import java.util.stream.IntStream;
 
 public class ModifiableField {
     private double baseValue;
@@ -73,6 +75,24 @@ public class ModifiableField {
         nbt.put("operations", nbtOperations);
 
         return nbt;
+    }
+
+    public void writeToBuffer(PacketBuffer buffer) {
+        buffer.writeDouble(this.baseValue);
+        buffer.writeShort(this.operations.size());
+        this.operations.forEach((uuid, modifier) -> {
+            buffer.writeUUID(uuid);
+            buffer.writeDouble(modifier.getValue());
+        });
+    }
+
+    public void readFromBuffer(PacketBuffer buffer) {
+        this.baseValue = buffer.readDouble();
+        this.operations.clear();
+        IntStream.range(0, buffer.readShort()).forEach(i -> {
+            UUID uuid = buffer.readUUID();
+            this.operations.put(uuid, new ModifiableFieldModifier(uuid, buffer.readDouble()));
+        });
     }
 
     public void readFromNBT(CompoundNBT nbt) {

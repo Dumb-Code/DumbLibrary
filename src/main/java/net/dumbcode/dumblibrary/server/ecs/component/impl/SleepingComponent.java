@@ -53,6 +53,7 @@ public class SleepingComponent extends EntityComponent implements MovePredicateC
         compound.putString("animation", Objects.requireNonNull(this.sleepingAnimation.getKey()).toString());
         compound.put("sleep_time", this.sleepTime.writeToNBT());
         compound.put("wakeup_time", this.wakeupTime.writeToNBT());
+        compound.put("nocturnal_chance", this.nocturnalChance.writeToNBT());
         compound.putBoolean("is_sleeping", this.isSleeping);
         return super.serialize(compound);
     }
@@ -62,6 +63,7 @@ public class SleepingComponent extends EntityComponent implements MovePredicateC
         this.sleepingAnimation = new Animation(new ResourceLocation(compound.getString("animation")));
         this.sleepTime.readFromNBT(compound.getCompound("sleep_time"));
         this.wakeupTime.readFromNBT(compound.getCompound("wakeup_time"));
+        this.nocturnalChance.readFromNBT(compound.getCompound("nocturnal_chance"));
         this.isSleeping = compound.getBoolean("is_sleeping");
         super.deserialize(compound);
     }

@@ -46,6 +46,7 @@ public class RenderAdjustmentsComponent extends EntityComponent implements Rende
         compound.putFloat("sx", this.defaultScale[0]);
         compound.putFloat("sy", this.defaultScale[1]);
         compound.putFloat("sz", this.defaultScale[2]);
+        compound.put("modifier", this.scaleModifier.writeToNBT());
         return super.serialize(compound);
     }
 
@@ -55,6 +56,7 @@ public class RenderAdjustmentsComponent extends EntityComponent implements Rende
         this.defaultScale[0] = compound.getFloat("sx");
         this.defaultScale[1] = compound.getFloat("sy");
         this.defaultScale[2] = compound.getFloat("sz");
+        this.scaleModifier.readFromNBT(compound.getCompound("modifier"));
     }
 
     @Override
@@ -62,6 +64,7 @@ public class RenderAdjustmentsComponent extends EntityComponent implements Rende
         buf.writeFloat(this.defaultScale[0]);
         buf.writeFloat(this.defaultScale[1]);
         buf.writeFloat(this.defaultScale[2]);
+        this.scaleModifier.writeToBuffer(buf);
     }
 
     @Override
@@ -69,6 +72,7 @@ public class RenderAdjustmentsComponent extends EntityComponent implements Rende
         this.defaultScale[0] = buf.readFloat();
         this.defaultScale[1] = buf.readFloat();
         this.defaultScale[2] = buf.readFloat();
+        this.scaleModifier.readFromBuffer(buf);
     }
 
 

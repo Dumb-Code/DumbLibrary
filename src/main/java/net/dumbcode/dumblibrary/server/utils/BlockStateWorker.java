@@ -88,7 +88,7 @@ public class BlockStateWorker {
             this.min = center.offset(-xRadii, -yRadii, -zRadii);
             this.max = center.offset(xRadii, yRadii, zRadii);
 
-            this.world = ChunkRenderCache.createIfNotEmpty(world, this.max, this.max, 0);
+            this.world = ChunkRenderCache.createIfNotEmpty(world, this.min.offset(-1, -1, -1), this.max.offset(1, 1, 1), 1);
 
             this.x = this.min.getX();
             this.y = this.min.getY();

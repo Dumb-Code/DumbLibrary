@@ -118,7 +118,7 @@ public class GeneticComponent extends EntityComponent implements FinalizableComp
     public static void mutateGenes(GeneticComponent component, ComponentAccess access) {
         Random random = new Random();
         for (GeneticEntry<?, ?> genetic : component.getGenetics()) {
-            genetic.mutateModifier(random, 0.1F);
+            genetic.mutateModifier(random, 0.05F);
         }
         component.applyChangeToAll(access);
     }

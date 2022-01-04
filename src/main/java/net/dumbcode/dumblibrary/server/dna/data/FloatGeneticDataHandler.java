@@ -101,7 +101,7 @@ public enum FloatGeneticDataHandler implements GeneticDataHandler<Float> {
 
     @Override
     @OnlyIn(Dist.CLIENT)
-    public Widget createIsolationWidget(int x, int y, int width, int height, boolean isSecondary, Supplier<Float> current, Consumer<Float> setter, GeneticType<?, Float> type) {
+    public Widget createIsolationWidget(int x, int y, int width, int height, int data, Supplier<Float> current, Consumer<Float> setter, GeneticType<?, Float> type) {
         int startY = y + (height - 24) / 2;
         return new TitledSimpleSlider(x, startY, width, 24, new StringTextComponent(""), new StringTextComponent("%"), -40, 40, current.get() * 100, false, true, p -> {}, s -> setter.accept((float) s.getValue() / 100F), type.getTranslationComponent());
     }

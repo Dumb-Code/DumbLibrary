@@ -235,7 +235,8 @@ public enum ColouredGeneticDataHandler implements GeneticDataHandler<GeneticTint
     }
 
     @Override
-    public Widget createIsolationWidget(int x, int y, int width, int height, boolean isSecondary, Supplier<GeneticTint> current, Consumer<GeneticTint> setter, GeneticType<?, GeneticTint> type) {
+    public Widget createIsolationWidget(int x, int y, int width, int height, int data, Supplier<GeneticTint> current, Consumer<GeneticTint> setter, GeneticType<?, GeneticTint> type) {
+        boolean isSecondary = data == 1;
         Supplier<GeneticTint.Part> part = isSecondary ?
             () -> current.get().getSecondary() :
             () -> current.get().getPrimary();

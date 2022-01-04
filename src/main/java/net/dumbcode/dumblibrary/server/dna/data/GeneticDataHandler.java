@@ -45,7 +45,7 @@ public interface GeneticDataHandler<O> {
 //    O renderIsolationEdit(MatrixStack stack, int x, int y, int width, int height, int mouseX, int mouseY, boolean mouseDown, O current);
 
     @OnlyIn(Dist.CLIENT)
-    Widget createIsolationWidget(int x, int y, int width, int height, boolean isSecondary, Supplier<O> current, Consumer<O> setter, GeneticType<?, O> type);
+    Widget createIsolationWidget(int x, int y, int width, int height, int data, Supplier<O> current, Consumer<O> setter, GeneticType<?, O> type);
 
 
 }

@@ -1,5 +1,6 @@
 package net.dumbcode.dumblibrary.server.registry;
 
+import net.dumbcode.dumblibrary.DumbLibrary;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.registries.IForgeRegistryEntry;
@@ -12,11 +13,20 @@ public class RegistryMap<K, V extends IForgeRegistryEntry<? super V>> {
 
     private final Map<K, RegistryObject<V>> map = new HashMap<>();
 
+    private RegistryObject<V> fallbackValue;
+
     public void putRegistry(K key, RegistryObject<V> value) {
+        if(this.fallbackValue == null) {
+            this.fallbackValue = value;
+        }
         this.map.put(key, value);
     }
 
     public V get(K key) {
+        if(!this.map.containsKey(key)) {
+            DumbLibrary.getLogger().warn("Tried to get value " + key + " but did not exist.", new Exception());
+            return this.fallbackValue.get();
+        }
         return this.map.get(key).get();
     }
 

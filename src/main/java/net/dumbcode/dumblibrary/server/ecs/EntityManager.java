@@ -14,6 +14,7 @@ import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -37,6 +38,11 @@ public abstract class EntityManager implements ICapabilityProvider {
             MinecraftForge.EVENT_BUS.register(system);
             system.populateBlockstateBuffers(BlockstateManager.INSTANCE);
         }
+    }
+
+    @SubscribeEvent
+    static void onWorldUnloadEvent(WorldEvent.Unload event) {
+        ((World)event.getWorld()).getCapability(DumbLibrary.ENTITY_MANAGER).ifPresent(cap -> ((Impl)cap).systems.forEach(MinecraftForge.EVENT_BUS::unregister));
     }
 
     @SubscribeEvent

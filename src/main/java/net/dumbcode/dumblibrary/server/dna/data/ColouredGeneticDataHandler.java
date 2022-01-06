@@ -155,8 +155,7 @@ public enum ColouredGeneticDataHandler implements GeneticDataHandler<GeneticTint
             (part.getR() + (float) random.nextGaussian() * amount),
             (part.getG() + (float) random.nextGaussian() * amount),
             (part.getB() + (float) random.nextGaussian() * amount),
-            part.getA(),
-            GeneticUtils.DEFAULT_COLOUR_IMPORTANCE
+            part.getA(), part.getImportance()
         );
     }
 

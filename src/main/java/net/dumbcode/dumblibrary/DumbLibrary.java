@@ -49,8 +49,10 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.resource.ISelectiveResourceReloadListener;
 import net.minecraftforge.resource.VanillaResourceType;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.maven.artifact.versioning.ArtifactVersion;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -90,6 +92,12 @@ public class DumbLibrary {
     public static final ResourceLocation MODEL_MISSING = new ResourceLocation("model_missing");
 
     public DumbLibrary() {
+        ArtifactVersion version = ModLoadingContext.get().getActiveContainer().getModInfo().getVersion();
+        ModLoadingContext.get().registerExtensionPoint(ExtensionPoint.DISPLAYTEST, () -> Pair.of(
+            version::toString,
+            (remote, isServer) -> true
+        ));
+        
         RotationOrder.ZYX.applyAsGlobal();
         ModelMirror.XY.applyAsGlobal(0, 12, 0);
 

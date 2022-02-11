@@ -14,10 +14,7 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.math.vector.Vector3f;
-import net.minecraft.util.math.vector.Vector3i;
-import net.minecraft.util.math.vector.Vector4f;
+import net.minecraft.util.math.vector.*;
 import net.minecraftforge.client.model.IModelConfiguration;
 import net.minecraftforge.client.model.geometry.IModelGeometry;
 import net.minecraftforge.client.model.pipeline.BakedQuadBuilder;
@@ -82,7 +79,10 @@ public class DCMModelGeometry implements IModelGeometry<DCMModelGeometry> {
 //        this.getMatrix(stack).mul(state.apply(Optional.empty()).orElse(TRSRTransformation.identity()).getMatrix());
 
         stack.scale(0.0625F, 0.0625F, 0.0625F);
-        stack.translate(8F, 0, 8F);
+        stack.translate(8F, 8F, 8F);
+        stack.mulPose(modelTransform.getRotation().getLeftRotation());
+        stack.translate(0F, -8F, 0F);
+
 
         //Iterate through all the layers, then through every group, and on each group go through all the root cubes.
         for (DCMModelHandler.TextureLayer layer : textures) {

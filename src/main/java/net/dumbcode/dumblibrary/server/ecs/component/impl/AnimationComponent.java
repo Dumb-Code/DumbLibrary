@@ -75,6 +75,9 @@ public class AnimationComponent extends EntityComponent implements RenderCallbac
     }
 
     public Animation getAnimation(int channel) {
+        if(this.layers[channel] == null) {
+            return  null;
+        }
         return this.layers[channel].getAnimation();
     }
 

@@ -102,13 +102,13 @@ public class AnimationComponent extends EntityComponent implements RenderCallbac
                 this.animationHandler.markRemoved(current.getUuid());
             }
         }
-        AnimationLayer layer = new AnimationLayer(animation, this.animationHandler.startAnimation(entry));
-        if(channel >= 0) {
-            this.layers[channel] = layer;
-        }
-        if(this.startSyncer != null) {
-            this.startSyncer.accept(layer, channel);
-        }
+//        AnimationLayer layer = new AnimationLayer(animation, this.animationHandler.startAnimation(entry));
+//        if(channel >= 0) {
+//            this.layers[channel] = layer;
+//        }
+//        if(this.startSyncer != null) {
+//            this.startSyncer.accept(layer, channel);
+//        }
 
         return entry;
     }

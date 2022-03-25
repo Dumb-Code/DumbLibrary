@@ -27,7 +27,6 @@ public class EntityComponentTypes {
     public static final RegistryObject<EntityComponentType<AnimationComponent,?>> ANIMATION = REGISTER.register("animation", () -> SimpleComponentType.of(AnimationComponent.class, AnimationComponent::new));
     public static final RegistryObject<EntityComponentType<ModelComponent, ModelComponent.Storage>> MODEL = REGISTER.register("model", () -> SimpleComponentType.of(ModelComponent.class, ModelComponent::new, ModelComponent.Storage::new));
     public static final RegistryObject<EntityComponentType<RenderAdjustmentsComponent, RenderAdjustmentsComponent.Storage>> RENDER_ADJUSTMENTS = REGISTER.register("render_adjustments", () -> SimpleComponentType.of(RenderAdjustmentsComponent.class, RenderAdjustmentsComponent::new, RenderAdjustmentsComponent.Storage::new));
-    public static final RegistryObject<EntityComponentType<SpeedTrackingComponent, ?>> SPEED_TRACKING = REGISTER.register("speed_tracking", () -> SimpleComponentType.of(SpeedTrackingComponent.class, SpeedTrackingComponent::new));
     public static final RegistryObject<EntityComponentType<GeneticComponent, GeneticComponent.Storage>> GENETICS = REGISTER.register("genetics", () -> SimpleComponentType.of(GeneticComponent.class, GeneticComponent::new, GeneticComponent.Storage::new));
     public static final RegistryObject<EntityComponentType<GeneticLayerComponent, GeneticLayerComponent.Storage>> GENETIC_LAYER_COLORS = REGISTER.register("genetic_layer_colors", () -> SimpleComponentType.of(GeneticLayerComponent.class, GeneticLayerComponent::new, GeneticLayerComponent.Storage::new));
     public static final RegistryObject<EntityComponentType<FlattenedLayerComponent, FlattenedLayerComponent.Storage>> FLATTENED_LAYER = REGISTER.register("flattened_layer", () -> SimpleComponentType.of(FlattenedLayerComponent.class, FlattenedLayerComponent::new, FlattenedLayerComponent.Storage::new));
@@ -58,7 +57,6 @@ public class EntityComponentTypes {
     public static void registerSystems(RegisterSystemsEvent event) {
         event.registerSystem(new HerdSystem());
         event.registerSystem(new ItemDropSystem());
-        event.registerSystem(new SpeedTrackingSystem());
         event.registerSystem(new FamilySystem());
         event.registerSystem(new BreedingSystem());
         event.registerSystem(new BlinkingSystem());

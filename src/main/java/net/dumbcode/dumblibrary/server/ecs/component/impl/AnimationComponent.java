@@ -21,6 +21,7 @@ import net.dumbcode.studio.animation.info.AnimationEntryData;
 import net.dumbcode.studio.animation.info.AnimationInfo;
 import net.dumbcode.studio.animation.instance.AnimatedCube;
 import net.dumbcode.studio.animation.instance.ModelAnimationHandler;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.DistExecutor;
@@ -102,13 +103,13 @@ public class AnimationComponent extends EntityComponent implements RenderCallbac
                 this.animationHandler.markRemoved(current.getUuid());
             }
         }
-//        AnimationLayer layer = new AnimationLayer(animation, this.animationHandler.startAnimation(entry));
-//        if(channel >= 0) {
-//            this.layers[channel] = layer;
-//        }
-//        if(this.startSyncer != null) {
-//            this.startSyncer.accept(layer, channel);
-//        }
+        AnimationLayer layer = new AnimationLayer(animation, this.animationHandler.startAnimation(entry));
+        if(channel >= 0) {
+            this.layers[channel] = layer;
+        }
+        if(this.startSyncer != null) {
+            this.startSyncer.accept(layer, channel);
+        }
 
         return entry;
     }
@@ -166,7 +167,10 @@ public class AnimationComponent extends EntityComponent implements RenderCallbac
 
     @Override
     public void addCallbacks(List<SubCallback> preRenderCallbacks, List<MainCallback> renderCallbacks, List<SubCallback> postRenderCallback) {
-        preRenderCallbacks.add((context, entity, entityYaw, partialTicks, stack, buffer, light) -> this.animationHandler.animate(this.modelCubes, partialTicks / 20F));
+
+        preRenderCallbacks.add((context, entity, entityYaw, partialTicks, stack, buffer, light) -> {
+            this.animationHandler.animate(this.modelCubes, Minecraft.getInstance().getDeltaFrameTime() / 20F);
+        });
     }
 
     public ModelAnimationHandler getAnimationHandler() {

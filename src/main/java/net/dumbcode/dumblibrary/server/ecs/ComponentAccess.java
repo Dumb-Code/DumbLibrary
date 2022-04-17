@@ -6,9 +6,13 @@ import net.dumbcode.dumblibrary.server.ecs.component.*;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Proxy;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * The base interface for accessing the components. This is implemented by ALL objects wanting to use the ecs model.
@@ -72,6 +76,20 @@ public interface ComponentAccess {
      */
     @Nonnull
     Collection<EntityComponent> getAllComponents();
+
+    default <T> T getComponentAdditionals(Class<T> clazz) {
+        List<T> collected = this.getAllComponents().stream()
+            .filter(clazz::isInstance)
+            .map(clazz::cast)
+            .collect(Collectors.toList());
+
+        return (T) Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(), new Class[] { clazz }, (proxy, method, args) -> {
+            for (T t : collected) {
+                method.invoke(t, args);
+            }
+            return null;
+        });
+    }
 
     /**
      * Returns true if this component contains the specified component

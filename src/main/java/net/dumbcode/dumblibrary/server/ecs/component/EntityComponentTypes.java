@@ -61,7 +61,7 @@ public class EntityComponentTypes {
         event.registerSystem(new BreedingSystem());
         event.registerSystem(new BlinkingSystem());
         event.registerSystem(new EyesClosedSystem());
-        event.registerSystem(new SleepingSystem());
+        event.registerSystem(new SleepingAnimationSystem());
         event.registerSystem(new CloseProximityAngrySystem());
         event.registerSystem(new IdleActionSystem());
 

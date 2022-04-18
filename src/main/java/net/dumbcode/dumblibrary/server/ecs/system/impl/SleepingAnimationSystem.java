@@ -23,7 +23,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
-public class SleepingSystem implements EntitySystem {
+public class SleepingAnimationSystem implements EntitySystem {
 
     public static final int SLEEPING_CHANNEL = 63;
 
@@ -31,62 +31,21 @@ public class SleepingSystem implements EntitySystem {
 
     private Entity[] entities = new Entity[0];
     private SleepingComponent[] sleepingComponents = new SleepingComponent[0];
-    private EyesClosedComponent[] eyesClosedComponents = new EyesClosedComponent[0];
     private AnimationComponent[] animationComponents = new AnimationComponent[0];
-    private SoundStorageComponent[] soundStorageComponents = new SoundStorageComponent[0];
 
     @Override
     public void populateEntityBuffers(EntityManager manager) {
         EntityFamily<Entity> family = manager.resolveFamily(EntityComponentTypes.SLEEPING);
         this.entities = family.getEntities();
         this.sleepingComponents = family.populateBuffer(EntityComponentTypes.SLEEPING, this.sleepingComponents);
-        this.eyesClosedComponents = family.populateBuffer(EntityComponentTypes.EYES_CLOSED, this.eyesClosedComponents);
         this.animationComponents = family.populateBuffer(EntityComponentTypes.ANIMATION, this.animationComponents);
-        this.soundStorageComponents = family.populateBuffer(EntityComponentTypes.SOUND_STORAGE, this.soundStorageComponents);
     }
 
     @Override
     public void update(World world) {
-        long time = world.dayTime() % 24000;
         for (int i = 0; i < this.entities.length; i++) {
             Entity entity = this.entities[i];
-            SleepingComponent component = this.sleepingComponents[i];
-            EyesClosedComponent eyesClosedComponent = this.eyesClosedComponents[i];
-            SoundStorageComponent soundStorageComponent = this.soundStorageComponents[i];
-
-            this.ensureAnimation(entity, component, this.animationComponents[i]);
-
-            //TODO: add support for waking up before 0
-            //https://www.desmos.com/calculator/9ac2nhfp16
-            boolean shouldWake = time > component.getWakeupTime().getValue() && time < component.getSleepTime().getValue();
-            component.setSleeping(component.isSleeping());
-            if(component.isSleeping()) {
-                if(shouldWake) {
-                    component.setSleeping(false);
-                }
-
-                if(eyesClosedComponent != null && eyesClosedComponent.getBlinkTicksLeft() <= 1) {
-                     eyesClosedComponent.blink(20);
-                 }
-
-                //TODO-stream: remove
-                if(entity instanceof CreatureEntity) {
-                    ((CreatureEntity) entity).getNavigation().moveTo((Path) null, 0);
-                }
-
-            } else {
-                if(!shouldWake) {
-                    component.setSleeping(true);
-                }
-            }
-
-            if(soundStorageComponent != null && entity.level.random.nextInt(500) < component.snoringTicks++) {
-                component.snoringTicks -= 75;
-                Vector3d d = entity.position();
-                soundStorageComponent.getSound(ECSSounds.SNORING).ifPresent(e ->
-                    entity.level.playSound(null, d.x, d.y, d.z, e, SoundCategory.AMBIENT, 1F, (entity.level.random.nextFloat() - entity.level.random.nextFloat()) * 0.2F + 1.0F)
-                );
-            }
+            this.ensureAnimation(entity, this.sleepingComponents[i], this.animationComponents[i]);
         }
     }
 

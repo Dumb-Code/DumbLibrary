@@ -4,11 +4,17 @@ import com.google.gson.JsonObject;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import net.dumbcode.dumblibrary.server.ai.EntityGoal;
+import net.dumbcode.dumblibrary.server.ai.GoalManager;
+import net.dumbcode.dumblibrary.server.ai.SleepingGoal;
 import net.dumbcode.dumblibrary.server.animation.Animation;
 import net.dumbcode.dumblibrary.server.attributes.ModifiableField;
+import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
-import net.dumbcode.dumblibrary.server.ecs.component.additionals.MovePredicateComponent;
+import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentTypes;
+import net.dumbcode.dumblibrary.server.ecs.component.additionals.EntityGoalSupplier;
+import net.minecraft.entity.CreatureEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.JSONUtils;
@@ -19,7 +25,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 @Getter
-public class SleepingComponent extends EntityComponent implements MovePredicateComponent {
+public class SleepingComponent extends EntityComponent implements EntityGoalSupplier {
 
     private Animation sleepingAnimation;
 
@@ -83,8 +89,14 @@ public class SleepingComponent extends EntityComponent implements MovePredicateC
     }
 
     @Override
-    public void addBlockers(Consumer<Supplier<Boolean>> registry) {
-        registry.accept(() -> !this.isSleeping());
+    public void addGoals(GoalManager manager, Consumer<EntityGoal> consumer, ComponentAccess access) {
+        if(access instanceof CreatureEntity) {
+            access.get(EntityComponentTypes.EYES_CLOSED).ifPresent(eyes ->
+                access.get(EntityComponentTypes.SOUND_STORAGE).ifPresent(sound ->
+                    consumer.accept(new SleepingGoal(manager, (CreatureEntity) access, this, eyes, sound))
+                )
+            );
+        }
     }
 
     @Getter

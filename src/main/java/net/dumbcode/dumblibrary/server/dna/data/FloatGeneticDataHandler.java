@@ -96,13 +96,13 @@ public enum FloatGeneticDataHandler implements GeneticDataHandler<Float> {
         } else if(data > 0) {
             colour = TextFormatting.GREEN;
         }
-        return new StringTextComponent(Math.round(data * 100) + "%").withStyle(colour);
+        return Component.literal(Math.round(data * 100) + "%").withStyle(colour);
     }
 
     @Override
     @OnlyIn(Dist.CLIENT)
     public Widget createIsolationWidget(int x, int y, int width, int height, int data, Supplier<Float> current, Consumer<Float> setter, GeneticType<?, Float> type) {
         int startY = y + (height - 24) / 2;
-        return new TitledSimpleSlider(x, startY, width, 24, new StringTextComponent(""), new StringTextComponent("%"), -40, 40, current.get() * 100, false, true, p -> {}, s -> setter.accept((float) s.getValue() / 100F), type.getTranslationComponent());
+        return new TitledSimpleSlider(x, startY, width, 24, Component.literal(""), Component.literal("%"), -40, 40, current.get() * 100, false, true, p -> {}, s -> setter.accept((float) s.getValue() / 100F), type.getTranslationComponent());
     }
 }

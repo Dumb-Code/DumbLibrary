@@ -1,16 +1,16 @@
 package net.dumbcode.dumblibrary.server.dna;
 
 import com.google.gson.JsonObject;
-import com.mojang.blaze3d.matrix.MatrixStack;
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 import java.util.function.Function;
 
 public interface GeneticFactoryStorage<O> {
-    CompoundNBT serialize(CompoundNBT nbt);
-    void deserialize(CompoundNBT nbt);
+    CompoundTag serialize(CompoundTag nbt);
+    void deserialize(CompoundTag nbt);
 
     JsonObject serialize(JsonObject json);
     void deserialize(JsonObject json);
@@ -18,7 +18,7 @@ public interface GeneticFactoryStorage<O> {
     Object getCombinerKey();
 
     @OnlyIn(Dist.CLIENT)
-    void render(MatrixStack stack, GeneticType<?, O> entry, O value, int x, int y, int width, int height, float ticks);
+    void render(GuiGraphics stack, GeneticType<?, O> entry, O value, int x, int y, int width, int height, float ticks);
 
 
 }

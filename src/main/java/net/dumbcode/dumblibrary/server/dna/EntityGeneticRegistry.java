@@ -3,7 +3,7 @@ package net.dumbcode.dumblibrary.server.dna;
 import com.mojang.datafixers.util.Pair;
 import lombok.NonNull;
 import lombok.Value;
-import net.minecraft.entity.Entity;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.passive.FoxEntity;
 import net.minecraft.entity.passive.MooshroomEntity;

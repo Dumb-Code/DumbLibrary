@@ -3,7 +3,7 @@ package net.dumbcode.dumblibrary.server.animation;
 import lombok.Value;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.studio.animation.instance.AnimationEntry;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 
 /**
  * Simple class to hold the animation data. This will most likely be removed later on when I re-do the animation system

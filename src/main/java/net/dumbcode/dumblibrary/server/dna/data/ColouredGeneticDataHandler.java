@@ -1,7 +1,7 @@
 package net.dumbcode.dumblibrary.server.dna.data;
 
 import com.google.gson.JsonObject;
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.matrix.GuiGraphics;
 import lombok.Value;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.client.gui.ColourWheelSelector;
@@ -222,14 +222,14 @@ public enum ColouredGeneticDataHandler implements GeneticDataHandler<GeneticTint
         int b = (int) (part.getB() * 255F);
         int colour = r << 16 | g << 8 | b;
         Color color = Color.fromRgb(colour);
-        return new StringTextComponent(color.serialize() + " (" + Math.round((float) part.getImportance() / GeneticUtils.DEFAULT_COLOUR_IMPORTANCE * 100F) + "%)").withStyle(s -> s.withColor(color));
+        return Component.literal(color.serialize() + " (" + Math.round((float) part.getImportance() / GeneticUtils.DEFAULT_COLOUR_IMPORTANCE * 100F) + "%)").withStyle(s -> s.withColor(color));
     }
 
     @Override
     public IFormattableTextComponent getValue(GeneticTint data) {
         return
             this.getValue(data.getPrimary())
-            .append(new StringTextComponent(", ").withStyle(TextFormatting.WHITE))
+            .append(Component.literal(", ").withStyle(TextFormatting.WHITE))
             .append(this.getValue(data.getSecondary()));
     }
 

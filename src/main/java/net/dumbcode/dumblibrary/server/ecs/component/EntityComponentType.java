@@ -3,7 +3,7 @@ package net.dumbcode.dumblibrary.server.ecs.component;
 import com.google.common.collect.Maps;
 import lombok.Value;
 import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.registries.ForgeRegistryEntry;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 

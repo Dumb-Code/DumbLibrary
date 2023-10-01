@@ -2,7 +2,7 @@ package net.dumbcode.dumblibrary.server.ecs.component;
 
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

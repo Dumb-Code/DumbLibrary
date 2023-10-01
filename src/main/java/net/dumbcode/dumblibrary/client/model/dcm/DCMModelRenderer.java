@@ -1,7 +1,7 @@
 package net.dumbcode.dumblibrary.client.model.dcm;
 
 import com.google.common.util.concurrent.AtomicDoubleArray;
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.matrix.GuiGraphics;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 import io.netty.util.internal.IntegerHolder;
 import lombok.AllArgsConstructor;
@@ -120,7 +120,7 @@ public class DCMModelRenderer extends ModelRenderer implements AnimatedReference
     }
 
     @Override
-    public void render(MatrixStack stack, IVertexBuilder buffer, int light, int overlay, float r, float g, float b, float a) {
+    public void render(GuiGraphics stack, IVertexBuilder buffer, int light, int overlay, float r, float g, float b, float a) {
         if(this.growDirty) {
             this.box = new ModelRenderer.ModelBox(
                 this.info.getTextureOffset()[0], this.info.getTextureOffset()[1],

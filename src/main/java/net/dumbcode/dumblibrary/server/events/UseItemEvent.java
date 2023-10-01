@@ -2,7 +2,7 @@ package net.dumbcode.dumblibrary.server.events;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.item.UseAction;
 import net.minecraftforge.eventbus.api.Event;
 

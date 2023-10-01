@@ -1,9 +1,9 @@
 package net.dumbcode.dumblibrary.client;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.matrix.GuiGraphics;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.client.model.TransformableModel;
-import net.minecraft.block.Block;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.renderer.BlockModelShapes;
@@ -11,8 +11,8 @@ import net.minecraft.client.renderer.model.*;
 import net.minecraft.state.DirectionProperty;
 import net.minecraft.state.properties.BlockStateProperties;
 import net.minecraft.util.Direction;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.vector.Vector3f;
+import net.minecraft.resources.ResourceLocation;
+import org.joml.Vector3f;
 import net.minecraftforge.client.event.ModelBakeEvent;
 import net.minecraftforge.client.model.data.EmptyModelData;
 import org.apache.commons.lang3.tuple.Pair;
@@ -32,7 +32,7 @@ public class YRotatedModel {
         BLOCKS.put(block, property);
     }
 
-    public static void rotateStack(MatrixStack stack, Direction direction) {
+    public static void rotateStack(GuiGraphics stack, Direction direction) {
         int rotation;
         switch (direction) {
             default:
@@ -55,7 +55,7 @@ public class YRotatedModel {
     }
 
     public static void onModelBakeEvent(ModelBakeEvent event) {
-        MatrixStack stack = new MatrixStack();
+        GuiGraphics stack = new GuiGraphics();
         Map<ResourceLocation, IBakedModel> replacementMap = new HashMap<>();
         for (Map.Entry<Block, DirectionProperty> entry : BLOCKS.entrySet()) {
             Block block = entry.getKey();
@@ -73,7 +73,7 @@ public class YRotatedModel {
         event.getModelRegistry().putAll(replacementMap);
     }
 
-    private static Optional<IBakedModel> applyTo(IBakedModel model, MatrixStack stack) {
+    private static Optional<IBakedModel> applyTo(IBakedModel model, GuiGraphics stack) {
         if(model instanceof MultipartBakedModel) {
             List<Pair<Predicate<BlockState>, IBakedModel>> list = new ArrayList<>();
             for (Pair<Predicate<BlockState>, IBakedModel> pair : ((MultipartBakedModel) model).selectors) {

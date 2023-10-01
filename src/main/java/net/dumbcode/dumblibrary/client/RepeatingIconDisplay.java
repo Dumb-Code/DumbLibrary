@@ -1,6 +1,6 @@
 package net.dumbcode.dumblibrary.client;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.matrix.GuiGraphics;
 import lombok.AllArgsConstructor;
 import org.apache.logging.log4j.util.TriConsumer;
 
@@ -29,7 +29,7 @@ public class RepeatingIconDisplay {
         return (this.iconSize * this.iconAmount()) / this.iconsPerLine;
     }
 
-   public void render(MatrixStack stack, int xOffset, int yOffset) {
+   public void render(GuiGraphics stack, int xOffset, int yOffset) {
        for (int heart = 0; heart < this.iconAmount(); heart++) {
            int heartX = this.iconSize * (heart % this.iconsPerLine) - (int) (this.iconSize / this.valuePerIcon) + xOffset;
            int heartY = this.iconSize * (heart / this.iconsPerLine) + yOffset;
@@ -41,7 +41,7 @@ public class RepeatingIconDisplay {
    }
 
    public interface RenderCallback {
-        void render(MatrixStack stack, int x, int y, float size);
+        void render(GuiGraphics stack, int x, int y, float size);
    }
 }
 

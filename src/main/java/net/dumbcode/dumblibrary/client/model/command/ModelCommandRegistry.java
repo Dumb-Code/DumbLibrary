@@ -5,7 +5,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.matrix.GuiGraphics;
 import lombok.Data;
 import lombok.Getter;
 import net.dumbcode.studio.model.RotationOrder;
@@ -13,7 +13,7 @@ import net.minecraft.client.renderer.model.BakedQuad;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.JSONUtils;
 import net.minecraft.util.math.vector.Quaternion;
-import net.minecraft.util.math.vector.Vector3f;
+import org.joml.Vector3f;
 import net.minecraft.util.math.vector.Vector4f;
 
 import java.util.Map;
@@ -51,7 +51,7 @@ public class ModelCommandRegistry {
         default void apply(BakedQuad quad, CommandDerived.ExpectedVariableResolver resolver) {
             int[] vertices = quad.getVertices();
 
-            MatrixStack stack = new MatrixStack();
+            GuiGraphics stack = new GuiGraphics();
             this.applyMatrix(stack, resolver);
 
             int size = DefaultVertexFormats.BLOCK.getIntegerSize();
@@ -68,7 +68,7 @@ public class ModelCommandRegistry {
                 vertices[v*size+2] = Float.floatToRawIntBits(vec.z());
             }
         }
-        void applyMatrix(MatrixStack stack, CommandDerived.ExpectedVariableResolver valueGetter);
+        void applyMatrix(GuiGraphics stack, CommandDerived.ExpectedVariableResolver valueGetter);
     }
 
     @Getter
@@ -130,7 +130,7 @@ public class ModelCommandRegistry {
 
 
         @Override
-        public void applyMatrix(MatrixStack stack, CommandDerived.ExpectedVariableResolver resolver) {
+        public void applyMatrix(GuiGraphics stack, CommandDerived.ExpectedVariableResolver resolver) {
             stack.translate(
                 resolver.get(this.x).doubleValue(),
                 resolver.get(this.y).doubleValue(),
@@ -190,7 +190,7 @@ public class ModelCommandRegistry {
 
 
         @Override
-        public void applyMatrix(MatrixStack stack, CommandDerived.ExpectedVariableResolver resolver) {
+        public void applyMatrix(GuiGraphics stack, CommandDerived.ExpectedVariableResolver resolver) {
             stack.translate(
                 -resolver.get(this.originX).doubleValue()/16,
                 -resolver.get(this.originY).doubleValue()/16,

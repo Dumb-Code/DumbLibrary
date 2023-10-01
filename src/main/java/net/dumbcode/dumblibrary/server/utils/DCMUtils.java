@@ -1,7 +1,7 @@
 package net.dumbcode.dumblibrary.server.utils;
 
 import com.google.common.collect.Maps;
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.matrix.GuiGraphics;
 import lombok.experimental.UtilityClass;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.client.model.dcm.DCMModel;
@@ -9,10 +9,10 @@ import net.dumbcode.dumblibrary.server.animation.AnimatedReferenceCube;
 import net.dumbcode.dumblibrary.server.info.ServerAnimatableCube;
 import net.dumbcode.studio.model.*;
 import net.dumbcode.studio.util.CubeUtils;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.math.vector.Matrix3f;
 import net.minecraft.util.math.vector.Matrix4f;
-import net.minecraft.util.math.vector.Vector3f;
+import org.joml.Vector3f;
 import net.minecraft.util.math.vector.Vector4f;
 
 import javax.annotation.Nullable;

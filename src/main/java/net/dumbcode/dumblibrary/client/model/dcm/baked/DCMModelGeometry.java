@@ -1,7 +1,7 @@
 package net.dumbcode.dumblibrary.client.model.dcm.baked;
 
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.matrix.GuiGraphics;
 import com.mojang.datafixers.util.Pair;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +13,7 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.renderer.vertex.VertexFormat;
 import net.minecraft.util.Direction;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.math.vector.*;
 import net.minecraftforge.client.model.IModelConfiguration;
 import net.minecraftforge.client.model.geometry.IModelGeometry;
@@ -54,7 +54,7 @@ public class DCMModelGeometry implements IModelGeometry<DCMModelGeometry> {
     @Override
     public IBakedModel bake(IModelConfiguration owner, ModelBakery bakery, Function<RenderMaterial, TextureAtlasSprite> spriteGetter, IModelTransform modelTransform, ItemOverrideList overrides, ResourceLocation modelLocation) {
         //Create the stack an push a default matrix
-        MatrixStack stack = new MatrixStack();
+        GuiGraphics stack = new GuiGraphics();
 
         Collection<DCMModelHandler.TextureLayer> textures = Lists.newArrayList(DCMModelHandler.MISSING);
         //If there are not textures then just add the missing one. Maybe log?
@@ -112,7 +112,7 @@ public class DCMModelGeometry implements IModelGeometry<DCMModelGeometry> {
      * @param cube    The cube of which to generated the 6 quads from.
      * @param layer   The texture layer of which to use for the uv coords. If the quad has no texture on this layer then the quad isn't generated and is instead ignored.
      */
-    private void build(List<BakedQuad> outList, MatrixStack stack, CubeInfo cube, DCMModelHandler.TextureLayer layer) {
+    private void build(List<BakedQuad> outList, GuiGraphics stack, CubeInfo cube, DCMModelHandler.TextureLayer layer) {
         //Apply the matrix changes for the cube
         this.applyMatrixChanges(stack, cube);
 
@@ -281,7 +281,7 @@ public class DCMModelGeometry implements IModelGeometry<DCMModelGeometry> {
      * @param stack the stack to finalize the changes too
      * @param cube  the cube of which to get the values for the transformations
      */
-    private void applyMatrixChanges(MatrixStack stack, CubeInfo cube) {
+    private void applyMatrixChanges(GuiGraphics stack, CubeInfo cube) {
         //Push a new matrix and set the matrix translation/scale/rotation that this cube contains.
         stack.pushPose();
         stack.translate(cube.getRotationPoint()[0], cube.getRotationPoint()[1], cube.getRotationPoint()[2]);
@@ -306,7 +306,7 @@ public class DCMModelGeometry implements IModelGeometry<DCMModelGeometry> {
      * @param cube          the cubes
      * @return the build quad.
      */
-    private BakedQuad buildQuad(VertexInfo[] vertices, MatrixStack stack, DCMModelHandler.TextureLayer layer, float[] uvData, CubeInfo cube, Direction cubeDirection) {
+    private BakedQuad buildQuad(VertexInfo[] vertices, GuiGraphics stack, DCMModelHandler.TextureLayer layer, float[] uvData, CubeInfo cube, Direction cubeDirection) {
         Vector3i n = cubeDirection.getNormal();
         Vector3f normal = new Vector3f(n.getX(), n.getY(), n.getZ());
         normal.transform(stack.last().normal());

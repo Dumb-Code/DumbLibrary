@@ -1,6 +1,6 @@
 package net.dumbcode.dumblibrary.client.gui;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.matrix.GuiGraphics;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.client.RenderUtils;
@@ -34,7 +34,7 @@ public class ColourWheelSelector extends Widget {
     protected final int size;
 
     public ColourWheelSelector(int x, int y, int size, OnChange onChange) {
-        super(x, y, size, size, new StringTextComponent(":)"));
+        super(x, y, size, size, Component.literal(":)"));
         this.size = size - 17;
         this.onChange = onChange;
         if(shaderManager == null) {
@@ -47,9 +47,9 @@ public class ColourWheelSelector extends Widget {
     }
 
     @Override
-    public void renderButton(MatrixStack stack, int mouseX, int mouseY, float ticks) {
+    public void renderButton(GuiGraphics stack, int mouseX, int mouseY, float ticks) {
 
-        AbstractGui.fill(stack, this.x, this.y, this.x+this.width, this.y+this.height, 0xFF000000 | this.calculateColor());
+        AbstractGui.stack.fill(this.x, this.y, this.x+this.width, this.y+this.height, 0xFF000000 | this.calculateColor());
 
         RenderSystem.enableBlend();
         if(shaderManager != null) {
@@ -77,8 +77,8 @@ public class ColourWheelSelector extends Widget {
 
         int halfSliderWidth = 6;
 
-        AbstractGui.fill(stack, this.x + this.size + halfSliderWidth + 3, this.y + 5, this.x + this.size + halfSliderWidth + 7, this.y + this.height - 5, 0xFF000000);
-        AbstractGui.fill(stack, this.x + this.size + 5, (int) (this.y + 2 + (this.getHeight()-10)*this.lightness), this.x + this.size + 2*halfSliderWidth + 5, (int) (y + 8 + (this.getHeight()-10)*this.lightness), 0xFF000000);
+        AbstractGui.stack.fill(this.x + this.size + halfSliderWidth + 3, this.y + 5, this.x + this.size + halfSliderWidth + 7, this.y + this.height - 5, 0xFF000000);
+        AbstractGui.stack.fill(this.x + this.size + 5, (int) (this.y + 2 + (this.getHeight()-10)*this.lightness), this.x + this.size + 2*halfSliderWidth + 5, (int) (y + 8 + (this.getHeight()-10)*this.lightness), 0xFF000000);
 
 
         int centerX = x + this.size/2;

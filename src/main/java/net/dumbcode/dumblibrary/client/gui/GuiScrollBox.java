@@ -1,6 +1,6 @@
 package net.dumbcode.dumblibrary.client.gui;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.matrix.GuiGraphics;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -10,12 +10,15 @@ import net.dumbcode.dumblibrary.client.StencilStack;
 import net.dumbcode.dumblibrary.server.utils.MouseUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.AbstractGui;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.client.renderer.Rectangle2d;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.inventory.container.PlayerContainer;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.StringTextComponent;
+import org.jline.reader.Widget;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -26,7 +29,7 @@ import java.util.function.Supplier;
 @Getter
 @Setter
 @Accessors(chain = true)
-public class GuiScrollBox<T extends GuiScrollboxEntry> extends Widget {
+public class GuiScrollBox<T extends GuiScrollboxEntry> extends AbstractWidget {
 
     private static final Minecraft MC = Minecraft.getInstance();
 
@@ -62,7 +65,7 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> extends Widget {
     private double lastYClicked = -1;
 
     public GuiScrollBox(int x, int y, int width, int cellHeight, int cellMax, Supplier<List<T>> listSupplier) {
-        super(x, y, width, 0, new StringTextComponent(""));
+        super(x, y, width, 0, Component.literal(""));
         this.cellHeight = cellHeight;
         this.cellMax = Math.max(cellMax, 1);
         this.listSupplier = listSupplier;
@@ -89,7 +92,7 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> extends Widget {
      * @param mouseY the mouse's y position
      */
     @Override
-    public void render(MatrixStack stack, int mouseX, int mouseY, float ticks) {
+    public void render(GuiGraphics stack, int mouseX, int mouseY, float ticks) {
         if(!this.active) {
             return;
         }
@@ -160,7 +163,7 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> extends Widget {
      * @param mouseX     the mouse's x position
      * @param mouseY     the mouse's y position
      */
-    private void renderEntries(MatrixStack stack, List<T> entries, int height, float[] scrollBar, int borderSize, int mouseX, int mouseY) {
+    private void renderEntries(GuiGraphics stack, List<T> entries, int height, float[] scrollBar, int borderSize, int mouseX, int mouseY) {
         List<T> sorted = new ArrayList<>(entries);
         sorted.sort(Comparator.comparing(GuiScrollboxEntry::zLevel));
 
@@ -172,14 +175,14 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> extends Widget {
             int yStart = (int) (this.y + this.cellHeight * (index / this.cellsPerRow) - this.scroll * this.cellHeight);
             //Usually it would be yStart + cellHeight, however because the ystart is offsetted (due to the active selection box), it cancels out
             if (yStart + this.cellHeight >= this.y && yStart <= this.y + height) {
-                AbstractGui.fill(stack, xStart, yStart, xStart + width, yStart + this.cellHeight, entry == this.selectedElement ? this.cellSelectedColor : this.cellHighlightColor);
+                AbstractGui.stack.fill(xStart, yStart, xStart + width, yStart + this.cellHeight, entry == this.selectedElement ? this.cellSelectedColor : this.cellHighlightColor);
 
                 if(this.renderCellBorders) {
                     if(index / this.cellsPerRow == 0) {
                         //Top row, only if on first row.
-                        AbstractGui.fill(stack, xStart, yStart, xStart + width, yStart + borderSize, this.borderColor);
+                        AbstractGui.stack.fill(xStart, yStart, xStart + width, yStart + borderSize, this.borderColor);
                     }
-                    AbstractGui.fill(stack, xStart, yStart + this.cellHeight-1, xStart + width, yStart + this.cellHeight + borderSize-1, this.borderColor);
+                    AbstractGui.stack.fill(xStart, yStart + this.cellHeight-1, xStart + width, yStart + this.cellHeight + borderSize-1, this.borderColor);
                 }
 
                 boolean mouseOverElement = !this.mouseOverScrollBar(mouseX, mouseY, height, scrollBar) && mouseX >= xStart && mouseX < xStart + width && mouseY >= yStart && mouseY < yStart + this.cellHeight;
@@ -188,7 +191,7 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> extends Widget {
 
                 //Draw highlighted section of the cell (if mouse is over)
                 if (mouseOverElement) {
-                    AbstractGui.fill(stack, xStart, yStart, xStart + width, yStart + this.cellHeight, this.highlightColor);
+                    AbstractGui.stack.fill(xStart, yStart, xStart + width, yStart + this.cellHeight, this.highlightColor);
                 }
 
                 entry.postDraw(stack, xStart, yStart, width, this.cellHeight, mouseX, mouseY);
@@ -197,7 +200,7 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> extends Widget {
         if(this.renderCellBorders) {
             for (int i = 1; i < this.cellsPerRow; i++) {
                 int xStart = this.x + i * width;
-                AbstractGui.fill(stack, xStart, this.y, xStart + borderSize, this.y + height, this.borderColor);
+                AbstractGui.stack.fill(xStart, this.y, xStart + borderSize, this.y + height, this.borderColor);
             }
         }
 
@@ -206,9 +209,9 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> extends Widget {
             int yStart = (int) (this.y + this.cellHeight * (lastIndex / this.cellsPerRow) - this.scroll * this.cellHeight);
             if(entries.size() % this.cellsPerRow != 0) {
                 int xStart = this.x + (entries.size() % this.cellsPerRow) * width;
-                AbstractGui.fill(stack, xStart+1, yStart, this.x + this.width, yStart + this.cellHeight, this.emptyColor);
+                AbstractGui.stack.fill(xStart+1, yStart, this.x + this.width, yStart + this.cellHeight, this.emptyColor);
             }
-            AbstractGui.fill(stack, this.x, yStart + (entries.isEmpty() ? 0 : this.cellHeight), this.x + this.width, this.y + this.cellMax * this.cellHeight, this.emptyColor);
+            AbstractGui.stack.fill(this.x, yStart + (entries.isEmpty() ? 0 : this.cellHeight), this.x + this.width, this.y + this.cellMax * this.cellHeight, this.emptyColor);
         }
     }
 
@@ -260,20 +263,20 @@ public class GuiScrollBox<T extends GuiScrollboxEntry> extends Widget {
      * @param borderSize The size of the border
      * @param mouseOver  whether the mouse is over the scroll-bar or not
      */
-    private void renderScrollBar(MatrixStack stack, float[] scrollBar, int borderSize, boolean mouseOver) {
+    private void renderScrollBar(GuiGraphics stack, float[] scrollBar, int borderSize, boolean mouseOver) {
         Rectangle2d bar = new Rectangle2d((int) scrollBar[0], (int) scrollBar[1], (int) scrollBar[2], (int) scrollBar[3]);
 
         //render main bar
-        AbstractGui.fill(stack, bar.getX(), bar.getY(), bar.getX() + bar.getWidth(), bar.getY() + bar.getHeight(), this.insideColor);
+        AbstractGui.stack.fill(bar.getX(), bar.getY(), bar.getX() + bar.getWidth(), bar.getY() + bar.getHeight(), this.insideColor);
 
         //render an overlay to the bar if its overlayed
         if (mouseOver) {
-            AbstractGui.fill(stack, bar.getX(), bar.getY(), bar.getX() + bar.getWidth(), bar.getY() + bar.getHeight(), this.highlightColor);
+            AbstractGui.stack.fill(bar.getX(), bar.getY(), bar.getX() + bar.getWidth(), bar.getY() + bar.getHeight(), this.highlightColor);
         }
 
-        AbstractGui.fill(stack, bar.getX(), bar.getY(), bar.getX() + bar.getWidth(), bar.getY() + borderSize, this.borderColor);
-        AbstractGui.fill(stack, bar.getX(), bar.getY() + bar.getHeight(), bar.getX() + bar.getWidth(), bar.getY() + bar.getHeight() - borderSize, this.borderColor);
-        AbstractGui.fill(stack, bar.getX(), bar.getY(), bar.getX() + borderSize, bar.getY() + bar.getHeight(), this.borderColor);
+        AbstractGui.stack.fill(bar.getX(), bar.getY(), bar.getX() + bar.getWidth(), bar.getY() + borderSize, this.borderColor);
+        AbstractGui.stack.fill(bar.getX(), bar.getY() + bar.getHeight(), bar.getX() + bar.getWidth(), bar.getY() + bar.getHeight() - borderSize, this.borderColor);
+        AbstractGui.stack.fill(bar.getX(), bar.getY(), bar.getX() + borderSize, bar.getY() + bar.getHeight(), this.borderColor);
     }
 
     /**

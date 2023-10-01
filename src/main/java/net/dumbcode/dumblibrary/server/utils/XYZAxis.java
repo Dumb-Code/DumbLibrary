@@ -1,6 +1,6 @@
 package net.dumbcode.dumblibrary.server.utils;
 
-import net.minecraft.util.math.vector.Vector3f;
+import org.joml.Vector3f;
 
 public enum XYZAxis {
     X_AXIS(new Vector3f(1f, 0f, 0f)),

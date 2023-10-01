@@ -2,7 +2,7 @@ package net.dumbcode.dumblibrary.server.utils;
 
 import lombok.AllArgsConstructor;
 import net.minecraft.block.BlockState;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.IBlockReader;
 import net.minecraftforge.common.IPlantable;
 

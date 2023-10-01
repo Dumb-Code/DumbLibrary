@@ -1,7 +1,7 @@
 package net.dumbcode.dumblibrary.server.utils;
 
 import net.minecraft.client.renderer.chunk.ChunkRenderCache;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.IBlockDisplayReader;
 import net.minecraft.world.World;
 

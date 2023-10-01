@@ -3,7 +3,7 @@ package net.dumbcode.dumblibrary.client.gui;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.text.TranslationTextComponent;
 
 public interface GuiConstants {

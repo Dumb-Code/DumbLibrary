@@ -1,6 +1,6 @@
 package net.dumbcode.dumblibrary.client.gui;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import net.minecraft.client.gui.GuiGraphics;
 
 public interface GuiScrollboxEntry {
 
@@ -14,7 +14,7 @@ public interface GuiScrollboxEntry {
      * @param mouseY the mouse Y position
      * @param mouseOver whether the mouse is over
      */
-    default void draw(MatrixStack stack, int x, int y, int width, int height, int mouseX, int mouseY, boolean mouseOver) {
+    default void draw(GuiGraphics stack, int x, int y, int width, int height, int mouseX, int mouseY, boolean mouseOver) {
     }
 
 
@@ -26,7 +26,7 @@ public interface GuiScrollboxEntry {
      * @param mouseX the mouse X position
      * @param mouseY the mouse Y position
      */
-    default void postDraw(MatrixStack stack, int x, int y, int width, int height, int mouseX, int mouseY) {
+    default void postDraw(GuiGraphics stack, int x, int y, int width, int height, int mouseX, int mouseY) {
     }
 
     /**

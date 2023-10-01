@@ -20,35 +20,29 @@ import net.dumbcode.dumblibrary.server.utils.MouseUtils;
 import net.dumbcode.dumblibrary.server.utils.VoidStorage;
 import net.dumbcode.studio.model.ModelMirror;
 import net.dumbcode.studio.model.RotationOrder;
-import net.minecraft.block.Block;
+import net.minecraft.client.gui.screens.MenuScreens;
+import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.ScreenManager;
-import net.minecraft.inventory.container.Container;
-import net.minecraft.inventory.container.ContainerType;
-import net.minecraft.item.Item;
-import net.minecraft.resources.IReloadableResourceManager;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.item.Item;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.common.capabilities.CapabilityManager;
-import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.common.extensions.IForgeMenuType;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.*;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.fml.network.IContainerFactory;
-import net.minecraftforge.fml.network.NetworkRegistry;
-import net.minecraftforge.fml.network.simple.SimpleChannel;
+import net.minecraftforge.network.IContainerFactory;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.resource.ISelectiveResourceReloadListener;
-import net.minecraftforge.resource.VanillaResourceType;
+import net.minecraftforge.registries.RegistryObject;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -69,8 +63,8 @@ public class DumbLibrary {
     private static final DeferredRegister<Item> DRI = DeferredRegister.create(ForgeRegistries.ITEMS, MODID);
     public static final RegistryObject<Item> COMPONENT_ITEM = DRI.register("component_item", () -> new ItemComponent(new Item.Properties()));
 
-    private static final DeferredRegister<ContainerType<?>> DRC = DeferredRegister.create(ForgeRegistries.CONTAINERS, MODID);
-    public static final RegistryObject<ContainerType<TaxidermyContainer>> TAXIDERMY_CONTAINER = DRC.register("taxidermy_container", create((windowId, inv, data) -> {
+    private static final DeferredRegister<MenuType<?>> DRC = DeferredRegister.create(ForgeRegistries.CONTAINERS, MODID);
+    public static final RegistryObject<MenuType<TaxidermyContainer>> TAXIDERMY_CONTAINER = DRC.register("taxidermy_container", create((windowId, inv, data) -> {
         BlockPos blockPos = data.readBlockPos();
         TileEntity entity = inv.player.level.getBlockEntity(blockPos);
         if(entity instanceof BaseTaxidermyBlockEntity) {
@@ -166,8 +160,8 @@ public class DumbLibrary {
 
         DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
             //We need it as a full declaration becuase of weird compile stuff
-            ScreenManager.IScreenFactory<TaxidermyContainer, TaxidermyScreen> factory = (container, inventory, title) -> container.getBlockEntity().openScreen(container);
-            ScreenManager.register(TAXIDERMY_CONTAINER.get(), factory);
+            MenuScreens.ScreenConstructor<TaxidermyContainer, TaxidermyScreen> factory = (container, inventory, title) -> container.getBlockEntity().openScreen(container);
+            MenuScreens.m_96206_(TAXIDERMY_CONTAINER.get(), factory);
 
             ((IReloadableResourceManager) Minecraft.getInstance().getResourceManager()).registerReloadListener((ISelectiveResourceReloadListener) (manager, predicate) -> {
                 if(predicate.test(VanillaResourceType.TEXTURES)) {
@@ -200,8 +194,8 @@ public class DumbLibrary {
         return logger;
     }
 
-    private static <T extends Container> Supplier<ContainerType<T>> create(IContainerFactory<T> factory) {
-        return () -> new ContainerType<>(factory);
+    private static <T extends AbstractContainerMenu> Supplier<MenuType<T>> create(IContainerFactory<T> factory) {
+        return () -> IForgeMenuType.create(factory);
     }
 
 }

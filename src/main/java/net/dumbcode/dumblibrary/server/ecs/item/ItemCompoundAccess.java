@@ -5,7 +5,7 @@ import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.ecs.ComponentMapWriteAccess;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentMap;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentType;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
 import net.minecraftforge.common.util.Constants;

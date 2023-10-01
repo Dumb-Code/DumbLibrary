@@ -2,8 +2,8 @@ package net.dumbcode.dumblibrary.server;
 
 import net.dumbcode.dumblibrary.server.events.UseItemEvent;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.item.UseAction;
 import net.minecraft.particles.ItemParticleData;
 import net.minecraft.particles.ParticleTypes;

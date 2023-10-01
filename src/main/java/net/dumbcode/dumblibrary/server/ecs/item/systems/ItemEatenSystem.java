@@ -6,7 +6,7 @@ import net.dumbcode.dumblibrary.server.ecs.system.EntitySystem;
 import net.dumbcode.dumblibrary.server.events.UseItemEvent;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.item.UseAction;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Hand;

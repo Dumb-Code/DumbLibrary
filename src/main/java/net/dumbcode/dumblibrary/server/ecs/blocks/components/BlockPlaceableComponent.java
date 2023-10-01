@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.minecraft.block.BlockState;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.World;
 
 @Getter

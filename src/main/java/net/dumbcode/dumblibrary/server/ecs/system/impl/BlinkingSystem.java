@@ -6,7 +6,7 @@ import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentTypes;
 import net.dumbcode.dumblibrary.server.ecs.component.impl.BlinkingComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.impl.EyesClosedComponent;
 import net.dumbcode.dumblibrary.server.ecs.system.EntitySystem;
-import net.minecraft.entity.Entity;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.World;
 
 public class BlinkingSystem implements EntitySystem {

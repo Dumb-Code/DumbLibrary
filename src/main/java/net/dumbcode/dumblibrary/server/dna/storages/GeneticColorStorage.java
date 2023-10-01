@@ -1,6 +1,6 @@
 package net.dumbcode.dumblibrary.server.dna.storages;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.matrix.GuiGraphics;
 import net.dumbcode.dumblibrary.server.dna.GeneticType;
 import net.dumbcode.dumblibrary.server.dna.data.GeneticTint;
 import net.dumbcode.dumblibrary.server.utils.GeneticUtils;
@@ -12,12 +12,12 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 public abstract class GeneticColorStorage extends RandomUUIDStorage<GeneticTint> {
     @Override
     @OnlyIn(Dist.CLIENT)
-    public void render(MatrixStack stack, GeneticType<?, GeneticTint> entry, GeneticTint value, int x, int y, int width, int height, float ticks) {
+    public void render(GuiGraphics stack, GeneticType<?, GeneticTint> entry, GeneticTint value, int x, int y, int width, int height, float ticks) {
         int primary = partToColour(value.getPrimary());
         int secondary = partToColour(value.getSecondary());
 
-        AbstractGui.fill(stack, x, y, x + width, y + height - 1, primary);
-        AbstractGui.fill(stack, x, (int) (y + height * 0.25F) + 1, x + width, (int) (y + height * 0.75F) - 1, secondary);
+        AbstractGui.stack.fill(x, y, x + width, y + height - 1, primary);
+        AbstractGui.stack.fill(x, (int) (y + height * 0.25F) + 1, x + width, (int) (y + height * 0.75F) - 1, secondary);
     }
 
     private int partToColour(GeneticTint.Part p) {

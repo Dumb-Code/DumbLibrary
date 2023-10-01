@@ -1,15 +1,15 @@
 package net.dumbcode.dumblibrary.server.taxidermy;
 
 import net.dumbcode.dumblibrary.DumbLibrary;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.inventory.container.Container;
-import net.minecraft.inventory.container.INamedContainerProvider;
-import net.minecraft.inventory.container.SimpleNamedContainerProvider;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraftforge.fml.network.NetworkHooks;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.SimpleMenuProvider;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraftforge.network.NetworkHooks;
 
-public class TaxidermyContainer extends Container {
+public class TaxidermyContainer extends AbstractContainerMenu {
 
     private final BaseTaxidermyBlockEntity blockEntity;
 
@@ -19,7 +19,7 @@ public class TaxidermyContainer extends Container {
     }
 
     @Override
-    public boolean stillValid(PlayerEntity p_75145_1_) {
+    public boolean stillValid(Player p_75145_1_) {
         return true;
     }
 
@@ -27,11 +27,11 @@ public class TaxidermyContainer extends Container {
         return blockEntity;
     }
 
-    public static void open(ServerPlayerEntity player, BaseTaxidermyBlockEntity blockEntity) {
-        NetworkHooks.openGui(player, create(blockEntity), blockEntity.getBlockPos());
+    public static void open(ServerPlayer player, BaseTaxidermyBlockEntity blockEntity) {
+        NetworkHooks.openScreen(player, create(blockEntity), blockEntity.getBlockPos());
     }
 
-    public static INamedContainerProvider create(BaseTaxidermyBlockEntity blockEntity) {
-        return new SimpleNamedContainerProvider((id, inv, p) -> new TaxidermyContainer(blockEntity, id), new StringTextComponent(""));
+    public static MenuProvider create(BaseTaxidermyBlockEntity blockEntity) {
+        return new SimpleMenuProvider((id, inv, p) -> new TaxidermyContainer(blockEntity, id), Component.literal(""));
     }
 }

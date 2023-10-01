@@ -2,7 +2,7 @@ package net.dumbcode.dumblibrary.server.registry;
 
 import lombok.RequiredArgsConstructor;
 import net.dumbcode.dumblibrary.DumbLibrary;
-import net.minecraft.block.Block;
+import net.minecraft.world.level.block.Block;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.IEventBus;

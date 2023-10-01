@@ -1,6 +1,6 @@
 package net.dumbcode.dumblibrary.client.component;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.matrix.GuiGraphics;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.dumbcode.dumblibrary.DumbLibrary;
@@ -23,11 +23,11 @@ import net.minecraft.client.renderer.texture.Texture;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.shader.Framebuffer;
 import net.minecraft.client.shader.ShaderInstance;
-import net.minecraft.entity.Entity;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.inventory.container.PlayerContainer;
 import net.minecraft.resources.IResourceManager;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 import org.apache.commons.lang3.NotImplementedException;
 import org.lwjgl.opengl.GL11;
 
@@ -59,10 +59,10 @@ public class ModelComponentRenderer extends LivingRenderer<LivingEntity, EntityM
         Minecraft.getInstance().textureManager.register(DL_MODEL_TEX_LOCATION, DL_MODEL_TEX);
     }
 
-    Consumer<MatrixStack> preCallbacks;
+    Consumer<GuiGraphics> preCallbacks;
 
     @Override
-    public void invoke(RenderComponentContext context, Entity entity, float entityYaw, float partialTicks, MatrixStack stack, IRenderTypeBuffer discarded_buffer, int light, List<RenderCallbackComponent.SubCallback> preCallbacks, List<RenderCallbackComponent.SubCallback> postCallbacks) {
+    public void invoke(RenderComponentContext context, Entity entity, float entityYaw, float partialTicks, GuiGraphics stack, IRenderTypeBuffer discarded_buffer, int light, List<RenderCallbackComponent.SubCallback> preCallbacks, List<RenderCallbackComponent.SubCallback> postCallbacks) {
 //            this.doRenderShadowAndFire(entity, x, y, z, entityYaw, partialTicks);
 
         IRenderTypeBuffer.Impl buffer = IRenderTypeBuffer.immediate(Tessellator.getInstance().getBuilder());
@@ -102,7 +102,7 @@ public class ModelComponentRenderer extends LivingRenderer<LivingEntity, EntityM
     }
 
     @Override
-    public void render(LivingEntity entity, float p_225623_2_, float partialRenderTick, MatrixStack stack, IRenderTypeBuffer buffer, int light) {
+    public void render(LivingEntity entity, float p_225623_2_, float partialRenderTick, GuiGraphics stack, IRenderTypeBuffer buffer, int light) {
         super.render(entity, p_225623_2_, partialRenderTick, stack, buffer, light);
     }
 
@@ -117,13 +117,13 @@ public class ModelComponentRenderer extends LivingRenderer<LivingEntity, EntityM
         RenderSystem.enableBlend();
         RenderSystem.depthMask(false);
         RenderSystem.matrixMode(GL11.GL_PROJECTION);
-        RenderSystem.pushMatrix();
+        GL11.glPushMatrix();
         RenderSystem.loadIdentity();
         RenderSystem.ortho(0, 1, 1 ,0, 1000.0D, 3000.0D);
         RenderSystem.matrixMode(GL11.GL_MODELVIEW);
-        RenderSystem.pushMatrix();
+        GL11.glPushMatrix();
         RenderSystem.loadIdentity();
-        RenderSystem.translatef(0.0F, 0.0F, -2000.0F);
+        GL11.glTranslatef(0.0F, 0.0F, -2000.0F);
         RenderSystem.enableTexture();
         RenderSystem.disableLighting();
         RenderSystem.enableAlphaTest();
@@ -160,7 +160,7 @@ public class ModelComponentRenderer extends LivingRenderer<LivingEntity, EntityM
     }
 
     @Override
-    protected void scale(LivingEntity p_225620_1_, MatrixStack stack, float p_225620_3_) {
+    protected void scale(LivingEntity p_225620_1_, GuiGraphics stack, float p_225620_3_) {
         this.preCallbacks.accept(stack);
     }
 

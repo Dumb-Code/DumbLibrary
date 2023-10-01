@@ -3,7 +3,7 @@ package net.dumbcode.dumblibrary.server.registry;
 import lombok.RequiredArgsConstructor;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.*;
-import net.minecraftforge.fml.RegistryObject;
+import net.minecraftforge.registries.RegistryObject;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.IForgeRegistryEntry;

@@ -1,7 +1,7 @@
 package net.dumbcode.dumblibrary.client.gui;
 
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.matrix.GuiGraphics;
 import lombok.Getter;
 import lombok.Setter;
 import net.dumbcode.dumblibrary.server.utils.MathUtils;
@@ -61,7 +61,7 @@ public class GuiNumberEntry extends Widget implements INestedGuiEventHandler {
     private final List<Widget> children;
 
     public GuiNumberEntry(int id, double currentValue, double defaultScale, int decimalPlace, int x, int y, int width, int height, ObjIntConsumer<GuiNumberEntry> listener) {
-        super(x, y, width, height, new StringTextComponent(""));
+        super(x, y, width, height, Component.literal(""));
 
         this.id = id;
         this.decimalPlace = decimalPlace;
@@ -73,7 +73,7 @@ public class GuiNumberEntry extends Widget implements INestedGuiEventHandler {
         this.width = width;
         this.height = height;
 
-        this.textField = new TextFieldWidget(Minecraft.getInstance().font, x-width/2, y-height/2, width-BUTTON_WIDTH-PADDING, height, new StringTextComponent(""));
+        this.textField = new TextFieldWidget(Minecraft.getInstance().font, x-width/2, y-height/2, width-BUTTON_WIDTH-PADDING, height, Component.literal(""));
         this.textField.setResponder(s -> {
             try {
                 this.value = Double.parseDouble(s);
@@ -81,8 +81,8 @@ public class GuiNumberEntry extends Widget implements INestedGuiEventHandler {
             } catch (NumberFormatException ignored) {
             }
         });
-        this.topButton = new ExtendedButton(x + width/2 - BUTTON_WIDTH, y-height/2, BUTTON_WIDTH, height/2, new StringTextComponent("+"), b -> this.addScaled(1));
-        this.bottomButton = new ExtendedButton(x + width/2 - BUTTON_WIDTH, y, BUTTON_WIDTH, height/2, new StringTextComponent("-"), b -> this.addScaled(-1));
+        this.topButton = new ExtendedButton(x + width/2 - BUTTON_WIDTH, y-height/2, BUTTON_WIDTH, height/2, Component.literal("+"), b -> this.addScaled(1));
+        this.bottomButton = new ExtendedButton(x + width/2 - BUTTON_WIDTH, y, BUTTON_WIDTH, height/2, Component.literal("-"), b -> this.addScaled(-1));
         this.listener = listener;
 
         this.children = Collections.unmodifiableList(Lists.newArrayList(this.topButton, this.bottomButton, this.textField));
@@ -113,7 +113,7 @@ public class GuiNumberEntry extends Widget implements INestedGuiEventHandler {
     }
 
     @Override
-    public void render(MatrixStack stack, int mouseX, int mouseY, float ticks) {
+    public void render(GuiGraphics stack, int mouseX, int mouseY, float ticks) {
         for (Widget child : this.children) {
             child.render(stack, mouseX, mouseY, ticks);
         }

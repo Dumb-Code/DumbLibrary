@@ -1,6 +1,6 @@
 package net.dumbcode.dumblibrary.client.model.dcm.baked;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.matrix.GuiGraphics;
 import net.dumbcode.dumblibrary.client.model.TransformableModel;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.renderer.RenderType;
@@ -54,7 +54,7 @@ public class DCMBakedModel implements IBakedModel, TransformableModel {
     }
 
     @Override
-    public IBakedModel transform(MatrixStack stack) {
+    public IBakedModel transform(GuiGraphics stack) {
         Map<String, List<BakedQuad>> map = new HashMap<>();
         for (String s : this.quadMap.keySet()) {
             List<BakedQuad> list = new ArrayList<>();

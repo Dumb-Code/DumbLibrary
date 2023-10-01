@@ -1,6 +1,6 @@
 package net.dumbcode.dumblibrary.client.gui;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.matrix.GuiGraphics;
 import net.dumbcode.dumblibrary.client.gui.ColourWheelSelector;
 import net.dumbcode.dumblibrary.server.dna.data.GeneticTint;
 import net.dumbcode.dumblibrary.server.json.objects.Constants;
@@ -44,12 +44,12 @@ public class ImportanceColourPicker extends ColourWheelSelector {
     }
 
     @Override
-    public void renderButton(MatrixStack stack, int mouseX, int mouseY, float ticks) {
-//        AbstractGui.fill(stack, this.x, this.y+this.height, this.x+this.width, this.y+this.height+17, 0xFF000000 | this.calculateColor());
+    public void renderButton(GuiGraphics stack, int mouseX, int mouseY, float ticks) {
+//        AbstractGui.stack.fill(this.x, this.y+this.height, this.x+this.width, this.y+this.height+17, 0xFF000000 | this.calculateColor());
         super.renderButton(stack, mouseX, mouseY, ticks);
 
-        AbstractGui.fill(stack, this.x, this.y+this.size+6, this.x+this.width, this.y+this.size+11, 0xFF000000);
+        AbstractGui.stack.fill(this.x, this.y+this.size+6, this.x+this.width, this.y+this.size+11, 0xFF000000);
         int startX = (int) (this.x + this.importance * this.width - 2);
-        AbstractGui.fill(stack, startX, this.y+this.size, startX+4, this.y+this.size+17, 0xFF000000);
+        AbstractGui.stack.fill(startX, this.y+this.size, startX+4, this.y+this.size+17, 0xFF000000);
     }
 }

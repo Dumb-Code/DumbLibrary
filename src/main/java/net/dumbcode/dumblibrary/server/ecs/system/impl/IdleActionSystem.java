@@ -11,7 +11,7 @@ import net.dumbcode.dumblibrary.server.ecs.component.impl.IdleActionComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.impl.SleepingComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.impl.SoundStorageComponent;
 import net.dumbcode.dumblibrary.server.ecs.system.EntitySystem;
-import net.minecraft.entity.Entity;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;

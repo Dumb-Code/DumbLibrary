@@ -7,7 +7,7 @@ import net.dumbcode.dumblibrary.client.model.dcm.DCMModelRenderer;
 import net.dumbcode.dumblibrary.server.json.JsonAnimator;
 import net.dumbcode.dumblibrary.server.json.objects.AnimationInfoBase;
 import net.dumbcode.dumblibrary.server.json.objects.JsonAnimationModule;
-import net.minecraft.entity.Entity;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.util.JSONUtils;
 
 public class Bob extends JsonAnimationModule<Bob.Info> {

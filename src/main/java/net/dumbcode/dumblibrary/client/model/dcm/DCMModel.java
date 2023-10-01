@@ -3,7 +3,7 @@ package net.dumbcode.dumblibrary.client.model.dcm;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.AtomicDoubleArray;
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.matrix.GuiGraphics;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,8 +17,8 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.entity.model.EntityModel;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.gen.feature.structure.TemplateStructurePiece;
 
 import java.util.Collection;
@@ -57,7 +57,7 @@ public class DCMModel extends EntityModel<Entity> {
     }
 
     @Override
-    public void renderToBuffer(MatrixStack stack, IVertexBuilder buffer, int light, int overlay, float r, float g, float b, float opacity) {
+    public void renderToBuffer(GuiGraphics stack, IVertexBuilder buffer, int light, int overlay, float r, float g, float b, float opacity) {
         for (DCMModelRenderer root : this.roots) {
             root.render(stack, buffer, light, overlay, r, g, b, opacity);
         }
@@ -76,17 +76,17 @@ public class DCMModel extends EntityModel<Entity> {
 
     }
 
-    public void renderImmediate(MatrixStack stack, int light, ResourceLocation texture) {
+    public void renderImmediate(GuiGraphics stack, int light, ResourceLocation texture) {
         IRenderTypeBuffer.Impl buffer = IRenderTypeBuffer.immediate(Tessellator.getInstance().getBuilder());
         this.renderToBuffer(stack, buffer.getBuffer(this.renderType(texture)), light, OverlayTexture.NO_OVERLAY, 1, 1, 1, 1);
         buffer.endBatch();
     }
 
-    public void renderBoxes(MatrixStack stack, int light, IRenderTypeBuffer buffs, ResourceLocation texture) {
+    public void renderBoxes(GuiGraphics stack, int light, IRenderTypeBuffer buffs, ResourceLocation texture) {
         this.renderBoxes(stack, light, buffs, this.renderType(texture));
     }
 
-    public void renderBoxes(MatrixStack stack, int light, IRenderTypeBuffer buffs, RenderType type) {
+    public void renderBoxes(GuiGraphics stack, int light, IRenderTypeBuffer buffs, RenderType type) {
         this.renderToBuffer(stack, buffs.getBuffer(type), light, OverlayTexture.NO_OVERLAY, 1, 1, 1, 1);
     }
 

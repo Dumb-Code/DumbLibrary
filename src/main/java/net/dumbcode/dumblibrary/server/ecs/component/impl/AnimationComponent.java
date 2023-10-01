@@ -22,7 +22,7 @@ import net.dumbcode.studio.animation.info.AnimationInfo;
 import net.dumbcode.studio.animation.instance.AnimatedCube;
 import net.dumbcode.studio.animation.instance.ModelAnimationHandler;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.Entity;
+import net.minecraft.world.entity.Entity;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.network.PacketDistributor;

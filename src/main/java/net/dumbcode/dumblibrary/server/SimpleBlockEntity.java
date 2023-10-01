@@ -7,8 +7,9 @@ import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SUpdateTileEntityPacket;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.world.level.block.entity.BlockEntity;
 
-public class SimpleBlockEntity extends TileEntity {
+public class SimpleBlockEntity extends BlockEntity {
 
     public SimpleBlockEntity(TileEntityType<?> type) {
         super(type);

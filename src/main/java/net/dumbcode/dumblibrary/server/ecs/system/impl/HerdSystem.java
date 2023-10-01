@@ -8,7 +8,7 @@ import net.dumbcode.dumblibrary.server.ecs.component.impl.HerdComponent;
 import net.dumbcode.dumblibrary.server.ecs.system.EntitySystem;
 import net.dumbcode.dumblibrary.server.utils.WorldUtils;
 import net.minecraft.entity.CreatureEntity;
-import net.minecraft.entity.Entity;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;

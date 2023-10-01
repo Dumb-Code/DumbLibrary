@@ -11,11 +11,13 @@ import net.minecraft.network.IPacket;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.world.World;
+import net.minecraft.world.entity.ambient.AmbientCreature;
+import net.minecraft.world.phys.AABB;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
 import net.minecraftforge.fml.network.NetworkHooks;
 
-public abstract class ComposableCreatureEntity extends CreatureEntity implements ComponentMapWriteAccess, IEntityAdditionalSpawnData {
+public abstract class ComposableCreatureEntity extends AmbientCreature implements ComponentMapWriteAccess, IEntityAdditionalSpawnData {
     private final EntityComponentMap components = new EntityComponentMap();
 
     protected ComposableCreatureEntity(EntityType<? extends CreatureEntity> type, World world) {
@@ -50,7 +52,7 @@ public abstract class ComposableCreatureEntity extends CreatureEntity implements
     }
 
     @Override
-    public AxisAlignedBB getBoundingBoxForCulling() {
+    public AABB getBoundingBoxForCulling() {
         return this.get(EntityComponentTypes.CULL_SIZE)
             .map(c -> {
                 float halfWidth = c.getWidth() / 2;

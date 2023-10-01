@@ -1,7 +1,7 @@
 package net.dumbcode.dumblibrary.server.utils;
 
 import net.minecraft.util.math.vector.Matrix4f;
-import net.minecraft.util.math.vector.Vector3f;
+import org.joml.Vector3f;
 
 public class MatrixUtils {
 

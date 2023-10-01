@@ -1,10 +1,11 @@
 package net.dumbcode.dumblibrary.client;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.matrix.GuiGraphics;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 import net.dumbcode.dumblibrary.server.utils.MathUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.AbstractGui;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -13,13 +14,13 @@ import net.minecraft.util.Direction;
 import net.minecraft.util.math.vector.Matrix3f;
 import net.minecraft.util.math.vector.Matrix4f;
 import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.math.vector.Vector3f;
+import org.joml.Vector3f;
 import net.minecraft.util.text.ITextComponent;
 
 import java.util.Arrays;
 
 public class RenderUtils {
-    public static void drawCubeoid(MatrixStack stack, Vector3d si, Vector3d ei, IVertexBuilder buff) {
+    public static void drawCubeoid(GuiGraphics stack, Vector3d si, Vector3d ei, IVertexBuilder buff) {
         Matrix4f pose = stack.last().pose();
         Matrix3f normal = stack.last().normal();
 
@@ -58,7 +59,7 @@ public class RenderUtils {
 //    }
 
     //ulf, ulb, urf, urb, dlf, dlb, drf, drb
-    public static void drawSpacedCube(MatrixStack stack, IVertexBuilder buff, float r, float g, float b, float a, int light, int overlay, float ulfx, float ulfy, float ulfz, float ulbx, float ulby, float ulbz, float urfx, float urfy, float urfz, float urbx, float urby, float urbz, float dlfx, float dlfy, float dlfz, float dlbx, float dlby, float dlbz, float drfx, float drfy, float drfz, float drbx, float drby, float drbz, float uu, float uv, float du, float dv, float lu, float lv, float ru, float rv, float fu, float fv,float bu, float bv, float tw,float th, float td) {
+    public static void drawSpacedCube(GuiGraphics stack, IVertexBuilder buff, float r, float g, float b, float a, int light, int overlay, float ulfx, float ulfy, float ulfz, float ulbx, float ulby, float ulbz, float urfx, float urfy, float urfz, float urbx, float urby, float urbz, float dlfx, float dlfy, float dlfz, float dlbx, float dlby, float dlbz, float drfx, float drfy, float drfz, float drbx, float drby, float drbz, float uu, float uv, float du, float dv, float lu, float lv, float ru, float rv, float fu, float fv,float bu, float bv, float tw,float th, float td) {
         Vector3f xNorm = MathUtils.calculateNormalF(urfx, urfy, urfz, drfx, drfy, drfz, dlfx, dlfy, dlfz);
         Vector3f yNorm = MathUtils.calculateNormalF(ulfx, ulfy, ulfz, ulbx, ulby, ulbz, urbx, urby, urbz);
         Vector3f zNorm = MathUtils.calculateNormalF(drfx, drfy, drfz, urfx, urfy, urfz, urbx, urby, urbz);
@@ -92,14 +93,14 @@ public class RenderUtils {
         buff.vertex(pose, ulbx, ulby, ulbz).color(r, g, b, a).uv(lu, lv+tw).overlayCoords(overlay).uv2(light).normal(normal, -zNorm.x(), -zNorm.y(), -zNorm.z()).endVertex();
     }
 
-    public static void renderBoxLines(MatrixStack stack, IVertexBuilder buff, Vector3f[] points, Direction... blocked) { //todo: color params
+    public static void renderBoxLines(GuiGraphics stack, IVertexBuilder buff, Vector3f[] points, Direction... blocked) { //todo: color params
         renderBoxLines(
             stack, buff,
             Arrays.stream(points).map(Vector3d::new).toArray(Vector3d[]::new),
             blocked
         );
     }
-    public static void renderBoxLines(MatrixStack stack, IVertexBuilder buff, Vector3d[] points, Direction... blocked) { //todo: color params
+    public static void renderBoxLines(GuiGraphics stack, IVertexBuilder buff, Vector3d[] points, Direction... blocked) { //todo: color params
         renderLineSegment(stack, buff, points, blocked, 0b100, 0b101, 0b111, 0b110);
         renderLineSegment(stack, buff, points, blocked, 0b000, 0b001, 0b011, 0b010);
         renderLineSegment(stack, buff, points, blocked, 0b011, 0b111);
@@ -108,7 +109,7 @@ public class RenderUtils {
         renderLineSegment(stack, buff, points, blocked, 0b100, 0b000);
     }
 
-    public static void renderLineSegment(MatrixStack stack, IVertexBuilder buff, Vector3d[] points, Direction[] blocked, int... ints) {
+    public static void renderLineSegment(GuiGraphics stack, IVertexBuilder buff, Vector3d[] points, Direction[] blocked, int... ints) {
         Matrix4f pose = stack.last().pose();
         over:
         for (int i = 0; i < ints.length; i++) {
@@ -143,18 +144,18 @@ public class RenderUtils {
 //        buff.pos(x, y, 0).uv(sprite.getInterpolatedU(minU), sprite.getInterpolatedV(minV)).endVertex();
 //    }
 
-    public static void renderBorderExclusive(MatrixStack stack, int left, int top, int right, int bottom, int borderSize, int borderColor) {
+    public static void renderBorderExclusive(GuiGraphics stack, int left, int top, int right, int bottom, int borderSize, int borderColor) {
         renderBorder(stack, left - borderSize, top - borderSize, right + borderSize, bottom + borderSize, borderSize, borderColor);
     }
 
-    public static void renderBorder(MatrixStack stack, int left, int top, int right, int bottom, int borderSize, int borderColor) {
-        AbstractGui.fill(stack, left, top, right, top + borderSize, borderColor);
-        AbstractGui.fill(stack, left, bottom, right, bottom - borderSize, borderColor);
-        AbstractGui.fill(stack, left, top, left + borderSize, bottom, borderColor);
-        AbstractGui.fill(stack, right, top, right - borderSize, bottom, borderColor);
+    public static void renderBorder(GuiGraphics stack, int left, int top, int right, int bottom, int borderSize, int borderColor) {
+        AbstractGui.stack.fill(left, top, right, top + borderSize, borderColor);
+        AbstractGui.stack.fill(left, bottom, right, bottom - borderSize, borderColor);
+        AbstractGui.stack.fill(left, top, left + borderSize, bottom, borderColor);
+        AbstractGui.stack.fill(right, top, right - borderSize, bottom, borderColor);
     }
 
-    public static void drawTexturedQuad(MatrixStack stack, IVertexBuilder buffer, float left, float top, float right, float bottom, float minU, float minV, float maxU, float maxV, float zLevel) {
+    public static void drawTexturedQuad(GuiGraphics stack, IVertexBuilder buffer, float left, float top, float right, float bottom, float minU, float minV, float maxU, float maxV, float zLevel) {
 
 //        buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
 
@@ -168,15 +169,15 @@ public class RenderUtils {
 //        Tessellator.getInstance().draw();
     }
 
-    public static void draw256Texture(MatrixStack stack, int x, int y, int u, int v, int sizeX, int sizeU) {
-        AbstractGui.blit(stack, x, y, 0, u, v, sizeX, sizeU, 256, 256);
+    public static void draw256Texture(GuiGraphics stack, int x, int y, int u, int v, int sizeX, int sizeU) {
+        AbstractGui.stack.blit(x, y, 0, u, v, sizeX, sizeU, 256, 256);
     }
 
-    public static void drawTextureAtlasSprite(MatrixStack stack, double x, double y, TextureAtlasSprite sprite, double width, double height) {
+    public static void drawTextureAtlasSprite(GuiGraphics stack, double x, double y, TextureAtlasSprite sprite, double width, double height) {
         drawTextureAtlasSprite(stack, x, y, sprite, width, height, 0F, 0F, 16F, 16F);
     }
 
-    public static void drawTextureAtlasSprite(MatrixStack stack, double x, double y, TextureAtlasSprite sprite, double width, double height, double minU, double minV, double maxU, double maxV) {
+    public static void drawTextureAtlasSprite(GuiGraphics stack, double x, double y, TextureAtlasSprite sprite, double width, double height, double minU, double minV, double maxU, double maxV) {
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder bufferbuilder = tessellator.getBuilder();
 
@@ -190,7 +191,7 @@ public class RenderUtils {
         tessellator.end();
     }
 
-    public static void drawScaledCustomSizeModalRect(MatrixStack stack, int x, int y, float u, float v, int uWidth, int vHeight, int width, int height, float tileWidth, float tileHeight)
+    public static void drawScaledCustomSizeModalRect(GuiGraphics stack, int x, int y, float u, float v, int uWidth, int vHeight, int width, int height, float tileWidth, float tileHeight)
     {
         Matrix4f pose = stack.last().pose();
         float f = 1.0F / tileWidth;
@@ -208,12 +209,12 @@ public class RenderUtils {
     public static final int PIXELS_PER_TICK = 1;
     public static final int TICKS_WAIT_AT_END = 2;
 
-    public static void renderScrollingText(MatrixStack stack, ITextComponent text, float scrollTicks, int x, int y, int width, int color) {
+    public static void renderScrollingText(GuiGraphics stack, ITextComponent text, float scrollTicks, int x, int y, int width, int color) {
         Minecraft mc = Minecraft.getInstance();
         int textWidth = mc.font.width(text);
 
         if(textWidth < width) {
-            mc.font.draw(stack, text, x, y, color);
+            mc.stack.drawString(font, text, x, y, color);
             return;
         }
 
@@ -229,7 +230,7 @@ public class RenderUtils {
             start = x + width - textWidth;
         }
 
-        mc.font.draw(stack, text, start, y, color);
+        mc.stack.drawString(font, text, start, y, color);
 
         StencilStack.popStencil();
     }

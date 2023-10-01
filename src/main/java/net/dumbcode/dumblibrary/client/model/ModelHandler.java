@@ -4,7 +4,7 @@ import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.client.model.command.ModelCommandLoader;
 import net.dumbcode.dumblibrary.client.model.dcm.baked.DCMModelHandler;
 import net.dumbcode.dumblibrary.client.model.transformtype.TransformTypeModelLoader;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.model.ModelLoaderRegistry;
 

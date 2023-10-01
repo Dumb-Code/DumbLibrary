@@ -1,7 +1,7 @@
 package net.dumbcode.dumblibrary.client.gui;
 
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.matrix.GuiGraphics;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -32,7 +32,7 @@ public class GuiDropdownBox<T extends SelectListEntry> extends Widget {
 
 
     public GuiDropdownBox(int xPos, int yPos, int width, int cellHeight, int cellMax, Supplier<List<T>> listSupplier) {
-        super(xPos, yPos, width, cellHeight, new StringTextComponent(""));
+        super(xPos, yPos, width, cellHeight, Component.literal(""));
         this.scrollBox = new GuiScrollBox<>(this.x, this.y + cellHeight, width, cellHeight, cellMax, this::getSearchedList);
         this.cellHeight = cellHeight;
         this.listSupplier = listSupplier;
@@ -63,7 +63,7 @@ public class GuiDropdownBox<T extends SelectListEntry> extends Widget {
      * @param mouseY the mouse's y position
      */
     @Override
-    public void render(MatrixStack stack, int mouseX, int mouseY, float ticks) {
+    public void render(GuiGraphics stack, int mouseX, int mouseY, float ticks) {
         if (this.open) {
             this.scrollBox.render(stack, mouseX, mouseY, ticks);
         }
@@ -78,15 +78,15 @@ public class GuiDropdownBox<T extends SelectListEntry> extends Widget {
      * @param mouseX the mouse's x
      * @param mouseY the mouse's y
      */
-    private void renderMainCell(MatrixStack stack, int mouseX, int mouseY) {
+    private void renderMainCell(GuiGraphics stack, int mouseX, int mouseY) {
         //Draw the main background
 
-        AbstractGui.fill(stack, this.x, this.y, this.x + this.width, this.y + this.cellHeight, this.scrollBox.getBorderColor());
-        AbstractGui.fill(stack, this.x +1, this.y +1, this.x + this.width-1, this.y + this.cellHeight-1, this.scrollBox.getInsideColor());
+        AbstractGui.stack.fill(this.x, this.y, this.x + this.width, this.y + this.cellHeight, this.scrollBox.getBorderColor());
+        AbstractGui.stack.fill(this.x +1, this.y +1, this.x + this.width-1, this.y + this.cellHeight-1, this.scrollBox.getInsideColor());
 
         StencilStack.pushSquareStencil(stack, this.x, this.y, this.x + this.width, this.y + this.cellHeight);
         if (!this.search.isEmpty()) {
-            MC.font.draw(stack, this.search, this.x + 5, this.y + this.cellHeight / 2F - MC.font.lineHeight / 2F, -1);
+            MC.stack.drawString(font, this.search, this.x + 5, this.y + this.cellHeight / 2F - MC.font.lineHeight / 2F, -1);
         } else if (this.getActive() != null) {
             this.getActive().draw(stack, this.x, this.y, this.width, this.cellHeight, mouseX, mouseY, this.isMouseOver(mouseX, mouseY));
         }
@@ -94,7 +94,7 @@ public class GuiDropdownBox<T extends SelectListEntry> extends Widget {
 
         //Draw the highlighted section of the main part, if the mouse is over
         if (mouseX - this.x > 0 && mouseX - this.x <= this.width && mouseY >= this.y && mouseY < this.y + this.cellHeight) {
-            AbstractGui.fill(stack, this.x, this.y, this.x + this.width, this.y + this.cellHeight, this.scrollBox.getHighlightColor());
+            AbstractGui.stack.fill(this.x, this.y, this.x + this.width, this.y + this.cellHeight, this.scrollBox.getHighlightColor());
         }
     }
 

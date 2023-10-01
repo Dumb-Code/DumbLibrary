@@ -1,12 +1,12 @@
 package net.dumbcode.dumblibrary.client.model;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.matrix.GuiGraphics;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 import net.dumbcode.dumblibrary.client.model.dcm.DCMModel;
 import net.dumbcode.dumblibrary.server.utils.MissingModelInfo;
 import net.minecraft.client.renderer.entity.model.EntityModel;
 import net.minecraft.client.renderer.model.ModelRenderer;
-import net.minecraft.entity.Entity;
+import net.minecraft.world.entity.Entity;
 
 /**
  * A simple missing model. Just one 16x16x16 cube
@@ -24,7 +24,7 @@ public class ModelMissing extends DCMModel {
     }
 
     @Override
-    public void renderToBuffer(MatrixStack stack, IVertexBuilder buffer, int overlay, int light, float r, float g, float b, float opacity) {
+    public void renderToBuffer(GuiGraphics stack, IVertexBuilder buffer, int overlay, int light, float r, float g, float b, float opacity) {
         this.cube.render(stack, buffer, overlay, light, r, g, b, opacity);
         super.renderToBuffer(stack, buffer, overlay, light, r, g, b, opacity);
     }

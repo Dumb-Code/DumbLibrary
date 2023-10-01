@@ -3,7 +3,7 @@ package net.dumbcode.dumblibrary.server.animation;
 import net.dumbcode.studio.animation.instance.AnimatedCube;
 import net.dumbcode.studio.model.RotationOrder;
 import net.dumbcode.studio.util.EssentiallyACube;
-import net.minecraft.util.math.vector.Vector3f;
+import org.joml.Vector3f;
 
 import javax.annotation.Nullable;
 

@@ -1,6 +1,6 @@
 package net.dumbcode.dumblibrary.server.dna.storages;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.matrix.GuiGraphics;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -16,7 +16,7 @@ public class GeneticFieldModifierStorage extends RandomUUIDStorage<Float> {
 
     @Override
     @OnlyIn(Dist.CLIENT)
-    public void render(MatrixStack stack, GeneticType<?, Float> type, Float value, int x, int y, int width, int height, float ticks) {
+    public void render(GuiGraphics stack, GeneticType<?, Float> type, Float value, int x, int y, int width, int height, float ticks) {
         int color = -1;
         String prefix = "";
         if(value > 0) {

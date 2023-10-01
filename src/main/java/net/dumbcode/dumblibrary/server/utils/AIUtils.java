@@ -2,7 +2,7 @@ package net.dumbcode.dumblibrary.server.utils;
 
 import com.google.common.collect.Lists;
 import lombok.experimental.UtilityClass;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
 
 import java.util.List;
 

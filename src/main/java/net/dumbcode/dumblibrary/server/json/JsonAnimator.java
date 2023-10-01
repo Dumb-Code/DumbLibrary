@@ -7,7 +7,7 @@ import net.dumbcode.dumblibrary.client.model.dcm.DCMModel;
 import net.dumbcode.dumblibrary.server.json.objects.Constants;
 import net.dumbcode.dumblibrary.server.json.objects.JsonAnimationModule;
 import net.dumbcode.dumblibrary.server.json.objects.JsonAnimationRegistry;
-import net.minecraft.entity.Entity;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.util.JSONUtils;
 import org.apache.commons.lang3.tuple.Pair;
 

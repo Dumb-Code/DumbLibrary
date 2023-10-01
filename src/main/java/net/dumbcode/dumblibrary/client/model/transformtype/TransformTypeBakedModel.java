@@ -1,6 +1,6 @@
 package net.dumbcode.dumblibrary.client.model.transformtype;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.matrix.GuiGraphics;
 import lombok.experimental.Delegate;
 import net.minecraft.client.renderer.model.IBakedModel;
 import net.minecraft.client.renderer.model.ItemCameraTransforms;
@@ -30,7 +30,7 @@ public class TransformTypeBakedModel implements IDynamicBakedModel {
     }
 
     @Override
-    public IBakedModel handlePerspective(ItemCameraTransforms.TransformType cameraTransformType, MatrixStack stack) {
+    public IBakedModel handlePerspective(ItemCameraTransforms.TransformType cameraTransformType, GuiGraphics stack) {
         return this.modelOverrides.getOrDefault(cameraTransformType, this.defaultModel).handlePerspective(cameraTransformType, stack);
     }
 
@@ -39,6 +39,6 @@ public class TransformTypeBakedModel implements IDynamicBakedModel {
      */
     @SuppressWarnings("unused")
     private interface DelegateExclusions {
-        IBakedModel handlePerspective(ItemCameraTransforms.TransformType cameraTransformType, MatrixStack stack);
+        IBakedModel handlePerspective(ItemCameraTransforms.TransformType cameraTransformType, GuiGraphics stack);
     }
 }

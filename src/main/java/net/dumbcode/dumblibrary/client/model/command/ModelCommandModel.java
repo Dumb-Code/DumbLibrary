@@ -1,6 +1,6 @@
 package net.dumbcode.dumblibrary.client.model.command;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.matrix.GuiGraphics;
 import lombok.AllArgsConstructor;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.renderer.model.BakedQuad;
@@ -9,7 +9,7 @@ import net.minecraft.client.renderer.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.model.ItemOverrideList;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.IBlockDisplayReader;
 import net.minecraftforge.client.model.data.IDynamicBakedModel;
 import net.minecraftforge.client.model.data.IModelData;
@@ -80,7 +80,7 @@ public class ModelCommandModel implements IDynamicBakedModel {
         return this.delegate.doesHandlePerspectives();
     }
 
-    public IBakedModel handlePerspective(ItemCameraTransforms.TransformType cameraTransformType, MatrixStack mat) {
+    public IBakedModel handlePerspective(ItemCameraTransforms.TransformType cameraTransformType, GuiGraphics mat) {
         this.delegate.handlePerspective(cameraTransformType, mat);
         return this;
     }

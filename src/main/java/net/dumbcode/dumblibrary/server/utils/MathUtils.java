@@ -5,7 +5,7 @@ import lombok.Value;
 import lombok.experimental.UtilityClass;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.math.vector.Vector3f;
+import org.joml.Vector3f;
 
 import java.util.Collection;
 import java.util.Map;

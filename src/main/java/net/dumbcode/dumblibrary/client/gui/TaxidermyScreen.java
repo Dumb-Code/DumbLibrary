@@ -9,7 +9,7 @@ public abstract class TaxidermyScreen extends Screen implements IHasContainer<Ta
     private final TaxidermyContainer container;
 
     protected TaxidermyScreen(TaxidermyContainer container) {
-        super(new StringTextComponent("Taxidermy :)"));
+        super(Component.literal("Taxidermy :)"));
         this.container = container;
     }
 

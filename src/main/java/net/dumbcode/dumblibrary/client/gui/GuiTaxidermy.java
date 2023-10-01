@@ -9,8 +9,8 @@ import net.dumbcode.dumblibrary.server.network.C2SMoveInHistory;
 import net.dumbcode.dumblibrary.server.taxidermy.BaseTaxidermyBlockEntity;
 import net.dumbcode.dumblibrary.server.taxidermy.TaxidermyHistory;
 import net.dumbcode.dumblibrary.server.utils.XYZAxis;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.vector.Vector3f;
+import net.minecraft.resources.ResourceLocation;
+import org.joml.Vector3f;
 import net.minecraft.util.text.ITextComponent;
 
 import java.util.Map;

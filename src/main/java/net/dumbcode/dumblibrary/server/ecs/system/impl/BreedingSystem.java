@@ -9,7 +9,7 @@ import net.dumbcode.dumblibrary.server.ecs.component.additionals.BreedingResultC
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.CanBreedComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.impl.BreedingComponent;
 import net.dumbcode.dumblibrary.server.ecs.system.EntitySystem;
-import net.minecraft.entity.Entity;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.world.World;
 

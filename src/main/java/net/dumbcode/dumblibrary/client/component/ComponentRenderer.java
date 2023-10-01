@@ -1,14 +1,14 @@
 package net.dumbcode.dumblibrary.client.component;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.matrix.GuiGraphics;
 import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentTypes;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderCallbackComponent;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererManager;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.resources.ResourceLocation;
 
 public class ComponentRenderer<E extends Entity & ComponentAccess> extends EntityRenderer<E> {
 
@@ -17,7 +17,7 @@ public class ComponentRenderer<E extends Entity & ComponentAccess> extends Entit
     }
 
     @Override
-    public void render(E entity, float entityYaw, float partialTicks, MatrixStack stack, IRenderTypeBuffer buffer, int light) {
+    public void render(E entity, float entityYaw, float partialTicks, GuiGraphics stack, IRenderTypeBuffer buffer, int light) {
         entity.get(EntityComponentTypes.RENDER_CONTEXT.get()).ifPresent(componentRenderContext -> {
             RenderComponentContext context = componentRenderContext.getContext();
             for (RenderCallbackComponent.MainCallback callback : context.getRenderCallbacks()) {

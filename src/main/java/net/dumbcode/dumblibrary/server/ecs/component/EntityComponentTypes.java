@@ -10,7 +10,7 @@ import net.dumbcode.dumblibrary.server.ecs.item.systems.ItemEatenSystem;
 import net.dumbcode.dumblibrary.server.ecs.system.RegisterSystemsEvent;
 import net.dumbcode.dumblibrary.server.ecs.system.impl.*;
 import net.dumbcode.dumblibrary.server.registry.EarlyDeferredRegister;
-import net.minecraftforge.fml.RegistryObject;
+import net.minecraftforge.registries.RegistryObject;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.RegistryBuilder;
 

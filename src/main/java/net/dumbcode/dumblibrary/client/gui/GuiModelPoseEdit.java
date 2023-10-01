@@ -1,6 +1,6 @@
 package net.dumbcode.dumblibrary.client.gui;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.matrix.GuiGraphics;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 import io.netty.util.internal.IntegerHolder;
@@ -24,9 +24,9 @@ import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.vector.Vector3f;
+import org.joml.Vector3f;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TranslationTextComponent;
@@ -247,7 +247,7 @@ public abstract class GuiModelPoseEdit extends Screen {
     }
 
     @Override
-    public void render(MatrixStack stack, int mouseX, int mouseY, float partialTicks) {
+    public void render(GuiGraphics stack, int mouseX, int mouseY, float partialTicks) {
         this.onFrame(mouseX, mouseY);
 
         this.setBlitOffset(-1000);
@@ -275,10 +275,10 @@ public abstract class GuiModelPoseEdit extends Screen {
         mouseOverEntry = mouseOver;
     }
 
-    private void renderModelUI(MatrixStack stack, int mouseX, int mouseY) {
+    private void renderModelUI(GuiGraphics stack, int mouseX, int mouseY) {
         setModelToPose();
-        RenderSystem.pushMatrix();
-        MatrixStack modelRendering = prepareModelRendering(width / 8 * 3, height / 2, 30f);
+        GL11.glPushMatrix();
+        GuiGraphics modelRendering = prepareModelRendering(width / 8 * 3, height / 2, 30f);
         XYZAxis ringBelowMouse = findRingBelowMouse();
         if(draggingRing) {
             if(ringBelowMouse != XYZAxis.NONE) {
@@ -312,11 +312,11 @@ public abstract class GuiModelPoseEdit extends Screen {
         RenderSystem.popMatrix();
 
         if(partBelowMouse != null) {
-            Minecraft.getInstance().font.draw(stack, partBelowMouse.getName(), mouseX, mouseY, -1);
+            Minecraft.getInstance().stack.drawString(font, partBelowMouse.getName(), mouseX, mouseY, -1);
         }
     }
 
-    private void renderUI(MatrixStack stack, int mouseX, int mouseY, float partialTicks) {
+    private void renderUI(GuiGraphics stack, int mouseX, int mouseY, float partialTicks) {
         super.render(stack, mouseX, mouseY, partialTicks);
         TaxidermyHistory history = getHistory();
         FontRenderer font = Minecraft.getInstance().font;
@@ -324,25 +324,25 @@ public abstract class GuiModelPoseEdit extends Screen {
         drawCenteredString(stack, font, titleText, width/2, 1, GuiConstants.NICE_WHITE);
 
         int yOffset = baseYOffset;
-        drawString(stack, font, GuiConstants.CONTROLS_TEXT.copy().setStyle(Style.EMPTY.withBold(true).withUnderlined(true)), 5, yOffset, GuiConstants.NICE_WHITE);
+        stack.drawString(font, GuiConstants.CONTROLS_TEXT.copy().setStyle(Style.EMPTY.withBold(true).withUnderlined(true)), 5, yOffset, GuiConstants.NICE_WHITE);
         yOffset += 15;
-        drawString(stack, font, selectModelPartText.copy().setStyle(Style.EMPTY.withUnderlined(true)), 5, yOffset, GuiConstants.NICE_WHITE);
+        stack.drawString(font, selectModelPartText.copy().setStyle(Style.EMPTY.withUnderlined(true)), 5, yOffset, GuiConstants.NICE_WHITE);
         yOffset += 12;
-        drawString(stack, font, GuiConstants.LEFT_CLICK_TEXT, 10, yOffset, GuiConstants.NICE_WHITE);
+        stack.drawString(font, GuiConstants.LEFT_CLICK_TEXT, 10, yOffset, GuiConstants.NICE_WHITE);
         yOffset += 10;
-        drawString(stack, font, rotateCameraText.copy().setStyle(Style.EMPTY.withUnderlined(true)), 5, yOffset, GuiConstants.NICE_WHITE);
+        stack.drawString(font, rotateCameraText.copy().setStyle(Style.EMPTY.withUnderlined(true)), 5, yOffset, GuiConstants.NICE_WHITE);
         yOffset += 12;
-        drawString(stack, font, GuiConstants.MIDDLE_CLICK_DRAG_TEXT, 10, yOffset, GuiConstants.NICE_WHITE);
+        stack.drawString(font, GuiConstants.MIDDLE_CLICK_DRAG_TEXT, 10, yOffset, GuiConstants.NICE_WHITE);
         yOffset += 10;
-        drawString(stack, font, GuiConstants.MOVEMENT_KEYS_TEXT, 10, yOffset, GuiConstants.NICE_WHITE);
+        stack.drawString(font, GuiConstants.MOVEMENT_KEYS_TEXT, 10, yOffset, GuiConstants.NICE_WHITE);
         yOffset += 10;
-        drawString(stack, font, GuiConstants.ARROW_KEYS_TEXT, 10, yOffset, GuiConstants.NICE_WHITE);
+        stack.drawString(font, GuiConstants.ARROW_KEYS_TEXT, 10, yOffset, GuiConstants.NICE_WHITE);
         yOffset += 10;
-        drawString(stack, font, zoomText.copy().withStyle(Style.EMPTY.withUnderlined(true)), 5, yOffset, GuiConstants.NICE_WHITE);
+        stack.drawString(font, zoomText.copy().withStyle(Style.EMPTY.withUnderlined(true)), 5, yOffset, GuiConstants.NICE_WHITE);
         yOffset += 12;
-        drawString(stack, font, GuiConstants.MOUSE_WHEEL_TEXT, 10, yOffset, GuiConstants.NICE_WHITE);
+        stack.drawString(font, GuiConstants.MOUSE_WHEEL_TEXT, 10, yOffset, GuiConstants.NICE_WHITE);
         yOffset += 10;
-        drawString(stack, font, GuiConstants.TRACKPAD_ZOOM_TEXT, 10, yOffset, GuiConstants.NICE_WHITE);
+        stack.drawString(font, GuiConstants.TRACKPAD_ZOOM_TEXT, 10, yOffset, GuiConstants.NICE_WHITE);
 
         ITextComponent selectionText;
         if(selectedPart == null)
@@ -388,8 +388,8 @@ public abstract class GuiModelPoseEdit extends Screen {
         return colorBuffer.get(0);
     }
 
-    private DCMModelRenderer findPartBelowMouse(MatrixStack stack) {
-        RenderSystem.pushMatrix();
+    private DCMModelRenderer findPartBelowMouse(GuiGraphics stack) {
+        GL11.glPushMatrix();
         RenderSystem.disableBlend();
         RenderSystem.enableDepthTest();
         RenderSystem.disableTexture();
@@ -416,7 +416,7 @@ public abstract class GuiModelPoseEdit extends Screen {
         return cubeMap.get(getColorUnderMouse() & 0xFFFFFF);
     }
 
-    private void renderRecursively(IVertexBuilder buffer, MatrixStack stack, List<DCMModelRenderer> cubes, Function<DCMModelRenderer, int[]> colorGetter) {
+    private void renderRecursively(IVertexBuilder buffer, GuiGraphics stack, List<DCMModelRenderer> cubes, Function<DCMModelRenderer, int[]> colorGetter) {
         for (DCMModelRenderer cube : cubes) {
             stack.pushPose();
 
@@ -619,18 +619,18 @@ public abstract class GuiModelPoseEdit extends Screen {
     }
 
 
-    private MatrixStack prepareModelRendering(int posX, int posY, float scale) {
+    private GuiGraphics prepareModelRendering(int posX, int posY, float scale) {
         scale *= zoom;
-        RenderSystem.translatef((float)posX, (float)posY, -500);
+        GL11.glTranslatef((float)posX, (float)posY, -500);
         RenderSystem.scalef(1.0F, 1.0F, -1.0F);
-        MatrixStack matrixstack = new MatrixStack();
-        matrixstack.scale(scale, scale, scale);
-        matrixstack.mulPose(Vector3f.XP.rotationDegrees(cameraPitch));
-        matrixstack.mulPose(Vector3f.YP.rotationDegrees(cameraYaw));
-        return matrixstack;
+        GuiGraphics GuiGraphics = new GuiGraphics();
+        GuiGraphics.scale(scale, scale, scale);
+        GuiGraphics.mulPose(Vector3f.XP.rotationDegrees(cameraPitch));
+        GuiGraphics.mulPose(Vector3f.YP.rotationDegrees(cameraYaw));
+        return GuiGraphics;
     }
 
-    private void actualModelRender(MatrixStack stack, DCMModelRenderer partBelowMouse) {
+    private void actualModelRender(GuiGraphics stack, DCMModelRenderer partBelowMouse) {
         RenderSystem.enableLighting();
         setModelToPose();
         Minecraft instance = Minecraft.getInstance();

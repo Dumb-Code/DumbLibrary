@@ -13,9 +13,10 @@ import net.dumbcode.dumblibrary.server.ecs.component.impl.data.GeneticLayerEntry
 import net.dumbcode.dumblibrary.server.registry.EarlyDeferredRegister;
 import net.dumbcode.dumblibrary.server.utils.GeneticUtils;
 import net.minecraft.entity.ai.attributes.Attributes;
-import net.minecraftforge.fml.RegistryObject;
+import net.minecraftforge.registries.RegistryObject;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.RegistryBuilder;
+import net.minecraftforge.registries.RegistryObject;
 
 import java.util.function.Supplier;
 

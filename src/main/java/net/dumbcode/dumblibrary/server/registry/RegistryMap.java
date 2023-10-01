@@ -1,8 +1,8 @@
 package net.dumbcode.dumblibrary.server.registry;
 
 import net.dumbcode.dumblibrary.DumbLibrary;
-import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.RegistryObject;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.registries.RegistryObject;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 
 import java.util.*;

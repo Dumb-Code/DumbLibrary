@@ -1,11 +1,12 @@
 package net.dumbcode.dumblibrary.client;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.matrix.GuiGraphics;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.AbstractGui;
+import net.minecraft.client.gui.GuiGraphics;
 import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayDeque;
@@ -14,14 +15,14 @@ import java.util.Deque;
 public class StencilStack {
     private static final Deque<Entry> renders = new ArrayDeque<>();
 
-    public static void pushSquareStencil(MatrixStack stack, int left, int top, int right, int bottom) {
+    public static void pushSquareStencil(GuiGraphics stack, int left, int top, int right, int bottom) {
         pushSquareStencil(stack, left, top, right, bottom, Type.AND);
     }
 
-    public static void pushSquareStencil(MatrixStack stack, int left, int top, int right, int bottom, Type type) {
-        MatrixStack.Entry last = stack.last();
-        MatrixStack clone = new MatrixStack();
-        MatrixStack.Entry clonedLast = clone.last();
+    public static void pushSquareStencil(GuiGraphics stack, int left, int top, int right, int bottom, Type type) {
+        GuiGraphics.Entry last = stack.last();
+        GuiGraphics clone = new GuiGraphics();
+        GuiGraphics.Entry clonedLast = clone.last();
         clonedLast.normal().load(last.normal());
         clonedLast.pose().set(last.pose());
         pushStencil(() ->  AbstractGui.fill(clone, left, top, right, bottom, -1), type);

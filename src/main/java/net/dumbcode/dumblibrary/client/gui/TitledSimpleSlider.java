@@ -1,6 +1,6 @@
 package net.dumbcode.dumblibrary.client.gui;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.matrix.GuiGraphics;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.util.text.ITextComponent;
@@ -27,11 +27,11 @@ public class TitledSimpleSlider extends SimpleSlider {
     }
 
     @Override
-    public void renderButton(MatrixStack stack, int mouseX, int mouseY, float ticks) {
+    public void renderButton(GuiGraphics stack, int mouseX, int mouseY, float ticks) {
         super.renderButton(stack, mouseX, mouseY, ticks);
         FontRenderer font = Minecraft.getInstance().font;
         int width = font.width(this.title);
         int startX = this.x + (this.width - width) / 2;
-        font.draw(stack, this.title, startX, this.y - font.lineHeight - 1, -1);
+        stack.drawString(font, this.title, startX, this.y - font.lineHeight - 1, -1);
     }
 }

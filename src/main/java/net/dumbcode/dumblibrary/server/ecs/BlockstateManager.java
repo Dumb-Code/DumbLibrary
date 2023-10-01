@@ -2,7 +2,7 @@ package net.dumbcode.dumblibrary.server.ecs;
 
 import net.dumbcode.dumblibrary.server.ecs.blocks.BlockPropertyAccess;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentType;
-import net.minecraft.block.Block;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraftforge.registries.ForgeRegistries;
 

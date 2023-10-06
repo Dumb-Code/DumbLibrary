@@ -3,7 +3,7 @@ package net.dumbcode.dumblibrary.server.utils;
 import com.google.common.collect.Maps;
 import lombok.Value;
 import lombok.experimental.UtilityClass;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Mth;
 import net.minecraft.util.math.vector.Vector3d;
 import org.joml.Vector3f;
 
@@ -57,11 +57,11 @@ public class MathUtils {
     }
 
     public static int floorToZero(double value) {
-        return value > 0 ? MathHelper.floor(value) : MathHelper.ceil(value);
+        return value > 0 ? Mth.floor(value) : Mth.ceil(value);
     }
 
     public static int ceilAwayZero(double value) {
-        return value > 0 ? MathHelper.ceil(value) : MathHelper.floor(value);
+        return value > 0 ? Mth.ceil(value) : Mth.floor(value);
     }
 
     public static int[] binChoose(int n) {

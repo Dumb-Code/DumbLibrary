@@ -25,7 +25,7 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Mth;
 import org.joml.Vector3f;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.Style;
@@ -250,9 +250,9 @@ public abstract class GuiModelPoseEdit extends Screen {
     public void render(GuiGraphics stack, int mouseX, int mouseY, float partialTicks) {
         this.onFrame(mouseX, mouseY);
 
-        this.setBlitOffset(-1000);
+        this.stack.pose.translate(0, 0, -1000);
         this.renderBackground(stack);
-        this.setBlitOffset(0);
+        this.stack.pose.translate(0, 0, 0);
 
         this.renderModelUI(stack, mouseX, mouseY);
         this.renderUI(stack, mouseX, mouseY, partialTicks);
@@ -294,9 +294,9 @@ public abstract class GuiModelPoseEdit extends Screen {
                 this.selectedPart = partBelowMouse;
                 this.currentSelectedRing = XYZAxis.NONE;
                 if(selectedPart != null) {
-                    xRotationSlider.setValue(MathHelper.wrapDegrees(Math.toDegrees(selectedPart.xRot)));
-                    yRotationSlider.setValue(MathHelper.wrapDegrees(Math.toDegrees(selectedPart.yRot)));
-                    zRotationSlider.setValue(MathHelper.wrapDegrees(Math.toDegrees(selectedPart.zRot)));
+                    xRotationSlider.setValue(Mth.wrapDegrees(Math.toDegrees(selectedPart.xRot)));
+                    yRotationSlider.setValue(Mth.wrapDegrees(Math.toDegrees(selectedPart.yRot)));
+                    zRotationSlider.setValue(Mth.wrapDegrees(Math.toDegrees(selectedPart.zRot)));
 
                     xPosition.setValue(selectedPart.x, false);
                     yPosition.setValue(selectedPart.y, false);
@@ -312,7 +312,7 @@ public abstract class GuiModelPoseEdit extends Screen {
         RenderSystem.popMatrix();
 
         if(partBelowMouse != null) {
-            Minecraft.getInstance().stack.drawString(font, partBelowMouse.getName(), mouseX, mouseY, -1);
+            stack.drawString(font, partBelowMouse.getName(), mouseX, mouseY, -1);
         }
     }
 
@@ -320,8 +320,8 @@ public abstract class GuiModelPoseEdit extends Screen {
         super.render(stack, mouseX, mouseY, partialTicks);
         TaxidermyHistory history = getHistory();
         FontRenderer font = Minecraft.getInstance().font;
-        drawCenteredString(stack, font, (history.getIndex()+1)+"/"+history.getSize(), width/2, height-redoButton.getHeight()-font.lineHeight, GuiConstants.NICE_WHITE);
-        drawCenteredString(stack, font, titleText, width/2, 1, GuiConstants.NICE_WHITE);
+        stack.drawCenteredString(font, (history.getIndex()+1)+"/"+history.getSize(), width/2, height-redoButton.getHeight()-font.lineHeight, GuiConstants.NICE_WHITE);
+        stack.drawCenteredString(font, titleText, width/2, 1, GuiConstants.NICE_WHITE);
 
         int yOffset = baseYOffset;
         stack.drawString(font, GuiConstants.CONTROLS_TEXT.copy().setStyle(Style.EMPTY.withBold(true).withUnderlined(true)), 5, yOffset, GuiConstants.NICE_WHITE);
@@ -349,7 +349,7 @@ public abstract class GuiModelPoseEdit extends Screen {
             selectionText = noPartSelectedText;
         else
             selectionText = new TranslationTextComponent(DumbLibrary.MODID+".gui.model_pose_edit.selected_part", selectedPart.getInfo().getName());
-        drawCenteredString(stack, font, selectionText, xRotationSlider.x+xRotationSlider.getWidth()/2, baseYOffset, GuiConstants.NICE_WHITE);
+        stack.drawCenteredString(font, selectionText, xRotationSlider.x+xRotationSlider.getWidth()/2, baseYOffset, GuiConstants.NICE_WHITE);
 
     }
     private XYZAxis findRingBelowMouse() {
@@ -427,7 +427,7 @@ public abstract class GuiModelPoseEdit extends Screen {
 
             renderRecursively(buffer, stack, cube.getChildCubes(), colorGetter);
 
-            stack.popPose();
+            stack.pose().popPose();
         }
     }
 

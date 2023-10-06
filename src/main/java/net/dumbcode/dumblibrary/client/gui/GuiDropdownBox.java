@@ -81,8 +81,8 @@ public class GuiDropdownBox<T extends SelectListEntry> extends Widget {
     private void renderMainCell(GuiGraphics stack, int mouseX, int mouseY) {
         //Draw the main background
 
-        AbstractGui.stack.fill(this.x, this.y, this.x + this.width, this.y + this.cellHeight, this.scrollBox.getBorderColor());
-        AbstractGui.stack.fill(this.x +1, this.y +1, this.x + this.width-1, this.y + this.cellHeight-1, this.scrollBox.getInsideColor());
+        stack.fill(this.x, this.y, this.x + this.width, this.y + this.cellHeight, this.scrollBox.getBorderColor());
+        stack.fill(this.x +1, this.y +1, this.x + this.width-1, this.y + this.cellHeight-1, this.scrollBox.getInsideColor());
 
         StencilStack.pushSquareStencil(stack, this.x, this.y, this.x + this.width, this.y + this.cellHeight);
         if (!this.search.isEmpty()) {
@@ -94,7 +94,7 @@ public class GuiDropdownBox<T extends SelectListEntry> extends Widget {
 
         //Draw the highlighted section of the main part, if the mouse is over
         if (mouseX - this.x > 0 && mouseX - this.x <= this.width && mouseY >= this.y && mouseY < this.y + this.cellHeight) {
-            AbstractGui.stack.fill(this.x, this.y, this.x + this.width, this.y + this.cellHeight, this.scrollBox.getHighlightColor());
+            stack.fill(this.x, this.y, this.x + this.width, this.y + this.cellHeight, this.scrollBox.getHighlightColor());
         }
     }
 

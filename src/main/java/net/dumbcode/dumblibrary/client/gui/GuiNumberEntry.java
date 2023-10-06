@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 import net.dumbcode.dumblibrary.server.utils.MathUtils;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.IGuiEventListener;
+import net.minecraft.client.gui.GuiEventListener;
 import net.minecraft.client.gui.INestedGuiEventHandler;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
@@ -52,7 +52,7 @@ public class GuiNumberEntry extends Widget implements INestedGuiEventHandler {
     private boolean syncedSinceEdit = true;
 
     @Nullable @Getter @Setter
-    private IGuiEventListener focused;
+    private GuiEventListener focused;
     @Getter @Setter
     private boolean dragging;
 
@@ -105,10 +105,10 @@ public class GuiNumberEntry extends Widget implements INestedGuiEventHandler {
     }
 
     @Override
-    public void setBlitOffset(int off) {
-        super.setBlitOffset(off);
+    public void stack.pose.translate(0, 0, int off) {
+        super.stack.pose.translate(0, 0, off);
         for (Widget child : this.children) {
-            child.setBlitOffset(off);
+            child.stack.pose.translate(0, 0, off);
         }
     }
 
@@ -176,7 +176,7 @@ public class GuiNumberEntry extends Widget implements INestedGuiEventHandler {
     }
 
     @Override
-    public List<? extends IGuiEventListener> children() {
+    public List<? extends GuiEventListener> children() {
         return this.children;
     }
 }

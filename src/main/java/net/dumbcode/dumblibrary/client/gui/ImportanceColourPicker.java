@@ -6,7 +6,7 @@ import net.dumbcode.dumblibrary.server.dna.data.GeneticTint;
 import net.dumbcode.dumblibrary.server.json.objects.Constants;
 import net.dumbcode.dumblibrary.server.utils.GeneticUtils;
 import net.minecraft.client.gui.AbstractGui;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Mth;
 
 import java.util.function.Consumer;
 
@@ -37,7 +37,7 @@ public class ImportanceColourPicker extends ColourWheelSelector {
     @Override
     protected void onDrag(double mouseX, double mouseY, double changeX, double changeY) {
         if(this.importanceSliderSelected) {
-            this.importance = MathHelper.clamp((float) ((mouseX - this.x) / this.size), 0, 1);
+            this.importance = Mth.clamp((float) ((mouseX - this.x) / this.size), 0, 1);
             this.onChange();
         }
         super.onDrag(mouseX, mouseY, changeX, changeY);
@@ -45,11 +45,11 @@ public class ImportanceColourPicker extends ColourWheelSelector {
 
     @Override
     public void renderButton(GuiGraphics stack, int mouseX, int mouseY, float ticks) {
-//        AbstractGui.stack.fill(this.x, this.y+this.height, this.x+this.width, this.y+this.height+17, 0xFF000000 | this.calculateColor());
+//        stack.fill(this.x, this.y+this.height, this.x+this.width, this.y+this.height+17, 0xFF000000 | this.calculateColor());
         super.renderButton(stack, mouseX, mouseY, ticks);
 
-        AbstractGui.stack.fill(this.x, this.y+this.size+6, this.x+this.width, this.y+this.size+11, 0xFF000000);
+        stack.fill(this.x, this.y+this.size+6, this.x+this.width, this.y+this.size+11, 0xFF000000);
         int startX = (int) (this.x + this.importance * this.width - 2);
-        AbstractGui.stack.fill(startX, this.y+this.size, startX+4, this.y+this.size+17, 0xFF000000);
+        stack.fill(startX, this.y+this.size, startX+4, this.y+this.size+17, 0xFF000000);
     }
 }

@@ -41,7 +41,7 @@ public class MatrixUtils {
      * @param floats an array of length 3, defined as [x, y, z]
      */
     public static void scale(Matrix4f matrix, float... floats) {
-        matrix.multiply(Matrix4f.createScaleMatrix(floats[0], floats[1], floats[2]));
+        matrix.mul(new Matrix4f().scale(floats[0], floats[1], floats[2]));
     }
 
 }

@@ -11,6 +11,8 @@ import net.minecraft.entity.passive.horse.CoatColors;
 import net.minecraft.item.DyeColor;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.world.World;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -287,7 +289,7 @@ public enum  EntityGeneticRegistry {
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends Entity> T createFromType(EntityType<T> type, World world, String variant) {
+    public <T extends Entity> T createFromType(EntityType<T> type, Level world, String variant) {
         T t = type.create(world);
         if(variant != null) {
             Pair<Function<?, String>, BiConsumer<?, String>> pair =this.variantData.get(type);

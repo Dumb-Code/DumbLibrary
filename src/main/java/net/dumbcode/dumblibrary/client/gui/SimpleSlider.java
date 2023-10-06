@@ -48,16 +48,16 @@ public class SimpleSlider extends AbstractSliderButton {
         int thumbBottom = thumbTop + this.height - 2;
 
         StencilStack.pushSquareStencil(stack, thumbLeft, thumbTop, thumbRight, thumbBottom, StencilStack.Type.NOT);
-        AbstractGui.stack.fill(this.x, this.y + 4, this.x + this.width, this.y + this.height - 4, 0xCF193B59);
+        stack.fill(this.x, this.y + 4, this.x + this.width, this.y + this.height - 4, 0xCF193B59);
         if(this.isHovered && this.active) {
-            AbstractGui.stack.fill(this.x, this.y + 4, this.x + this.width, this.y + this.height - 4, 0x2299bbff);
+            stack.fill(this.x, this.y + 4, this.x + this.width, this.y + this.height - 4, 0x2299bbff);
         }
         RenderUtils.renderBorderExclusive(stack, x, y + 4, x + width, y + height - 4, 1, 0xFF577694);
         StencilStack.popStencil();
 
-        AbstractGui.stack.fill(thumbLeft, thumbTop, thumbRight, thumbBottom, 0xCF193B59);
+        stack.fill(thumbLeft, thumbTop, thumbRight, thumbBottom, 0xCF193B59);
         if(this.isHovered && this.active) {
-            AbstractGui.stack.fill(thumbLeft, thumbTop, thumbRight, thumbBottom, 0x2299bbff);
+            stack.fill(thumbLeft, thumbTop, thumbRight, thumbBottom, 0x2299bbff);
         }
         RenderUtils.renderBorderExclusive(stack, thumbLeft, thumbTop, thumbRight, thumbBottom, 1, 0xFF577694);
 
@@ -69,7 +69,7 @@ public class SimpleSlider extends AbstractSliderButton {
             //TODO, srg names make it hard to figure out how to append to an ITextProperties from this trim operation, wraping this in StringTextComponent is kinda dirty.
             buttonText = Component.literal(mc.font.substrByWidth(buttonText, this.width - 6 - ellipsisWidth).getString() + "...");
 
-        AbstractGui.drawCenteredString(stack, mc.font, buttonText, this.x + this.width / 2, this.y + (this.height - 8) / 2, this.getFGColor());
+        stack.drawCenteredString(mc.font, buttonText, this.x + this.width / 2, this.y + (this.height - 8) / 2, this.getFGColor());
     }
 
     public void render(int x, int y, int width, int height, double sliderValue, ITextComponent buttonText, int fgColour, boolean active, GuiGraphics stack, int mouseX, int mouseY) {
@@ -82,16 +82,16 @@ public class SimpleSlider extends AbstractSliderButton {
         int thumbBottom = thumbTop + height - 2;
 
         StencilStack.pushSquareStencil(stack, thumbLeft, thumbTop, thumbRight, thumbBottom, StencilStack.Type.NOT);
-        AbstractGui.stack.fill(x, y + 4, x + width, y + height - 4, 0xCF193B59);
+        stack.fill(x, y + 4, x + width, y + height - 4, 0xCF193B59);
         if(isHovered && active) {
-            AbstractGui.stack.fill(x, y + 4, x + width, y + height - 4, 0x2299bbff);
+            stack.fill(x, y + 4, x + width, y + height - 4, 0x2299bbff);
         }
         RenderUtils.renderBorderExclusive(stack, x, y + 4, x + width, y + height - 4, 1, 0xFF577694);
         StencilStack.popStencil();
 
-        AbstractGui.stack.fill(thumbLeft, thumbTop, thumbRight, thumbBottom, 0xCF193B59);
+        stack.fill(thumbLeft, thumbTop, thumbRight, thumbBottom, 0xCF193B59);
         if(isHovered && active) {
-            AbstractGui.stack.fill(thumbLeft, thumbTop, thumbRight, thumbBottom, 0x2299bbff);
+            stack.fill(thumbLeft, thumbTop, thumbRight, thumbBottom, 0x2299bbff);
         }
         RenderUtils.renderBorderExclusive(stack, thumbLeft, thumbTop, thumbRight, thumbBottom, 1, 0xFF577694);
 
@@ -102,6 +102,6 @@ public class SimpleSlider extends AbstractSliderButton {
             //TODO, srg names make it hard to figure out how to append to an ITextProperties from this trim operation, wraping this in StringTextComponent is kinda dirty.
             buttonText = Component.literal(mc.font.substrByWidth(buttonText, width - 6 - ellipsisWidth).getString() + "...");
 
-        AbstractGui.drawCenteredString(stack, mc.font, buttonText, x + width / 2, y + (height - 8) / 2, fgColour);
+        stack.drawCenteredString(mc.font, buttonText, x + width / 2, y + (height - 8) / 2, fgColour);
     }
 }

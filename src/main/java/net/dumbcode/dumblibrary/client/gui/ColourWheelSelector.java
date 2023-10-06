@@ -12,7 +12,7 @@ import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.shader.ShaderInstance;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Mth;
 import net.minecraft.util.math.vector.Vector3i;
 import net.minecraft.util.text.StringTextComponent;
 import org.lwjgl.opengl.GL11;
@@ -49,7 +49,7 @@ public class ColourWheelSelector extends Widget {
     @Override
     public void renderButton(GuiGraphics stack, int mouseX, int mouseY, float ticks) {
 
-        AbstractGui.stack.fill(this.x, this.y, this.x+this.width, this.y+this.height, 0xFF000000 | this.calculateColor());
+        stack.fill(this.x, this.y, this.x+this.width, this.y+this.height, 0xFF000000 | this.calculateColor());
 
         RenderSystem.enableBlend();
         if(shaderManager != null) {
@@ -77,8 +77,8 @@ public class ColourWheelSelector extends Widget {
 
         int halfSliderWidth = 6;
 
-        AbstractGui.stack.fill(this.x + this.size + halfSliderWidth + 3, this.y + 5, this.x + this.size + halfSliderWidth + 7, this.y + this.height - 5, 0xFF000000);
-        AbstractGui.stack.fill(this.x + this.size + 5, (int) (this.y + 2 + (this.getHeight()-10)*this.lightness), this.x + this.size + 2*halfSliderWidth + 5, (int) (y + 8 + (this.getHeight()-10)*this.lightness), 0xFF000000);
+        stack.fill(this.x + this.size + halfSliderWidth + 3, this.y + 5, this.x + this.size + halfSliderWidth + 7, this.y + this.height - 5, 0xFF000000);
+        stack.fill(this.x + this.size + 5, (int) (this.y + 2 + (this.getHeight()-10)*this.lightness), this.x + this.size + 2*halfSliderWidth + 5, (int) (y + 8 + (this.getHeight()-10)*this.lightness), 0xFF000000);
 
 
         int centerX = x + this.size/2;
@@ -148,7 +148,7 @@ public class ColourWheelSelector extends Widget {
     protected void onDrag(double mouseX, double mouseY, double changeX, double changeY) {
         super.onDrag(mouseX, mouseY, changeX, changeY);
         if(this.sliderSelected) {
-            this.lightness = MathHelper.clamp((float) (mouseY - y) / (this.height-10), 0F, 1F);
+            this.lightness = Mth.clamp((float) (mouseY - y) / (this.height-10), 0F, 1F);
         }
         if(this.wheelSelected) {
             this.selectedPoint = new Vector3i(mouseX - x - this.size/2F + 5, mouseY - y - this.size/2F + 5, 0);

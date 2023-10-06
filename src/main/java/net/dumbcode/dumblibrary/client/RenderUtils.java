@@ -149,10 +149,10 @@ public class RenderUtils {
     }
 
     public static void renderBorder(GuiGraphics stack, int left, int top, int right, int bottom, int borderSize, int borderColor) {
-        AbstractGui.stack.fill(left, top, right, top + borderSize, borderColor);
-        AbstractGui.stack.fill(left, bottom, right, bottom - borderSize, borderColor);
-        AbstractGui.stack.fill(left, top, left + borderSize, bottom, borderColor);
-        AbstractGui.stack.fill(right, top, right - borderSize, bottom, borderColor);
+        stack.fill(left, top, right, top + borderSize, borderColor);
+        stack.fill(left, bottom, right, bottom - borderSize, borderColor);
+        stack.fill(left, top, left + borderSize, bottom, borderColor);
+        stack.fill(right, top, right - borderSize, bottom, borderColor);
     }
 
     public static void drawTexturedQuad(GuiGraphics stack, IVertexBuilder buffer, float left, float top, float right, float bottom, float minU, float minV, float maxU, float maxV, float zLevel) {
@@ -170,7 +170,7 @@ public class RenderUtils {
     }
 
     public static void draw256Texture(GuiGraphics stack, int x, int y, int u, int v, int sizeX, int sizeU) {
-        AbstractGui.stack.blit(x, y, 0, u, v, sizeX, sizeU, 256, 256);
+        stack.blit(x, y, 0, u, v, sizeX, sizeU, 256, 256);
     }
 
     public static void drawTextureAtlasSprite(GuiGraphics stack, double x, double y, TextureAtlasSprite sprite, double width, double height) {

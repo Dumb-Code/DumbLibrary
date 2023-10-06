@@ -161,7 +161,7 @@ public class DCMModelGeometry implements IModelGeometry<DCMModelGeometry> {
         for (CubeInfo child : cube.getChildren()) {
             this.build(outList, stack, child, layer);
         }
-        stack.popPose();
+        stack.pose().popPose();
     }
 
 
@@ -386,7 +386,7 @@ public class DCMModelGeometry implements IModelGeometry<DCMModelGeometry> {
      */
     private boolean hasSpriteGotTexture(TextureAtlasSprite sprite, float[] uvData) {
         int width = sprite.getWidth();
-        int height = sprite.getHeight();
+        int height = sprite.contents().height();
 
         for (int i = 0; i < sprite.getFrameCount(); i++) {
             for (float x = Math.min(uvData[0], uvData[2]); x < Math.max(uvData[0], uvData[2]); x += 1F/width) {

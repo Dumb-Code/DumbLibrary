@@ -66,7 +66,7 @@ public class YRotatedModel {
                 stack.pushPose();
                 rotateStack(stack, state.getValue(property));
                 applyTo(model, stack).ifPresent(b -> replacementMap.put(location, b));
-                stack.popPose();
+                stack.pose().popPose();
 
             }
         }

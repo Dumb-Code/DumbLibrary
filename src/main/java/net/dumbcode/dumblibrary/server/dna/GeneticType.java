@@ -16,6 +16,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.attributes.Attribute;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.ai.attributes.ModifiableAttributeInstance;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.registries.ForgeRegistryEntry;
@@ -75,7 +76,7 @@ public class GeneticType<T extends GeneticFactoryStorage<O>, O> extends ForgeReg
         return GeneticType.<GeneticFieldModifierStorage>builder().storage(GeneticFieldModifierStorage::new).build();
     }
 
-    public TranslationTextComponent getTranslationComponent() {
+    public MutableComponent getTranslationComponent() {
         ResourceLocation name = this.getRegistryName();
         return new TranslationTextComponent(name.getNamespace() + ".genetic_type." + name.getPath());
     }

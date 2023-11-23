@@ -5,7 +5,7 @@ import lombok.Setter;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.ECSSound;
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.INBT;
 import net.minecraft.nbt.ListNBT;
 import net.minecraft.nbt.StringNBT;
@@ -36,8 +36,8 @@ public class SoundStorageComponent extends EntityComponent {
     }
 
     @Override
-    public CompoundNBT serialize(CompoundNBT compound) {
-        CompoundNBT tag = new CompoundNBT();
+    public CompoundTag serialize(CompoundTag compound) {
+        CompoundTag tag = new CompoundTag();
         this.soundMap.forEach((sound, events) -> {
             ListNBT list = new ListNBT();
             for (SoundEvent event : events) {
@@ -50,9 +50,9 @@ public class SoundStorageComponent extends EntityComponent {
     }
 
     @Override
-    public void deserialize(CompoundNBT compound) {
+    public void deserialize(CompoundTag compound) {
         this.soundMap.clear();
-        CompoundNBT tag = compound.getCompound("Sounds");
+        CompoundTag tag = compound.getCompound("Sounds");
         for (String s : tag.getAllKeys()) {
             ListNBT list = tag.getList(s, Constants.NBT.TAG_STRING);
             List<SoundEvent> events = new ArrayList<>();

@@ -6,7 +6,7 @@ import net.dumbcode.dumblibrary.server.taxidermy.BaseTaxidermyBlockEntity;
 import net.dumbcode.dumblibrary.server.taxidermy.TaxidermyContainer;
 import net.dumbcode.dumblibrary.server.utils.XYZAxis;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.World;
@@ -24,7 +24,7 @@ public class C2SMoveSelectedSkeletalPart {
     private final float value;
 
 
-    public static C2SMoveSelectedSkeletalPart fromBytes(PacketBuffer buf) {
+    public static C2SMoveSelectedSkeletalPart fromBytes(FriendlyByteBuf buf) {
         return new C2SMoveSelectedSkeletalPart(
             buf.readUtf(32767),
             XYZAxis.values()[buf.readInt()],
@@ -33,7 +33,7 @@ public class C2SMoveSelectedSkeletalPart {
         );
     }
 
-    public static void toBytes(C2SMoveSelectedSkeletalPart packet, PacketBuffer buf) {
+    public static void toBytes(C2SMoveSelectedSkeletalPart packet, FriendlyByteBuf buf) {
         buf.writeUtf(packet.part);
         buf.writeInt(packet.axis.ordinal());
         buf.writeByte(packet.type);

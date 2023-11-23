@@ -9,7 +9,7 @@ import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentTypes;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.CanBreedComponent;
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.JSONUtils;
 
 @Getter
@@ -19,14 +19,14 @@ public class BreedingComponent extends EntityComponent implements CanBreedCompon
     private int minTicksBetweenBreeding = 2000;
 
     @Override
-    public CompoundNBT serialize(CompoundNBT compound) {
+    public CompoundTag serialize(CompoundTag compound) {
         compound.putInt("min_ticks_between_breeding", this.minTicksBetweenBreeding);
         compound.putInt("ticks_since_last_breeding", this.ticksSinceLastBreed);
         return super.serialize(compound);
     }
 
     @Override
-    public void deserialize(CompoundNBT compound) {
+    public void deserialize(CompoundTag compound) {
         this.minTicksBetweenBreeding = compound.getInt("min_ticks_between_breeding");
         this.ticksSinceLastBreed = compound.getInt("ticks_since_last_breeding");
         super.deserialize(compound);

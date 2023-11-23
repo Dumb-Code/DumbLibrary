@@ -10,8 +10,8 @@ import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderFlattenedLayerComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.impl.data.FlattenedLayerProperty;
 import net.dumbcode.dumblibrary.server.utils.IndexedObject;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.util.JSONUtils;
 import net.minecraftforge.common.util.Constants;
 
@@ -31,7 +31,7 @@ public class EyesClosedComponent extends EntityComponent implements RenderFlatte
     }
 
     @Override
-    public CompoundNBT serialize(CompoundNBT compound) {
+    public CompoundTag serialize(CompoundTag compound) {
         if(this.eyesOpenTexture != null) {
             compound.putString("open_texture", this.eyesOpenTexture);
         }
@@ -45,7 +45,7 @@ public class EyesClosedComponent extends EntityComponent implements RenderFlatte
     }
 
     @Override
-    public void deserialize(CompoundNBT compound) {
+    public void deserialize(CompoundTag compound) {
         this.eyesOpenTexture = compound.contains("open_texture", Constants.NBT.TAG_STRING) ? compound.getString("open_texture") : null;
         this.eyesClosedTexture = compound.contains("closed_texture", Constants.NBT.TAG_STRING) ? compound.getString("closed_texture") : null;
 
@@ -55,7 +55,7 @@ public class EyesClosedComponent extends EntityComponent implements RenderFlatte
     }
 
     @Override
-    public void serialize(PacketBuffer buf) {
+    public void serialize(FriendlyByteBuf buf) {
         buf.writeBoolean(this.eyesOpenTexture != null);
         if(this.eyesOpenTexture != null) {
             buf.writeUtf(this.eyesOpenTexture);
@@ -71,7 +71,7 @@ public class EyesClosedComponent extends EntityComponent implements RenderFlatte
     }
 
     @Override
-    public void serializeSync(PacketBuffer buf) {
+    public void serializeSync(FriendlyByteBuf buf) {
         buf.writeInt(this.blinkTicksLeft);
     }
 
@@ -95,7 +95,7 @@ public class EyesClosedComponent extends EntityComponent implements RenderFlatte
     }
 
     @Override
-    public void deserialize(PacketBuffer buf) {
+    public void deserialize(FriendlyByteBuf buf) {
         this.eyesOpenTexture = buf.readBoolean() ? buf.readUtf() : null;
         this.eyesClosedTexture = buf.readBoolean() ? buf.readUtf() : null;
 
@@ -105,7 +105,7 @@ public class EyesClosedComponent extends EntityComponent implements RenderFlatte
     }
 
     @Override
-    public void deserializeSync(PacketBuffer buf) {
+    public void deserializeSync(FriendlyByteBuf buf) {
         this.blinkTicksLeft = buf.readInt();
     }
 

@@ -9,7 +9,7 @@ import net.minecraft.entity.passive.FoxEntity;
 import net.minecraft.entity.passive.MooshroomEntity;
 import net.minecraft.entity.passive.horse.CoatColors;
 import net.minecraft.item.DyeColor;
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.World;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
@@ -371,7 +371,7 @@ public enum  EntityGeneticRegistry {
         public GeneticEntry<S, O> create(float modifier) {
             S storage = this.type.getStorage().get();
             //Ugly cloning method
-            storage.deserialize(this.storage.serialize(new CompoundNBT()));
+            storage.deserialize(this.storage.serialize(new CompoundTag()));
             return new GeneticEntry<>(this.type, storage).setModifier(this.type.getDataHandler().scale(this.value, modifier));
         }
     }

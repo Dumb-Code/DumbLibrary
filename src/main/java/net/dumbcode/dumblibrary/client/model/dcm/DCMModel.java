@@ -77,7 +77,7 @@ public class DCMModel extends EntityModel<Entity> {
     }
 
     public void renderImmediate(GuiGraphics stack, int light, ResourceLocation texture) {
-        IRenderTypeBuffer.Impl buffer = IRenderTypeBuffer.immediate(Tessellator.getInstance().getBuilder());
+        IRenderTypeBuffer.Impl buffer = IRenderTypeBuffer.immediate(Tesselator.getInstance().getBuilder());
         this.renderToBuffer(stack, buffer.getBuffer(this.renderType(texture)), light, OverlayTexture.NO_OVERLAY, 1, 1, 1, 1);
         buffer.endBatch();
     }

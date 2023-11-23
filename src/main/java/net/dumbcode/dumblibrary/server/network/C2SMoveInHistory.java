@@ -5,7 +5,7 @@ import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.server.taxidermy.BaseTaxidermyBlockEntity;
 import net.dumbcode.dumblibrary.server.taxidermy.TaxidermyContainer;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.World;
@@ -19,11 +19,11 @@ public class C2SMoveInHistory {
 
     private final boolean direction;
 
-    public static C2SMoveInHistory fromBytes(PacketBuffer buf) {
+    public static C2SMoveInHistory fromBytes(FriendlyByteBuf buf) {
         return new C2SMoveInHistory(buf.readBoolean());
     }
 
-    public static void toBytes(C2SMoveInHistory packet, PacketBuffer buf) {
+    public static void toBytes(C2SMoveInHistory packet, FriendlyByteBuf buf) {
         buf.writeBoolean(packet.direction);
     }
 

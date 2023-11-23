@@ -6,7 +6,7 @@ import lombok.Value;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.fml.network.NetworkEvent;
 import net.minecraftforge.fml.network.PacketDistributor;
 
@@ -54,7 +54,7 @@ public class SplitNetworkHandler {
     @SuppressWarnings("unchecked")
     private static <T> void encode(T obj, ByteBuf buf) {
         Entry<T> entry = (Entry<T>) CLASS_TO_ENTRY.get(obj.getClass());
-        entry.encoder.accept(obj, new PacketBuffer(buf));
+        entry.encoder.accept(obj, new FriendlyByteBuf(buf));
     }
 
 
@@ -97,7 +97,7 @@ public class SplitNetworkHandler {
     }
 
     private static <T> void handle(Entry<T> entry, ByteBuf buf, Supplier<NetworkEvent.Context> supplier) {
-        T apply = entry.decoder.apply(new PacketBuffer(buf));
+        T apply = entry.decoder.apply(new FriendlyByteBuf(buf));
         entry.messageConsumer.accept(apply, supplier);
     }
 
@@ -105,7 +105,7 @@ public class SplitNetworkHandler {
         BUFFER_MAP.remove(collectionID);
     }
 
-    public static <T> void registerMessage(Class<T> messageType, BiConsumer<T, PacketBuffer> encoder, Function<PacketBuffer, T> decoder, BiConsumer<T, Supplier<NetworkEvent.Context>> messageConsumer) {
+    public static <T> void registerMessage(Class<T> messageType, BiConsumer<T, FriendlyByteBuf> encoder, Function<FriendlyByteBuf, T> decoder, BiConsumer<T, Supplier<NetworkEvent.Context>> messageConsumer) {
         byte id = (byte) ids++;
         Entry<T> entry = new Entry<>(id, encoder, decoder, messageConsumer);
         CLASS_TO_ENTRY.put(messageType, entry);
@@ -136,8 +136,8 @@ public class SplitNetworkHandler {
     @Value
     private static class Entry<T> {
         byte id;
-        BiConsumer<T, PacketBuffer> encoder;
-        Function<PacketBuffer, T> decoder;
+        BiConsumer<T, FriendlyByteBuf> encoder;
+        Function<FriendlyByteBuf, T> decoder;
         BiConsumer<T, Supplier<NetworkEvent.Context>> messageConsumer;
     }
 }

@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.server.taxidermy.BaseTaxidermyBlockEntity;
 import net.dumbcode.dumblibrary.server.taxidermy.TaxidermyHistory;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.core.BlockPos;
 import org.joml.Vector3f;
@@ -24,7 +24,7 @@ public class C2SFullPoseChange {
     private final BlockPos pos;
     private final Map<String, Vector3f> pose;
 
-    public static C2SFullPoseChange fromBytes(PacketBuffer buf) {
+    public static C2SFullPoseChange fromBytes(FriendlyByteBuf buf) {
         int count = buf.readInt();
         Map<String, Vector3f> pose = new HashMap<>();
         for (int i = 0; i < count; i++) {
@@ -37,7 +37,7 @@ public class C2SFullPoseChange {
         return new C2SFullPoseChange(buf.readBlockPos(), pose);
     }
 
-    public static void toBytes(C2SFullPoseChange packet, PacketBuffer buf) {
+    public static void toBytes(C2SFullPoseChange packet, FriendlyByteBuf buf) {
         buf.writeInt(packet.pose.size());
         for (Map.Entry<String, Vector3f> entry : packet.pose.entrySet()) {
             buf.writeUtf(entry.getKey());

@@ -11,8 +11,8 @@ import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
 import net.dumbcode.dumblibrary.server.ecs.component.FinalizableComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderCallbackComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.ScaleAdjustmentComponent;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.util.JSONUtils;
 
 import java.util.ArrayList;
@@ -42,7 +42,7 @@ public class RenderAdjustmentsComponent extends EntityComponent implements Rende
     }
 
     @Override
-    public CompoundNBT serialize(CompoundNBT compound) {
+    public CompoundTag serialize(CompoundTag compound) {
         compound.putFloat("sx", this.defaultScale[0]);
         compound.putFloat("sy", this.defaultScale[1]);
         compound.putFloat("sz", this.defaultScale[2]);
@@ -51,7 +51,7 @@ public class RenderAdjustmentsComponent extends EntityComponent implements Rende
     }
 
     @Override
-    public void deserialize(CompoundNBT compound) {
+    public void deserialize(CompoundTag compound) {
         super.deserialize(compound);
         this.defaultScale[0] = compound.getFloat("sx");
         this.defaultScale[1] = compound.getFloat("sy");
@@ -60,7 +60,7 @@ public class RenderAdjustmentsComponent extends EntityComponent implements Rende
     }
 
     @Override
-    public void serialize(PacketBuffer buf) {
+    public void serialize(FriendlyByteBuf buf) {
         buf.writeFloat(this.defaultScale[0]);
         buf.writeFloat(this.defaultScale[1]);
         buf.writeFloat(this.defaultScale[2]);
@@ -68,7 +68,7 @@ public class RenderAdjustmentsComponent extends EntityComponent implements Rende
     }
 
     @Override
-    public void deserialize(PacketBuffer buf) {
+    public void deserialize(FriendlyByteBuf buf) {
         this.defaultScale[0] = buf.readFloat();
         this.defaultScale[1] = buf.readFloat();
         this.defaultScale[2] = buf.readFloat();

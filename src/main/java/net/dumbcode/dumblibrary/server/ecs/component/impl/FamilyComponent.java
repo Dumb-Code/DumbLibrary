@@ -11,7 +11,7 @@ import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentTypes;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.CanBreedComponent;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.JSONUtils;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.server.ServerWorld;
@@ -33,7 +33,7 @@ public class FamilyComponent extends EntityComponent implements CanBreedComponen
     }
 
     @Override
-    public CompoundNBT serialize(CompoundNBT compound) {
+    public CompoundTag serialize(CompoundTag compound) {
         compound.putUUID("family_uuid", this.familyUUID);
         compound.putString("family_type", this.familyTypeId.toString());
         compound.putBoolean("mate_for_life", this.mateForLife);
@@ -41,7 +41,7 @@ public class FamilyComponent extends EntityComponent implements CanBreedComponen
     }
 
     @Override
-    public void deserialize(CompoundNBT compound) {
+    public void deserialize(CompoundTag compound) {
         this.familyUUID = compound.getUUID("family_uuid");
         this.familyTypeId = new ResourceLocation(compound.getString("family_type"));
         this.mateForLife = compound.getBoolean("mate_for_life");

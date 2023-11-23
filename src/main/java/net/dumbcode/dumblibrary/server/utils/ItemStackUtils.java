@@ -1,6 +1,6 @@
 package net.dumbcode.dumblibrary.server.utils;
 
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.INBT;
 import net.minecraft.nbt.ListNBT;
 import net.minecraftforge.common.util.Constants;
@@ -37,8 +37,8 @@ public class ItemStackUtils {
                 }
                 return true;
             case Constants.NBT.TAG_COMPOUND:
-                CompoundNBT controlledTag = (CompoundNBT) controlled;
-                CompoundNBT testedTag = (CompoundNBT) tested;
+                CompoundTag controlledTag = (CompoundTag) controlled;
+                CompoundTag testedTag = (CompoundTag) tested;
                 for (String key : controlledTag.getAllKeys()) {
                     if(!compareControlledNbt(controlledTag.get(key), testedTag.get(key))) {
                         return false;

@@ -2,7 +2,7 @@ package net.dumbcode.dumblibrary.server;
 
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SUpdateTileEntityPacket;
 import net.minecraft.tileentity.TileEntity;
@@ -17,7 +17,7 @@ public class SimpleBlockEntity extends BlockEntity {
 
     @Override
     public SUpdateTileEntityPacket getUpdatePacket() {
-        CompoundNBT nbt = new CompoundNBT();
+        CompoundTag nbt = new CompoundTag();
         this.save(nbt);
         return new SUpdateTileEntityPacket(this.worldPosition, 0, nbt);
     }
@@ -28,8 +28,8 @@ public class SimpleBlockEntity extends BlockEntity {
     }
 
     @Override
-    public CompoundNBT getUpdateTag() {
-        CompoundNBT nbt = new CompoundNBT();
+    public CompoundTag getUpdateTag() {
+        CompoundTag nbt = new CompoundTag();
         this.save(nbt);
         return nbt;
     }

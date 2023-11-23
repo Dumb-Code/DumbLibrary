@@ -9,7 +9,7 @@ import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
 import net.dumbcode.dumblibrary.server.utils.CollectorUtils;
 import net.dumbcode.dumblibrary.server.utils.DumbJsonUtils;
 import net.dumbcode.dumblibrary.server.utils.StreamUtils;
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.util.JSONUtils;
 import net.minecraftforge.common.util.Constants;
@@ -32,8 +32,8 @@ public class ItemEatenComponent extends EntityComponent {
     }
 
     @Override
-    public CompoundNBT serialize(CompoundNBT compound) {
-        compound.put("effects", this.potionEffectList.stream().map(effect -> effect.save(new CompoundNBT())).collect(CollectorUtils.toNBTTagList()));
+    public CompoundTag serialize(CompoundTag compound) {
+        compound.put("effects", this.potionEffectList.stream().map(effect -> effect.save(new CompoundTag())).collect(CollectorUtils.toNBTTagList()));
         compound.putBoolean("ignore_hunger", this.ignoreHunger);
         compound.putInt("duration", this.duration);
         compound.putInt("fill_amount", this.fillAmount);
@@ -42,10 +42,10 @@ public class ItemEatenComponent extends EntityComponent {
     }
 
     @Override
-    public void deserialize(CompoundNBT compound) {
+    public void deserialize(CompoundTag compound) {
         super.deserialize(compound);
         this.potionEffectList.clear();
-        StreamUtils.stream(compound.getList("effects", Constants.NBT.TAG_COMPOUND)).map(tag -> EffectInstance.load((CompoundNBT) tag)).forEach(this.potionEffectList::add);
+        StreamUtils.stream(compound.getList("effects", Constants.NBT.TAG_COMPOUND)).map(tag -> EffectInstance.load((CompoundTag) tag)).forEach(this.potionEffectList::add);
         this.ignoreHunger = compound.getBoolean("ignore_hunger");
         this.duration = compound.getInt("duration");
         this.fillAmount = compound.getInt("fill_amount");

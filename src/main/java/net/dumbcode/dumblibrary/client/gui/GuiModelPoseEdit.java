@@ -55,10 +55,10 @@ public abstract class GuiModelPoseEdit extends Screen {
     private IntBuffer colorBuffer = BufferUtils.createIntBuffer(1);
     private DCMModelRenderer selectedPart;
     private boolean movedPart;
-    private TranslationTextComponent undoText = new TranslationTextComponent(DumbLibrary.MODID+".gui.model_pose_edit.undo");
-    private TranslationTextComponent redoText = new TranslationTextComponent(DumbLibrary.MODID+".gui.model_pose_edit.redo");
-    private TranslationTextComponent resetText = new TranslationTextComponent(DumbLibrary.MODID+".gui.model_pose_edit.reset");
-    private TranslationTextComponent propertiesGui = new TranslationTextComponent(DumbLibrary.MODID+".gui.model_pose_edit.edit_properties");
+    private TranslationTextComponent undoText = Component.translatable(DumbLibrary.MODID+".gui.model_pose_edit.undo");
+    private TranslationTextComponent redoText = Component.translatable(DumbLibrary.MODID+".gui.model_pose_edit.redo");
+    private TranslationTextComponent resetText = Component.translatable(DumbLibrary.MODID+".gui.model_pose_edit.reset");
+    private TranslationTextComponent propertiesGui = Component.translatable(DumbLibrary.MODID+".gui.model_pose_edit.edit_properties");
     protected float cameraPitch;
     protected float cameraYaw = 90f;
     protected double zoom = 1.0;
@@ -76,10 +76,10 @@ public abstract class GuiModelPoseEdit extends Screen {
      */
     private int baseYOffset = 20;
 
-    private TranslationTextComponent noPartSelectedText = new TranslationTextComponent(DumbLibrary.MODID+".gui.model_pose_edit.no_part_selected");
-    private TranslationTextComponent zoomText = new TranslationTextComponent(DumbLibrary.MODID+".gui.model_pose_edit.controls.zoom");
-    private TranslationTextComponent selectModelPartText = new TranslationTextComponent(DumbLibrary.MODID+".gui.model_pose_edit.controls.select_part");
-    private TranslationTextComponent rotateCameraText = new TranslationTextComponent(DumbLibrary.MODID+".gui.model_pose_edit.controls.rotate_camera");
+    private TranslationTextComponent noPartSelectedText = Component.translatable(DumbLibrary.MODID+".gui.model_pose_edit.no_part_selected");
+    private TranslationTextComponent zoomText = Component.translatable(DumbLibrary.MODID+".gui.model_pose_edit.controls.zoom");
+    private TranslationTextComponent selectModelPartText = Component.translatable(DumbLibrary.MODID+".gui.model_pose_edit.controls.select_part");
+    private TranslationTextComponent rotateCameraText = Component.translatable(DumbLibrary.MODID+".gui.model_pose_edit.controls.rotate_camera");
 
 //    private DialogBox dialogBox = new DialogBox()
 //            .root(new File(Minecraft.getMinecraft().gameDir, "dinosaur_poses"))
@@ -125,48 +125,48 @@ public abstract class GuiModelPoseEdit extends Screen {
         int buttonWidth = width/3;
 
         //Undo
-        this.addButton(undoButton = new ExtendedButton(0, height-21, buttonWidth, 20, undoText, b -> this.undo()));
+        this.addWidget(undoButton = new ExtendedButton(0, height-21, buttonWidth, 20, undoText, b -> this.undo()));
         //Redo
-        this.addButton(redoButton = new ExtendedButton(buttonWidth, height-21, buttonWidth, 20, redoText, b -> this.redo()));
+        this.addWidget(redoButton = new ExtendedButton(buttonWidth, height-21, buttonWidth, 20, redoText, b -> this.redo()));
         //Reset
-        this.addButton(resetButton = new ExtendedButton(buttonWidth*2, height-21, buttonWidth, 20, resetText, b -> this.reset()));
+        this.addWidget(resetButton = new ExtendedButton(buttonWidth*2, height-21, buttonWidth, 20, resetText, b -> this.reset()));
 
         //Rotation slider X
-        this.addButton(xRotationSlider = new WrappedSlider(
+        this.addWidget(xRotationSlider = new WrappedSlider(
             width-201, baseYOffset+font.lineHeight+2, 200, 20,
-            new TranslationTextComponent(PREFIX_KEY, "X"),
-            new TranslationTextComponent(SUFFIX_KEY),
+            Component.translatable(PREFIX_KEY, "X"),
+            Component.translatable(SUFFIX_KEY),
             -180.0, 180.0, 0.0, true, true,
             slider -> this.sliderChanged(slider.getValue(), XYZAxis.X_AXIS),
             this::actualizeEdit));
 
         //Rotation slider Y
-        this.addButton(yRotationSlider = new WrappedSlider(
+        this.addWidget(yRotationSlider = new WrappedSlider(
             width-201, baseYOffset+font.lineHeight+27, 200, 20,
-            new TranslationTextComponent(PREFIX_KEY, "Y"),
-            new TranslationTextComponent(SUFFIX_KEY),
+            Component.translatable(PREFIX_KEY, "Y"),
+            Component.translatable(SUFFIX_KEY),
             -180.0, 180.0, 0.0, true, true,
             slider -> this.sliderChanged(slider.getValue(), XYZAxis.Y_AXIS),
             this::actualizeEdit));
 
         //Rotation slider Z
-        this.addButton(zRotationSlider = new WrappedSlider(
+        this.addWidget(zRotationSlider = new WrappedSlider(
             width-201, baseYOffset+font.lineHeight+52, 200, 20,
-            new TranslationTextComponent(PREFIX_KEY, "Z"),
-            new TranslationTextComponent(SUFFIX_KEY),
+            Component.translatable(PREFIX_KEY, "Z"),
+            Component.translatable(SUFFIX_KEY),
             -180.0, 180.0, 0.0, true, true,
             slider -> this.sliderChanged(slider.getValue(), XYZAxis.Z_AXIS),
             this::actualizeEdit));
 
-        this.addButton(xPosition = new GuiNumberEntry(
+        this.addWidget(xPosition = new GuiNumberEntry(
             0, 0, 1/4F, 2, width - 168, zRotationSlider.y+zRotationSlider.getHeight()+15,
             66, 20, this::positionChanged));
 
-        this.addButton(yPosition = new GuiNumberEntry(
+        this.addWidget(yPosition = new GuiNumberEntry(
             1, 0, 1/4F, 2, width - 101, zRotationSlider.y+zRotationSlider.getHeight()+15,
             66, 20, this::positionChanged));
 
-        this.addButton(zPosition = new GuiNumberEntry(
+        this.addWidget(zPosition = new GuiNumberEntry(
             2, 0, 1/4F, 2, width - 34, zRotationSlider.y+zRotationSlider.getHeight()+15,
             66, 20, this::positionChanged));
     }
@@ -348,7 +348,7 @@ public abstract class GuiModelPoseEdit extends Screen {
         if(selectedPart == null)
             selectionText = noPartSelectedText;
         else
-            selectionText = new TranslationTextComponent(DumbLibrary.MODID+".gui.model_pose_edit.selected_part", selectedPart.getInfo().getName());
+            selectionText = Component.translatable(DumbLibrary.MODID+".gui.model_pose_edit.selected_part", selectedPart.getInfo().getName());
         stack.drawCenteredString(font, selectionText, xRotationSlider.x+xRotationSlider.getWidth()/2, baseYOffset, GuiConstants.NICE_WHITE);
 
     }
@@ -395,7 +395,7 @@ public abstract class GuiModelPoseEdit extends Screen {
         RenderSystem.disableTexture();
 
         Map<Integer, DCMModelRenderer> cubeMap = new HashMap<>();
-        BufferBuilder buffer = Tessellator.getInstance().getBuilder();
+        BufferBuilder buffer = Tesselator.getInstance().getBuilder();
         buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.NEW_ENTITY);
         IntegerHolder idx = new IntegerHolder();
         renderRecursively(buffer, stack, model.getRoots(), cube -> {
@@ -406,7 +406,7 @@ public abstract class GuiModelPoseEdit extends Screen {
             cubeMap.put((r << 16) | (g << 8) | b, cube);
             return new int[] { r, g, b };
         });
-        Tessellator.getInstance().end();
+        Tesselator.getInstance().end();
 
         RenderSystem.color3f(1f, 1f, 1f);
         RenderSystem.enableBlend();

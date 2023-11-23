@@ -1,9 +1,9 @@
 package net.dumbcode.dumblibrary.server.attributes;
 
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.INBT;
 import net.minecraft.nbt.ListNBT;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.common.util.Constants;
 
 import java.util.*;
@@ -60,14 +60,14 @@ public class ModifiableField {
         return result;
     }
 
-    public CompoundNBT writeToNBT() {
-        CompoundNBT nbt = new CompoundNBT();
+    public CompoundTag writeToNBT() {
+        CompoundTag nbt = new CompoundTag();
 
         nbt.putDouble("base_value", this.baseValue);
 
         ListNBT nbtOperations = new ListNBT();
         this.operations.forEach((uuid, modifier) -> {
-            CompoundNBT compound = new CompoundNBT();
+            CompoundTag compound = new CompoundTag();
             compound.putUUID("uuid", uuid);
             compound.putDouble("value", modifier.getValue());
             nbtOperations.add(compound);
@@ -77,7 +77,7 @@ public class ModifiableField {
         return nbt;
     }
 
-    public void writeToBuffer(PacketBuffer buffer) {
+    public void writeToBuffer(FriendlyByteBuf buffer) {
         buffer.writeDouble(this.baseValue);
         buffer.writeShort(this.operations.size());
         this.operations.forEach((uuid, modifier) -> {
@@ -86,7 +86,7 @@ public class ModifiableField {
         });
     }
 
-    public void readFromBuffer(PacketBuffer buffer) {
+    public void readFromBuffer(FriendlyByteBuf buffer) {
         this.baseValue = buffer.readDouble();
         this.operations.clear();
         IntStream.range(0, buffer.readShort()).forEach(i -> {
@@ -95,12 +95,12 @@ public class ModifiableField {
         });
     }
 
-    public void readFromNBT(CompoundNBT nbt) {
+    public void readFromNBT(CompoundTag nbt) {
         this.baseValue = nbt.getDouble("base_value");
         this.operations.clear();
 
         for (INBT base : nbt.getList("operations", Constants.NBT.TAG_COMPOUND)) {
-            CompoundNBT compound = (CompoundNBT) base;
+            CompoundTag compound = (CompoundTag) base;
             UUID uuid = compound.getUUID("uuid");
             this.operations.put(uuid, new ModifiableFieldModifier(uuid, compound.getDouble("value")));
         }

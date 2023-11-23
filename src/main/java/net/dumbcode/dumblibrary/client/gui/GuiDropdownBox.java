@@ -8,6 +8,7 @@ import lombok.Setter;
 import net.dumbcode.dumblibrary.client.StencilStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.AbstractGui;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.util.SharedConstants;
 import net.minecraft.util.text.StringTextComponent;
@@ -16,7 +17,7 @@ import org.lwjgl.glfw.GLFW;
 import java.util.List;
 import java.util.function.Supplier;
 
-public class GuiDropdownBox<T extends SelectListEntry> extends Widget {
+public class GuiDropdownBox<T extends SelectListEntry> extends AbstractWidget {
 
     private static final Minecraft MC = Minecraft.getInstance();
 

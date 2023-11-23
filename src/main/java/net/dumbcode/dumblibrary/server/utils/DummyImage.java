@@ -2,7 +2,7 @@ package net.dumbcode.dumblibrary.server.utils;
 
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.minecraft.client.renderer.texture.MissingTextureSprite;
-import net.minecraft.client.renderer.texture.NativeImage;
+import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.DistExecutor;

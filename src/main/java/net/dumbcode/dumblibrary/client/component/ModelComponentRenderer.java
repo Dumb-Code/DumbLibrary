@@ -65,7 +65,7 @@ public class ModelComponentRenderer extends LivingRenderer<LivingEntity, EntityM
     public void invoke(RenderComponentContext context, Entity entity, float entityYaw, float partialTicks, GuiGraphics stack, IRenderTypeBuffer discarded_buffer, int light, List<RenderCallbackComponent.SubCallback> preCallbacks, List<RenderCallbackComponent.SubCallback> postCallbacks) {
 //            this.doRenderShadowAndFire(entity, x, y, z, entityYaw, partialTicks);
 
-        IRenderTypeBuffer.Impl buffer = IRenderTypeBuffer.immediate(Tessellator.getInstance().getBuilder());
+        IRenderTypeBuffer.Impl buffer = IRenderTypeBuffer.immediate(Tesselator.getInstance().getBuilder());
 
         DCMModel model = this.modelSupplier.get();
         this.model = (EntityModel<LivingEntity>)(Object)model;

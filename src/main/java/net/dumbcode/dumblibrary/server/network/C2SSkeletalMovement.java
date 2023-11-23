@@ -6,7 +6,7 @@ import net.dumbcode.dumblibrary.server.taxidermy.BaseTaxidermyBlockEntity;
 import net.dumbcode.dumblibrary.server.taxidermy.TaxidermyContainer;
 import net.dumbcode.dumblibrary.server.taxidermy.TaxidermyHistory;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.core.BlockPos;
 import org.joml.Vector3f;
@@ -24,7 +24,7 @@ public class C2SSkeletalMovement {
     private final Vector3f position;
 
 
-    public static C2SSkeletalMovement fromBytes(PacketBuffer buf) {
+    public static C2SSkeletalMovement fromBytes(FriendlyByteBuf buf) {
         return new C2SSkeletalMovement(
             buf.readUtf(32767),
             new Vector3f(buf.readFloat(), buf.readFloat(), buf.readFloat()),
@@ -32,7 +32,7 @@ public class C2SSkeletalMovement {
         );
     }
 
-    public static void toBytes(C2SSkeletalMovement packet, PacketBuffer buf) {
+    public static void toBytes(C2SSkeletalMovement packet, FriendlyByteBuf buf) {
         buf.writeUtf(packet.part);
         buf.writeFloat(packet.rotations.x());
         buf.writeFloat(packet.rotations.y());

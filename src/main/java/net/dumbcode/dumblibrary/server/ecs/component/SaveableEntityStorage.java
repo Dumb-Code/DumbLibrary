@@ -1,14 +1,14 @@
 package net.dumbcode.dumblibrary.server.ecs.component;
 
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.CompoundTag;
 
 public interface SaveableEntityStorage<T extends EntityComponent> extends EntityComponentStorage<T> {
 
-    default void readNBT(CompoundNBT nbt) {
+    default void readNBT(CompoundTag nbt) {
 
     }
 
-    default CompoundNBT writeNBT(CompoundNBT nbt){
+    default CompoundTag writeNBT(CompoundTag nbt){
         return nbt;
     }
 

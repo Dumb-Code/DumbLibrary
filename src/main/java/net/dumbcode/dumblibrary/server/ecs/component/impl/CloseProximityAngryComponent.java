@@ -15,7 +15,7 @@ import net.dumbcode.dumblibrary.server.utils.StreamUtils;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.JSONUtils;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -34,13 +34,13 @@ public class CloseProximityAngryComponent extends EntityComponent implements Gat
 
 
     @Override
-    public CompoundNBT serialize(CompoundNBT compound) {
+    public CompoundTag serialize(CompoundTag compound) {
         compound.put("Range", this.range.writeToNBT());
         return super.serialize(compound);
     }
 
     @Override
-    public void deserialize(CompoundNBT compound) {
+    public void deserialize(CompoundTag compound) {
         this.range.readFromNBT(compound.getCompound("Range"));
         super.deserialize(compound);
     }

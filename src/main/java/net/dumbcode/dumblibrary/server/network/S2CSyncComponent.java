@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentType;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.fml.network.NetworkEvent;
 
 import java.util.function.Supplier;
@@ -18,7 +18,7 @@ public class S2CSyncComponent {
     private final byte[] data;
 
 
-    public static S2CSyncComponent fromBytes(PacketBuffer buf) {
+    public static S2CSyncComponent fromBytes(FriendlyByteBuf buf) {
         return new S2CSyncComponent(
             buf.readInt(),
             buf.readRegistryIdSafe(EntityComponentType.class),
@@ -26,7 +26,7 @@ public class S2CSyncComponent {
         );
     }
 
-    public static void toBytes(S2CSyncComponent packet, PacketBuffer buf) {
+    public static void toBytes(S2CSyncComponent packet, FriendlyByteBuf buf) {
         buf.writeInt(packet.entityid);
         buf.writeRegistryId(packet.type);
         buf.writeByteArray(packet.data);
@@ -37,7 +37,7 @@ public class S2CSyncComponent {
         context.enqueueWork(() -> {
             Entity entity = NetworkUtils.getPlayer(supplier).getCommandSenderWorld().getEntity(message.entityid);
             if (entity instanceof ComponentAccess) {
-                ((ComponentAccess) entity).get(message.type).ifPresent(c -> c.deserializeSync(new PacketBuffer(Unpooled.wrappedBuffer(message.data))));
+                ((ComponentAccess) entity).get(message.type).ifPresent(c -> c.deserializeSync(new FriendlyByteBuf(Unpooled.wrappedBuffer(message.data))));
             }
         });
         context.setPacketHandled(true);

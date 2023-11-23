@@ -7,8 +7,8 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.util.JSONUtils;
 
 @Getter
@@ -18,28 +18,28 @@ public class BlinkingComponent extends EntityComponent {
     private int tickTimeClose;
 
     @Override
-    public CompoundNBT serialize(CompoundNBT compound) {
+    public CompoundTag serialize(CompoundTag compound) {
         compound.putInt("tick_time_on", this.tickTimeOpen);
         compound.putInt("tick_time_off", this.tickTimeClose);
         return super.serialize(compound);
     }
 
     @Override
-    public void deserialize(CompoundNBT compound) {
+    public void deserialize(CompoundTag compound) {
         this.tickTimeOpen = compound.getInt("tick_time_on");
         this.tickTimeClose = compound.getInt("tick_time_off");
         super.deserialize(compound);
     }
 
     @Override
-    public void serialize(PacketBuffer buf) {
+    public void serialize(FriendlyByteBuf buf) {
         buf.writeInt(this.tickTimeOpen);
         buf.writeInt(this.tickTimeClose);
         super.serialize(buf);
     }
 
     @Override
-    public void deserialize(PacketBuffer buf) {
+    public void deserialize(FriendlyByteBuf buf) {
         this.tickTimeOpen = buf.readInt();
         this.tickTimeClose = buf.readInt();
         super.deserialize(buf);

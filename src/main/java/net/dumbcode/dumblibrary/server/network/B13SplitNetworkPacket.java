@@ -1,7 +1,7 @@
 package net.dumbcode.dumblibrary.server.network;
 
 import lombok.RequiredArgsConstructor;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.fml.network.NetworkEvent;
 
 import java.util.function.Supplier;
@@ -15,13 +15,13 @@ public class B13SplitNetworkPacket {
     private final byte total;
     private final byte[] data;
 
-    public static B13SplitNetworkPacket fromBytes(PacketBuffer buf) {
+    public static B13SplitNetworkPacket fromBytes(FriendlyByteBuf buf) {
         return new B13SplitNetworkPacket(
             buf.readByte(), buf.readShort(), buf.readByte(),
             buf.readByte(), buf.readByteArray());
     }
 
-    public static void toBytes(B13SplitNetworkPacket packet, PacketBuffer buf) {
+    public static void toBytes(B13SplitNetworkPacket packet, FriendlyByteBuf buf) {
         buf.writeByte(packet.descriptor);
         buf.writeShort(packet.collectionID);
         buf.writeByte(packet.packetID);

@@ -19,8 +19,8 @@ import net.dumbcode.dumblibrary.server.utils.IndexedObject;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.util.JSONUtils;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -55,24 +55,24 @@ public class ModelComponent extends EntityComponent implements RenderCallbackCom
     }
 
     @Override
-    public CompoundNBT serialize(CompoundNBT compound) {
+    public CompoundTag serialize(CompoundTag compound) {
         compound.putFloat("ShadowSize", this.shadowSize);
         return super.serialize(compound);
     }
 
     @Override
-    public void serialize(PacketBuffer buf) {
+    public void serialize(FriendlyByteBuf buf) {
         buf.writeFloat(this.shadowSize);
     }
 
     @Override
-    public void deserialize(CompoundNBT compound) {
+    public void deserialize(CompoundTag compound) {
         super.deserialize(compound);
         this.shadowSize = compound.getFloat("ShadowSize");
     }
 
     @Override
-    public void deserialize(PacketBuffer buf) {
+    public void deserialize(FriendlyByteBuf buf) {
         this.shadowSize = buf.readFloat();
     }
 

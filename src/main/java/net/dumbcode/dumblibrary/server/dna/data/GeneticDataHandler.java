@@ -6,8 +6,8 @@ import it.unimi.dsi.fastutil.doubles.DoubleList;
 import net.dumbcode.dumblibrary.server.dna.GeneticType;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.widget.Widget;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.util.text.IFormattableTextComponent;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -20,13 +20,13 @@ import java.util.function.Supplier;
 
 public interface GeneticDataHandler<O> {
 
-    CompoundNBT write(O o, CompoundNBT nbt);
+    CompoundTag write(O o, CompoundTag nbt);
     JsonObject write(O o, JsonObject json);
-    void write(O o, PacketBuffer buffer);
+    void write(O o, FriendlyByteBuf buffer);
 
-    O read(CompoundNBT nbt);
+    O read(CompoundTag nbt);
     O read(JsonObject json);
-    O read(PacketBuffer buffer);
+    O read(FriendlyByteBuf buffer);
 
     O defaultValue();
 

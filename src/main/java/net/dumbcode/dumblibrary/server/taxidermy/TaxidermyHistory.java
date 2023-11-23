@@ -7,7 +7,7 @@ import lombok.Value;
 import net.dumbcode.dumblibrary.server.utils.HistoryList;
 import net.dumbcode.dumblibrary.server.utils.XYZAxis;
 import net.minecraft.client.renderer.model.ModelRenderer;
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.INBT;
 import net.minecraft.nbt.ListNBT;
 import org.joml.Vector3f;
@@ -28,13 +28,13 @@ public class TaxidermyHistory {
 
     private Map<String, CubeProps> poseDataCache = null;
 
-    public CompoundNBT writeToNBT(CompoundNBT nbt) {
+    public CompoundTag writeToNBT(CompoundTag nbt) {
         nbt.putInt("Index", this.history.getIndex());
         ListNBT list = new ListNBT();
         for (List<Record> records : this.history.getUnindexedList()) {
             ListNBT taglist = new ListNBT();
             for (Record record : records) {
-                CompoundNBT tag = new CompoundNBT();
+                CompoundTag tag = new CompoundTag();
                 tag.putString("Part", record.getPart());
                 tag.putFloat("AngleX", record.getProps().angle.x());
                 tag.putFloat("AngleY", record.getProps().angle.y());
@@ -50,12 +50,12 @@ public class TaxidermyHistory {
         return nbt;
     }
 
-    public void readFromNBT(CompoundNBT nbt) {
+    public void readFromNBT(CompoundTag nbt) {
         this.history.clear();
         for (INBT record : nbt.getList("Records", Constants.NBT.TAG_LIST)) {
             List<Record> records = Lists.newArrayList();
             for (INBT nbtBase : (ListNBT) record) {
-                CompoundNBT tag = (CompoundNBT) nbtBase;
+                CompoundTag tag = (CompoundTag) nbtBase;
                 records.add(new Record(tag.getString("Part"), new CubeProps(
                     new Vector3f(tag.getFloat("AngleX"), tag.getFloat("AngleY"), tag.getFloat("AngleZ")),
                     new Vector3f(tag.getFloat("PosX"), tag.getFloat("PosY"), tag.getFloat("PosZ"))

@@ -5,10 +5,10 @@ import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentTypes;
 import net.dumbcode.dumblibrary.server.ecs.component.impl.RenderAdjustmentsComponent;
 import net.minecraft.entity.CreatureEntity;
 import net.minecraft.entity.EntityType;
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListNBT;
 import net.minecraft.network.IPacket;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.world.World;
 import net.minecraft.world.entity.ambient.AmbientCreature;
@@ -37,13 +37,13 @@ public abstract class ComposableCreatureEntity extends AmbientCreature implement
 
 
     @Override
-    public void addAdditionalSaveData(CompoundNBT compound) {
+    public void addAdditionalSaveData(CompoundTag compound) {
         super.addAdditionalSaveData(compound);
         compound.put("components", this.components.serialize(new ListNBT()));
     }
 
     @Override
-    public void readAdditionalSaveData(CompoundNBT compound) {
+    public void readAdditionalSaveData(CompoundTag compound) {
         super.readAdditionalSaveData(compound);
 
         ListNBT componentList = compound.getList("components", Constants.NBT.TAG_COMPOUND);
@@ -67,12 +67,12 @@ public abstract class ComposableCreatureEntity extends AmbientCreature implement
     }
 
     @Override
-    public void writeSpawnData(PacketBuffer buf) {
+    public void writeSpawnData(FriendlyByteBuf buf) {
         this.components.serialize(buf);
     }
 
     @Override
-    public void readSpawnData(PacketBuffer buf) {
+    public void readSpawnData(FriendlyByteBuf buf) {
         this.components.deserialize(buf);
         this.finalizeComponents();
     }

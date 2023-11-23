@@ -13,9 +13,9 @@ import net.dumbcode.dumblibrary.server.dna.data.GeneticTint;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.RenderLocationComponent;
 import net.dumbcode.dumblibrary.server.utils.GeneticUtils;
 import net.minecraft.client.Minecraft;
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListNBT;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.util.JSONUtils;
 import net.minecraft.resources.ResourceLocation;
 import org.joml.Vector3f;
@@ -165,7 +165,7 @@ public class GeneticLayerEntry implements Cloneable {
     }
 
 
-    public static void serialize(GeneticLayerEntry entry, PacketBuffer buf) {
+    public static void serialize(GeneticLayerEntry entry, FriendlyByteBuf buf) {
         buf.writeUtf(entry.layerName);
         buf.writeFloat(entry.layerWeight);
         buf.writeFloat(entry.index);
@@ -180,7 +180,7 @@ public class GeneticLayerEntry implements Cloneable {
         writeMap(entry.targetTints, buf);
     }
 
-    private static void writeMap(Map<UUID, GeneticTint.Part> map, PacketBuffer buf) {
+    private static void writeMap(Map<UUID, GeneticTint.Part> map, FriendlyByteBuf buf) {
         buf.writeByte(map.size());
         map.forEach((uuid, col) -> {
             buf.writeUUID(uuid);
@@ -188,7 +188,7 @@ public class GeneticLayerEntry implements Cloneable {
         });
     }
 
-    public static CompoundNBT serialize(GeneticLayerEntry entry, CompoundNBT tag) {
+    public static CompoundTag serialize(GeneticLayerEntry entry, CompoundTag tag) {
         tag.putString("layer", entry.layerName);
         tag.putFloat("layer_weight", entry.layerWeight);
         tag.putFloat("index", entry.index);
@@ -209,7 +209,7 @@ public class GeneticLayerEntry implements Cloneable {
     private static ListNBT writeMap(Map<UUID, GeneticTint.Part> map) {
         ListNBT list = new ListNBT();
         map.forEach((uuid, col) -> {
-            CompoundNBT nbt = ColouredGeneticDataHandler.writePartNBT(col);
+            CompoundTag nbt = ColouredGeneticDataHandler.writePartNBT(col);
             nbt.putUUID("UUID", uuid);
             list.add(nbt);
         });
@@ -230,7 +230,7 @@ public class GeneticLayerEntry implements Cloneable {
         return json;
     }
 
-    public static GeneticLayerEntry deserailize(CompoundNBT nbt) {
+    public static GeneticLayerEntry deserailize(CompoundTag nbt) {
         GeneticLayerEntry entry = new GeneticLayerEntry(
             nbt.getString("layer"),
             nbt.getFloat("layer_weight"),
@@ -251,7 +251,7 @@ public class GeneticLayerEntry implements Cloneable {
 
     private static void readMap(ListNBT list, BiConsumer<UUID, GeneticTint.Part> consumer) {
         for (int i = 0; i < list.size(); i++) {
-            CompoundNBT tag = list.getCompound(i);
+            CompoundTag tag = list.getCompound(i);
             consumer.accept(
                 tag.getUUID("uuid"),
                 ColouredGeneticDataHandler.readPartNBT(tag)
@@ -273,7 +273,7 @@ public class GeneticLayerEntry implements Cloneable {
         );
     }
 
-    public static GeneticLayerEntry deserailize(PacketBuffer buf) {
+    public static GeneticLayerEntry deserailize(FriendlyByteBuf buf) {
         GeneticLayerEntry entry = new GeneticLayerEntry(
             buf.readUtf(),
             buf.readFloat(),
@@ -292,7 +292,7 @@ public class GeneticLayerEntry implements Cloneable {
         return entry;
     }
 
-    private static void readMap(PacketBuffer buf, BiConsumer<UUID, GeneticTint.Part> consumer) {
+    private static void readMap(FriendlyByteBuf buf, BiConsumer<UUID, GeneticTint.Part> consumer) {
         byte size = buf.readByte();
         for (byte i = 0; i < size; i++) {
             consumer.accept(

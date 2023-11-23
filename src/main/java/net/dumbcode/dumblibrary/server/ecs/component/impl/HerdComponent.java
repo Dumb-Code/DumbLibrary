@@ -16,7 +16,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.attributes.Attributes;
 import net.minecraft.entity.ai.attributes.ModifiableAttributeInstance;
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
@@ -35,7 +35,7 @@ public class HerdComponent extends EntityComponent implements FinalizableCompone
     private HerdSavedData herdData;
 
     @Override
-    public CompoundNBT serialize(CompoundNBT compound) {
+    public CompoundTag serialize(CompoundTag compound) {
         if(this.herdUUID != null) {
             compound.putUUID("uuid", this.herdUUID);
         }
@@ -46,7 +46,7 @@ public class HerdComponent extends EntityComponent implements FinalizableCompone
     }
 
     @Override
-    public void deserialize(CompoundNBT compound) {
+    public void deserialize(CompoundTag compound) {
         if(compound.hasUUID("uuid")) {
             this.herdUUID = compound.getUUID("uuid");
         } else {

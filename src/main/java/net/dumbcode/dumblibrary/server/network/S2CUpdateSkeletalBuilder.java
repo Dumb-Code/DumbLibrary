@@ -3,7 +3,7 @@ package net.dumbcode.dumblibrary.server.network;
 import lombok.AllArgsConstructor;
 import net.dumbcode.dumblibrary.server.taxidermy.BaseTaxidermyBlockEntity;
 import net.dumbcode.dumblibrary.server.utils.XYZAxis;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraftforge.fml.network.NetworkEvent;
@@ -20,7 +20,7 @@ public class S2CUpdateSkeletalBuilder {
     private final float value;
 
 
-    public static S2CUpdateSkeletalBuilder fromBytes(PacketBuffer buf) {
+    public static S2CUpdateSkeletalBuilder fromBytes(FriendlyByteBuf buf) {
         return new S2CUpdateSkeletalBuilder(
             buf.readBlockPos(),
             buf.readUtf(),
@@ -30,7 +30,7 @@ public class S2CUpdateSkeletalBuilder {
         );
     }
 
-    public static void toBytes(S2CUpdateSkeletalBuilder packet, PacketBuffer buf) {
+    public static void toBytes(S2CUpdateSkeletalBuilder packet, FriendlyByteBuf buf) {
         buf.writeBlockPos(packet.pos);
         buf.writeUtf(packet.part);
         buf.writeInt(packet.axis.ordinal());

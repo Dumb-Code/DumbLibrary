@@ -4,7 +4,7 @@ import com.google.gson.JsonObject;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.JSONUtils;
 
 @Getter
@@ -16,14 +16,14 @@ public class GeneticLayerColorStorage extends GeneticColorStorage {
     private boolean primary = true;
 
     @Override
-    public CompoundNBT serialize(CompoundNBT nbt) {
+    public CompoundTag serialize(CompoundTag nbt) {
         nbt.putString("layer", this.layerName);
         nbt.putBoolean("primary", this.primary);
         return nbt;
     }
 
     @Override
-    public void deserialize(CompoundNBT nbt) {
+    public void deserialize(CompoundTag nbt) {
         this.layerName = nbt.getString("layer");
         this.primary = nbt.getBoolean("primary");
     }

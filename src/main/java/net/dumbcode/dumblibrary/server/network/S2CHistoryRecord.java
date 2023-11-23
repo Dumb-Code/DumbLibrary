@@ -3,7 +3,7 @@ package net.dumbcode.dumblibrary.server.network;
 import lombok.AllArgsConstructor;
 import net.dumbcode.dumblibrary.server.taxidermy.BaseTaxidermyBlockEntity;
 import net.dumbcode.dumblibrary.server.taxidermy.TaxidermyHistory;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.core.BlockPos;
 import org.joml.Vector3f;
@@ -20,7 +20,7 @@ public class S2CHistoryRecord {
     private final Vector3f rotations;
     private final Vector3f position;
 
-    public static S2CHistoryRecord fromBytes(PacketBuffer buf) {
+    public static S2CHistoryRecord fromBytes(FriendlyByteBuf buf) {
         return new S2CHistoryRecord(
             buf.readBlockPos(),
             buf.readUtf(),
@@ -29,7 +29,7 @@ public class S2CHistoryRecord {
         );
     }
 
-    public static void toBytes(S2CHistoryRecord packet, PacketBuffer buf) {
+    public static void toBytes(S2CHistoryRecord packet, FriendlyByteBuf buf) {
         buf.writeBlockPos(packet.pos);
         buf.writeUtf(packet.part);
         buf.writeFloat(packet.rotations.x());

@@ -6,8 +6,8 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.util.JSONUtils;
 
 @Getter
@@ -16,28 +16,28 @@ public class CullSizeComponent extends EntityComponent {
     private float height;
 
     @Override
-    public CompoundNBT serialize(CompoundNBT compound) {
+    public CompoundTag serialize(CompoundTag compound) {
         compound.putFloat("width", this.width);
         compound.putFloat("height", this.height);
         return super.serialize(compound);
     }
 
     @Override
-    public void deserialize(CompoundNBT compound) {
+    public void deserialize(CompoundTag compound) {
         this.width = compound.getFloat("width");
         this.height = compound.getFloat("height");
         super.deserialize(compound);
     }
 
     @Override
-    public void serialize(PacketBuffer buf) {
+    public void serialize(FriendlyByteBuf buf) {
         buf.writeFloat(this.width);
         buf.writeFloat(this.height);
         super.serialize(buf);
     }
 
     @Override
-    public void deserialize(PacketBuffer buf) {
+    public void deserialize(FriendlyByteBuf buf) {
         this.width = buf.readFloat();
         this.height = buf.readFloat();
         super.deserialize(buf);

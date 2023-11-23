@@ -3,7 +3,7 @@ package net.dumbcode.dumblibrary.server.ecs;
 import com.google.common.collect.Lists;
 import lombok.Getter;
 import lombok.Setter;
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.storage.WorldSavedData;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
@@ -28,7 +28,7 @@ public class FamilySavedData extends WorldSavedData {
     }
 
     @Override
-    public CompoundNBT save(CompoundNBT compound) {
+    public CompoundTag save(CompoundTag compound) {
         if(this.parentOne != null) {
             compound.putUUID("parent_1", this.parentOne);
         }
@@ -41,7 +41,7 @@ public class FamilySavedData extends WorldSavedData {
     }
 
     @Override
-    public void load(CompoundNBT nbt) {
+    public void load(CompoundTag nbt) {
         this.parentOne = nbt.hasUUID("parent_1") ? nbt.getUUID("parent_1") : null;
         this.parentTwo = nbt.hasUUID("parent_2") ? nbt.getUUID("parent_2") : null;
         HerdSavedData.loadList(nbt.getCompound("children"), this.children);

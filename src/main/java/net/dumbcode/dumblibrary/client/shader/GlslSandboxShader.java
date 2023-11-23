@@ -62,7 +62,7 @@ public class GlslSandboxShader {
         RenderSystem.clearColor(0, 0, 0, 0);
         RenderSystem.clear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT, Minecraft.ON_OSX);
 
-        BufferBuilder buffer = Tessellator.getInstance().getBuilder();
+        BufferBuilder buffer = Tesselator.getInstance().getBuilder();
 
         buffer.begin(GL11.GL_QUADS, RENDER_FORMAT);
 
@@ -71,7 +71,7 @@ public class GlslSandboxShader {
         buffer.vertex(1, 1, 0).endVertex();
         buffer.vertex(-1, 1, 0).endVertex();
 
-        Tessellator.getInstance().end();
+        Tesselator.getInstance().end();
 
         this.shaderManager.clear();
         this.framebuffer.unbindWrite();

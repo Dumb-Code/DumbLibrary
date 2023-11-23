@@ -2,9 +2,9 @@ package net.dumbcode.dumblibrary.server.ecs.component;
 
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.server.registry.DumbRegistries;
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListNBT;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 
 import javax.annotation.Nullable;
@@ -35,7 +35,7 @@ public class EntityComponentMap extends LinkedHashMap<EntityComponentType<?, ?>,
 
     public ListNBT serialize(ListNBT list) {
         for (Map.Entry<EntityComponentType<?, ?>, EntityComponent> entry : this.entrySet()) {
-            CompoundNBT componentTag = entry.getValue().serialize(new CompoundNBT());
+            CompoundTag componentTag = entry.getValue().serialize(new CompoundTag());
             componentTag.putString("identifier", entry.getKey().getIdentifier().toString());
             list.add(componentTag);
         }
@@ -45,7 +45,7 @@ public class EntityComponentMap extends LinkedHashMap<EntityComponentType<?, ?>,
     public void deserialize(ListNBT list) {
         this.clear();
         for (int i = 0; i < list.size(); i++) {
-            CompoundNBT componentTag = list.getCompound(i);
+            CompoundTag componentTag = list.getCompound(i);
             ResourceLocation identifier = new ResourceLocation(componentTag.getString("identifier"));
             EntityComponentType<?, ?> componentType = DumbRegistries.COMPONENT_REGISTRY.getValue(identifier);
             if (componentType != null) {
@@ -58,7 +58,7 @@ public class EntityComponentMap extends LinkedHashMap<EntityComponentType<?, ?>,
         }
     }
 
-    public void serialize(PacketBuffer buf) {
+    public void serialize(FriendlyByteBuf buf) {
         buf.writeShort(this.size());
         for (Map.Entry<EntityComponentType<?, ?>, EntityComponent> entry : this.entrySet()) {
             buf.writeRegistryId(entry.getKey());
@@ -66,7 +66,7 @@ public class EntityComponentMap extends LinkedHashMap<EntityComponentType<?, ?>,
         }
     }
 
-    public void deserialize(PacketBuffer buf) {
+    public void deserialize(FriendlyByteBuf buf) {
         this.clear();
         short size = buf.readShort();
         for (int i = 0; i < size; i++) {

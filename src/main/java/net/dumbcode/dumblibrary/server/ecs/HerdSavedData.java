@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 import lombok.Getter;
 import net.dumbcode.dumblibrary.server.ecs.component.impl.HerdComponent;
 import net.dumbcode.dumblibrary.server.utils.WorldUtils;
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraft.world.storage.WorldSavedData;
@@ -58,7 +58,7 @@ public class HerdSavedData extends WorldSavedData {
     }
 
     @Override
-    public void load(CompoundNBT nbt) {
+    public void load(CompoundTag nbt) {
         this.leader = nbt.getUUID("leader");
 
         loadList(nbt.getCompound("members"), this.members);
@@ -66,7 +66,7 @@ public class HerdSavedData extends WorldSavedData {
     }
 
     @Override
-    public CompoundNBT save(CompoundNBT compound) {
+    public CompoundTag save(CompoundTag compound) {
         compound.putUUID("leader", this.leader);
 
         compound.put("members", saveList(this.members));
@@ -77,8 +77,8 @@ public class HerdSavedData extends WorldSavedData {
 
 
 
-    public static CompoundNBT saveList(List<UUID> list) {
-        CompoundNBT nbt = new CompoundNBT();
+    public static CompoundTag saveList(List<UUID> list) {
+        CompoundTag nbt = new CompoundTag();
         nbt.putInt("size", list.size());
         for (int i = 0; i < list.size(); i++) {
             nbt.putUUID(String.valueOf(i), list.get(i));
@@ -86,7 +86,7 @@ public class HerdSavedData extends WorldSavedData {
         return nbt;
     }
 
-    public static void loadList(CompoundNBT nbt, List<UUID> list) {
+    public static void loadList(CompoundTag nbt, List<UUID> list) {
         list.clear();
         for (int i = 0; i < nbt.getInt("size"); i++) {
             list.add(nbt.getUUID(String.valueOf(i)));

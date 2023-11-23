@@ -78,7 +78,7 @@ public class GeneticType<T extends GeneticFactoryStorage<O>, O> extends ForgeReg
 
     public MutableComponent getTranslationComponent() {
         ResourceLocation name = this.getRegistryName();
-        return new TranslationTextComponent(name.getNamespace() + ".genetic_type." + name.getPath());
+        return Component.translatable(name.getNamespace() + ".genetic_type." + name.getPath());
     }
 
     public static <T extends GeneticFactoryStorage<Float>> GeneticTypeBuilder<T, Float> builder() {

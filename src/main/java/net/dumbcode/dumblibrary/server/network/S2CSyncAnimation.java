@@ -5,7 +5,7 @@ import net.dumbcode.dumblibrary.server.animation.Animation;
 import net.dumbcode.dumblibrary.server.ecs.ComponentAccess;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentTypes;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.fml.network.NetworkEvent;
 
 import java.util.function.Supplier;
@@ -17,11 +17,11 @@ public class S2CSyncAnimation {
     private Animation entry;
     private int channel;
 
-    public static S2CSyncAnimation fromBytes(PacketBuffer buf) {
+    public static S2CSyncAnimation fromBytes(FriendlyByteBuf buf) {
         return new S2CSyncAnimation(buf.readInt(), new Animation(buf.readResourceLocation()), buf.readInt());
     }
 
-    public static void toBytes(S2CSyncAnimation packet, PacketBuffer buf) {
+    public static void toBytes(S2CSyncAnimation packet, FriendlyByteBuf buf) {
         buf.writeInt(packet.entityid);
         buf.writeResourceLocation(packet.entry.getKey());
         buf.writeInt(packet.channel);

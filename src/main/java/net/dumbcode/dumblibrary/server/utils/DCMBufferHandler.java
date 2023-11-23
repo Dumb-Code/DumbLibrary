@@ -3,23 +3,23 @@ package net.dumbcode.dumblibrary.server.utils;
 import net.dumbcode.studio.model.CubeInfo;
 import net.dumbcode.studio.model.ModelInfo;
 import net.dumbcode.studio.model.RotationOrder;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.FriendlyByteBuf;
 
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-public enum DCMBufferHandler implements BiConsumer<PacketBuffer, ModelInfo>, Function<PacketBuffer, ModelInfo> {
+public enum DCMBufferHandler implements BiConsumer<FriendlyByteBuf, ModelInfo>, Function<FriendlyByteBuf, ModelInfo> {
     INSTANCE;
 
     @Override
-    public void accept(PacketBuffer buffer, ModelInfo model) {
+    public void accept(FriendlyByteBuf buffer, ModelInfo model) {
         buffer.writeUtf(model.getAuthor());
         buffer.writeInt(model.getTextureWidth());
         buffer.writeInt(model.getTextureHeight());
         writeCubes(model.getRoots(), buffer);
     }
-    public static void writeCubes(List<CubeInfo> cubes, PacketBuffer buffer) {
+    public static void writeCubes(List<CubeInfo> cubes, FriendlyByteBuf buffer) {
         buffer.writeShort(cubes.size());
         for (CubeInfo cube : cubes) {
             buffer.writeUtf(cube.getName());
@@ -34,12 +34,12 @@ public enum DCMBufferHandler implements BiConsumer<PacketBuffer, ModelInfo>, Fun
         }
     }
 
-    private static void writeFloatArray(PacketBuffer buf, float[] arr, int size) {
+    private static void writeFloatArray(FriendlyByteBuf buf, float[] arr, int size) {
         for (int i = 0; i < size; i++) {
             buf.writeFloat(arr[i]);
         }
     }
-    private static void writeIntArray(PacketBuffer buf, int[] arr, int size) {
+    private static void writeIntArray(FriendlyByteBuf buf, int[] arr, int size) {
         for (int i = 0; i < size; i++) {
             buf.writeInt(arr[i]);
         }
@@ -47,7 +47,7 @@ public enum DCMBufferHandler implements BiConsumer<PacketBuffer, ModelInfo>, Fun
 
 
     @Override
-    public ModelInfo apply(PacketBuffer buffer) {
+    public ModelInfo apply(FriendlyByteBuf buffer) {
         ModelInfo info = new ModelInfo(
             buffer.readUtf(32767),
             buffer.readInt(), buffer.readInt(),
@@ -56,7 +56,7 @@ public enum DCMBufferHandler implements BiConsumer<PacketBuffer, ModelInfo>, Fun
         readCubes(info, null, buffer, info.getRoots());
         return info;
     }
-    private static void readCubes(ModelInfo info, CubeInfo parent, PacketBuffer buf, List<CubeInfo> out) {
+    private static void readCubes(ModelInfo info, CubeInfo parent, FriendlyByteBuf buf, List<CubeInfo> out) {
         short cubes = buf.readShort();
         for (int i = 0; i < cubes; i++) {
             CubeInfo cube = new CubeInfo(
@@ -74,14 +74,14 @@ public enum DCMBufferHandler implements BiConsumer<PacketBuffer, ModelInfo>, Fun
             out.add(cube);
         }
     }
-    private static float[] readFloatArray(PacketBuffer buf, int size) {
+    private static float[] readFloatArray(FriendlyByteBuf buf, int size) {
         float[] out = new float[size];
         for (int i = 0; i < size; i++) {
             out[i] = buf.readFloat();
         }
         return out;
     }
-    private static int[] readIntArray(PacketBuffer buf, int size) {
+    private static int[] readIntArray(FriendlyByteBuf buf, int size) {
         int[] out = new int[size];
         for (int i = 0; i < size; i++) {
             out[i] = buf.readInt();

@@ -7,7 +7,7 @@ import lombok.experimental.Accessors;
 import net.dumbcode.dumblibrary.DumbLibrary;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponent;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.JSONUtils;
 import net.minecraft.resources.ResourceLocation;
 
@@ -21,13 +21,13 @@ public class ItemRenderModelComponent extends EntityComponent {
     private ResourceLocation location = DumbLibrary.MODEL_MISSING; //MRL locations are in the form `namespace:path#varient
 
     @Override
-    public CompoundNBT serialize(CompoundNBT compound) {
+    public CompoundTag serialize(CompoundTag compound) {
         compound.putString(MODEL_KEY, this.location.toString());
         return super.serialize(compound);
     }
 
     @Override
-    public void deserialize(CompoundNBT compound) {
+    public void deserialize(CompoundTag compound) {
         super.deserialize(compound);
         this.location = new ResourceLocation(compound.getString(MODEL_KEY));
     }

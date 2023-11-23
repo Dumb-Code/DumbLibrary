@@ -22,9 +22,9 @@ import net.dumbcode.dumblibrary.server.utils.CollectorUtils;
 import net.dumbcode.dumblibrary.server.utils.GeneticUtils;
 import net.dumbcode.dumblibrary.server.utils.IndexedObject;
 import net.dumbcode.dumblibrary.server.utils.StreamUtils;
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListNBT;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.util.JSONUtils;
 import net.minecraftforge.common.util.Constants;
 import org.apache.logging.log4j.util.BiConsumer;
@@ -76,22 +76,22 @@ public class GeneticLayerComponent extends EntityComponent implements RenderLaye
     }
 
     @Override
-    public void deserialize(CompoundNBT compound) {
+    public void deserialize(CompoundTag compound) {
         this.entries.clear();
         StreamUtils.stream(compound.getList("entries", Constants.NBT.TAG_COMPOUND))
-            .map(b -> GeneticLayerEntry.deserailize((CompoundNBT) b))
+            .map(b -> GeneticLayerEntry.deserailize((CompoundTag) b))
             .forEach(this.entries::add);
         super.deserialize(compound);
     }
 
     @Override
-    public CompoundNBT serialize(CompoundNBT compound) {
-        compound.put("entries", this.entries.stream().map(g -> GeneticLayerEntry.serialize(g, new CompoundNBT())).collect(CollectorUtils.toNBTTagList()));
+    public CompoundTag serialize(CompoundTag compound) {
+        compound.put("entries", this.entries.stream().map(g -> GeneticLayerEntry.serialize(g, new CompoundTag())).collect(CollectorUtils.toNBTTagList()));
         return super.serialize(compound);
     }
 
     @Override
-    public void serialize(PacketBuffer buf) {
+    public void serialize(FriendlyByteBuf buf) {
         buf.writeShort(this.entries.size());
         for (GeneticLayerEntry entry : this.entries) {
             GeneticLayerEntry.serialize(entry, buf);
@@ -100,7 +100,7 @@ public class GeneticLayerComponent extends EntityComponent implements RenderLaye
     }
 
     @Override
-    public void deserialize(PacketBuffer buf) {
+    public void deserialize(FriendlyByteBuf buf) {
         this.entries.clear();
         int size = buf.readShort();
         for (int i = 0; i < size; i++) {

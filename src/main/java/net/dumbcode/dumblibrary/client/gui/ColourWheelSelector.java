@@ -63,7 +63,7 @@ public class ColourWheelSelector extends Widget {
 
             int radii = this.size/2;
 
-            BufferBuilder buff = Tessellator.getInstance().getBuilder();
+            BufferBuilder buff = Tesselator.getInstance().getBuilder();
 
             buff.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
             buff.vertex(centerX - radii, centerY - radii, 0).uv(0, 0).endVertex();
@@ -71,7 +71,7 @@ public class ColourWheelSelector extends Widget {
             buff.vertex(centerX + radii, centerY + radii, 0).uv(1, 1).endVertex();
             buff.vertex(centerX + radii, centerY - radii, 0).uv(1, 0).endVertex();
 
-            Tessellator.getInstance().end();
+            Tesselator.getInstance().end();
             shaderManager.clear();
         }
 

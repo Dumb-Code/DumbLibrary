@@ -4,7 +4,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.netty.buffer.ByteBuf;
 import lombok.Value;
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.INBT;
 import net.minecraft.util.JSONUtils;
 
@@ -37,14 +37,14 @@ public class IndexedObject<T> {
     }
 
 
-    public static <T> CompoundNBT serializeNBT(IndexedObject<T> object, Function<T, INBT> objectSerializer) {
-        CompoundNBT tag = new CompoundNBT();
+    public static <T> CompoundTag serializeNBT(IndexedObject<T> object, Function<T, INBT> objectSerializer) {
+        CompoundTag tag = new CompoundTag();
         tag.putFloat("index", object.index);
         tag.put("object", objectSerializer.apply(object.object));
         return tag;
     }
 
-    public static <T> IndexedObject<T> deserializeNBT(CompoundNBT tag, Function<INBT, T> deserailizer) {
+    public static <T> IndexedObject<T> deserializeNBT(CompoundTag tag, Function<INBT, T> deserailizer) {
         return new IndexedObject<>(
             deserailizer.apply(tag.get("object")),
             tag.getFloat("index")

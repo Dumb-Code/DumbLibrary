@@ -3,7 +3,7 @@ package net.dumbcode.dumblibrary.server.utils;
 import com.google.gson.JsonObject;
 import io.netty.buffer.ByteBuf;
 import lombok.AllArgsConstructor;
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.JSONUtils;
 
 import java.util.Random;
@@ -17,14 +17,14 @@ public class GaussianValue {
         return (float) (this.mean + random.nextGaussian() * this.deviation);
     }
 
-    public static CompoundNBT writeToNBT(GaussianValue value) {
-        CompoundNBT nbt = new CompoundNBT();
+    public static CompoundTag writeToNBT(GaussianValue value) {
+        CompoundTag nbt = new CompoundTag();
         nbt.putFloat("mean", value.mean);
         nbt.putFloat("deviation", value.deviation);
         return nbt;
     }
 
-    public static GaussianValue readFromNBT(CompoundNBT nbt) {
+    public static GaussianValue readFromNBT(CompoundTag nbt) {
         return new GaussianValue(nbt.getFloat("mean"), nbt.getFloat("deviation"));
     }
 

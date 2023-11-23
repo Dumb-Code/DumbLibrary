@@ -14,7 +14,7 @@ import net.dumbcode.dumblibrary.server.ecs.component.additionals.GatherGeneticsC
 import net.dumbcode.dumblibrary.server.utils.CollectorUtils;
 import net.dumbcode.dumblibrary.server.utils.GeneticUtils;
 import net.dumbcode.dumblibrary.server.utils.StreamUtils;
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.JSONUtils;
 import net.minecraftforge.common.util.Constants;
 
@@ -69,16 +69,16 @@ public class GeneticComponent extends EntityComponent implements FinalizableComp
     }
 
     @Override
-    public CompoundNBT serialize(CompoundNBT compound) {
-        compound.put("genetics", this.getGenetics().stream().map(e -> e.serialize(new CompoundNBT())).collect(CollectorUtils.toNBTTagList()));
+    public CompoundTag serialize(CompoundTag compound) {
+        compound.put("genetics", this.getGenetics().stream().map(e -> e.serialize(new CompoundTag())).collect(CollectorUtils.toNBTTagList()));
         return super.serialize(compound);
     }
 
     @Override
-    public void deserialize(CompoundNBT compound) {
+    public void deserialize(CompoundTag compound) {
         this.genetics.clear();
         StreamUtils.stream(compound.getList("genetics", Constants.NBT.TAG_COMPOUND))
-            .map(b -> GeneticEntry.deserialize((CompoundNBT) b))
+            .map(b -> GeneticEntry.deserialize((CompoundTag) b))
             .forEach(this::insertGenetic);
         super.deserialize(compound);
     }

@@ -2,6 +2,8 @@ package net.dumbcode.dumblibrary.client;
 
 import com.mojang.blaze3d.matrix.GuiGraphics;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
+import com.mojang.blaze3d.vertex.VertexBuffer;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.dumbcode.dumblibrary.server.utils.MathUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.AbstractGui;
@@ -10,6 +12,7 @@ import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.vector.Matrix3f;
 import net.minecraft.util.math.vector.Matrix4f;
@@ -155,7 +158,7 @@ public class RenderUtils {
         stack.fill(right, top, right - borderSize, bottom, borderColor);
     }
 
-    public static void drawTexturedQuad(GuiGraphics stack, IVertexBuilder buffer, float left, float top, float right, float bottom, float minU, float minV, float maxU, float maxV, float zLevel) {
+    public static void drawTexturedQuad(GuiGraphics stack, ResourceLocation texture, VertexConsumer buffer, float left, float top, float right, float bottom, float minU, float minV, float maxU, float maxV, float zLevel) {
 
 //        buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
 
@@ -166,7 +169,7 @@ public class RenderUtils {
         buffer.vertex(pose, right, bottom, zLevel).uv(maxU, maxV).endVertex();
         buffer.vertex(pose, right, top, zLevel).uv(maxU, minV).endVertex();
 
-//        Tessellator.getInstance().draw();
+//        Tesselator.getInstance().draw();
     }
 
     public static void draw256Texture(GuiGraphics stack, int x, int y, int u, int v, int sizeX, int sizeU) {
@@ -178,7 +181,7 @@ public class RenderUtils {
     }
 
     public static void drawTextureAtlasSprite(GuiGraphics stack, double x, double y, TextureAtlasSprite sprite, double width, double height, double minU, double minV, double maxU, double maxV) {
-        Tessellator tessellator = Tessellator.getInstance();
+        Tessellator tessellator = Tesselator.getInstance();
         BufferBuilder bufferbuilder = tessellator.getBuilder();
 
         Matrix4f pose = stack.last().pose();
@@ -196,7 +199,7 @@ public class RenderUtils {
         Matrix4f pose = stack.last().pose();
         float f = 1.0F / tileWidth;
         float f1 = 1.0F / tileHeight;
-        Tessellator tessellator = Tessellator.getInstance();
+        Tessellator tessellator = Tesselator.getInstance();
         BufferBuilder buffer = tessellator.getBuilder();
         buffer.begin(7, DefaultVertexFormats.POSITION_TEX);
         buffer.vertex(pose, x, (y + height), 0.0F).uv(u * f, (v + vHeight) * f1).endVertex();

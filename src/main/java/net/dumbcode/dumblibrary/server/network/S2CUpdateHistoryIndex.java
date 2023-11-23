@@ -2,7 +2,7 @@ package net.dumbcode.dumblibrary.server.network;
 
 import lombok.AllArgsConstructor;
 import net.dumbcode.dumblibrary.server.taxidermy.BaseTaxidermyBlockEntity;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.World;
@@ -16,11 +16,11 @@ public class S2CUpdateHistoryIndex {
     private final BlockPos pos;
     private final boolean direction;
 
-    public static S2CUpdateHistoryIndex fromBytes(PacketBuffer buf) {
+    public static S2CUpdateHistoryIndex fromBytes(FriendlyByteBuf buf) {
         return new S2CUpdateHistoryIndex(buf.readBlockPos(), buf.readBoolean());
     }
 
-    public static void toBytes(S2CUpdateHistoryIndex packet, PacketBuffer buf) {
+    public static void toBytes(S2CUpdateHistoryIndex packet, FriendlyByteBuf buf) {
         buf.writeBlockPos(packet.pos);
         buf.writeBoolean(packet.direction);
     }

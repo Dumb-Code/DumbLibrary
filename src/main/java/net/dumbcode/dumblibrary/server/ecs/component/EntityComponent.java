@@ -7,8 +7,8 @@ import net.dumbcode.dumblibrary.server.network.S2CSyncComponent;
 import net.dumbcode.dumblibrary.server.registry.DumbRegistries;
 import net.dumbcode.dumblibrary.server.utils.TaskScheduler;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fml.network.PacketDistributor;
@@ -22,9 +22,9 @@ public abstract class EntityComponent {
     @Nullable private SaveableEntityStorage storage;
     @Nullable private String storageID;
 
-    public CompoundNBT serialize(CompoundNBT compound) {
+    public CompoundTag serialize(CompoundTag compound) {
         if(this.storage != null) {
-            CompoundNBT storageTag = new CompoundNBT();
+            CompoundTag storageTag = new CompoundTag();
             if(this.storageID != null) {
                 storageTag.putString("storage_id", this.storageID);
             }
@@ -34,11 +34,11 @@ public abstract class EntityComponent {
         return compound;
     }
 
-    public void deserialize(CompoundNBT compound) {
+    public void deserialize(CompoundTag compound) {
         ResourceLocation identifier = new ResourceLocation(compound.getString("identifier"));
         this.type = DumbRegistries.COMPONENT_REGISTRY.getValue(identifier);
         if(compound.contains("storage", Constants.NBT.TAG_COMPOUND)) {
-            CompoundNBT storageTag = compound.getCompound("storage");
+            CompoundTag storageTag = compound.getCompound("storage");
             if(storageTag.contains("storage_id", Constants.NBT.TAG_STRING)) {
                 String tagStorageId = storageTag.getString("storage_id");
                 EntityComponentType.StorageOverride override = EntityComponentType.StorageOverride.overrides.get(this.type).get(tagStorageId);
@@ -57,23 +57,23 @@ public abstract class EntityComponent {
         }
     }
 
-    public void serialize(PacketBuffer buf) {
+    public void serialize(FriendlyByteBuf buf) {
     }
 
-    public void serializeSync(PacketBuffer buf) {
+    public void serializeSync(FriendlyByteBuf buf) {
         this.serialize(buf);
     }
 
     public final byte[] serializeSync() {
-        PacketBuffer buffer = new PacketBuffer(Unpooled.buffer());
+        FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
         this.serializeSync(buffer);
         return buffer.array();
     }
 
-    public void deserialize(PacketBuffer buf) {
+    public void deserialize(FriendlyByteBuf buf) {
     }
 
-    public void deserializeSync(PacketBuffer buf) {
+    public void deserializeSync(FriendlyByteBuf buf) {
         this.deserialize(buf);
     }
 

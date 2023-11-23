@@ -6,7 +6,7 @@ import lombok.NonNull;
 import lombok.experimental.Accessors;
 import net.dumbcode.dumblibrary.server.registry.DumbRegistries;
 import net.dumbcode.dumblibrary.server.utils.JavaUtils;
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.JSONUtils;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Util;
@@ -58,10 +58,10 @@ public class GeneticEntry<T extends GeneticFactoryStorage<O>, O> {
         return this.getType().getTranslationComponent().append(": ").append(this.type.getDataHandler().getValue(this.modifier));
     }
 
-    public CompoundNBT serialize(CompoundNBT compound) {
+    public CompoundTag serialize(CompoundTag compound) {
         compound.putString("type", Objects.requireNonNull(this.type.getRegistryName()).toString());
-        compound.put("value", this.type.getDataHandler().write(this.modifier, new CompoundNBT()));
-        JavaUtils.nullApply(this.storage, t -> compound.put("storage", t.serialize(new CompoundNBT())));
+        compound.put("value", this.type.getDataHandler().write(this.modifier, new CompoundTag()));
+        JavaUtils.nullApply(this.storage, t -> compound.put("storage", t.serialize(new CompoundTag())));
         return compound;
     }
 
@@ -72,7 +72,7 @@ public class GeneticEntry<T extends GeneticFactoryStorage<O>, O> {
         return json;
     }
 
-    public static <T extends GeneticFactoryStorage<O>, O> GeneticEntry<T, O> deserialize(CompoundNBT compound) {
+    public static <T extends GeneticFactoryStorage<O>, O> GeneticEntry<T, O> deserialize(CompoundTag compound) {
         @SuppressWarnings("unchecked") GeneticType<T, O> type = (GeneticType<T, O>) Objects.requireNonNull(DumbRegistries.GENETIC_TYPE_REGISTRY.getValue(new ResourceLocation(compound.getString("type"))));
         return new GeneticEntry<>(
             type,

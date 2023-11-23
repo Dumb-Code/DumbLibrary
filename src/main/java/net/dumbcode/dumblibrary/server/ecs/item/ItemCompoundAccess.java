@@ -6,7 +6,7 @@ import net.dumbcode.dumblibrary.server.ecs.ComponentMapWriteAccess;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentMap;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentType;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListNBT;
 import net.minecraftforge.common.util.Constants;
 
@@ -16,13 +16,13 @@ public class ItemCompoundAccess extends EntityComponentMap {
 
     private static final String TAG_NAME = "component";
 
-    private final transient CompoundNBT base;
+    private final transient CompoundTag base;
 
     public ItemCompoundAccess(ItemStack stack) {
         this(stack.getOrCreateTagElement(DumbLibrary.MODID));
     }
 
-    public ItemCompoundAccess(CompoundNBT base) {
+    public ItemCompoundAccess(CompoundTag base) {
         this.base = base;
         this.deserialize(this.base.getList(TAG_NAME, Constants.NBT.TAG_COMPOUND));
     }
@@ -33,11 +33,11 @@ public class ItemCompoundAccess extends EntityComponentMap {
     }
 
     public static Optional<ComponentAccess> getAccess(ItemStack stack) {
-        CompoundNBT compound = stack.getTag();
+        CompoundTag compound = stack.getTag();
         if(compound == null || !compound.contains(DumbLibrary.MODID, Constants.NBT.TAG_COMPOUND)) {
             return Optional.empty();
         }
-        CompoundNBT tag = compound.getCompound(DumbLibrary.MODID);
+        CompoundTag tag = compound.getCompound(DumbLibrary.MODID);
         if(!tag.contains(TAG_NAME, Constants.NBT.TAG_LIST)) {
             return Optional.empty();
         }

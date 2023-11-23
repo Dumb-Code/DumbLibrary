@@ -12,7 +12,7 @@ import net.dumbcode.dumblibrary.server.utils.CollectorUtils;
 import net.dumbcode.dumblibrary.server.utils.StreamUtils;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.item.crafting.ShapedRecipe;
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.JSONUtils;
 import net.minecraftforge.common.util.Constants;
 
@@ -33,16 +33,16 @@ public class BlockDropsComponent extends EntityComponent {
     }
 
     @Override
-    public CompoundNBT serialize(CompoundNBT compound) {
+    public CompoundTag serialize(CompoundTag compound) {
         compound.put("stacks", this.stackList.stream().map(Supplier::get).map(ItemStack::serializeNBT).collect(CollectorUtils.toNBTTagList()));
         return super.serialize(compound);
     }
 
     @Override
-    public void deserialize(CompoundNBT compound) {
+    public void deserialize(CompoundTag compound) {
         super.deserialize(compound);
         this.stackList.clear();
-        StreamUtils.stream(compound.getList("stacks", Constants.NBT.TAG_COMPOUND)).map(base -> ItemStack.of((CompoundNBT) base)).<Supplier<ItemStack>>map(stack -> () -> stack).forEach(this.stackList::add);
+        StreamUtils.stream(compound.getList("stacks", Constants.NBT.TAG_COMPOUND)).map(base -> ItemStack.of((CompoundTag) base)).<Supplier<ItemStack>>map(stack -> () -> stack).forEach(this.stackList::add);
     }
 
     @Accessors(chain = true)

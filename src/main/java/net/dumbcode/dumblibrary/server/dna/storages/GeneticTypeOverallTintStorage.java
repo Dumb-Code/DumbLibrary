@@ -4,7 +4,7 @@ import com.google.gson.JsonObject;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.JSONUtils;
 
 @Getter
@@ -15,13 +15,13 @@ public class GeneticTypeOverallTintStorage extends GeneticColorStorage {
     private TintType tintType = TintType.TARGET;
 
     @Override
-    public CompoundNBT serialize(CompoundNBT nbt) {
+    public CompoundTag serialize(CompoundTag nbt) {
         nbt.putInt("TintType", this.tintType.ordinal());
         return super.serialize(nbt);
     }
 
     @Override
-    public void deserialize(CompoundNBT nbt) {
+    public void deserialize(CompoundTag nbt) {
         this.tintType = TintType.values()[nbt.getInt("TintType") % TintType.values().length];
         super.deserialize(nbt);
     }

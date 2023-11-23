@@ -5,8 +5,8 @@ import net.dumbcode.dumblibrary.client.gui.SimpleSlider;
 import net.dumbcode.dumblibrary.client.gui.TitledSimpleSlider;
 import net.dumbcode.dumblibrary.server.dna.GeneticType;
 import net.minecraft.client.gui.widget.Widget;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.util.JSONUtils;
 import net.minecraft.util.text.IFormattableTextComponent;
 import net.minecraft.util.text.StringTextComponent;
@@ -33,7 +33,7 @@ public enum FloatGeneticDataHandler implements GeneticDataHandler<Float> {
     }
 
     @Override
-    public CompoundNBT write(Float o, CompoundNBT nbt) {
+    public CompoundTag write(Float o, CompoundTag nbt) {
         nbt.putFloat("value", o);
         return nbt;
     }
@@ -45,12 +45,12 @@ public enum FloatGeneticDataHandler implements GeneticDataHandler<Float> {
     }
 
     @Override
-    public void write(Float o, PacketBuffer buffer) {
+    public void write(Float o, FriendlyByteBuf buffer) {
         buffer.writeFloat(o);
     }
 
     @Override
-    public Float read(CompoundNBT nbt) {
+    public Float read(CompoundTag nbt) {
         return nbt.getFloat("value");
     }
 
@@ -60,7 +60,7 @@ public enum FloatGeneticDataHandler implements GeneticDataHandler<Float> {
     }
 
     @Override
-    public Float read(PacketBuffer buffer) {
+    public Float read(FriendlyByteBuf buffer) {
         return buffer.readFloat();
     }
 

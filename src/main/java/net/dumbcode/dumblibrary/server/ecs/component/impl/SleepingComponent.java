@@ -15,8 +15,8 @@ import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentStorage;
 import net.dumbcode.dumblibrary.server.ecs.component.EntityComponentTypes;
 import net.dumbcode.dumblibrary.server.ecs.component.additionals.EntityGoalSupplier;
 import net.minecraft.entity.CreatureEntity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.util.JSONUtils;
 import net.minecraft.resources.ResourceLocation;
 
@@ -55,7 +55,7 @@ public class SleepingComponent extends EntityComponent implements EntityGoalSupp
     }
 
     @Override
-    public CompoundNBT serialize(CompoundNBT compound) {
+    public CompoundTag serialize(CompoundTag compound) {
         compound.putString("animation", Objects.requireNonNull(this.sleepingAnimation.getKey()).toString());
         compound.put("sleep_time", this.sleepTime.writeToNBT());
         compound.put("wakeup_time", this.wakeupTime.writeToNBT());
@@ -65,7 +65,7 @@ public class SleepingComponent extends EntityComponent implements EntityGoalSupp
     }
 
     @Override
-    public void deserialize(CompoundNBT compound) {
+    public void deserialize(CompoundTag compound) {
         this.sleepingAnimation = new Animation(new ResourceLocation(compound.getString("animation")));
         this.sleepTime.readFromNBT(compound.getCompound("sleep_time"));
         this.wakeupTime.readFromNBT(compound.getCompound("wakeup_time"));
@@ -75,14 +75,14 @@ public class SleepingComponent extends EntityComponent implements EntityGoalSupp
     }
 
     @Override
-    public void serialize(PacketBuffer buf) {
+    public void serialize(FriendlyByteBuf buf) {
         buf.writeUtf(this.sleepingAnimation.getKey().toString());
         buf.writeBoolean(this.isSleeping);
         super.serialize(buf);
     }
 
     @Override
-    public void deserialize(PacketBuffer buf) {
+    public void deserialize(FriendlyByteBuf buf) {
         this.sleepingAnimation = new Animation(new ResourceLocation(buf.readUtf()));
         this.isSleeping = buf.readBoolean();
         super.deserialize(buf);

@@ -11,8 +11,8 @@ import net.dumbcode.dumblibrary.server.utils.GeneticUtils;
 import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.client.shader.ShaderInstance;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.util.JSONUtils;
 import net.minecraft.util.text.Color;
 import net.minecraft.util.text.IFormattableTextComponent;
@@ -32,8 +32,8 @@ import java.util.stream.Collectors;
 public enum ColouredGeneticDataHandler implements GeneticDataHandler<GeneticTint> {
     INSTANCE;
 
-    public static CompoundNBT writePartNBT(GeneticTint.Part part) {
-        CompoundNBT c = new CompoundNBT();
+    public static CompoundTag writePartNBT(GeneticTint.Part part) {
+        CompoundTag c = new CompoundTag();
         c.putFloat("red", part.getR());
         c.putFloat("green", part.getG());
         c.putFloat("blue", part.getB());
@@ -42,7 +42,7 @@ public enum ColouredGeneticDataHandler implements GeneticDataHandler<GeneticTint
         return c;
     }
     @Override
-    public CompoundNBT write(GeneticTint o, CompoundNBT nbt) {
+    public CompoundTag write(GeneticTint o, CompoundTag nbt) {
         nbt.put("primary", writePartNBT(o.getPrimary()));
         nbt.put("secondary", writePartNBT(o.getSecondary()));
         return nbt;
@@ -64,7 +64,7 @@ public enum ColouredGeneticDataHandler implements GeneticDataHandler<GeneticTint
         return json;
     }
 
-    public static void writePartBuffer(GeneticTint.Part part, PacketBuffer buffer) {
+    public static void writePartBuffer(GeneticTint.Part part, FriendlyByteBuf buffer) {
         buffer.writeFloat(part.getR());
         buffer.writeFloat(part.getG());
         buffer.writeFloat(part.getB());
@@ -72,12 +72,12 @@ public enum ColouredGeneticDataHandler implements GeneticDataHandler<GeneticTint
         buffer.writeInt(part.getImportance());
     }
     @Override
-    public void write(GeneticTint o, PacketBuffer buffer) {
+    public void write(GeneticTint o, FriendlyByteBuf buffer) {
         writePartBuffer(o.getPrimary(), buffer);
         writePartBuffer(o.getSecondary(), buffer);
     }
 
-    public static GeneticTint.Part readPartNBT(CompoundNBT part) {
+    public static GeneticTint.Part readPartNBT(CompoundTag part) {
         return new GeneticTint.Part(
             part.getFloat("red"),
             part.getFloat("green"),
@@ -87,7 +87,7 @@ public enum ColouredGeneticDataHandler implements GeneticDataHandler<GeneticTint
         );
     }
     @Override
-    public GeneticTint read(CompoundNBT nbt) {
+    public GeneticTint read(CompoundTag nbt) {
         return new GeneticTint(
             readPartNBT(nbt.getCompound("primary")),
             readPartNBT(nbt.getCompound("secondary"))
@@ -111,11 +111,11 @@ public enum ColouredGeneticDataHandler implements GeneticDataHandler<GeneticTint
         );
     }
 
-    public static GeneticTint.Part readPartBuffer(PacketBuffer buffer) {
+    public static GeneticTint.Part readPartBuffer(FriendlyByteBuf buffer) {
         return new GeneticTint.Part(buffer.readFloat(), buffer.readFloat(), buffer.readFloat(), buffer.readFloat(), buffer.readInt());
     }
     @Override
-    public GeneticTint read(PacketBuffer buffer) {
+    public GeneticTint read(FriendlyByteBuf buffer) {
         return new GeneticTint(
             readPartBuffer(buffer),
             readPartBuffer(buffer)

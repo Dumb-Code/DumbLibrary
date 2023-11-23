@@ -7,7 +7,7 @@ import net.dumbcode.dumblibrary.server.SimpleBlockEntity;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.gui.IHasContainer;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
@@ -25,13 +25,13 @@ public abstract class BaseTaxidermyBlockEntity extends SimpleBlockEntity {
     }
 
     @Override
-    public CompoundNBT save(CompoundNBT compound) {
-        compound.put("History", this.history.writeToNBT(new CompoundNBT()));
+    public CompoundTag save(CompoundTag compound) {
+        compound.put("History", this.history.writeToNBT(new CompoundTag()));
         return super.save(compound);
     }
 
     @Override
-    public void load(BlockState state, CompoundNBT compound) {
+    public void load(BlockState state, CompoundTag compound) {
         this.history.readFromNBT(compound.getCompound("History"));
         super.load(state, compound);
     }

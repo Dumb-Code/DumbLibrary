@@ -17,9 +17,9 @@ import net.dumbcode.dumblibrary.server.ecs.component.impl.data.FlattenedLayerPro
 import net.dumbcode.dumblibrary.server.utils.CollectorUtils;
 import net.dumbcode.dumblibrary.server.utils.IndexedObject;
 import net.dumbcode.dumblibrary.server.utils.StreamUtils;
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.StringNBT;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.util.JSONUtils;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.util.Constants;
@@ -60,7 +60,7 @@ public class FlattenedLayerComponent extends EntityComponent implements RenderLa
     }
 
     @Override
-    public void serialize(PacketBuffer buf) {
+    public void serialize(FriendlyByteBuf buf) {
         super.serialize(buf);
         buf.writeShort(this.staticLayers.size());
         for (IndexedObject<FlattenedLayerProperty.Static> layer : this.staticLayers) {
@@ -69,7 +69,7 @@ public class FlattenedLayerComponent extends EntityComponent implements RenderLa
     }
 
     @Override
-    public void deserialize(PacketBuffer buf) {
+    public void deserialize(FriendlyByteBuf buf) {
         super.deserialize(buf);
         this.staticLayers.clear();
 
@@ -80,7 +80,7 @@ public class FlattenedLayerComponent extends EntityComponent implements RenderLa
     }
 
     @Override
-    public CompoundNBT serialize(CompoundNBT compound) {
+    public CompoundTag serialize(CompoundTag compound) {
         compound.put("layers",
             this.staticLayers.stream()
                 .map(io -> IndexedObject.serializeNBT(io, aStatic -> StringNBT.valueOf(aStatic.getValue())))
@@ -90,10 +90,10 @@ public class FlattenedLayerComponent extends EntityComponent implements RenderLa
     }
 
     @Override
-    public void deserialize(CompoundNBT compound) {
+    public void deserialize(CompoundTag compound) {
         this.staticLayers.clear();
         StreamUtils.stream(compound.getList("layers", Constants.NBT.TAG_COMPOUND))
-            .map(t -> IndexedObject.deserializeNBT((CompoundNBT)t, b -> new FlattenedLayerProperty.Static(b.getAsString())))
+            .map(t -> IndexedObject.deserializeNBT((CompoundTag)t, b -> new FlattenedLayerProperty.Static(b.getAsString())))
             .forEach(this.staticLayers::add);
         super.deserialize(compound);
     }
